@@ -20,6 +20,7 @@ type Props = {
   onChange: (id: string, name: string) => void;
   category: MatterCategory;
   disabled?: boolean;
+  triggerClassName?: string;
 };
 
 /**
@@ -30,7 +31,7 @@ type Props = {
  * - 列宽收窄，弹层随列数增长，避免一打开就铺满整页
  * - 名称过长截断，hover 显示全名
  */
-export function CauseCombobox({ value, onChange, category, disabled }: Props) {
+export function CauseCombobox({ value, onChange, category, disabled, triggerClassName }: Props) {
   const [open, setOpen] = useState(false);
   const [allNodes, setAllNodes] = useState<Node[]>([]);
   const [isPending, startTransition] = useTransition();
@@ -135,7 +136,7 @@ export function CauseCombobox({ value, onChange, category, disabled }: Props) {
           variant="outline"
           role="combobox"
           aria-expanded={open}
-          className="h-10 w-full justify-between rounded-sm font-normal"
+          className={cn("h-10 w-full justify-between rounded-sm font-normal", triggerClassName)}
         >
           {value && selectedName ? (
             <span className="truncate">{selectedName}</span>
@@ -190,7 +191,7 @@ export function CauseCombobox({ value, onChange, category, disabled }: Props) {
                   type="button"
                   onClick={() => pickNode(n)}
                   title={n.name}
-                  className="flex w-full items-center justify-between gap-2 rounded px-2 py-1.5 text-left text-[12.5px] hover:bg-muted/60"
+                  className="flex min-h-8 w-full items-center justify-between gap-2 rounded-sm px-2 py-1.5 text-left text-[13px] transition-colors hover:bg-muted hover:text-foreground"
                 >
                   <span className="truncate">{n.name}</span>
                   <span className="shrink-0 text-[10.5px] text-muted-foreground">
@@ -271,8 +272,8 @@ function Column({
                 onClick={() => onPick(n)}
                 title={n.name}
                 className={cn(
-                  "flex w-full items-center justify-between gap-1 rounded px-2 py-1.5 text-left text-[12.5px] transition-colors",
-                  isActive ? "bg-primary/15 text-primary" : "hover:bg-muted/60"
+                  "flex min-h-8 w-full items-center justify-between gap-1 rounded-sm px-2 py-1.5 text-left text-[13px] transition-colors",
+                  isActive ? "bg-accent text-primary" : "hover:bg-muted hover:text-foreground"
                 )}
               >
                 <span className="truncate">{n.name}</span>

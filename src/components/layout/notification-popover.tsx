@@ -177,7 +177,7 @@ export function NotificationPopover() {
                   "rounded-full border px-2 py-0.5 text-[10px] transition-colors",
                   typeFilter === null
                     ? "border-primary bg-primary/15 text-primary"
-                    : "border-border text-muted-foreground hover:border-input"
+                    : "border-border text-muted-foreground hover:border-input hover:bg-muted hover:text-foreground"
                 )}
               >
                 全部
@@ -190,7 +190,7 @@ export function NotificationPopover() {
                     "rounded-full border px-2 py-0.5 text-[10px] transition-colors",
                     typeFilter === t
                       ? "border-primary bg-primary/15 text-primary"
-                      : "border-border text-muted-foreground hover:border-input"
+                      : "border-border text-muted-foreground hover:border-input hover:bg-muted hover:text-foreground"
                   )}
                 >
                   {typeIcons[t] ?? "🔔"} {typeLabels[t] ?? t}

@@ -5,6 +5,8 @@ import pca from "china-division/dist/pca.json";
 type Pca = Record<string, Record<string, string[]>>;
 const DATA = pca as Pca;
 
+export const NATIONAL_AGENCY_OPTIONS = ["最高人民法院"] as const;
+
 export const provinces: string[] = Object.keys(DATA);
 
 export function citiesOf(province: string): string[] {
@@ -29,6 +31,19 @@ export function parseJurisdiction(value?: string | null): {
   return { province, city, area };
 }
 
+export function isNationalAgency(value?: string | null): boolean {
+  const agency = value?.trim();
+  return NATIONAL_AGENCY_OPTIONS.some((item) => item === agency);
+}
+
+export function normalizeJurisdictionForAgency(
+  agency?: string | null,
+  jurisdiction?: string | null
+): string | null {
+  if (isNationalAgency(agency)) return null;
+  return jurisdiction?.trim() || null;
+}
+
 // 直辖市 / 地级市占位项「市辖区」「县」不作为机构名，回退到省级名称
 function effectiveCityName(province: string, city: string): string {
   if (!city || city === "市辖区" || city === "县") return province;
@@ -42,13 +57,14 @@ function arbitrationCityName(cityName: string): string {
 
 /**
  * 根据管辖地生成可选「争议解决机构」：
+ * - 未选管辖地：全国级机构
  * - 选到区县：本区县基层法院 + 本市中院 + 本省高院 + 本市仲裁委
  * - 只选到市：本市中院 + 本市各区县基层法院 + 本省高院 + 本市仲裁委
  * 返回去重后的字符串列表。
  */
 export function agencyOptions(value?: string | null): string[] {
   const { province, city, area } = parseJurisdiction(value);
-  if (!province) return [];
+  if (!province) return [...NATIONAL_AGENCY_OPTIONS];
   const cityName = effectiveCityName(province, city);
   const out: string[] = [];
 
@@ -60,6 +76,7 @@ export function agencyOptions(value?: string | null): string[] {
     for (const a of areasOf(province, city)) out.push(`${a}人民法院`);
   }
   out.push(`${province}高级人民法院`);
+  out.push(...NATIONAL_AGENCY_OPTIONS);
   out.push(`${arbitrationCityName(cityName)}仲裁委员会`);
 
   // 去重保序

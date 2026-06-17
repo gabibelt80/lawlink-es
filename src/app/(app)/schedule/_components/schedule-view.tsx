@@ -92,12 +92,11 @@ export function ScheduleView({
       transition={{ duration: 0.4 }}
       className="space-y-4"
     >
-      <header className="space-y-2">
-        <div className="flex items-end justify-between gap-4">
-          <div className="space-y-1">
-            <h1 className="text-xl font-medium tracking-tight">日程</h1>
-            <p className="text-[13px] text-muted-foreground">未来 90 天的开庭与期限</p>
-          </div>
+      <header className="ll-page-head">
+        <div>
+          <h1 className="ll-page-title">日程</h1>
+          <p className="ll-page-sub">未来 90 天的开庭、期限与待办事项</p>
+        </div>
 
           <div className="flex flex-wrap items-center justify-end gap-2">
             <Button size="sm" onClick={() => openAddDialog()} className="h-8 gap-1.5">
@@ -105,30 +104,26 @@ export function ScheduleView({
               添加日程
             </Button>
             <div
-              className="flex items-center gap-1 rounded-md border border-border bg-card p-0.5"
+              className="ll-segmented"
             >
-              <Button
-                size="sm"
-                variant={view === "list" ? "default" : "ghost"}
+              <button
+                type="button"
                 onClick={() => setView("list")}
-                className="h-7 gap-1"
+                className={cn("ll-seg", view === "list" && "ll-seg-active text-primary")}
               >
                 <List className="h-3.5 w-3.5" strokeWidth={1.8} />
                 列表
-              </Button>
-              <Button
-                size="sm"
-                variant={view === "calendar" ? "default" : "ghost"}
+              </button>
+              <button
+                type="button"
                 onClick={() => setView("calendar")}
-                className="h-7 gap-1"
+                className={cn("ll-seg", view === "calendar" && "ll-seg-active text-primary")}
               >
                 <Grid3X3 className="h-3.5 w-3.5" strokeWidth={1.8} />
                 月历
-              </Button>
+              </button>
             </div>
           </div>
-        </div>
-        <div className="ll-rule" />
       </header>
 
       {/* KPI */}
@@ -182,7 +177,7 @@ function ListView({
 
   if (items.length === 0) {
     return (
-      <div className="rounded-xl border border-dashed border-border bg-card py-16 text-center">
+      <div className="ll-surface border-dashed py-16 text-center">
         <p className="text-sm text-muted-foreground">未来 90 天没有日程</p>
       </div>
     );
@@ -197,12 +192,12 @@ function ListView({
         return (
           <section
             key={key}
-            className="overflow-hidden rounded-xl border border-border bg-card"
+            className="ll-surface overflow-hidden"
           >
             <header
               className={cn(
-                "flex items-center justify-between border-b border-border px-5 py-3",
-                isToday && "bg-primary/10"
+                "ll-panel-head",
+                isToday && "bg-accent"
               )}
             >
               <div className="flex items-center gap-3">
@@ -367,37 +362,45 @@ function CalendarView({
   const todayKey = dateKey(today);
 
   const selectedItems = selectedDay ? itemsByKey.get(selectedDay) ?? [] : [];
+  const todayItems = [...(itemsByKey.get(todayKey) ?? [])].sort(
+    (a, b) => new Date(a.occurredAt).getTime() - new Date(b.occurredAt).getTime()
+  );
+  const upcomingDeadlines = items
+    .filter((item) => item.type === "deadline" && new Date(item.occurredAt) >= today)
+    .sort((a, b) => new Date(a.occurredAt).getTime() - new Date(b.occurredAt).getTime())
+    .slice(0, 6);
 
   return (
-    <section className="rounded-xl border border-border bg-card p-4">
-      <header className="mb-3 flex flex-wrap items-center justify-between gap-3">
-        <div className="flex items-center gap-2">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => onOffsetChange(monthOffset - 1)}
-            className="h-7 w-7 p-0"
-          >
-            <ChevronLeft className="h-4 w-4" />
-          </Button>
-          <span className="text-base font-semibold tabular">
-            {year} 年 {month + 1} 月
-          </span>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => onOffsetChange(monthOffset + 1)}
-            className="h-7 w-7 p-0"
-          >
-            <ChevronRight className="h-4 w-4" />
-          </Button>
-        </div>
-        {monthOffset !== 0 && (
-          <Button variant="outline" size="sm" onClick={() => onOffsetChange(0)} className="h-7 text-xs">
-            回到本月
-          </Button>
-        )}
-      </header>
+    <div className="grid grid-cols-1 gap-4 xl:grid-cols-[minmax(0,1fr)_280px]">
+      <section className="ll-surface p-4">
+        <header className="mb-3 flex flex-wrap items-center justify-between gap-3">
+          <div className="flex items-center gap-2">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => onOffsetChange(monthOffset - 1)}
+              className="h-7 w-7 p-0"
+            >
+              <ChevronLeft className="h-4 w-4" />
+            </Button>
+            <span className="text-base font-semibold tabular">
+              {year} 年 {month + 1} 月
+            </span>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => onOffsetChange(monthOffset + 1)}
+              className="h-7 w-7 p-0"
+            >
+              <ChevronRight className="h-4 w-4" />
+            </Button>
+          </div>
+          {monthOffset !== 0 && (
+            <Button variant="outline" size="sm" onClick={() => onOffsetChange(0)} className="h-7 text-xs">
+              回到本月
+            </Button>
+          )}
+        </header>
 
       <div className="grid grid-cols-7 gap-1.5">
         {WEEKDAY_LABELS.map((w) => (
@@ -439,7 +442,7 @@ function CalendarView({
                 "group flex min-h-[8rem] flex-col rounded-md border p-1.5 text-left transition-colors sm:min-h-[9rem]",
                 isSelected
                   ? "border-primary bg-primary/15"
-                  : "border-border bg-background hover:border-input",
+                  : "border-border bg-card hover:border-input hover:bg-muted/35",
                 isToday && !isSelected && "border-primary/40"
               )}
             >
@@ -481,7 +484,7 @@ function CalendarView({
       </div>
 
       {selectedDay && (
-        <section className="mt-4 rounded-lg border border-border bg-background p-4">
+        <section className="mt-4 rounded-lg border border-border bg-muted/55 p-4">
           <header className="mb-3 flex items-start justify-between gap-3">
             <div>
               <h3 className="text-base font-semibold">
@@ -526,7 +529,112 @@ function CalendarView({
           )}
         </section>
       )}
-    </section>
+      </section>
+      <ScheduleSideRail
+        todayItems={todayItems}
+        upcomingDeadlines={upcomingDeadlines}
+        onSelectItem={onSelectItem}
+      />
+    </div>
+  );
+}
+
+function ScheduleSideRail({
+  todayItems,
+  upcomingDeadlines,
+  onSelectItem
+}: {
+  todayItems: (ScheduleItem & { dateKey: string })[];
+  upcomingDeadlines: (ScheduleItem & { dateKey: string })[];
+  onSelectItem: (item: ScheduleItem) => void;
+}) {
+  return (
+    <aside className="space-y-4 xl:sticky xl:top-16">
+      <section className="ll-surface overflow-hidden">
+        <header className="ll-panel-head">
+          <h3 className="ll-panel-title">
+            <span className="h-2 w-2 rounded-full bg-primary" />
+            今天
+          </h3>
+          <span className="font-mono text-xs text-muted-foreground tabular">
+            {todayItems.length} 项
+          </span>
+        </header>
+        {todayItems.length === 0 ? (
+          <p className="px-4 py-8 text-center text-xs text-muted-foreground">今天没有日程</p>
+        ) : (
+          <ul className="divide-y divide-border px-4">
+            {todayItems.map((item) => (
+              <ScheduleSideItem key={item.id} item={item} onSelectItem={onSelectItem} showDate={false} />
+            ))}
+          </ul>
+        )}
+      </section>
+
+      <section className="ll-surface overflow-hidden">
+        <header className="ll-panel-head">
+          <h3 className="ll-panel-title">
+            <span className="h-2 w-2 rounded-full bg-red-500" />
+            即将到期
+          </h3>
+          <span className="font-mono text-xs text-muted-foreground tabular">
+            {upcomingDeadlines.length} 项
+          </span>
+        </header>
+        {upcomingDeadlines.length === 0 ? (
+          <p className="px-4 py-8 text-center text-xs text-muted-foreground">暂无近期到期事项</p>
+        ) : (
+          <ul className="divide-y divide-border px-4">
+            {upcomingDeadlines.map((item) => (
+              <ScheduleSideItem key={item.id} item={item} onSelectItem={onSelectItem} showDate />
+            ))}
+          </ul>
+        )}
+      </section>
+    </aside>
+  );
+}
+
+function ScheduleSideItem({
+  item,
+  onSelectItem,
+  showDate
+}: {
+  item: ScheduleItem;
+  onSelectItem: (item: ScheduleItem) => void;
+  showDate: boolean;
+}) {
+  const meta = typeMeta[item.type];
+  const Icon = meta.icon;
+  const subject = displaySubject(item);
+
+  return (
+    <li className="py-3">
+      <button
+        type="button"
+        onClick={() => onSelectItem(item)}
+        className="flex w-full min-w-0 gap-3 rounded-sm text-left transition-colors hover:text-primary"
+      >
+        <span
+          className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-sm"
+          style={{ backgroundColor: `${meta.color}18`, color: meta.color }}
+        >
+          <Icon className="h-3.5 w-3.5" />
+        </span>
+        <span className="min-w-0 flex-1">
+          <span className="flex items-center gap-2">
+            <span className="font-mono text-[11px] tabular text-muted-foreground">
+              {showDate ? formatMonthDay(item.occurredAt) : formatTime(item.occurredAt)}
+            </span>
+            <span className="truncate text-[13px] font-medium">{item.title}</span>
+          </span>
+          <span className="mt-0.5 block truncate text-[11px] text-muted-foreground">
+            {subject}
+            {item.procedureLabel ? ` · ${formatProcedureLabel(item.procedureLabel)}` : ""}
+          </span>
+        </span>
+      </button>
+    </li>
   );
 }
 
@@ -545,7 +653,7 @@ function DayDetailItem({
     <button
       type="button"
       onClick={() => onSelect(item)}
-      className="flex min-w-0 items-start gap-3 rounded-md border border-border bg-card px-3 py-2 text-left transition-colors hover:border-primary/60"
+      className="flex min-w-0 items-start gap-3 rounded-md border border-border bg-card px-3 py-2 text-left transition-colors hover:border-primary/60 hover:bg-muted/40"
     >
       <span className="mt-0.5 rounded-sm p-1" style={{ backgroundColor: `${meta.color}18`, color: meta.color }}>
         <Icon className="h-3.5 w-3.5" />
@@ -676,12 +784,12 @@ function Stat({
   icon: React.ReactNode;
 }) {
   return (
-    <div className="ll-surface px-5 py-4">
+    <div className="ll-surface px-4 py-3.5">
       <div className="flex items-center gap-1.5">
         <span style={{ color }}>{icon}</span>
-        <span className="text-[0.56rem] text-muted-foreground">{label}</span>
+        <span className="text-[11px] text-muted-foreground">{label}</span>
       </div>
-      <div className="ll-stat mt-3 text-[1.85rem] leading-none text-foreground">
+      <div className="ll-stat mt-3 text-[24px] leading-none text-foreground">
         {value}
       </div>
     </div>
@@ -722,6 +830,13 @@ function formatFullDate(value: Date) {
     month: "long",
     day: "numeric",
     weekday: "long"
+  });
+}
+
+function formatMonthDay(value: Date) {
+  return new Date(value).toLocaleDateString("zh-CN", {
+    month: "2-digit",
+    day: "2-digit"
   });
 }
 

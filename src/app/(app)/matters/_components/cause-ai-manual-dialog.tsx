@@ -154,7 +154,7 @@ export function CauseAiManualDialog({
                       onSelect(c.cause.id, c.cause.name);
                       onOpenChange(false);
                     }}
-                    className="flex w-full flex-col items-start gap-1 rounded border border-border bg-background px-3 py-2.5 text-left transition hover:border-foreground/30 hover:bg-muted/30"
+                    className="flex w-full flex-col items-start gap-1 rounded-sm border border-border bg-background px-3 py-2.5 text-left transition-colors hover:border-input hover:bg-muted hover:text-foreground"
                   >
                     <div className="flex w-full items-center justify-between gap-2">
                       <span className="text-sm font-medium">{c.cause.name}</span>

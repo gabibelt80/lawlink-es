@@ -6,6 +6,7 @@ import { prisma } from "@/lib/prisma";
 import { requireSession } from "@/lib/auth/session";
 import { audit } from "@/server/audit";
 import { intakeVisibilityFilter } from "@/lib/permissions";
+import { normalizeJurisdictionForAgency } from "@/lib/china-regions";
 import {
   intakeCreateSchema,
   intakeListQuerySchema,
@@ -395,7 +396,7 @@ export async function createIntake(input: IntakeCreateInput) {
 
       firstProcedureType: data.firstProcedureType ?? null,
       firstAgency: data.firstAgency?.trim() || null,
-      jurisdiction: data.jurisdiction?.trim() || null,
+      jurisdiction: normalizeJurisdictionForAgency(data.firstAgency, data.jurisdiction),
       ourStanding: data.ourStanding ?? null,
       claimAmount: data.claimAmount ?? null,
       claimDescription: data.claimDescription?.trim() || null,

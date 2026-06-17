@@ -3,7 +3,6 @@ import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { getMatterById } from "@/server/matters/actions";
 import { getMatterFinance } from "@/server/finance/actions";
-import { listPreservationCases } from "@/server/preservations/actions-v2";
 import { listActiveColleagues } from "@/server/users/actions";
 import { getLatestArchiveRecord } from "@/server/archive/actions";
 import { getMatterReviewSummary } from "@/server/ai/matter-review-summary";
@@ -12,14 +11,32 @@ import { prisma } from "@/lib/prisma";
 import { MatterDetailTabs } from "./_components/matter-detail-tabs";
 import { ReviewSummaryCard } from "./_components/review-summary-card";
 
-export default async function MatterDetailPage({ params }: { params: { id: string } }) {
-  const [matter, session] = await Promise.all([
-    getMatterById(params.id),
+type PageProps = {
+  params: Promise<{ id: string }>;
+};
+
+function toNumber(value: { toString(): string } | number) {
+  return typeof value === "number" ? value : Number(value);
+}
+
+function toNullableNumber(value: { toString(): string } | number | null | undefined) {
+  return value === null || value === undefined ? null : toNumber(value);
+}
+
+export default async function MatterDetailPage({ params }: PageProps) {
+  const { id } = await params;
+  const [matterRaw, session] = await Promise.all([
+    getMatterById(id),
     getSession()
   ]);
-  if (!matter) notFound();
+  if (!matterRaw) notFound();
 
-  const [finance, userOptions, documents, intakeContracts, folders, templates, preservations, allColleagues, sealContracts, expresses, latestArchive, customFieldDefs] = await Promise.all([
+  const matter = {
+    ...matterRaw,
+    claimAmount: toNullableNumber(matterRaw.claimAmount)
+  };
+
+  const [financeRaw, userOptions, documents, folders, templates, allColleagues, sealContracts, expresses, latestArchive, customFieldDefs] = await Promise.all([
     getMatterFinance(matter.id),
     prisma.user.findMany({
       where: { active: true },
@@ -34,20 +51,6 @@ export default async function MatterDetailPage({ params }: { params: { id: strin
         procedure: { select: { id: true, type: true, customLabel: true } }
       }
     }),
-    // v0.5: 从 Intake 上传过来的合同（同时绑定 intakeId 和 matterId）
-    matter.intakeId
-      ? prisma.document.findMany({
-          where: {
-            intakeId: matter.intakeId,
-            deletedAt: null
-          },
-          orderBy: { createdAt: "desc" },
-          include: {
-            uploadedBy: { select: { id: true, name: true } },
-            procedure: { select: { id: true, type: true, customLabel: true } }
-          }
-        })
-      : Promise.resolve([]),
     // v0.8: 卷宗
     prisma.documentFolder.findMany({
       where: { matterId: matter.id },
@@ -74,8 +77,6 @@ export default async function MatterDetailPage({ params }: { params: { id: strin
         isBuiltIn: true
       }
     }),
-    // v0.9.3: 本案保全记录
-    listPreservationCases({ matterId: matter.id, status: "ALL" }),
     listActiveColleagues(),
     // v0.11: 案件下用印申请关联的合同附件（待盖章稿 + 盖章后扫描件）
     prisma.sealRequest.findMany({
@@ -115,6 +116,22 @@ export default async function MatterDetailPage({ params }: { params: { id: strin
       select: { id: true, key: true, label: true, fieldType: true, options: true, required: true }
     })
   ]);
+
+  const finance = {
+    ...financeRaw,
+    billings: financeRaw.billings.map((billing) => ({
+      ...billing,
+      contractAmount: toNumber(billing.contractAmount)
+    })),
+    entries: financeRaw.entries.map((entry) => ({
+      ...entry,
+      amount: toNumber(entry.amount)
+    })),
+    plans: financeRaw.plans.map((plan) => ({
+      ...plan,
+      percent: toNumber(plan.percent)
+    }))
+  };
 
   // v0.22: 本案 AI 审查总览（聚合 ReviewRecord）
   const reviewSummary = await getMatterReviewSummary(matter.id);
@@ -161,14 +178,12 @@ export default async function MatterDetailPage({ params }: { params: { id: strin
         finance={finance}
         userOptions={userOptions}
         documents={documents}
-        intakeContracts={intakeContracts}
         folders={folders}
         folderDocuments={folderDocuments}
         templates={templates.map((t) => ({
           ...t,
           variables: Array.isArray(t.variables) ? (t.variables as string[]) : []
         }))}
-        preservations={preservations}
         colleagues={allColleagues.map((c) => ({ id: c.id, name: c.name }))}
         currentUserRole={session?.user.role ?? null}
         canAssociateThisMatter={canAssociateThisMatter}

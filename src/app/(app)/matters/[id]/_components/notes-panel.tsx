@@ -252,7 +252,7 @@ function NoteSheet({
                           "flex flex-col items-center gap-1 rounded-md border p-2 text-xs transition-colors",
                           channel === c
                             ? "border-primary bg-primary/15 text-primary"
-                            : "border-border bg-background text-muted-foreground hover:border-input"
+                            : "border-border bg-background text-muted-foreground hover:border-input hover:bg-muted hover:text-foreground"
                         )}
                       >
                         <Icon className="h-4 w-4" />

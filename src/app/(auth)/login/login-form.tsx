@@ -51,7 +51,7 @@ export function LoginForm() {
   }
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4" noValidate>
+    <form method="post" onSubmit={handleSubmit(onSubmit)} className="space-y-4" noValidate>
       {authError ? (
         <Alert variant="destructive" className="border-destructive/40 bg-destructive/10">
           <AlertCircle className="h-4 w-4" />

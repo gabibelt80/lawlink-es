@@ -67,12 +67,12 @@ export function Topbar({ onMobileMenuToggle, userAvatar }: { onMobileMenuToggle?
   const initial = displayName ? displayName.charAt(0) : "?";
 
   return (
-    <header className="sticky top-0 z-20 flex h-14 items-center gap-2.5 border-b border-border bg-background px-4 sm:px-6">
+    <header className="sticky top-0 z-20 flex h-12 items-center gap-2.5 border-b border-border bg-background/80 px-4 backdrop-blur-xl sm:px-5">
       {/* 移动端汉堡菜单 */}
       {onMobileMenuToggle && (
         <button
           onClick={onMobileMenuToggle}
-          className="flex h-8 w-8 items-center justify-center rounded-md border border-border text-muted-foreground transition-colors hover:bg-muted hover:text-foreground md:hidden"
+          className="flex h-8 w-8 items-center justify-center rounded-md border border-border bg-card text-muted-foreground transition-colors hover:bg-muted hover:text-foreground md:hidden"
           aria-label="打开菜单"
         >
           <Menu className="h-4 w-4" />
@@ -82,14 +82,14 @@ export function Topbar({ onMobileMenuToggle, userAvatar }: { onMobileMenuToggle?
       <button
         onClick={() => setSearchOpen(true)}
         className={cn(
-          "flex h-8 min-w-0 flex-1 items-center gap-2 rounded-md border border-border bg-card px-3 text-left sm:w-48 sm:flex-initial",
-          "text-sm text-muted-foreground transition-colors hover:border-input hover:text-foreground"
+          "flex h-[34px] min-w-0 flex-1 items-center gap-2 rounded-md border border-transparent bg-black/[0.04] px-3 text-left sm:w-[300px] sm:flex-initial",
+          "text-[13px] text-muted-foreground transition-colors hover:bg-black/[0.06] hover:text-foreground"
         )}
         aria-label="全局搜索 (Cmd+K)"
       >
         <Search className="h-3.5 w-3.5 shrink-0" strokeWidth={1.8} />
         <span className="flex-1 truncate">搜索案件、客户、材料...</span>
-        <kbd className="hidden h-5 items-center gap-0.5 rounded border border-border bg-muted px-1.5 font-mono text-[10px] font-medium sm:inline-flex">
+        <kbd className="hidden h-5 items-center gap-0.5 rounded border border-border bg-white/80 px-1.5 font-mono text-[10px] font-medium sm:inline-flex">
           ⌘K
         </kbd>
       </button>
@@ -104,7 +104,7 @@ export function Topbar({ onMobileMenuToggle, userAvatar }: { onMobileMenuToggle?
             <button
               type="button"
               className={cn(
-                "inline-flex h-8 items-center gap-1.5 rounded-md border border-border px-2.5 text-[13px]",
+                "inline-flex h-[34px] items-center gap-1.5 rounded-full border border-input bg-card px-3 text-[13px] shadow-[var(--shadow-low)]",
                 "text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
               )}
               title="应用"
@@ -153,13 +153,13 @@ export function Topbar({ onMobileMenuToggle, userAvatar }: { onMobileMenuToggle?
         <Button
           size="sm"
           onClick={() => router.push("/matters?tab=intake&new=1")}
-          className="h-8 gap-1.5 px-3 text-[13px]"
+          className="h-[34px] gap-1.5 px-3 text-[13px]"
         >
           <Plus className="h-3.5 w-3.5" strokeWidth={2} />
           <span className="hidden sm:inline">新建收案</span>
         </Button>
 
-        <div className="mx-0.5 hidden h-4 w-px bg-border sm:block" />
+        <div className="mx-0.5 hidden h-6 w-px bg-border sm:block" />
 
         <NotificationPopover />
       </div>
@@ -169,7 +169,7 @@ export function Topbar({ onMobileMenuToggle, userAvatar }: { onMobileMenuToggle?
         <DropdownMenuTrigger asChild>
           <button
             className={cn(
-              "flex h-8 items-center gap-2 rounded-md border border-border pl-1 pr-2.5",
+              "flex h-[34px] items-center gap-2 rounded-full border border-input bg-card pl-1 pr-2.5 shadow-[var(--shadow-low)]",
               "transition-colors hover:bg-muted"
             )}
           >

@@ -7,13 +7,12 @@ import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { toast } from "sonner";
 import {
+  ChevronRight,
   Loader2,
   Plus,
-  Trash2,
   Paperclip,
   FileText,
   X,
-  CalendarDays,
   ScanLine,
   ChevronDown
 } from "lucide-react";
@@ -61,7 +60,7 @@ import {
   COUNSEL_TYPES,
   type CategoryKind
 } from "@/lib/enums";
-import { agencyOptions } from "@/lib/china-regions";
+import { agencyOptions, isNationalAgency } from "@/lib/china-regions";
 import {
   proceduresByCategory,
   suggestHandlingAgency
@@ -216,6 +215,7 @@ export function IntakeSheet({
     control,
     handleSubmit,
     watch,
+    getValues,
     setValue,
     reset,
     formState: { errors }
@@ -325,9 +325,29 @@ export function IntakeSheet({
   function handleProcedureChange(p: ProcedureType) {
     setValue("firstProcedureType", p, { shouldDirty: true });
     setValue("ourStanding", undefined);
-    const currentAgency = watch("firstAgency");
+    const currentAgency = getValues("firstAgency");
     if (!currentAgency || currentAgency.length === 0) {
-      setValue("firstAgency", suggestHandlingAgency(p));
+      const suggested = suggestHandlingAgency(p);
+      if (agencyOptions(getValues("jurisdiction")).includes(suggested)) {
+        setValue("firstAgency", suggested);
+      }
+    }
+  }
+
+  function handleJurisdictionChange(v: string) {
+    setValue("jurisdiction", v, { shouldDirty: true });
+    const cur = getValues("firstAgency");
+    if (isNationalAgency(cur)) {
+      setValue("firstAgency", "", { shouldDirty: true });
+    } else if (cur && !agencyOptions(v).includes(cur)) {
+      setValue("firstAgency", "", { shouldDirty: true });
+    }
+  }
+
+  function handleFirstAgencyChange(v: string) {
+    setValue("firstAgency", v, { shouldDirty: true });
+    if (isNationalAgency(v)) {
+      setValue("jurisdiction", "", { shouldDirty: true });
     }
   }
 
@@ -567,7 +587,7 @@ export function IntakeSheet({
           value={ownerUserId ?? ""}
           onValueChange={(v) => setValue("ownerUserId", v, { shouldDirty: true })}
         >
-          <SelectTrigger className="h-10 bg-background">
+          <SelectTrigger className="h-[34px] bg-white text-[12.5px]">
             <SelectValue placeholder="选择主办律师" />
           </SelectTrigger>
           <SelectContent>
@@ -590,7 +610,7 @@ export function IntakeSheet({
             <Button
               type="button"
               variant="outline"
-              className="h-10 w-full justify-between rounded-sm bg-background font-normal"
+              className="h-[34px] w-full justify-between rounded-sm bg-white text-[12.5px] font-normal"
             >
               <span className="truncate">
                 {coUserIds.length === 0 ? (
@@ -619,7 +639,7 @@ export function IntakeSheet({
                   .map((u) => (
                     <label
                       key={u.id}
-                      className="flex cursor-pointer items-center gap-2 rounded-sm px-2 py-1.5 text-sm transition-colors hover:bg-muted/60"
+                      className="flex min-h-8 cursor-pointer items-center gap-2 rounded-sm px-2 py-1.5 text-[13px] transition-colors hover:bg-muted hover:text-foreground"
                     >
                       <Checkbox
                         checked={coUserIds.includes(u.id)}
@@ -646,7 +666,7 @@ export function IntakeSheet({
           value={watch("barFiling") ?? ""}
           onValueChange={(v) => setValue("barFiling", v as BarFilingType, { shouldDirty: true })}
         >
-          <SelectTrigger className="h-10 bg-background">
+          <SelectTrigger className="h-[34px] bg-white text-[12.5px]">
             <SelectValue placeholder="选择" />
           </SelectTrigger>
           <SelectContent>
@@ -668,7 +688,7 @@ export function IntakeSheet({
           value={watch("counterclaim") ? "yes" : "no"}
           onValueChange={(v) => setValue("counterclaim", v === "yes", { shouldDirty: true })}
         >
-          <SelectTrigger className="h-10 bg-background">
+          <SelectTrigger className="h-[34px] bg-white text-[12.5px]">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
@@ -687,13 +707,13 @@ export function IntakeSheet({
     const clientLabel =
       mode === "counsel" ? "顾问单位" : mode === "project" ? "委托方" : "客户";
     return (
-      <div className="overflow-x-auto rounded-lg border border-border bg-muted/25 p-2">
-        <div className={cn("space-y-2", showStanding ? "min-w-[980px]" : "min-w-[840px]")}>
+      <div className="overflow-x-auto rounded-md border border-[#cbd5e2] bg-[#e9eef5] p-2 shadow-[var(--shadow-inset)]">
+        <div className={cn("space-y-2", showStanding ? "min-w-[880px]" : "min-w-[760px]")}>
           {/* 表头 */}
           <div
             className={cn(
               grid,
-              "rounded-md bg-muted/70 px-2.5 py-2 text-[11px] font-medium text-muted-foreground"
+              "rounded-sm bg-[#dbe3ee] px-2 py-1.5 text-center text-[11px] font-semibold text-muted-foreground [&>span]:text-center"
             )}
           >
             <span>角色</span>
@@ -728,7 +748,7 @@ export function IntakeSheet({
                 errors={errors as never}
                 roleSlot={
                   isClient ? (
-                    <div className="flex h-9 w-full items-center justify-center rounded-sm border border-primary/30 bg-primary/10 text-xs font-medium text-primary">
+                    <div className="flex h-[34px] w-full items-center justify-center rounded-sm border border-primary/30 bg-primary/10 text-[12px] font-semibold text-primary">
                       {clientLabel}
                     </div>
                   ) : (
@@ -738,7 +758,7 @@ export function IntakeSheet({
                         setValue(`parties.${idx}.role`, v as PartyRole, { shouldDirty: true })
                       }
                     >
-                      <SelectTrigger className="h-9 w-full bg-background px-2.5 text-xs">
+                      <SelectTrigger className="h-[34px] w-full bg-white px-2 text-center text-[12px] [&>span]:w-full [&>span]:text-center">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
@@ -767,7 +787,7 @@ export function IntakeSheet({
                           })
                         }
                       >
-                        <SelectTrigger className="h-9 w-full bg-background px-2.5 text-xs">
+                        <SelectTrigger className="h-[34px] w-full bg-white px-2 text-center text-[12px] [&>span]:w-full [&>span]:text-center">
                           <SelectValue placeholder="诉讼地位" />
                         </SelectTrigger>
                         <SelectContent>
@@ -796,7 +816,7 @@ export function IntakeSheet({
                           })
                         }
                       >
-                        <SelectTrigger className="h-9 w-full bg-background px-2.5 text-xs">
+                        <SelectTrigger className="h-[34px] w-full bg-white px-2 text-center text-[12px] [&>span]:w-full [&>span]:text-center">
                           <SelectValue placeholder="诉讼地位" />
                         </SelectTrigger>
                         <SelectContent>
@@ -818,7 +838,7 @@ export function IntakeSheet({
                 nameSlot={
                   isClient ? (
                     <ClientCombobox
-                      triggerClassName="h-9 text-sm"
+                      triggerClassName="h-[34px] rounded-sm bg-white px-2 text-center text-[12px] shadow-[var(--shadow-inset-deep)] hover:bg-muted [&>span]:w-full [&>span]:justify-center [&>span]:text-center"
                       clientId={clientId}
                       clientName={watch("parties.0.name") ?? ""}
                       clientType={
@@ -867,7 +887,7 @@ export function IntakeSheet({
       type="button"
       variant="outline"
       size="sm"
-      className="h-8 gap-1.5"
+      className="h-7 gap-1.5"
       onClick={() =>
         appendParty({
           role: "OPPOSING_PARTY",
@@ -893,25 +913,28 @@ export function IntakeSheet({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="flex max-h-[92vh] w-[92vw] max-w-[780px] flex-col gap-0 overflow-hidden border-border bg-background p-0 shadow-2xl">
-        <DialogHeader className="border-b border-border bg-card px-6 py-4">
-          <div className="pr-8">
-            {/* 标题与「待审批」同行齐平 */}
-            <div className="flex items-center justify-between gap-4">
-              <DialogTitle className="text-xl">新建收案</DialogTitle>
-              <span className="rounded-sm border border-primary/20 bg-primary/10 px-2.5 py-1 text-xs font-medium text-primary">
+      <DialogContent className="flex max-h-[92vh] w-[92vw] max-w-[960px] flex-col gap-0 overflow-hidden border-border bg-card p-0 shadow-[var(--shadow-high)] sm:rounded-xl [&>button]:right-5 [&>button]:top-5 [&>button]:rounded-md [&>button]:bg-transparent [&>button]:text-muted-foreground [&>button]:opacity-100 [&>button:hover]:bg-muted [&>button:hover]:text-foreground">
+        <DialogHeader className="border-b border-border bg-card px-5 pb-4 pt-4">
+          <div className="pr-9">
+            <div className="flex flex-wrap items-start justify-between gap-4">
+              <div className="min-w-0">
+                <DialogTitle className="text-[17px] font-semibold leading-6 tracking-tight text-foreground">
+                  新建收案登记
+                </DialogTitle>
+                <DialogDescription className="mt-0.5 text-[12px] leading-5 text-muted-foreground">
+                  案件从这里开始它的生命周期
+                </DialogDescription>
+              </div>
+              <span className="rounded-full border border-primary/20 bg-primary/10 px-2.5 py-0.5 text-[11px] font-medium text-primary">
                 待审批
               </span>
             </div>
-            <DialogDescription className="mt-1 text-sm">
-              提交后进入&ldquo;待审批&rdquo;，由管理员/主任律师确认后转为正式案件
-            </DialogDescription>
           </div>
         </DialogHeader>
-
         <FormProvider {...methods}>
         <form onSubmit={handleSubmit(onSubmit)} className="flex flex-1 flex-col overflow-hidden">
-          <div className="flex-1 space-y-4 overflow-y-auto bg-muted/35 px-6 py-5">
+          <div className="flex-1 overflow-y-auto bg-[#e6ebf2] px-4 py-4">
+            <div className="mx-auto max-w-[888px] space-y-3.5 [&_button[role=combobox]]:h-[34px] [&_button[role=combobox]]:min-h-0 [&_button[role=combobox]]:rounded-sm [&_button[role=combobox]]:border-[#c6d0dd] [&_button[role=combobox]]:bg-white [&_button[role=combobox]]:text-[12.5px] [&_button[role=combobox]]:shadow-[var(--shadow-inset-deep)] [&_input]:h-[34px] [&_input]:min-h-0 [&_input]:rounded-sm [&_input]:border-[#c6d0dd] [&_input]:bg-white [&_input]:text-[12.5px] [&_textarea]:rounded-sm [&_textarea]:border-[#c6d0dd] [&_textarea]:bg-white [&_textarea]:text-[12.5px]">
             {/* ① 基本信息（共用：类别 / 名称 / 收案 / 经办）*/}
             <Section title="① 基本信息" required>
               {/* 案件类别 | 收案时间（与类别等宽）| 案件名称（剩余）*/}
@@ -921,7 +944,7 @@ export function IntakeSheet({
                     value={category}
                     onValueChange={(v) => setValue("category", v as MatterCategory)}
                   >
-                    <SelectTrigger className="h-10 bg-background">
+                    <SelectTrigger className="h-[34px] bg-white text-[12.5px]">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -934,19 +957,16 @@ export function IntakeSheet({
                   </Select>
                 </Field>
                 <Field label="收案时间">
-                  <div className="relative">
-                    <Input
-                      type="date"
-                      className="h-10"
-                      value={
-                        receivedAt ? new Date(receivedAt).toISOString().split("T")[0] : ""
-                      }
-                      onChange={(e) =>
-                        setValue("receivedAt", new Date(e.target.value), { shouldDirty: true })
-                      }
-                    />
-                    <CalendarDays className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                  </div>
+                  <Input
+                    type="date"
+                    className="h-[34px]"
+                    value={
+                      receivedAt ? new Date(receivedAt).toISOString().split("T")[0] : ""
+                    }
+                    onChange={(e) =>
+                      setValue("receivedAt", new Date(e.target.value), { shouldDirty: true })
+                    }
+                  />
                 </Field>
                 <Field label={nameLabel} error={errors.title?.message}>
                   {(() => {
@@ -954,7 +974,7 @@ export function IntakeSheet({
                     return (
                       <Input
                         placeholder="留空时自动生成"
-                        className="h-10"
+                        className="h-[34px]"
                         {...titleReg}
                         onChange={(e) => {
                           titleReg.onChange(e);
@@ -986,7 +1006,7 @@ export function IntakeSheet({
                       value={firstProcedureType ?? ""}
                       onValueChange={(v) => handleProcedureChange(v as ProcedureType)}
                     >
-                      <SelectTrigger className="h-10 bg-background">
+                      <SelectTrigger className="h-[34px] bg-white text-[12.5px]">
                         <SelectValue placeholder="选择当前程序" />
                       </SelectTrigger>
                       <SelectContent>
@@ -1001,23 +1021,17 @@ export function IntakeSheet({
                   <Field label="管辖地">
                     <JurisdictionSelect
                       value={jurisdiction}
-                      onChange={(v) => {
-                        setValue("jurisdiction", v, { shouldDirty: true });
-                        const cur = watch("firstAgency");
-                        if (cur && !agencyOptions(v).includes(cur)) {
-                          setValue("firstAgency", "", { shouldDirty: true });
-                        }
-                      }}
+                      onChange={handleJurisdictionChange}
                     />
                   </Field>
                   <Field label="争议解决机构">
                     <Select
                       value={watch("firstAgency") || ""}
-                      onValueChange={(v) => setValue("firstAgency", v, { shouldDirty: true })}
+                      onValueChange={handleFirstAgencyChange}
                       disabled={agencyOpts.length === 0}
                     >
-                      <SelectTrigger className="h-10 bg-background">
-                        <SelectValue placeholder={jurisdiction ? "选择机构" : "请先选管辖地"} />
+                      <SelectTrigger className="h-[34px] bg-white text-[12.5px]">
+                        <SelectValue placeholder="选择机构" />
                       </SelectTrigger>
                       <SelectContent>
                         {agencyOpts.map((a) => (
@@ -1069,7 +1083,7 @@ export function IntakeSheet({
                       value={watch("businessType") || ""}
                       onValueChange={(v) => setValue("businessType", v, { shouldDirty: true })}
                     >
-                      <SelectTrigger className="h-10 bg-background">
+                      <SelectTrigger className="h-[34px] bg-white text-[12.5px]">
                         <SelectValue placeholder="选择业务类型" />
                       </SelectTrigger>
                       <SelectContent>
@@ -1154,7 +1168,7 @@ export function IntakeSheet({
                       value={watch("counselType") || ""}
                       onValueChange={(v) => setValue("counselType", v, { shouldDirty: true })}
                     >
-                      <SelectTrigger className="h-10 bg-background">
+                      <SelectTrigger className="h-[34px] bg-white text-[12.5px]">
                         <SelectValue placeholder="选择顾问类型" />
                       </SelectTrigger>
                       <SelectContent>
@@ -1227,7 +1241,7 @@ export function IntakeSheet({
               headerAction={addPartyBtn("添加当事人")}
             >
               {watch("ourStanding") && RECEIVING_STANDINGS.has(watch("ourStanding")!) && (
-                <div className="rounded-md border border-dashed border-primary/40 bg-primary/[0.03] p-3">
+                <div className="rounded-md border border-primary/20 bg-accent p-3">
                   <div className="flex items-start justify-between gap-3">
                     <div className="text-xs text-muted-foreground">
                       <div className="font-medium text-foreground">
@@ -1289,102 +1303,101 @@ export function IntakeSheet({
             <Section title={kind === "counsel" ? "③ 顾问费" : "③ 律师费"}>
               <div
                 className={cn(
-                  "grid grid-cols-1 gap-2",
-                  kind === "counsel" ? "sm:grid-cols-2" : "sm:grid-cols-3"
+                  "grid grid-cols-1 gap-3",
+                  feeType
+                    ? "lg:grid-cols-[minmax(13rem,0.95fr)_minmax(10rem,0.65fr)_minmax(15rem,1fr)_minmax(12rem,0.85fr)]"
+                    : "lg:grid-cols-[minmax(13rem,0.95fr)]"
                 )}
               >
-                {/* 顾问费不含风险代理 */}
-                {FEE_TYPES.filter((t) => kind !== "counsel" || t !== "CONTINGENCY").map((t) => (
-                  <button
-                    key={t}
-                    type="button"
-                    onClick={() => setValue("feeType", t, { shouldDirty: true })}
+                <Field label="收费方式">
+                  <div
                     className={cn(
-                      "rounded-md border px-3 py-2 text-sm transition-colors",
-                      feeType === t
-                        ? "border-primary bg-primary/15 text-primary"
-                        : "border-border bg-background text-muted-foreground hover:border-input"
+                      "grid gap-1.5",
+                      kind === "counsel" ? "grid-cols-2" : "grid-cols-3"
                     )}
                   >
-                    {feeTypeLabel[t]}
-                  </button>
-                ))}
+                    {/* 顾问费不含风险代理 */}
+                    {FEE_TYPES.filter((t) => kind !== "counsel" || t !== "CONTINGENCY").map((t) => (
+                      <button
+                        key={t}
+                        type="button"
+                        onClick={() => setValue("feeType", t, { shouldDirty: true })}
+                        className={cn(
+                          "flex h-[34px] items-center justify-center whitespace-nowrap rounded-sm border px-2 text-[12px] font-medium transition-colors",
+                          feeType === t
+                            ? "border-primary bg-primary/15 text-primary"
+                            : "border-[#c6d0dd] bg-white text-muted-foreground shadow-[var(--shadow-inset-deep)] hover:border-input hover:bg-muted hover:text-foreground"
+                        )}
+                      >
+                        {feeTypeLabel[t]}
+                      </button>
+                    ))}
+                  </div>
+                </Field>
+
+                {feeType && (
+                  <Field
+                    label={
+                      feeType === "TIMED"
+                        ? "小时费率（元/时）"
+                        : feeType === "CONTINGENCY"
+                          ? "基础办案费（元）"
+                          : "总金额（元）"
+                    }
+                    required
+                  >
+                    <Input
+                      type="number"
+                      inputMode="decimal"
+                      step="0.01"
+                      placeholder="0.00"
+                      className="font-mono"
+                      {...register("feeAmount", { valueAsNumber: true })}
+                    />
+                  </Field>
+                )}
+
+                {feeType && (
+                  <Field label={feeType === "TIMED" ? "计费说明 / 结算周期" : "付款节点 / 分期约定"}>
+                    <Input
+                      placeholder={
+                        feeType === "TIMED"
+                          ? "如：按月结算，合伙人 2000 元/时"
+                          : feeType === "CONTINGENCY"
+                            ? "如：基础费签约付清；风险费到账后 7 日内支付"
+                            : "如：签约 50%，开庭前 30%，结案 20%"
+                      }
+                      {...register("feeSchedule")}
+                    />
+                  </Field>
+                )}
+
+                {feeType && feeType !== "CONTINGENCY" && (
+                  <Field label="费用备注（可选）">
+                    <Input placeholder="如：含差旅 / 含诉讼费垫付" {...register("feeNote")} />
+                  </Field>
+                )}
               </div>
 
-              {feeType === "FIXED" && (
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <Field label="总金额（元）" required>
-                    <Input
-                      type="number"
-                      inputMode="decimal"
-                      step="0.01"
-                      placeholder="0.00"
-                      className="font-mono"
-                      {...register("feeAmount", { valueAsNumber: true })}
-                    />
-                  </Field>
-                  <Field label="付款节点 / 分期约定">
-                    <Input
-                      placeholder="如：签约付 50%，开庭前付 30%，结案付 20%"
-                      {...register("feeSchedule")}
-                    />
-                  </Field>
-                </div>
-              )}
-
-              {feeType === "TIMED" && (
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <Field label="小时费率（元 / 小时）" required>
-                    <Input
-                      type="number"
-                      inputMode="decimal"
-                      step="0.01"
-                      placeholder="0.00"
-                      className="font-mono"
-                      {...register("feeAmount", { valueAsNumber: true })}
-                    />
-                  </Field>
-                  <Field label="计费说明 / 结算周期">
-                    <Input
-                      placeholder="如：合伙人 2000 元/时、授薪律师 1000 元/时；按月结算"
-                      {...register("feeSchedule")}
-                    />
-                  </Field>
-                </div>
-              )}
-
               {feeType === "CONTINGENCY" && (
-                <>
-                  <Field label="基础办案费（元）" required>
-                    <Input
-                      type="number"
-                      inputMode="decimal"
-                      step="0.01"
-                      placeholder="0.00"
-                      className="font-mono"
-                      {...register("feeAmount", { valueAsNumber: true })}
-                    />
-                  </Field>
-                  <Field label="风险代理收费方式" required hint="例：判决/调解执行到位后按到账金额 15% 收取；或：以胜诉金额阶梯计提：≤100 万部分 10%，>100 万部分 8%">
+                <div className="grid grid-cols-1 gap-3 lg:grid-cols-[minmax(0,1fr)_minmax(12rem,0.55fr)]">
+                  <Field label="风险代理收费方式" required hint="例：到账后按 15%；或按胜诉金额阶梯计提">
                     <Textarea
-                      rows={3}
+                      rows={2}
                       placeholder="详细描述风险代理收费方式 / 触发条件 / 计提比例"
+                      className="min-h-[68px]"
                       {...register("contingencyTerms")}
                     />
                   </Field>
-                  <Field label="付款节点">
-                    <Input
-                      placeholder="如：基础办案费签约付清；风险费执行到账后 7 日内支付"
-                      {...register("feeSchedule")}
+                  <Field label="费用备注（可选）">
+                    <Textarea
+                      rows={2}
+                      placeholder="如：含差旅 / 含诉讼费垫付"
+                      className="min-h-[68px]"
+                      {...register("feeNote")}
                     />
                   </Field>
-                </>
-              )}
-
-              {feeType && (
-                <Field label="费用备注（可选）">
-                  <Input placeholder="如：含差旅 / 含诉讼费垫付" {...register("feeNote")} />
-                </Field>
+                </div>
               )}
             </Section>
 
@@ -1414,7 +1427,7 @@ export function IntakeSheet({
               }
             >
               {contracts.length === 0 ? (
-                <p className="rounded-md border border-dashed border-border bg-background py-3 text-center text-xs text-muted-foreground">
+                <p className="rounded-md border border-dashed border-[#c6d0dd] bg-[#e9eef5] py-4 text-center text-xs text-muted-foreground">
                   上传委托代理合同、授权委托书等（加密存储，单文件 ≤ 20MB）
                 </p>
               ) : (
@@ -1422,7 +1435,7 @@ export function IntakeSheet({
                   {contracts.map((f, i) => (
                     <li
                       key={i}
-                      className="flex items-center gap-2 rounded-md border border-border bg-background px-3 py-2 text-xs"
+                      className="flex items-center gap-2 rounded-md border border-[#c6d0dd] bg-white px-3 py-2 text-xs shadow-[var(--shadow-inset-deep)]"
                     >
                       <FileText className="h-3.5 w-3.5 text-primary" />
                       <span className="flex-1 truncate">{f.name}</span>
@@ -1443,20 +1456,26 @@ export function IntakeSheet({
                 </ul>
               )}
             </Section>
+            </div>
           </div>
 
-          <DialogFooter className="border-t border-border bg-card px-6 py-4">
+          <DialogFooter className="border-t border-border bg-card px-8 py-4">
+            <div className="mr-auto hidden text-[12px] text-muted-foreground sm:block">
+              完整登记 · 提交后进入审批
+            </div>
             <Button
               type="button"
               variant="outline"
               onClick={() => onOpenChange(false)}
               disabled={isPending}
+              className="h-8 rounded-full px-4 text-[12.5px]"
             >
               取消
             </Button>
-            <Button type="submit" disabled={isPending} className="gap-1.5 px-5">
+            <Button type="submit" disabled={isPending} className="h-8 rounded-full gap-2 px-5 text-[12.5px]">
               {isPending && <Loader2 className="h-4 w-4 animate-spin" />}
               提交审批
+              <ChevronRight className="h-4 w-4" strokeWidth={2} />
             </Button>
           </DialogFooter>
         </form>
@@ -1505,39 +1524,21 @@ function Section({
   headerAction?: React.ReactNode;
   children: React.ReactNode;
 }) {
-  // 把"① 案件类别"形式拆成 罗马数字 + 标题
-  const match = title.match(/^([①-⑨])\s+(.+)$/);
-  const map: Record<string, string> = {
-    "①": "I",
-    "②": "II",
-    "③": "III",
-    "④": "IV",
-    "⑤": "V",
-    "⑥": "VI",
-    "⑦": "VII",
-    "⑧": "VIII",
-    "⑨": "IX"
-  };
-  const roman = match ? map[match[1]] : null;
-  const text = match ? match[2] : title;
+  const text = title.replace(/^[①-⑨]\s+/, "");
 
   return (
-    <section className="space-y-4 rounded-lg border border-border bg-card p-4 shadow-ll-low">
-      <div className="flex items-center justify-between gap-3">
-        <h3 className="flex items-center gap-2.5">
-          {roman && (
-            <span className="flex h-5 min-w-5 items-center justify-center rounded-sm bg-primary/10 px-1.5 text-[0.68rem] font-semibold text-primary">
-              {roman}
-            </span>
-          )}
-          <span className="text-base font-semibold tracking-tight">
+    <section className="overflow-hidden rounded-md border border-[#cbd5e2] bg-[#f2f5f9] shadow-[var(--shadow-low),var(--shadow-inset)]">
+      <div className="flex items-center justify-between gap-3 px-4 pt-4">
+        <h3 className="flex items-center gap-2 text-[12px]">
+          <span className="h-3 w-[3px] rounded-full bg-primary" />
+          <span className="text-[12px] font-semibold leading-5 text-muted-foreground">
             {text}
             {required && <span className="ml-1 text-destructive">*</span>}
           </span>
         </h3>
         {headerAction}
       </div>
-      <div className="space-y-3.5">{children}</div>
+      <div className="space-y-3 p-4">{children}</div>
     </section>
   );
 }
@@ -1559,12 +1560,12 @@ function Field({
 }) {
   return (
     <div className={cn("space-y-1.5", className)}>
-      <Label className="flex items-center gap-1 text-[13px] font-medium text-foreground">
+      <Label className="flex items-center gap-1 text-[12px] font-medium leading-4 text-muted-foreground">
         {label}
         {required && <span className="text-destructive">*</span>}
       </Label>
       {children}
-      {hint && !error && <p className="text-[11px] text-muted-foreground">{hint}</p>}
+      {hint && !error && <p className="text-[11px] leading-4 text-muted-foreground">{hint}</p>}
       {error && <p className="text-xs text-destructive">{error}</p>}
     </div>
   );

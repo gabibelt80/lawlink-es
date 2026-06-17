@@ -257,9 +257,9 @@ export function ProcedureDocumentsSection({
   }
 
   return (
-    <section className="h-full rounded-lg border border-border bg-card">
-      <header className="flex items-center justify-between gap-2 border-b border-border px-4 py-2">
-        <div className="flex items-center gap-3">
+    <section className="rounded-lg border border-border bg-card">
+      <header className="flex flex-wrap items-center justify-between gap-2 border-b border-border px-4 py-2">
+        <div className="flex min-w-0 flex-1 flex-wrap items-center gap-2">
           <span className="flex items-center gap-1.5 text-[13px] font-medium whitespace-nowrap">
             案件材料
             <span className="ml-1 font-mono text-[11px] text-muted-foreground tabular">
@@ -267,7 +267,7 @@ export function ProcedureDocumentsSection({
             </span>
           </span>
           {/* 分类按钮组（参考用印审批） */}
-          <div className="flex items-center gap-0.5 rounded-md border border-border bg-background p-0.5">
+          <div className="flex min-w-0 max-w-full items-center gap-0.5 overflow-x-auto rounded-md border border-border bg-background p-0.5">
             <button
               type="button"
               onClick={() => setFilter(null)}

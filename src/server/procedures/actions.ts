@@ -6,6 +6,7 @@ import { requireSession } from "@/lib/auth/session";
 import { audit } from "@/server/audit";
 import { assertMatterWritable } from "@/lib/archive/guard";
 import { assertCanAccessMatter, assertCanLeadMatter } from "@/lib/permissions";
+import { normalizeJurisdictionForAgency } from "@/lib/china-regions";
 import {
   procedureCreateSchema,
   procedureUpdateSchema,
@@ -47,7 +48,7 @@ export async function addProcedure(input: ProcedureCreateInput) {
       engagement: data.engagement,
       order: (lastOrder?.order ?? 0) + 1,
       caseNumber: data.caseNumber || null,
-      jurisdiction: data.jurisdiction || null,
+      jurisdiction: normalizeJurisdictionForAgency(data.handlingAgency, data.jurisdiction),
       handlingAgency: data.handlingAgency || null,
       panel: data.panel || null,
       handler: data.handler || null,
@@ -88,15 +89,25 @@ export async function updateProcedure(input: ProcedureUpdateInput) {
 
   const existing = await prisma.matterProcedure.findUnique({
     where: { id },
-    select: { matterId: true }
+    select: { matterId: true, jurisdiction: true, handlingAgency: true }
   });
   if (!existing) throw new Error("程序不存在");
   await assertCanAccessMatter(session.user.id, session.user.role, existing.matterId);
   await assertMatterWritable(existing.matterId);
 
+  const normalizedRest = {
+    ...rest
+  };
+  if (rest.jurisdiction !== undefined || rest.handlingAgency !== undefined) {
+    normalizedRest.jurisdiction = normalizeJurisdictionForAgency(
+      rest.handlingAgency ?? existing.handlingAgency,
+      rest.jurisdiction ?? existing.jurisdiction
+    ) ?? "";
+  }
+
   const updated = await prisma.matterProcedure.update({
     where: { id },
-    data: emptyToNull(rest)
+    data: emptyToNull(normalizedRest)
   });
 
   await audit({

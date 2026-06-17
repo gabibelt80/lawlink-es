@@ -302,7 +302,7 @@ export function ClientSheet({ open, onOpenChange, editingClient }: Props) {
                                 type="button"
                                 onClick={() => handlePickCandidate(c)}
                                 disabled={aiFilling}
-                                className="w-full rounded border border-border bg-background px-2 py-1.5 text-left text-xs hover:border-primary disabled:opacity-50"
+                                className="w-full rounded border border-border bg-background px-2 py-1.5 text-left text-xs transition-colors hover:border-input hover:bg-muted hover:text-foreground disabled:opacity-50"
                               >
                                 <div className="font-medium">{c.name}</div>
                                 <div className="font-mono text-[10px] text-muted-foreground">

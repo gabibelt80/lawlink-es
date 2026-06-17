@@ -14,15 +14,11 @@ import { decryptBuffer } from "@/lib/storage/crypto";
 import { aiChat, AiNotConfiguredError } from "@/lib/ai/client";
 import {
   parseReviewItems,
-  type ReviewItem,
-  type ReviewType,
-  type ReviewSeverity
+  type ReviewItem
 } from "@/lib/ai/review-parser";
 import { selectReviewPrompt, reviewPromptLabel } from "@/lib/ai/review-prompts";
 import { extractText, getDocumentProxy } from "unpdf";
 import mammoth from "mammoth";
-
-export type { ReviewItem, ReviewType, ReviewSeverity };
 
 export type ReviewResult = {
   documentName: string;

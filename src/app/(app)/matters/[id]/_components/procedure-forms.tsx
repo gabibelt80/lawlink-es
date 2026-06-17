@@ -44,7 +44,7 @@ import {
   proceduresByCategory,
   suggestHandlingAgency
 } from "@/lib/procedures-by-category";
-import { agencyOptions } from "@/lib/china-regions";
+import { agencyOptions, isNationalAgency } from "@/lib/china-regions";
 import { JurisdictionSelect } from "@/app/(app)/intakes/_components/jurisdiction-select";
 import { cn } from "@/lib/utils";
 
@@ -77,6 +77,7 @@ export function AddProcedureSheet({
     register,
     handleSubmit,
     watch,
+    getValues,
     setValue,
     reset,
     formState: { errors }
@@ -103,6 +104,23 @@ export function AddProcedureSheet({
   const isExternalLead = watch("isExternalLead");
   const jurisdiction = watch("jurisdiction") ?? "";
   const agencyOpts = useMemo(() => agencyOptions(jurisdiction), [jurisdiction]);
+
+  function handleJurisdictionChange(v: string) {
+    setValue("jurisdiction", v);
+    const cur = getValues("handlingAgency");
+    if (isNationalAgency(cur)) {
+      setValue("handlingAgency", "");
+    } else if (cur && !agencyOptions(v).includes(cur)) {
+      setValue("handlingAgency", "");
+    }
+  }
+
+  function handleHandlingAgencyChange(v: string) {
+    setValue("handlingAgency", v);
+    if (isNationalAgency(v)) {
+      setValue("jurisdiction", "");
+    }
+  }
 
   function onSubmit(values: ProcedureCreateInput) {
     startTransition(async () => {
@@ -144,7 +162,7 @@ export function AddProcedureSheet({
                       "rounded-md border px-2.5 py-1 text-xs transition-colors",
                       procedureType === p
                         ? "border-primary bg-primary/15 text-primary"
-                        : "border-border bg-background text-muted-foreground hover:border-input"
+                        : "border-border bg-background text-muted-foreground hover:border-input hover:bg-muted hover:text-foreground"
                     )}
                   >
                     {procedureTypeLabel[p]}
@@ -202,23 +220,17 @@ export function AddProcedureSheet({
               <Field label="管辖地">
                 <JurisdictionSelect
                   value={jurisdiction}
-                  onChange={(v) => {
-                    setValue("jurisdiction", v);
-                    const cur = watch("handlingAgency");
-                    if (cur && !agencyOptions(v).includes(cur)) {
-                      setValue("handlingAgency", "");
-                    }
-                  }}
+                  onChange={handleJurisdictionChange}
                 />
               </Field>
               <Field label="办理机关">
                 <Select
                   value={watch("handlingAgency") || ""}
-                  onValueChange={(v) => setValue("handlingAgency", v)}
+                  onValueChange={handleHandlingAgencyChange}
                   disabled={agencyOpts.length === 0}
                 >
                   <SelectTrigger className="h-9 bg-background">
-                    <SelectValue placeholder={jurisdiction ? "选择机构" : "请先选管辖地"} />
+                    <SelectValue placeholder="选择机构" />
                   </SelectTrigger>
                   <SelectContent>
                     {agencyOpts.map((a) => (
