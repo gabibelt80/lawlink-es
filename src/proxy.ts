@@ -17,9 +17,9 @@ export const config = {
      *   /login            登录页本身
      *   /api/auth         NextAuth 路由
      *   /api/health       健康检查
-     *   /_next/*          Next 内部资源
+     *   /_next/*          Next 内部资源（含 HMR websocket）
      *   静态文件（.png .ico .svg 等）
      */
-    "/((?!login|api/auth|api/health|_next/static|_next/image|favicon.ico|.*\\.(?:png|jpg|jpeg|svg|gif|webp|ico)).*)"
+    "/((?!login|api/auth|api/health|_next|favicon.ico|.*\\.(?:png|jpg|jpeg|svg|gif|webp|ico)).*)"
   ]
 };

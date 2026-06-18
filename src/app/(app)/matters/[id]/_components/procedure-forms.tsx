@@ -1,10 +1,10 @@
 "use client";
 
-import { useTransition, useRef, useState, useEffect, useMemo } from "react";
-import { useForm } from "react-hook-form";
+import { useTransition, useRef, useState, useEffect, useMemo, useCallback } from "react";
+import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
-import { Loader2, Upload, ScanText } from "lucide-react";
+import { Loader2, ScanText } from "lucide-react";
 import type { MatterCategory, ProcedureType } from "@prisma/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -40,15 +40,25 @@ import {
 } from "@/server/procedures/actions";
 import { parseSummons } from "@/server/ai/parse-summons";
 import { procedureTypeLabel } from "@/lib/enums";
-import {
-  proceduresByCategory,
-  suggestHandlingAgency
-} from "@/lib/procedures-by-category";
+import { proceduresByCategory } from "@/lib/procedures-by-category";
 import { agencyOptions, isNationalAgency } from "@/lib/china-regions";
 import { JurisdictionSelect } from "@/app/(app)/intakes/_components/jurisdiction-select";
 import { cn } from "@/lib/utils";
 
 // ============ AddProcedureSheet ============
+
+const CN_NUM: Record<number, string> = {
+  1: "一",
+  2: "二",
+  3: "三",
+  4: "四",
+  5: "五",
+  6: "六",
+  7: "七",
+  8: "八",
+  9: "九",
+  10: "十"
+};
 
 export function AddProcedureSheet({
   open,
@@ -75,8 +85,8 @@ export function AddProcedureSheet({
 
   const {
     register,
+    control,
     handleSubmit,
-    watch,
     getValues,
     setValue,
     reset,
@@ -99,10 +109,11 @@ export function AddProcedureSheet({
     }
   });
 
-  const procedureType = watch("type");
-  const leadLawyerId = watch("leadLawyerId");
-  const isExternalLead = watch("isExternalLead");
-  const jurisdiction = watch("jurisdiction") ?? "";
+  const procedureType = useWatch({ control, name: "type" });
+  const leadLawyerId = useWatch({ control, name: "leadLawyerId" });
+  const isExternalLead = useWatch({ control, name: "isExternalLead" });
+  const jurisdiction = useWatch({ control, name: "jurisdiction" }) ?? "";
+  const handlingAgency = useWatch({ control, name: "handlingAgency" }) ?? "";
   const agencyOpts = useMemo(() => agencyOptions(jurisdiction), [jurisdiction]);
 
   function handleJurisdictionChange(v: string) {
@@ -225,7 +236,7 @@ export function AddProcedureSheet({
               </Field>
               <Field label="办理机关">
                 <Select
-                  value={watch("handlingAgency") || ""}
+                  value={handlingAgency}
                   onValueChange={handleHandlingAgencyChange}
                   disabled={agencyOpts.length === 0}
                 >
@@ -314,9 +325,9 @@ export function AddDeadlineDialog({
 
   const {
     register,
+    control,
     handleSubmit,
     setValue,
-    watch,
     reset,
     formState: { errors }
   } = useForm<DeadlineCreateInput>({
@@ -330,6 +341,8 @@ export function AddDeadlineDialog({
       remindDays: 3
     }
   });
+  const procedureId = useWatch({ control, name: "procedureId" });
+  const category = useWatch({ control, name: "category" });
 
   // 打开时把所处程序默认值同步为当前选中程序
   useEffect(() => {
@@ -362,7 +375,7 @@ export function AddDeadlineDialog({
           <div className="flex-1 space-y-3 overflow-y-auto px-6 py-5">
             <Field label="所处程序" required>
               <Select
-                value={watch("procedureId") || undefined}
+                value={procedureId || undefined}
                 onValueChange={(v) => setValue("procedureId", v)}
               >
                 <SelectTrigger>
@@ -387,7 +400,7 @@ export function AddDeadlineDialog({
 
             <Field label="期限类型">
               <Select
-                value={watch("category")}
+                value={category}
                 onValueChange={(v) =>
                   setValue("category", v as DeadlineCreateInput["category"])
                 }
@@ -471,10 +484,10 @@ export function AddHearingDialog({
 
   const {
     register,
+    control,
     handleSubmit,
     reset,
     setValue,
-    watch,
     formState: { errors }
   } = useForm<HearingCreateInput>({
     resolver: zodResolver(hearingCreateSchema),
@@ -491,24 +504,22 @@ export function AddHearingDialog({
     }
   });
 
-  const procedureId = watch("procedureId");
+  const hearingProcedureId = useWatch({ control, name: "procedureId" });
 
-  const CN_NUM: Record<number, string> = { 1: "一", 2: "二", 3: "三", 4: "四", 5: "五", 6: "六", 7: "七", 8: "八", 9: "九", 10: "十" };
-
-  function autoTitle(procId: string) {
+  const autoTitle = useCallback((procId: string) => {
     const proc = procedures.find(p => p.id === procId);
     if (!proc) return;
     const count = (hearingCounts?.[procId] ?? 0) + 1;
     const numStr = CN_NUM[count] ?? String(count);
     setValue("title", `${proc.label}第${numStr}次开庭`);
-  }
+  }, [hearingCounts, procedures, setValue]);
 
   // 打开时同步默认程序 + 自动生成主题
   useEffect(() => {
     if (!open) return;
     setValue("procedureId", defaultProcedureId);
     autoTitle(defaultProcedureId);
-  }, [open, defaultProcedureId]);
+  }, [open, defaultProcedureId, setValue, autoTitle]);
 
   function handleSummonsUpload(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
@@ -607,7 +618,7 @@ export function AddHearingDialog({
             <div className="grid grid-cols-2 gap-3">
               <Field label="所处程序" required>
                 <Select
-                  value={watch("procedureId") || undefined}
+                  value={hearingProcedureId || undefined}
                   onValueChange={(v) => {
                     setValue("procedureId", v);
                     autoTitle(v);
@@ -628,7 +639,7 @@ export function AddHearingDialog({
               <Field label="审理法院">
                 <Input
                   readOnly
-                  value={proceduresDetail?.[watch("procedureId")]?.handlingAgency ?? "—"}
+                  value={proceduresDetail?.[hearingProcedureId]?.handlingAgency ?? "—"}
                   className="bg-muted/50 text-muted-foreground"
                 />
               </Field>

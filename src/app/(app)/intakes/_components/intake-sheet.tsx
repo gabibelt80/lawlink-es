@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useTransition, useRef, useMemo, useEffect } from "react";
-import { useForm, useFieldArray, FormProvider } from "react-hook-form";
+import { useForm, useFieldArray, FormProvider, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
@@ -83,6 +83,7 @@ import { cn } from "@/lib/utils";
 import { CauseCombobox } from "@/app/(app)/matters/_components/cause-combobox";
 import { CauseAiManualDialog } from "@/app/(app)/matters/_components/cause-ai-manual-dialog";
 import type { ClientOption } from "@/app/(app)/matters/_components/matters-view";
+import { readFormPath } from "@/lib/form-path";
 import { ClientCombobox } from "./client-combobox";
 import { CauseRecommendationDialog } from "./cause-recommendation-dialog";
 import { JurisdictionSelect } from "./jurisdiction-select";
@@ -214,7 +215,6 @@ export function IntakeSheet({
     register,
     control,
     handleSubmit,
-    watch,
     getValues,
     setValue,
     reset,
@@ -226,12 +226,15 @@ export function IntakeSheet({
     name: "parties"
   });
 
-  const category = watch("category");
-  const firstProcedureType = watch("firstProcedureType");
+  const watchedValues = useWatch({ control });
+  const watch = <T = any,>(path: string) => readFormPath<T>(watchedValues, path);
+
+  const category = watch<MatterCategory>("category") ?? "CIVIL_COMMERCIAL";
+  const firstProcedureType = watch<ProcedureType | undefined>("firstProcedureType");
   const clientId = watch("clientId") ?? "";
   const feeType = watch("feeType");
   const ownerUserId = watch("ownerUserId");
-  const coUserIds = watch("coUserIds");
+  const coUserIds = watch<string[]>("coUserIds") ?? [];
   const receivedAt = watch("receivedAt");
   const jurisdiction = watch("jurisdiction") ?? "";
   // 争议解决机构按管辖地匹配
