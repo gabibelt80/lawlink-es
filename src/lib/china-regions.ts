@@ -1,5 +1,6 @@
 // v0.30 管辖地数据 + 争议解决机构匹配
 // 数据来自 china-division（全国省/市/区县），法院/仲裁机构名称按命名规则生成。
+import type { ProcedureType } from "@prisma/client";
 import pca from "china-division/dist/pca.json";
 
 type Pca = Record<string, Record<string, string[]>>;
@@ -34,6 +35,33 @@ export function parseJurisdiction(value?: string | null): {
 export function isNationalAgency(value?: string | null): boolean {
   const agency = value?.trim();
   return NATIONAL_AGENCY_OPTIONS.some((item) => item === agency);
+}
+
+export function isCourtAgency(value?: string | null): boolean {
+  const agency = value?.trim();
+  return Boolean(agency && /人民法院|法院/.test(agency));
+}
+
+export function isCommercialArbitrationProcedure(type?: ProcedureType | null): boolean {
+  return type === "COMMERCIAL_ARBITRATION";
+}
+
+export function isAgencyAllowedForProcedure(
+  agency?: string | null,
+  procedureType?: ProcedureType | null
+): boolean {
+  if (!agency?.trim()) return true;
+  if (isCommercialArbitrationProcedure(procedureType)) return !isCourtAgency(agency);
+  return true;
+}
+
+export function assertAgencyAllowedForProcedure(
+  agency?: string | null,
+  procedureType?: ProcedureType | null
+) {
+  if (!isAgencyAllowedForProcedure(agency, procedureType)) {
+    throw new Error("商事仲裁程序的管辖机构应为仲裁机构，不能选择法院；撤裁、执行等后续程序可选择法院。");
+  }
 }
 
 export function normalizeJurisdictionForAgency(
@@ -81,4 +109,15 @@ export function agencyOptions(value?: string | null): string[] {
 
   // 去重保序
   return Array.from(new Set(out.filter(Boolean)));
+}
+
+export function agencyOptionsForProcedure(
+  value?: string | null,
+  procedureType?: ProcedureType | null
+): string[] {
+  const options = agencyOptions(value);
+  if (isCommercialArbitrationProcedure(procedureType)) {
+    return options.filter((agency) => !isCourtAgency(agency));
+  }
+  return options;
 }

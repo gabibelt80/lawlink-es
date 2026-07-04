@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useMemo, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Loader2, Pencil, Plus, Users, X } from "lucide-react";
 import type {
@@ -34,7 +34,11 @@ import { cn, formatDate } from "@/lib/utils";
 import { updateProcedureInfo } from "@/server/matters/actions";
 import { InfoRow, Pair } from "./info-panel";
 import { JurisdictionSelect } from "@/app/(app)/intakes/_components/jurisdiction-select";
-import { agencyOptions, isNationalAgency } from "@/lib/china-regions";
+import {
+  agencyOptionsForProcedure,
+  isAgencyAllowedForProcedure,
+  isNationalAgency
+} from "@/lib/china-regions";
 
 // v0.45: 程序类型到「XX信息」的映射（覆盖所有程序类型）
 const PROC_INFO_LABEL: Record<string, string> = {
@@ -732,13 +736,21 @@ function EditDialog({
   const [newProcedureParties, setNewProcedureParties] = useState<NewProcedurePartyDraft[]>([]);
   const [showNewPartyForm, setShowNewPartyForm] = useState(false);
   const [pending, startTransition] = useTransition();
+  const agencyOptionsForCurrentProcedure = useMemo(
+    () => agencyOptionsForProcedure(form.jurisdiction, proc.type),
+    [form.jurisdiction, proc.type]
+  );
   const set = (k: keyof typeof form, v: string) => setForm((f) => ({ ...f, [k]: v }));
 
   function handleJurisdictionChange(value: string) {
     setForm((f) => ({
       ...f,
       jurisdiction: value,
-      handlingAgency: isNationalAgency(f.handlingAgency) ? "" : f.handlingAgency
+      handlingAgency:
+        isNationalAgency(f.handlingAgency) ||
+        !isAgencyAllowedForProcedure(f.handlingAgency, proc.type)
+          ? ""
+          : f.handlingAgency
     }));
   }
 
@@ -868,6 +880,12 @@ function EditDialog({
       toast.error("新增当事人需至少选择一个程序地位");
       return;
     }
+    if (!isAgencyAllowedForProcedure(form.handlingAgency, proc.type)) {
+      toast.error("商事仲裁程序不能选择法院作为管辖机构", {
+        description: "撤裁、强制执行、不予执行审查等后续程序仍可选择法院。"
+      });
+      return;
+    }
     startTransition(async () => {
       try {
         await updateProcedureInfo({
@@ -935,7 +953,7 @@ function EditDialog({
                   className={editorControlClass}
                 />
                 <datalist id={`proc-agency-${proc.id}`}>
-                  {agencyOptions(form.jurisdiction).map((a) => (
+                  {agencyOptionsForCurrentProcedure.map((a) => (
                     <option key={a} value={a} />
                   ))}
                 </datalist>

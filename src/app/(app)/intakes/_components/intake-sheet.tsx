@@ -60,7 +60,11 @@ import {
   COUNSEL_TYPES,
   type CategoryKind
 } from "@/lib/enums";
-import { agencyOptions, isNationalAgency } from "@/lib/china-regions";
+import {
+  agencyOptionsForProcedure,
+  isAgencyAllowedForProcedure,
+  isNationalAgency
+} from "@/lib/china-regions";
 import {
   proceduresByCategory,
   suggestHandlingAgency
@@ -238,7 +242,10 @@ export function IntakeSheet({
   const receivedAt = watch("receivedAt");
   const jurisdiction = watch("jurisdiction") ?? "";
   // 争议解决机构按管辖地匹配
-  const agencyOpts = useMemo(() => agencyOptions(jurisdiction), [jurisdiction]);
+  const agencyOpts = useMemo(
+    () => agencyOptionsForProcedure(jurisdiction, firstProcedureType),
+    [jurisdiction, firstProcedureType]
+  );
 
   // v0.31: 案件类别决定表单结构（诉讼/仲裁 vs 非诉/专项 vs 顾问）
   const kind: CategoryKind = matterCategoryKind(category);
@@ -328,10 +335,16 @@ export function IntakeSheet({
   function handleProcedureChange(p: ProcedureType) {
     setValue("firstProcedureType", p, { shouldDirty: true });
     setValue("ourStanding", undefined);
-    const currentAgency = getValues("firstAgency");
+    // 机构可自由手输（专门法院、异地仲裁委不在生成列表里），
+    // 只在新程序下不合法时清空（商事仲裁下选了法院），不按"是否在列表中"清
+    let currentAgency = getValues("firstAgency");
+    if (currentAgency && !isAgencyAllowedForProcedure(currentAgency, p)) {
+      setValue("firstAgency", "", { shouldDirty: true });
+      currentAgency = "";
+    }
     if (!currentAgency || currentAgency.length === 0) {
       const suggested = suggestHandlingAgency(p);
-      if (agencyOptions(getValues("jurisdiction")).includes(suggested)) {
+      if (agencyOptionsForProcedure(getValues("jurisdiction"), p).includes(suggested)) {
         setValue("firstAgency", suggested);
       }
     }
@@ -342,7 +355,7 @@ export function IntakeSheet({
     const cur = getValues("firstAgency");
     if (isNationalAgency(cur)) {
       setValue("firstAgency", "", { shouldDirty: true });
-    } else if (cur && !agencyOptions(v).includes(cur)) {
+    } else if (cur && !agencyOptionsForProcedure(v, firstProcedureType).includes(cur)) {
       setValue("firstAgency", "", { shouldDirty: true });
     }
   }
@@ -497,7 +510,7 @@ export function IntakeSheet({
       if (res.court) situationParts.push(`管辖：${res.court}`);
       const situationText = situationParts.join("\n");
       if (situationText && !watch("causeId")) {
-        triggerCauseRecommendation(category, situationText);
+        triggerCauseRecommendation(category, situationText, firstProcedureType);
       }
     } catch (err) {
       toast.error("识别失败", {
@@ -511,7 +524,8 @@ export function IntakeSheet({
 
   async function triggerCauseRecommendation(
     cat: MatterCategory,
-    situation: string
+    situation: string,
+    procType?: ProcedureType | null
   ) {
     setAiRecSituation({ category: cat, text: situation });
     setAiRecOpen(true);
@@ -519,7 +533,7 @@ export function IntakeSheet({
     setAiRecError(null);
     setAiRecCandidates([]);
     try {
-      const list = await recommendCause({ category: cat, situation });
+      const list = await recommendCause({ category: cat, procedureType: procType, situation });
       setAiRecCandidates(list);
     } catch (err) {
       setAiRecError(err instanceof Error ? err.message : "AI 推荐失败");
@@ -537,7 +551,7 @@ export function IntakeSheet({
 
   function handleAiRecRetry() {
     if (aiRecSituation) {
-      triggerCauseRecommendation(aiRecSituation.category, aiRecSituation.text);
+      triggerCauseRecommendation(aiRecSituation.category, aiRecSituation.text, firstProcedureType);
     }
   }
 
@@ -997,6 +1011,7 @@ export function IntakeSheet({
                   <Field label="案由" required>
                     <CauseCombobox
                       category={category}
+                      procedureType={firstProcedureType}
                       value={watch("causeId") || ""}
                       onChange={(id, name) => {
                         setValue("causeId", id, { shouldDirty: true });
@@ -1497,6 +1512,7 @@ export function IntakeSheet({
         open={aiManualOpen}
         onOpenChange={setAiManualOpen}
         category={category}
+        procedureType={firstProcedureType}
         contextHints={(() => {
           const lines: string[] = [];
           const cf = watch("causeFreeText");

@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo, useTransition } from "react";
 import { ChevronRight, ChevronsUpDown, Loader2, X } from "lucide-react";
-import type { MatterCategory } from "@prisma/client";
+import type { MatterCategory, ProcedureType } from "@prisma/client";
 import { Button } from "@/components/ui/button";
 import {
   Popover,
@@ -19,6 +19,7 @@ type Props = {
   value: string;
   onChange: (id: string, name: string) => void;
   category: MatterCategory;
+  procedureType?: ProcedureType | null;
   disabled?: boolean;
   triggerClassName?: string;
 };
@@ -31,7 +32,14 @@ type Props = {
  * - 列宽收窄，弹层随列数增长，避免一打开就铺满整页
  * - 名称过长截断，hover 显示全名
  */
-export function CauseCombobox({ value, onChange, category, disabled, triggerClassName }: Props) {
+export function CauseCombobox({
+  value,
+  onChange,
+  category,
+  procedureType,
+  disabled,
+  triggerClassName
+}: Props) {
   const [open, setOpen] = useState(false);
   const [allNodes, setAllNodes] = useState<Node[]>([]);
   const [isPending, startTransition] = useTransition();
@@ -47,7 +55,7 @@ export function CauseCombobox({ value, onChange, category, disabled, triggerClas
     setOpen(o);
     if (o && allNodes.length === 0) {
       startTransition(async () => {
-        const data = await searchCauses({ category, limit: 2000 });
+        const data = await searchCauses({ category, procedureType, limit: 2000 });
         setAllNodes(data);
       });
     }
@@ -59,7 +67,7 @@ export function CauseCombobox({ value, onChange, category, disabled, triggerClas
     }
   }
 
-  // category 变化时重置
+  // category / procedureType 变化时重置
   useEffect(() => {
     setAllNodes([]);
     if (value) {
@@ -67,7 +75,7 @@ export function CauseCombobox({ value, onChange, category, disabled, triggerClas
       setSelectedName("");
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [category]);
+  }, [category, procedureType]);
 
   // 同步显示已选名字 / l2 路径
   useEffect(() => {

@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest";
 import {
   agencyOptions,
+  agencyOptionsForProcedure,
+  isAgencyAllowedForProcedure,
   isNationalAgency,
   normalizeJurisdictionForAgency
 } from "@/lib/china-regions";
@@ -18,6 +20,20 @@ describe("agencyOptions", () => {
     expect(options).toContain("浙江省高级人民法院");
     expect(options).toContain("最高人民法院");
     expect(options).toContain("杭州仲裁委员会");
+  });
+
+  it("商事仲裁程序只提供仲裁机构，后续执行程序仍可选择法院", () => {
+    const arbitrationOptions = agencyOptionsForProcedure(
+      "浙江省/杭州市/西湖区",
+      "COMMERCIAL_ARBITRATION"
+    );
+    expect(arbitrationOptions).toEqual(["杭州仲裁委员会"]);
+    expect(isAgencyAllowedForProcedure("西湖区人民法院", "COMMERCIAL_ARBITRATION")).toBe(false);
+    expect(isAgencyAllowedForProcedure("杭州仲裁委员会", "COMMERCIAL_ARBITRATION")).toBe(true);
+
+    const enforcementOptions = agencyOptionsForProcedure("浙江省/杭州市/西湖区", "ENFORCEMENT");
+    expect(enforcementOptions).toContain("西湖区人民法院");
+    expect(enforcementOptions).toContain("杭州仲裁委员会");
   });
 });
 

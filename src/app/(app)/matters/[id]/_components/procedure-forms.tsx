@@ -41,7 +41,11 @@ import {
 import { parseSummons } from "@/server/ai/parse-summons";
 import { procedureTypeLabel } from "@/lib/enums";
 import { proceduresByCategory } from "@/lib/procedures-by-category";
-import { agencyOptions, isNationalAgency } from "@/lib/china-regions";
+import {
+  agencyOptionsForProcedure,
+  isAgencyAllowedForProcedure,
+  isNationalAgency
+} from "@/lib/china-regions";
 import { JurisdictionSelect } from "@/app/(app)/intakes/_components/jurisdiction-select";
 import { cn } from "@/lib/utils";
 
@@ -114,14 +118,26 @@ export function AddProcedureSheet({
   const isExternalLead = useWatch({ control, name: "isExternalLead" });
   const jurisdiction = useWatch({ control, name: "jurisdiction" }) ?? "";
   const handlingAgency = useWatch({ control, name: "handlingAgency" }) ?? "";
-  const agencyOpts = useMemo(() => agencyOptions(jurisdiction), [jurisdiction]);
+  const agencyOpts = useMemo(
+    () => agencyOptionsForProcedure(jurisdiction, procedureType),
+    [jurisdiction, procedureType]
+  );
+
+  function handleProcedureTypeChange(p: ProcedureType) {
+    setValue("type", p);
+    // 机构可自由手输，只在新程序下不合法时清空（商事仲裁下选了法院）
+    const cur = getValues("handlingAgency");
+    if (cur && !isAgencyAllowedForProcedure(cur, p)) {
+      setValue("handlingAgency", "");
+    }
+  }
 
   function handleJurisdictionChange(v: string) {
     setValue("jurisdiction", v);
     const cur = getValues("handlingAgency");
     if (isNationalAgency(cur)) {
       setValue("handlingAgency", "");
-    } else if (cur && !agencyOptions(v).includes(cur)) {
+    } else if (cur && !agencyOptionsForProcedure(v, getValues("type")).includes(cur)) {
       setValue("handlingAgency", "");
     }
   }
@@ -168,7 +184,7 @@ export function AddProcedureSheet({
                   <button
                     key={p}
                     type="button"
-                    onClick={() => setValue("type", p as ProcedureType)}
+                    onClick={() => handleProcedureTypeChange(p as ProcedureType)}
                     className={cn(
                       "rounded-md border px-2.5 py-1 text-xs transition-colors",
                       procedureType === p

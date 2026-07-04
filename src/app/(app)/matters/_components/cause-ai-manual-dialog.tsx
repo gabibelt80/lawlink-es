@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Sparkles, Loader2, X } from "lucide-react";
-import type { MatterCategory } from "@prisma/client";
+import type { MatterCategory, ProcedureType } from "@prisma/client";
 import {
   Dialog,
   DialogContent,
@@ -25,6 +25,7 @@ type Props = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   category: MatterCategory;
+  procedureType?: ProcedureType | null;
   /** 用现有字段 tab 的预填内容（父组件按场景拼好） */
   contextHints?: string;
   onSelect: (causeId: string, causeName: string) => void;
@@ -40,6 +41,7 @@ export function CauseAiManualDialog({
   open,
   onOpenChange,
   category,
+  procedureType,
   contextHints,
   onSelect
 }: Props) {
@@ -74,7 +76,7 @@ export function CauseAiManualDialog({
     setError(null);
     setCandidates([]);
     try {
-      const list = await recommendCause({ category, situation });
+      const list = await recommendCause({ category, procedureType, situation });
       setCandidates(list);
     } catch (err) {
       setError(err instanceof Error ? err.message : "AI 推荐失败");

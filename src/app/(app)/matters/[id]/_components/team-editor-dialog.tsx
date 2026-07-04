@@ -8,7 +8,7 @@
  *
  * 保存时按需触发两个 server action（基本信息 + 团队）。
  */
-import { useState, useTransition, useEffect } from "react";
+import { useState, useTransition, useEffect, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { Loader2, Plus, X } from "lucide-react";
@@ -57,7 +57,11 @@ import {
 import { CauseCombobox } from "@/app/(app)/matters/_components/cause-combobox";
 import { cn, formatDate } from "@/lib/utils";
 import { JurisdictionSelect } from "@/app/(app)/intakes/_components/jurisdiction-select";
-import { agencyOptions, isNationalAgency } from "@/lib/china-regions";
+import {
+  agencyOptionsForProcedure,
+  isAgencyAllowedForProcedure,
+  isNationalAgency
+} from "@/lib/china-regions";
 
 type UserOption = { id: string; name: string; role: string };
 
@@ -80,6 +84,8 @@ type ProcedureMeta = {
   caseNumber: string | null;
   presidingJudge: string | null;
   presidingJudgeContact: string | null;
+  judgeAssistant: string | null;
+  judgeAssistantContact: string | null;
   ourStanding: LitigationStanding | null;
   acceptedAt: Date | null;
   concludedAt: Date | null;
@@ -340,6 +346,8 @@ function toProcedureForm(procedure: ProcedureMeta | null | undefined) {
     caseNumber: procedure?.caseNumber ?? "",
     presidingJudge: procedure?.presidingJudge ?? "",
     presidingJudgeContact: procedure?.presidingJudgeContact ?? "",
+    judgeAssistant: procedure?.judgeAssistant ?? "",
+    judgeAssistantContact: procedure?.judgeAssistantContact ?? "",
     ourStanding: (procedure?.ourStanding ?? "") as LitigationStanding | "",
     acceptedAt: toInputDate(procedure?.acceptedAt),
     concludedAt: toInputDate(procedure?.concludedAt)
@@ -436,6 +444,10 @@ export function TeamEditorDialog({
     ? currentProcedure.customLabel ?? procedureTypeLabel[currentProcedure.type]
     : "";
   const judgeLabel = currentProcedure ? procedureJudgeLabel(currentProcedure.type) : "主审法官";
+  const procedureAgencyOptions = useMemo(
+    () => agencyOptionsForProcedure(procedureForm.jurisdiction, currentProcedure?.type),
+    [procedureForm.jurisdiction, currentProcedure?.type]
+  );
 
   function setProcedureField<K extends keyof typeof procedureForm>(
     key: K,
@@ -448,7 +460,11 @@ export function TeamEditorDialog({
     setProcedureForm((cur) => ({
       ...cur,
       jurisdiction: value,
-      handlingAgency: isNationalAgency(cur.handlingAgency) ? "" : cur.handlingAgency
+      handlingAgency:
+        isNationalAgency(cur.handlingAgency) ||
+        !isAgencyAllowedForProcedure(cur.handlingAgency, currentProcedure?.type)
+          ? ""
+          : cur.handlingAgency
     }));
   }
 
@@ -611,6 +627,12 @@ export function TeamEditorDialog({
             toast.error("新增当事人需至少选择一个程序地位");
             return;
           }
+          if (!isAgencyAllowedForProcedure(procedureForm.handlingAgency, currentProcedure.type)) {
+            toast.error("商事仲裁程序不能选择法院作为管辖机构", {
+              description: "撤裁、强制执行、不予执行审查等后续程序仍可选择法院。"
+            });
+            return;
+          }
           await updateProcedureInfo({
             procedureId: currentProcedure.id,
             jurisdiction: procedureForm.jurisdiction,
@@ -618,6 +640,8 @@ export function TeamEditorDialog({
             caseNumber: procedureForm.caseNumber,
             presidingJudge: procedureForm.presidingJudge,
             presidingJudgeContact: procedureForm.presidingJudgeContact,
+            judgeAssistant: procedureForm.judgeAssistant,
+            judgeAssistantContact: procedureForm.judgeAssistantContact,
             ourStanding: procedureForm.ourStanding || null,
             acceptedAt: procedureForm.acceptedAt || null,
             concludedAt: procedureForm.concludedAt || null,
@@ -703,6 +727,7 @@ export function TeamEditorDialog({
                   <Label className={formLabelClass}>案由</Label>
                   <CauseCombobox
                     category={matterMeta.category}
+                    procedureType={currentProcedure?.type}
                     value={causeId}
                     onChange={(id) => setCauseId(id)}
                     triggerClassName={formControlClass}
@@ -781,7 +806,7 @@ export function TeamEditorDialog({
                     className={formControlClass}
                   />
                   <datalist id={`matter-info-agency-${currentProcedure.id}`}>
-                    {agencyOptions(procedureForm.jurisdiction).map((a) => (
+                    {procedureAgencyOptions.map((a) => (
                       <option key={a} value={a} />
                     ))}
                   </datalist>
@@ -825,6 +850,22 @@ export function TeamEditorDialog({
                   <Input
                     value={procedureForm.presidingJudgeContact}
                     onChange={(e) => setProcedureField("presidingJudgeContact", e.target.value)}
+                    className={cn(formControlClass, "font-mono")}
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <Label className={formLabelClass}>书记员</Label>
+                  <Input
+                    value={procedureForm.judgeAssistant}
+                    onChange={(e) => setProcedureField("judgeAssistant", e.target.value)}
+                    className={formControlClass}
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <Label className={formLabelClass}>书记员联系方式</Label>
+                  <Input
+                    value={procedureForm.judgeAssistantContact}
+                    onChange={(e) => setProcedureField("judgeAssistantContact", e.target.value)}
                     className={cn(formControlClass, "font-mono")}
                   />
                 </div>
