@@ -1043,6 +1043,7 @@ model CauseOfAction {
 
 **UI 选择交互**：
 - 表单上的"案由"字段：默认显示按 `MatterCategory` 过滤的可搜索下拉
+- 选择 `COMMERCIAL_ARBITRATION` 类别，或在 `CIVIL_COMMERCIAL` 下将当前程序选为 `COMMERCIAL_ARBITRATION` 时，案由下拉按现行《仲裁法》(2025 修订，2026-03-01 施行)第三条限制为平等主体之间的合同纠纷和其他财产权益纠纷；婚姻、收养、监护、扶养、继承、劳动争议、行政争议，以及破产等法定专属程序事项不进入商事仲裁案由候选。
 - 用户输入"民间借贷" → 模糊匹配 `name` / `shortName` / `pinyin` / `keywords`
 - 也可以浏览树形结构（在弹层里展开"合同纠纷 → 借款合同纠纷 → 民间借贷纠纷"）
 - 若官方库未收录极少数特殊案件，可启用 `causeFreeText`（系统标黄提醒，不计入统计）
@@ -1146,7 +1147,7 @@ PRD §13.2。律师每天被 12368 / 法院短信轰炸，复制粘贴到 `/inbo
 | `rawText` | 原始短信全文 |
 | `receivedAt` | 收件时间 |
 | `receivedById` | 收件律师 |
-| `parsedJson` | 解析结果 JSON（caseNumbers / court / hearingDate / urls / judge / clerk / phones / appealDeadline / amounts / platforms ...） |
+| `parsedJson` | 解析结果 JSON（caseNumbers / court / hearingDate / urls / judge / clerk / phones / appealDeadline / amounts / platforms / importantItems / credentials / documentLinks / attachmentResults ...） |
 | `smsType` | 9 类（开庭/送达/缴费/调解/执行/立案/判决/提交材料/其他） |
 | `matchedMatterId` / `matchedBy` | 关联 Matter + 匹配方式（AUTO_CASE_NUMBER / MANUAL / UNMATCHED） |
 | `generatedHearingId` / `generatedDeadlineId` | 一键生成的产物追溯 |
@@ -1155,6 +1156,7 @@ PRD §13.2。律师每天被 12368 / 法院短信轰炸，复制粘贴到 `/inbo
 **关键约束**：
 - 解析 100% 本地正则（v0.9.0 不依赖 AI），AI 兜底留 v0.9.1
 - 匹配逻辑：从 `parsedJson.caseNumbers[]` 取每个案号去 `MatterProcedure.caseNumber` 反查
+- 附件提取不新增表：成功下载的送达文书落到既有 `Document`；失败、需登录、需验证码或未关联案件等状态回写 `parsedJson.attachmentResults`
 - `receivedBy` onDelete=Restrict：用户被禁用前需清理短信归属
 
 ### 4.20 Preservation / PreservationRenewal（财产保全）⭐ v0.9 新增
