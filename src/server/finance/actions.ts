@@ -6,7 +6,7 @@ import { prisma } from "@/lib/prisma";
 import { requireSession } from "@/lib/auth/session";
 import { audit } from "@/server/audit";
 import { assertMatterWritable } from "@/lib/archive/guard";
-import { decimalToNumber } from "@/lib/decimal";
+import { serializeDecimals } from "@/lib/decimal";
 import {
   assertCanAccessMatter,
   assertCanAssociateMatter,
@@ -283,21 +283,7 @@ export async function getMatterFinance(matterId: string) {
     invoiced: issuedInvoices.reduce((acc, i) => acc + Number(i.amount), 0)
   };
 
-  return {
-    billings: billings.map((billing) => ({
-      ...billing,
-      contractAmount: decimalToNumber(billing.contractAmount)
-    })),
-    entries: entries.map((entry) => ({
-      ...entry,
-      amount: decimalToNumber(entry.amount)
-    })),
-    plans: plans.map((plan) => ({
-      ...plan,
-      percent: decimalToNumber(plan.percent)
-    })),
-    stats
-  };
+  return serializeDecimals({ billings, entries, plans, stats });
 }
 
 /**
@@ -326,10 +312,7 @@ export async function listMatterInvoiceRequests(matterId: string) {
       issuedAt: true
     }
   });
-  return rows.map((row) => ({
-    ...row,
-    amount: decimalToNumber(row.amount)
-  }));
+  return serializeDecimals(rows);
 }
 
 /**
@@ -541,10 +524,7 @@ export async function listAllFeeEntries(params: {
       recordedBy: { select: { id: true, name: true } }
     }
   });
-  return rows.map((row) => ({
-    ...row,
-    amount: decimalToNumber(row.amount)
-  }));
+  return serializeDecimals(rows);
 }
 
 export async function getMonthlyRevenue(months = 6) {

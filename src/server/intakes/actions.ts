@@ -7,7 +7,7 @@ import { requireSession } from "@/lib/auth/session";
 import { audit } from "@/server/audit";
 import { intakeVisibilityFilter } from "@/lib/permissions";
 import { assertAgencyAllowedForProcedure, normalizeJurisdictionForAgency } from "@/lib/china-regions";
-import { nullableDecimalToNumber } from "@/lib/decimal";
+import { serializeDecimals } from "@/lib/decimal";
 import {
   intakeCreateSchema,
   intakeListQuerySchema,
@@ -243,16 +243,7 @@ export async function listIntakes(input: Partial<IntakeListQuery> = {}) {
     prisma.intake.count({ where })
   ]);
 
-  return {
-    items: items.map((item) => ({
-      ...item,
-      claimAmount: nullableDecimalToNumber(item.claimAmount),
-      feeAmount: nullableDecimalToNumber(item.feeAmount)
-    })),
-    total,
-    page: query.page,
-    pageSize: query.pageSize
-  };
+  return { items: serializeDecimals(items), total, page: query.page, pageSize: query.pageSize };
 }
 
 export async function getIntakeById(id: string) {

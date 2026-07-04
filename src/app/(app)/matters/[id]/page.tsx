@@ -8,7 +8,7 @@ import { getLatestArchiveRecord } from "@/server/archive/actions";
 import { getMatterReviewSummary } from "@/server/ai/matter-review-summary";
 import { getSession } from "@/lib/auth/session";
 import { prisma } from "@/lib/prisma";
-import { decimalToNumber, nullableDecimalToNumber } from "@/lib/decimal";
+import { nullableDecimalToNumber, serializeDecimals } from "@/lib/decimal";
 import { MatterDetailTabs } from "./_components/matter-detail-tabs";
 import { ReviewSummaryCard } from "./_components/review-summary-card";
 
@@ -141,21 +141,8 @@ export default async function MatterDetailPage({ params }: PageProps) {
     })
   ]);
 
-  const finance = {
-    ...financeRaw,
-    billings: financeRaw.billings.map((billing) => ({
-      ...billing,
-      contractAmount: decimalToNumber(billing.contractAmount)
-    })),
-    entries: financeRaw.entries.map((entry) => ({
-      ...entry,
-      amount: decimalToNumber(entry.amount)
-    })),
-    plans: financeRaw.plans.map((plan) => ({
-      ...plan,
-      percent: decimalToNumber(plan.percent)
-    }))
-  };
+  // getMatterFinance 已在 action 出口统一序列化 Decimal
+  const finance = financeRaw;
 
   // v0.22: 本案 AI 审查总览（聚合 ReviewRecord）
   const reviewSummary = await getMatterReviewSummary(matter.id);
@@ -184,16 +171,7 @@ export default async function MatterDetailPage({ params }: PageProps) {
     templateId: d.templateId,
     createdAt: d.createdAt
   }));
-  const preservationCasesForClient = preservationCases.map((item) => ({
-    ...item,
-    targets: item.targets.map((target) => ({
-      ...target,
-      properties: target.properties.map((property) => ({
-        ...property,
-        amount: nullableDecimalToNumber(property.amount)
-      }))
-    }))
-  }));
+  const preservationCasesForClient = serializeDecimals(preservationCases);
 
   return (
     <div className="space-y-4">

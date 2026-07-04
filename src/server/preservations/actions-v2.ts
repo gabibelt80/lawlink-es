@@ -7,7 +7,7 @@ import { prisma } from "@/lib/prisma";
 import { requireSession } from "@/lib/auth/session";
 import { audit } from "@/server/audit";
 import { assertMatterWritable } from "@/lib/archive/guard";
-import { nullableDecimalToNumber } from "@/lib/decimal";
+import { serializeDecimals } from "@/lib/decimal";
 import { assertCanAssociateMatter, matterAssociationFilter } from "@/lib/permissions";
 import {
   caseCreateSchema,
@@ -69,16 +69,7 @@ export async function listPreservationCases(input?: z.input<typeof caseListFilte
       }
     }
   });
-  return rows.map((row) => ({
-    ...row,
-    targets: row.targets.map((target) => ({
-      ...target,
-      properties: target.properties.map((property) => ({
-        ...property,
-        amount: nullableDecimalToNumber(property.amount)
-      }))
-    }))
-  }));
+  return serializeDecimals(rows);
 }
 
 type PreservationCaseAccess = {
@@ -446,8 +437,5 @@ export async function listExpiringProperties(daysAhead = 60) {
       }
     }
   });
-  return rows.map((row) => ({
-    ...row,
-    amount: nullableDecimalToNumber(row.amount)
-  }));
+  return serializeDecimals(rows);
 }

@@ -6,7 +6,7 @@ import { prisma } from "@/lib/prisma";
 import { requireSession } from "@/lib/auth/session";
 import { audit } from "@/server/audit";
 import { assertMatterWritable } from "@/lib/archive/guard";
-import { nullableDecimalToNumber } from "@/lib/decimal";
+import { serializeDecimals } from "@/lib/decimal";
 import {
   matterAssociationFilter,
   matterVisibilityFilter,
@@ -162,10 +162,7 @@ export async function listMatters(input: Partial<MatterListQuery> = {}) {
     });
 
   const start = (query.page - 1) * query.pageSize;
-  const items = sorted.slice(start, start + query.pageSize).map((matter) => ({
-    ...matter,
-    claimAmount: nullableDecimalToNumber(matter.claimAmount)
-  }));
+  const items = serializeDecimals(sorted.slice(start, start + query.pageSize));
 
   return { items, total, page: query.page, pageSize: query.pageSize };
 }
