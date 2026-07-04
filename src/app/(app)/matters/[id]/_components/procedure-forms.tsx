@@ -4,7 +4,7 @@ import { useTransition, useRef, useState, useEffect, useMemo, useCallback } from
 import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
-import { Loader2, ScanText } from "lucide-react";
+import { ExternalLink, Loader2, Scale, ScanText } from "lucide-react";
 import type { MatterCategory, ProcedureType } from "@prisma/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -39,6 +39,14 @@ import {
   addHearing
 } from "@/server/procedures/actions";
 import { parseSummons } from "@/server/ai/parse-summons";
+import { listDeadlineRulesForProcedure } from "@/server/deadline-rules/actions";
+import {
+  buildDeadlineBasis,
+  computeDeadlineDate,
+  formatLocalDate,
+  periodLabel,
+  HOLIDAY_NOTE
+} from "@/lib/deadline-rules";
 import { procedureTypeLabel } from "@/lib/enums";
 import { proceduresByCategory } from "@/lib/procedures-by-category";
 import {
@@ -360,6 +368,66 @@ export function AddDeadlineDialog({
   const procedureId = useWatch({ control, name: "procedureId" });
   const category = useWatch({ control, name: "category" });
 
+  // v0.49：法定期限规则（按当前程序类型 + 案件类别过滤，全部经元典核验）
+  type RuleOption = Awaited<ReturnType<typeof listDeadlineRulesForProcedure>>[number];
+  const [rules, setRules] = useState<RuleOption[]>([]);
+  const [rulesLoading, setRulesLoading] = useState(false);
+  const [selectedRuleId, setSelectedRuleId] = useState("");
+  const [triggerDate, setTriggerDate] = useState(() => formatLocalDate(new Date()));
+  const selectedRule = rules.find((r) => r.id === selectedRuleId) ?? null;
+  const computedDue = (() => {
+    if (!selectedRule || !triggerDate) return null;
+    const trigger = new Date(`${triggerDate}T00:00:00`);
+    if (Number.isNaN(trigger.getTime())) return null;
+    return computeDeadlineDate(trigger, selectedRule.periodValue, selectedRule.periodUnit);
+  })();
+
+  useEffect(() => {
+    if (!open || !procedureId) return;
+    let cancelled = false;
+    setRulesLoading(true);
+    listDeadlineRulesForProcedure({ procedureId })
+      .then((list) => {
+        if (cancelled) return;
+        setRules(list);
+        setSelectedRuleId((cur) => (list.some((r) => r.id === cur) ? cur : ""));
+      })
+      .catch(() => {
+        if (!cancelled) setRules([]);
+      })
+      .finally(() => {
+        if (!cancelled) setRulesLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [open, procedureId]);
+
+  function applyRule() {
+    if (!selectedRule || !computedDue) return;
+    const trigger = new Date(`${triggerDate}T00:00:00`);
+    setValue("title", selectedRule.name, { shouldDirty: true });
+    setValue("category", selectedRule.category, { shouldDirty: true });
+    // date input 注册了 valueAsDate，程序化赋值需要 yyyy-MM-dd 字符串才能正确
+    // 回显；提交时 zod coerce.date() 会转回 Date
+    setValue("dueAt", formatLocalDate(computedDue) as unknown as Date, {
+      shouldDirty: true
+    });
+    setValue(
+      "basis",
+      buildDeadlineBasis({
+        legalBasis: selectedRule.legalBasis,
+        triggerLabel: selectedRule.triggerLabel,
+        triggerDate: trigger,
+        periodValue: selectedRule.periodValue,
+        periodUnit: selectedRule.periodUnit
+      }),
+      { shouldDirty: true }
+    );
+    setValue("remindDays", selectedRule.remindDays, { shouldDirty: true });
+    toast.success("已按法定期限填入，可再人工调整", { description: HOLIDAY_NOTE });
+  }
+
   // 打开时把所处程序默认值同步为当前选中程序
   useEffect(() => {
     if (open) setValue("procedureId", defaultProcedureId);
@@ -406,6 +474,89 @@ export function AddDeadlineDialog({
                 </SelectContent>
               </Select>
             </Field>
+
+            {(rulesLoading || rules.length > 0) && (
+              <section className="space-y-2.5 rounded-md border border-primary/25 bg-primary/[0.04] p-3">
+                <div className="flex items-center gap-1.5 text-[12px] font-medium text-foreground/85">
+                  <Scale className="h-3.5 w-3.5 text-primary" strokeWidth={1.8} />
+                  按法定期限生成
+                  {rulesLoading && <Loader2 className="h-3 w-3 animate-spin text-muted-foreground" />}
+                </div>
+                <div className="space-y-1.5">
+                  <Label className="text-xs text-muted-foreground">法定期限规则</Label>
+                  <Select value={selectedRuleId || undefined} onValueChange={setSelectedRuleId}>
+                    <SelectTrigger className="bg-background">
+                      <SelectValue placeholder="选择适用的法定期限" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {rules.map((rule) => (
+                        <SelectItem key={rule.id} value={rule.id}>
+                          {rule.name} · {periodLabel(rule.periodValue, rule.periodUnit)}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                {selectedRule && (
+                  <>
+                    <div className="space-y-1.5">
+                      <Label className="text-xs text-muted-foreground">
+                        {selectedRule.triggerLabel}
+                      </Label>
+                      <Input
+                        type="date"
+                        value={triggerDate}
+                        onChange={(e) => setTriggerDate(e.target.value)}
+                        className="bg-background"
+                      />
+                    </div>
+                    <div className="space-y-1 text-[11px] leading-5 text-muted-foreground">
+                      <p>
+                        {selectedRule.legalBasis}
+                        {selectedRule.legalBasisUrl && (
+                          <a
+                            href={selectedRule.legalBasisUrl}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="ml-1 inline-flex items-center gap-0.5 text-primary hover:underline"
+                          >
+                            <ExternalLink className="h-3 w-3" />
+                            查看法条
+                          </a>
+                        )}
+                        {selectedRule.verifiedAt && (
+                          <span className="ml-1.5 rounded bg-emerald-500/10 px-1.5 py-0.5 text-[10px] text-emerald-700">
+                            已核验 {formatLocalDate(new Date(selectedRule.verifiedAt))}
+                          </span>
+                        )}
+                      </p>
+                      {selectedRule.description && <p>{selectedRule.description}</p>}
+                      {computedDue && (
+                        <p className="font-medium text-foreground/85">
+                          到期日：
+                          <span className="font-mono tabular">
+                            {formatLocalDate(computedDue)}
+                          </span>
+                          <span className="ml-1.5 font-normal text-muted-foreground">
+                            （{HOLIDAY_NOTE}）
+                          </span>
+                        </p>
+                      )}
+                    </div>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={applyRule}
+                      disabled={!computedDue}
+                      className="h-7 px-2.5 text-[11px]"
+                    >
+                      填入下方表单
+                    </Button>
+                  </>
+                )}
+              </section>
+            )}
 
             <Field label="期限名称" required error={errors.title?.message}>
               <Input

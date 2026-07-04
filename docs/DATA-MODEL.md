@@ -1184,6 +1184,28 @@ PRD §13.3。商事案件几乎每案必涉。漏续保 = 冻结失效 = 执业�
 - 续保后 `PreservationProperty.expiryDate` 更新为新到期日，status 变 RENEWED
 - 到期预警与日程统一读 `PreservationProperty.expiryDate`（PRD §10.2.1）
 
+### 4.21 DeadlineRule（法定期限规则库）⭐ v0.49 新增
+
+PRD §二十。触发事件 → 期限 → 法条依据，AddDeadlineDialog 按规则生成期限草稿。
+
+| 字段 | 说明 |
+|---|---|
+| `code` | 唯一标识（如 `CIVIL_APPEAL_JUDGMENT`），seed upsert 锚点 |
+| `name` / `description` | 规则名与适用说明 |
+| `triggerLabel` | 触发事件文案（如"判决书送达之日"），用于 UI 与 basis 拼接 |
+| `periodValue` + `periodUnit` | 期限数值 + 单位（DAYS/MONTHS/YEARS） |
+| `category` | 复用 `DeadlineCategory` |
+| `legalBasis` / `legalBasisUrl` / `verifiedAt` | 法条依据文本 + 元典链接 + 核验时间（**未核验的规则不允许入 seed**） |
+| `applicableProcedures` | 适用程序类型数组，空 = 全部 |
+| `applicableCategories` | 适用案件类别数组，空 = 全部（区分民商事/行政/劳动仲裁上诉规则） |
+| `remindDays` | 建议提前提醒天数（写入生成的 Deadline.remindDays） |
+| `enabled` / `isBuiltIn` / `sortOrder` | 开关 / 内置标记 / 排序 |
+
+**期间计算**（`src/lib/deadline-rules.ts`，依据民诉法 2023 修正第 85 条）：
+- 按日：开始之日不计入，到期日 = 触发日 + N 日
+- 按月/年：到期月对应日，无对应日取月末
+- 届满日遇法定节假日应顺延——系统不内置节假日表，UI 提示人工核对
+
 ---
 
 ## 五、internalCode 编号规则（v0.3 修订）

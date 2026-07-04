@@ -243,6 +243,12 @@ enum ConflictConclusion {
   NEED_INFO
 }
 
+enum DeadlinePeriodUnit {
+  DAYS
+  MONTHS
+  YEARS
+}
+
 enum DeadlineCategory {
   LIMITATION
   EVIDENCE
@@ -802,6 +808,36 @@ model Deadline {
 
   @@index([procedureId, dueAt, completed])
   @@index([dueAt, completed])
+}
+
+// v0.49: 法定期限规则库（PRD §二十）。规则须经元典核验后方可入 seed，
+// verifiedAt 为空表示未核验，UI 不展示为"法定依据"。
+model DeadlineRule {
+  id           String             @id @default(cuid())
+  code         String             @unique
+  name         String
+  description  String?
+  triggerLabel String // 触发事件文案，如"判决书送达之日"
+  periodValue  Int
+  periodUnit   DeadlinePeriodUnit @default(DAYS)
+  category     DeadlineCategory   @default(CUSTOM)
+
+  legalBasis    String // 如《中华人民共和国民事诉讼法(2023修正)》第一百七十一条
+  legalBasisUrl String?
+  verifiedAt    DateTime? // 元典核验时间
+
+  applicableProcedures ProcedureType[] // 空 = 全部程序
+  applicableCategories MatterCategory[] // 空 = 全部案件类别
+
+  remindDays Int     @default(7) // 生成 Deadline 时的建议提前提醒天数
+  enabled    Boolean @default(true)
+  isBuiltIn  Boolean @default(true)
+  sortOrder  Int     @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([enabled, sortOrder])
 }
 
 // v0.42: 程序备忘录（与重要时限并排，待办/已办状态）
