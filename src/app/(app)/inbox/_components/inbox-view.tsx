@@ -55,15 +55,18 @@ import {
 import { SmsPasteDialog } from "./sms-paste-dialog";
 import { GenerateHearingDialog, GenerateDeadlineDialog } from "./sms-actions-dialogs";
 
-type Tab = "unprocessed" | "processed";
+type Tab = "unprocessed" | "needsManual" | "processed";
 
 export function InboxView({
   unprocessed,
   processed,
+  needsManual,
   matters
 }: {
   unprocessed: SmsRow[];
   processed: SmsRow[];
+  /** v0.48: 电子送达待人工处理（需登录/验证码/未关联案件） */
+  needsManual: SmsRow[];
   matters: MatterOption[];
 }) {
   const [tab, setTab] = useState<Tab>(unprocessed.length > 0 ? "unprocessed" : "processed");
@@ -77,7 +80,7 @@ export function InboxView({
     matter: NonNullable<SmsRow["matchedMatter"]>;
   } | null>(null);
 
-  const rows = tab === "unprocessed" ? unprocessed : processed;
+  const rows = tab === "unprocessed" ? unprocessed : tab === "needsManual" ? needsManual : processed;
 
   return (
     <div className="space-y-5">
@@ -101,6 +104,10 @@ export function InboxView({
             待处理
             <Count n={unprocessed.length} hot={unprocessed.length > 0} />
           </TabBtn>
+          <TabBtn active={tab === "needsManual"} onClick={() => setTab("needsManual")}>
+            待人工
+            <Count n={needsManual.length} hot={needsManual.length > 0} />
+          </TabBtn>
           <TabBtn active={tab === "processed"} onClick={() => setTab("processed")}>
             已处理
             <Count n={processed.length} />
@@ -117,7 +124,11 @@ export function InboxView({
         {rows.length === 0 ? (
           <div className="ll-surface rounded-lg border border-border p-12 text-center text-sm text-muted-foreground">
             <Inbox className="mx-auto mb-2 h-6 w-6 opacity-40" />
-            {tab === "unprocessed" ? "无待处理短信" : "暂无已处理记录"}
+            {tab === "unprocessed"
+              ? "无待处理短信"
+              : tab === "needsManual"
+                ? "没有需要人工处理的电子送达"
+                : "暂无已处理记录"}
           </div>
         ) : (
           rows.map((sms) => (

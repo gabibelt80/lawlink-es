@@ -79,6 +79,11 @@ function normalizeStoredParsed(rawText: string, parsedJson: Prisma.JsonValue): P
   };
 }
 
+// v0.48: 待人工状态冗余到 SmsMessage.needsManualAction 供 SQL 过滤
+function needsManualFromResults(results: ParsedSms["attachmentResults"]) {
+  return results.some((r) => r.status === "LOGIN_REQUIRED" || r.status === "SKIPPED_NO_MATTER");
+}
+
 function mergeAttachmentResults(
   existing: ParsedSms["attachmentResults"],
   incoming: ParsedSms["attachmentResults"]
@@ -167,7 +172,10 @@ export async function parseAndSaveSms(input: z.infer<typeof smsParseAndSaveSchem
         };
         await prisma.smsMessage.update({
           where: { id: created.id },
-          data: { parsedJson: parsed as unknown as Prisma.InputJsonValue }
+          data: {
+            parsedJson: parsed as unknown as Prisma.InputJsonValue,
+            needsManualAction: needsManualFromResults(parsed.attachmentResults)
+          }
         });
       }
     }
@@ -225,13 +233,15 @@ export async function extractSmsAttachments(input: z.infer<typeof smsIdSchema>) 
   if (!sms.matchedMatterId) {
     const parsed = normalizeStoredParsed(sms.rawText, sms.parsedJson);
     const attachmentResults = skippedNoMatterResults(parsed);
+    const mergedNoMatter = mergeAttachmentResults(parsed.attachmentResults, attachmentResults);
     await prisma.smsMessage.update({
       where: { id: sms.id },
       data: {
         parsedJson: {
           ...parsed,
-          attachmentResults: mergeAttachmentResults(parsed.attachmentResults, attachmentResults)
-        } as unknown as Prisma.InputJsonValue
+          attachmentResults: mergedNoMatter
+        } as unknown as Prisma.InputJsonValue,
+        needsManualAction: needsManualFromResults(mergedNoMatter)
       }
     });
     revalidatePath("/inbox");
@@ -249,13 +259,15 @@ export async function extractSmsAttachments(input: z.infer<typeof smsIdSchema>) 
     matterId: sms.matchedMatterId
   });
 
+  const merged = mergeAttachmentResults(parsed.attachmentResults, attachmentResults);
   await prisma.smsMessage.update({
     where: { id: sms.id },
     data: {
       parsedJson: {
         ...parsed,
-        attachmentResults: mergeAttachmentResults(parsed.attachmentResults, attachmentResults)
-      } as unknown as Prisma.InputJsonValue
+        attachmentResults: merged
+      } as unknown as Prisma.InputJsonValue,
+      needsManualAction: needsManualFromResults(merged)
     }
   });
 
@@ -285,6 +297,7 @@ export async function listSmsMessages(input?: z.input<typeof smsListFilterSchema
   if (filter.processed === "unprocessed") where.processed = false;
   if (filter.processed === "processed") where.processed = true;
   if (filter.smsType) where.smsType = filter.smsType;
+  if (filter.needsManual) where.needsManualAction = true;
 
   return prisma.smsMessage.findMany({
     where,

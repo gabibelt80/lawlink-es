@@ -1474,11 +1474,15 @@ model SmsMessage {
 
   processed   Boolean   @default(false)
   processedAt DateTime?
+  // v0.48: 电子送达附件需人工处理（需登录/验证码/未关联案件），从
+  // parsedJson.attachmentResults 冗余出来供 SQL 过滤（ROADMAP §四.2）
+  needsManualAction Boolean @default(false)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   @@index([receivedById, processed, receivedAt])
+  @@index([receivedById, needsManualAction])
   @@index([matchedMatterId])
   @@index([smsType, receivedAt])
 }
