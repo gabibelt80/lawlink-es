@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Inbox, Shield, Stamp, AlertTriangle, ArrowRight } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { getSession } from "@/lib/auth/session";
+import { matterVisibilityFilter } from "@/lib/permissions";
 import { cn } from "@/lib/utils";
 
 type AlertItem = {
@@ -28,21 +29,40 @@ async function loadAlerts(userId: string | null, role: string | null): Promise<A
   in30.setDate(in30.getDate() + 30);
   const isManager = role === "ADMIN" || role === "PRINCIPAL_LAWYER";
 
-  const [preservations, unprocessedSms, pendingSeals] = await Promise.all([
-    prisma.preservation.findMany({
-      where: {
-        status: { in: ["ACTIVE", "RENEWED"] },
-        expiryDate: { lte: in30 }
-      },
-      orderBy: { expiryDate: "asc" },
-      take: 6,
-      select: {
-        id: true,
-        respondent: true,
-        expiryDate: true,
-        matter: { select: { id: true, internalCode: true, title: true } }
-      }
-    }),
+  const [preservationProperties, unprocessedSms, pendingSeals] = await Promise.all([
+    userId && role
+      ? prisma.preservationProperty.findMany({
+          where: {
+            status: { in: ["ACTIVE", "RENEWED"] },
+            expiryDate: { lte: in30 },
+            target: {
+              case: {
+                OR: [
+                  { matter: { deletedAt: null, ...matterVisibilityFilter(userId, role) } },
+                  { matterId: null, ownerId: userId }
+                ]
+              }
+            }
+          },
+          orderBy: { expiryDate: "asc" },
+          take: 6,
+          select: {
+            id: true,
+            expiryDate: true,
+            propertyType: true,
+            target: {
+              select: {
+                name: true,
+                case: {
+                  select: {
+                    matter: { select: { id: true, internalCode: true, title: true } }
+                  }
+                }
+              }
+            }
+          }
+        })
+      : Promise.resolve([]),
     userId
       ? prisma.smsMessage.findMany({
           where: { receivedById: userId, processed: false },
@@ -75,17 +95,18 @@ async function loadAlerts(userId: string | null, role: string | null): Promise<A
 
   const items: AlertItem[] = [];
 
-  for (const p of preservations) {
+  for (const p of preservationProperties) {
     const days = Math.ceil((p.expiryDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
     const label = days < 0 ? `保全已过期 ${-days} 天` : days === 0 ? "保全今日到期" : `保全 ${days} 天后到期`;
+    const matter = p.target.case.matter;
     items.push({
       id: `pres-${p.id}`,
       source: "preservation",
-      title: `${label} · ${p.respondent}`,
-      detail: p.matter
-        ? `${p.matter.internalCode} ${p.matter.title}`
+      title: `${label} · ${p.target.name}`,
+      detail: matter
+        ? `${matter.internalCode} ${matter.title}`
         : "未关联案件（诉前保全）",
-      href: p.matter ? `/matters/${p.matter.id}` : "/preservation",
+      href: matter ? `/matters/${matter.id}` : "/preservation",
       date: p.expiryDate,
       tone: classifyByDays(days)
     });

@@ -7,6 +7,7 @@ import { prisma } from "@/lib/prisma";
 import { requireSession } from "@/lib/auth/session";
 import { audit } from "@/server/audit";
 import { assertMatterWritable } from "@/lib/archive/guard";
+import { nullableDecimalToNumber } from "@/lib/decimal";
 import { assertCanAssociateMatter, matterAssociationFilter } from "@/lib/permissions";
 import {
   preservationCreateSchema,
@@ -47,7 +48,7 @@ export async function listPreservations(input?: z.input<typeof preservationListF
     ];
   }
 
-  return prisma.preservation.findMany({
+  const rows = await prisma.preservation.findMany({
     where,
     orderBy: [{ status: "asc" }, { expiryDate: "asc" }],
     include: {
@@ -56,12 +57,16 @@ export async function listPreservations(input?: z.input<typeof preservationListF
       renewals: { orderBy: { renewedAt: "desc" }, take: 3 }
     }
   });
+  return rows.map((row) => ({
+    ...row,
+    amount: nullableDecimalToNumber(row.amount)
+  }));
 }
 
 export async function getPreservation(id: string) {
   const session = await requireSession();
   await assertCanAccessPreservation(session.user.id, id);
-  return prisma.preservation.findUnique({
+  const row = await prisma.preservation.findUnique({
     where: { id },
     include: {
       matter: { select: { id: true, internalCode: true, title: true } },
@@ -72,6 +77,12 @@ export async function getPreservation(id: string) {
       }
     }
   });
+  return row
+    ? {
+        ...row,
+        amount: nullableDecimalToNumber(row.amount)
+      }
+    : null;
 }
 
 type PreservationAccess = {
@@ -104,7 +115,7 @@ export async function listExpiringPreservations(daysAhead = 60) {
   const end = new Date();
   end.setDate(end.getDate() + daysAhead);
 
-  return prisma.preservation.findMany({
+  const rows = await prisma.preservation.findMany({
     where: {
       status: { in: ["ACTIVE", "RENEWED"] },
       expiryDate: { lte: end },
@@ -118,6 +129,10 @@ export async function listExpiringPreservations(daysAhead = 60) {
       matter: { select: { id: true, internalCode: true, title: true } }
     }
   });
+  return rows.map((row) => ({
+    ...row,
+    amount: nullableDecimalToNumber(row.amount)
+  }));
 }
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━

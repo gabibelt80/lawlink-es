@@ -6,6 +6,7 @@ import { prisma } from "@/lib/prisma";
 import { requireSession } from "@/lib/auth/session";
 import { audit } from "@/server/audit";
 import { assertMatterWritable } from "@/lib/archive/guard";
+import { decimalToNumber } from "@/lib/decimal";
 import {
   assertCanAccessMatter,
   assertCanAssociateMatter,
@@ -282,7 +283,21 @@ export async function getMatterFinance(matterId: string) {
     invoiced: issuedInvoices.reduce((acc, i) => acc + Number(i.amount), 0)
   };
 
-  return { billings, entries, plans, stats };
+  return {
+    billings: billings.map((billing) => ({
+      ...billing,
+      contractAmount: decimalToNumber(billing.contractAmount)
+    })),
+    entries: entries.map((entry) => ({
+      ...entry,
+      amount: decimalToNumber(entry.amount)
+    })),
+    plans: plans.map((plan) => ({
+      ...plan,
+      percent: decimalToNumber(plan.percent)
+    })),
+    stats
+  };
 }
 
 /**
@@ -291,7 +306,7 @@ export async function getMatterFinance(matterId: string) {
 export async function listMatterInvoiceRequests(matterId: string) {
   const session = await requireSession();
   await assertCanAccessMatter(session.user.id, session.user.role, matterId);
-  return prisma.invoiceRequest.findMany({
+  const rows = await prisma.invoiceRequest.findMany({
     where: { matterId },
     orderBy: { requestedAt: "desc" },
     select: {
@@ -311,6 +326,10 @@ export async function listMatterInvoiceRequests(matterId: string) {
       issuedAt: true
     }
   });
+  return rows.map((row) => ({
+    ...row,
+    amount: decimalToNumber(row.amount)
+  }));
 }
 
 /**
@@ -509,7 +528,7 @@ export async function listAllFeeEntries(params: {
 }) {
   const session = await requireSession();
   const visFilter = matterVisibilityFilter(session.user.id, session.user.role);
-  return prisma.feeEntry.findMany({
+  const rows = await prisma.feeEntry.findMany({
     where: {
       ...(params.type ? { type: params.type } : {}),
       matter: { deletedAt: null, ...visFilter }
@@ -522,6 +541,10 @@ export async function listAllFeeEntries(params: {
       recordedBy: { select: { id: true, name: true } }
     }
   });
+  return rows.map((row) => ({
+    ...row,
+    amount: decimalToNumber(row.amount)
+  }));
 }
 
 export async function getMonthlyRevenue(months = 6) {

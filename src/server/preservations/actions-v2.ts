@@ -7,6 +7,7 @@ import { prisma } from "@/lib/prisma";
 import { requireSession } from "@/lib/auth/session";
 import { audit } from "@/server/audit";
 import { assertMatterWritable } from "@/lib/archive/guard";
+import { nullableDecimalToNumber } from "@/lib/decimal";
 import { assertCanAssociateMatter, matterAssociationFilter } from "@/lib/permissions";
 import {
   caseCreateSchema,
@@ -49,7 +50,7 @@ export async function listPreservationCases(input?: z.input<typeof caseListFilte
     ];
   }
 
-  return prisma.preservationCase.findMany({
+  const rows = await prisma.preservationCase.findMany({
     where,
     orderBy: [{ status: "asc" }, { createdAt: "desc" }],
     include: {
@@ -68,6 +69,16 @@ export async function listPreservationCases(input?: z.input<typeof caseListFilte
       }
     }
   });
+  return rows.map((row) => ({
+    ...row,
+    targets: row.targets.map((target) => ({
+      ...target,
+      properties: target.properties.map((property) => ({
+        ...property,
+        amount: nullableDecimalToNumber(property.amount)
+      }))
+    }))
+  }));
 }
 
 type PreservationCaseAccess = {
@@ -411,7 +422,7 @@ export async function listExpiringProperties(daysAhead = 60) {
   const end = new Date();
   end.setDate(end.getDate() + daysAhead);
 
-  return prisma.preservationProperty.findMany({
+  const rows = await prisma.preservationProperty.findMany({
     where: {
       status: { in: ["ACTIVE", "RENEWED"] },
       expiryDate: { lte: end },
@@ -435,4 +446,8 @@ export async function listExpiringProperties(daysAhead = 60) {
       }
     }
   });
+  return rows.map((row) => ({
+    ...row,
+    amount: nullableDecimalToNumber(row.amount)
+  }));
 }

@@ -160,24 +160,26 @@ function CaseCard({ caseData: cs, expanded, onToggle, matters, users }: { caseDa
 
   return (
     <motion.div initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} className="rounded-xl border border-border bg-card">
-      <button type="button" onClick={onToggle} className="flex w-full items-center gap-3 px-4 py-3 text-left">
-        {expanded ? <ChevronDown className="h-4 w-4 shrink-0 text-muted-foreground" /> : <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground" />}
-        <Shield className="h-4 w-4 shrink-0 text-primary" strokeWidth={1.8} />
-        <div className="min-w-0 flex-1">
-          <div className="flex items-center gap-2">
-            <span className="text-sm font-medium truncate">{cs.matter ? cs.matter.title : "未关联案件"}</span>
-            <span className="shrink-0 rounded border px-1.5 py-0.5 text-[10px] text-primary border-primary/30 bg-primary/5">{PRES_TYPE_CN[cs.type]}</span>
-            {expiryInfo && <span className={cn("shrink-0 text-[10px] font-medium", expiryInfo.tone === "danger" ? "text-destructive" : expiryInfo.tone === "warn" ? "text-amber-500" : "text-muted-foreground")}>{expiryInfo.label}</span>}
+      <div className="flex items-center gap-3 px-4 py-3">
+        <button type="button" onClick={onToggle} className="flex min-w-0 flex-1 items-center gap-3 text-left">
+          {expanded ? <ChevronDown className="h-4 w-4 shrink-0 text-muted-foreground" /> : <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground" />}
+          <Shield className="h-4 w-4 shrink-0 text-primary" strokeWidth={1.8} />
+          <div className="min-w-0 flex-1">
+            <div className="flex items-center gap-2">
+              <span className="text-sm font-medium truncate">{cs.matter ? cs.matter.title : "未关联案件"}</span>
+              <span className="shrink-0 rounded border px-1.5 py-0.5 text-[10px] text-primary border-primary/30 bg-primary/5">{PRES_TYPE_CN[cs.type]}</span>
+              {expiryInfo && <span className={cn("shrink-0 text-[10px] font-medium", expiryInfo.tone === "danger" ? "text-destructive" : expiryInfo.tone === "warn" ? "text-amber-500" : "text-muted-foreground")}>{expiryInfo.label}</span>}
+            </div>
+            <div className="mt-0.5 text-[11px] text-muted-foreground">
+              {cs.court && <span>{cs.court}</span>}{cs.rulingNumber && <span> · {cs.rulingNumber}</span>}{" · "}{cs.targets.length} 个被保全人 · {allProps.length} 项财产
+            </div>
           </div>
-          <div className="mt-0.5 text-[11px] text-muted-foreground">
-            {cs.court && <span>{cs.court}</span>}{cs.rulingNumber && <span> · {cs.rulingNumber}</span>}{" · "}{cs.targets.length} 个被保全人 · {allProps.length} 项财产
-          </div>
-        </div>
-        <div className="flex shrink-0 items-center gap-1" onClick={(e) => e.stopPropagation()}>
+        </button>
+        <div className="flex shrink-0 items-center gap-1">
           <button type="button" onClick={() => setEditOpen(true)} className="rounded-md p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground"><Pencil className="h-3.5 w-3.5" /></button>
           <button type="button" onClick={() => { if (confirm("确认删除此保全案件及所有记录？")) { startTransition(async () => { try { await deletePreservationCase({ id: cs.id }); toast.success("已删除"); } catch { toast.error("删除失败"); } }); } }} className="rounded-md p-1.5 text-muted-foreground hover:bg-muted hover:text-destructive"><Trash2 className="h-3.5 w-3.5" /></button>
         </div>
-      </button>
+      </div>
 
       {expanded && (
         <div className="border-t border-border px-4 py-3 space-y-4">

@@ -18,6 +18,7 @@ import { storage } from "@/lib/storage";
 import { validateUploadedFile } from "@/lib/storage/file-validator";
 import { encryptBuffer, sha256 } from "@/lib/storage/crypto";
 import { notifyRoleApprovers } from "@/server/notifications/approval";
+import { decimalToNumber } from "@/lib/decimal";
 
 const MAX_FILE_SIZE = 20 * 1024 * 1024;
 
@@ -146,7 +147,7 @@ export async function listInvoiceRequests(filter?: { status?: "PENDING" | "ISSUE
 export async function listInvoiceRequestsByMatter(matterId: string) {
   const session = await requireSession();
   await assertCanAccessMatter(session.user.id, session.user.role, matterId);
-  return prisma.invoiceRequest.findMany({
+  const rows = await prisma.invoiceRequest.findMany({
     where: { matterId },
     orderBy: { requestedAt: "desc" },
     include: {
@@ -156,6 +157,10 @@ export async function listInvoiceRequestsByMatter(matterId: string) {
       invoiceFile: { select: { id: true, name: true } }
     }
   });
+  return rows.map((row) => ({
+    ...row,
+    amount: decimalToNumber(row.amount)
+  }));
 }
 
 /**

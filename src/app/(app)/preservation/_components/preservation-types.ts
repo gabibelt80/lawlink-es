@@ -1,6 +1,6 @@
 import type { Prisma, PreservationType, PropertyType, GuaranteeType, PreservationStatus } from "@prisma/client";
 
-export type PreservationCaseRow = Prisma.PreservationCaseGetPayload<{
+type PreservationCaseRaw = Prisma.PreservationCaseGetPayload<{
   include: {
     matter: { select: { id: true; internalCode: true; title: true } };
     owner: { select: { id: true; name: true } };
@@ -15,6 +15,17 @@ export type PreservationCaseRow = Prisma.PreservationCaseGetPayload<{
     }
   };
 }>;
+
+type PreservationTargetRaw = PreservationCaseRaw["targets"][number];
+type PreservationPropertyRaw = PreservationTargetRaw["properties"][number];
+
+export type PreservationCaseRow = Omit<PreservationCaseRaw, "targets"> & {
+  targets: Array<
+    Omit<PreservationTargetRaw, "properties"> & {
+      properties: Array<Omit<PreservationPropertyRaw, "amount"> & { amount: number | null }>;
+    }
+  >;
+};
 
 export type MatterOption = {
   id: string;

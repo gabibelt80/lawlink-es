@@ -34,7 +34,7 @@ export async function listScheduleItems(params: {
     ? matterAssociationFilter(userId)
     : matterVisibilityFilter(userId, session.user.role);
 
-  const [hearings, deadlines, tasks] = await Promise.all([
+  const [hearings, deadlines, tasks, preservationProperties] = await Promise.all([
     prisma.hearing.findMany({
       where: {
         startsAt: { gte: from, lte: to },
@@ -123,6 +123,42 @@ export async function listScheduleItems(params: {
           }
         }
       }
+    }),
+    prisma.preservationProperty.findMany({
+      where: {
+        expiryDate: { gte: from, lte: to },
+        ...(params.includeCompleted ? {} : { status: { in: ["ACTIVE", "RENEWED"] } }),
+        target: {
+          case: {
+            matter: { deletedAt: null, ...matterFilter }
+          }
+        }
+      },
+      include: {
+        target: {
+          include: {
+            case: {
+              include: {
+                matter: {
+                  select: {
+                    id: true,
+                    internalCode: true,
+                    title: true,
+                    primaryClient: { select: { name: true } },
+                    clientLinks: {
+                      select: {
+                        isPrimary: true,
+                        client: { select: { name: true } }
+                      },
+                      orderBy: [{ isPrimary: "desc" }, { addedAt: "asc" }]
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
     })
   ]);
 
@@ -180,6 +216,22 @@ export async function listScheduleItems(params: {
       completed: t.completed,
       description: t.description,
       priority: t.priority
+    });
+  }
+  for (const p of preservationProperties) {
+    const matter = p.target.case.matter;
+    if (!matter) continue;
+    items.push({
+      id: `p-${p.id}`,
+      type: "deadline",
+      title: `保全到期：${p.target.name}`,
+      occurredAt: p.expiryDate,
+      matter: matterBrief(matter),
+      clientName: clientNameOf(matter),
+      procedureLabel: "财产保全",
+      completed: p.status !== "ACTIVE" && p.status !== "RENEWED",
+      remindDays: 30,
+      category: "PRESERVATION"
     });
   }
   items.sort((a, b) => new Date(a.occurredAt).getTime() - new Date(b.occurredAt).getTime());
