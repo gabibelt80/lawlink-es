@@ -11,6 +11,7 @@ import { assertMatterWritable } from "@/lib/archive/guard";
 import { assertCanAccessMatter, assertCanAssociateMatter } from "@/lib/permissions";
 import { parseSms, splitSmsBatch, toDate, type ParsedSms } from "@/lib/sms-parser";
 import { enrichWithAi } from "@/lib/sms-parser-ai";
+import { downloadSmsAttachments } from "./attachments";
 import {
   smsParseAndSaveSchema,
   smsListFilterSchema,
@@ -34,6 +35,91 @@ async function findMatchingMatter(caseNumbers: string[]): Promise<string | null>
     select: { matterId: true }
   });
   return proc?.matterId ?? null;
+}
+
+async function findDefaultProcedureId(matterId: string, caseNumbers: string[]): Promise<string | null> {
+  const byCaseNumber = caseNumbers.length > 0
+    ? await prisma.matterProcedure.findFirst({
+        where: {
+          matterId,
+          caseNumber: { in: caseNumbers },
+          engagement: "ENGAGED"
+        },
+        orderBy: { order: "asc" },
+        select: { id: true }
+      })
+    : null;
+  if (byCaseNumber) return byCaseNumber.id;
+
+  const firstEngaged = await prisma.matterProcedure.findFirst({
+    where: { matterId, engagement: "ENGAGED" },
+    orderBy: { order: "asc" },
+    select: { id: true }
+  });
+  return firstEngaged?.id ?? null;
+}
+
+function normalizeStoredParsed(rawText: string, parsedJson: Prisma.JsonValue): ParsedSms {
+  const parsed = parseSms(rawText);
+  if (!parsedJson || typeof parsedJson !== "object" || Array.isArray(parsedJson)) return parsed;
+  const stored = parsedJson as Partial<ParsedSms>;
+  return {
+    ...parsed,
+    ...stored,
+    caseNumbers: Array.isArray(stored.caseNumbers) ? stored.caseNumbers : parsed.caseNumbers,
+    dates: Array.isArray(stored.dates) ? stored.dates : parsed.dates,
+    phones: Array.isArray(stored.phones) ? stored.phones : parsed.phones,
+    amounts: Array.isArray(stored.amounts) ? stored.amounts : parsed.amounts,
+    urls: Array.isArray(stored.urls) ? stored.urls : parsed.urls,
+    platforms: Array.isArray(stored.platforms) ? stored.platforms : parsed.platforms,
+    importantItems: Array.isArray(stored.importantItems) ? stored.importantItems : parsed.importantItems,
+    credentials: Array.isArray(stored.credentials) ? stored.credentials : parsed.credentials,
+    documentLinks: Array.isArray(stored.documentLinks) ? stored.documentLinks : parsed.documentLinks,
+    attachmentResults: Array.isArray(stored.attachmentResults) ? stored.attachmentResults : parsed.attachmentResults
+  };
+}
+
+function mergeAttachmentResults(
+  existing: ParsedSms["attachmentResults"],
+  incoming: ParsedSms["attachmentResults"]
+) {
+  const incomingUrls = new Set(incoming.map((r) => r.url));
+  return [...incoming, ...existing.filter((r) => !incomingUrls.has(r.url))].slice(0, 30);
+}
+
+function skippedNoMatterResults(parsed: ParsedSms): ParsedSms["attachmentResults"] {
+  return parsed.urls.map((url) => ({
+    url,
+    status: "SKIPPED_NO_MATTER",
+    message: "请先关联案件，再提取送达附件",
+    checkedAt: new Date().toISOString()
+  }));
+}
+
+async function tryExtractAttachments({
+  smsId,
+  userId,
+  parsed,
+  matterId
+}: {
+  smsId: string;
+  userId: string;
+  parsed: ParsedSms;
+  matterId: string | null;
+}) {
+  if (parsed.urls.length === 0) return [];
+  if (!matterId) return skippedNoMatterResults(parsed);
+  try {
+    const procedureId = await findDefaultProcedureId(matterId, parsed.caseNumbers);
+    return await downloadSmsAttachments({ smsId, userId, parsed, matterId, procedureId });
+  } catch (err) {
+    return parsed.urls.map((url) => ({
+      url,
+      status: "FAILED" as const,
+      message: err instanceof Error ? err.message : "附件提取失败",
+      checkedAt: new Date().toISOString()
+    }));
+  }
 }
 
 export async function parseAndSaveSms(input: z.infer<typeof smsParseAndSaveSchema>) {
@@ -67,6 +153,25 @@ export async function parseAndSaveSms(input: z.infer<typeof smsParseAndSaveSchem
     });
     createdIds.push(created.id);
 
+    if (data.extractAttachments && parsed.urls.length > 0) {
+      const attachmentResults = await tryExtractAttachments({
+        smsId: created.id,
+        userId: session.user.id,
+        parsed,
+        matterId: matchedMatterId
+      });
+      if (attachmentResults.length > 0) {
+        parsed = {
+          ...parsed,
+          attachmentResults: mergeAttachmentResults(parsed.attachmentResults, attachmentResults)
+        };
+        await prisma.smsMessage.update({
+          where: { id: created.id },
+          data: { parsedJson: parsed as unknown as Prisma.InputJsonValue }
+        });
+      }
+    }
+
     // 通知关联案件的负责人
     if (matchedMatterId) {
       const matter = await prisma.matter.findUnique({
@@ -97,6 +202,74 @@ export async function parseAndSaveSms(input: z.infer<typeof smsParseAndSaveSchem
 
   revalidatePath("/inbox");
   return { ok: true, ids: createdIds, count: createdIds.length, aiEnrichedCount };
+}
+
+export async function extractSmsAttachments(input: z.infer<typeof smsIdSchema>) {
+  const session = await requireSession();
+  const data = smsIdSchema.parse(input);
+
+  const sms = await prisma.smsMessage.findUnique({
+    where: { id: data.id },
+    select: {
+      id: true,
+      rawText: true,
+      parsedJson: true,
+      receivedById: true,
+      matchedMatterId: true
+    }
+  });
+  if (!sms) throw new Error("短信不存在");
+  if (sms.receivedById !== session.user.id && !sms.matchedMatterId) {
+    throw new Error("无权处理这条短信");
+  }
+  if (!sms.matchedMatterId) {
+    const parsed = normalizeStoredParsed(sms.rawText, sms.parsedJson);
+    const attachmentResults = skippedNoMatterResults(parsed);
+    await prisma.smsMessage.update({
+      where: { id: sms.id },
+      data: {
+        parsedJson: {
+          ...parsed,
+          attachmentResults: mergeAttachmentResults(parsed.attachmentResults, attachmentResults)
+        } as unknown as Prisma.InputJsonValue
+      }
+    });
+    revalidatePath("/inbox");
+    return { ok: true, count: attachmentResults.length, attachmentResults };
+  }
+
+  await assertCanAccessMatter(session.user.id, session.user.role, sms.matchedMatterId);
+  const parsed = normalizeStoredParsed(sms.rawText, sms.parsedJson);
+  if (parsed.urls.length === 0) throw new Error("短信中没有可提取的链接");
+
+  const attachmentResults = await tryExtractAttachments({
+    smsId: sms.id,
+    userId: session.user.id,
+    parsed,
+    matterId: sms.matchedMatterId
+  });
+
+  await prisma.smsMessage.update({
+    where: { id: sms.id },
+    data: {
+      parsedJson: {
+        ...parsed,
+        attachmentResults: mergeAttachmentResults(parsed.attachmentResults, attachmentResults)
+      } as unknown as Prisma.InputJsonValue
+    }
+  });
+
+  await audit({
+    userId: session.user.id,
+    action: "SMS_EXTRACT_ATTACHMENTS",
+    targetType: "SmsMessage",
+    targetId: sms.id,
+    detail: { count: attachmentResults.length }
+  });
+
+  revalidatePath("/inbox");
+  if (sms.matchedMatterId) revalidatePath(`/matters/${sms.matchedMatterId}`);
+  return { ok: true, count: attachmentResults.length, attachmentResults };
 }
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━

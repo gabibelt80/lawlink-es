@@ -85,21 +85,32 @@ function NavLink({
   onClick?: (e: React.MouseEvent) => void;
 }) {
   const Icon = item.icon;
+  const isCourtSms = item.tone === "courtSms";
   return (
     <Link
       href={item.href}
       onClick={onClick}
       className={cn(
         "group relative flex h-[30px] items-center gap-2.5 rounded-md px-2.5 text-[12.5px] transition-colors",
-        active
-          ? "bg-accent text-primary font-medium"
-          : "text-muted-foreground hover:bg-muted hover:text-foreground"
+        isCourtSms
+          ? active
+            ? "bg-sky-500/12 text-sky-700 font-medium ring-1 ring-sky-500/20"
+            : "text-sky-700/90 hover:bg-sky-500/10 hover:text-sky-800"
+          : active
+            ? "bg-accent text-primary font-medium"
+            : "text-muted-foreground hover:bg-muted hover:text-foreground"
       )}
     >
       <Icon
         className={cn(
           "h-[15px] w-[15px] shrink-0",
-          active ? "text-primary" : "text-muted-foreground/70 group-hover:text-foreground"
+          isCourtSms
+            ? active
+              ? "text-sky-700"
+              : "text-sky-700/80 group-hover:text-sky-800"
+            : active
+              ? "text-primary"
+              : "text-muted-foreground/70 group-hover:text-foreground"
         )}
         strokeWidth={active ? 2 : 1.6}
       />
