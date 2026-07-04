@@ -357,6 +357,15 @@
       0 1px 2px rgba(15, 23, 42, 0.04) !important;
   }
 
+  .ll-modal-surface input.ll-command-input:not([type="checkbox"]):not([type="radio"]):not([type="file"]),
+  .ll-modal-surface input.ll-command-input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):hover,
+  .ll-modal-surface input.ll-command-input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):focus,
+  .ll-modal-surface input.ll-command-input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):focus-visible {
+    background-color: transparent !important;
+    border-color: transparent !important;
+    box-shadow: none !important;
+  }
+
   button[role="combobox"] > svg:last-child {
     margin-right: -0.125rem;
   }

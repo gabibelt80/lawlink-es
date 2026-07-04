@@ -24,22 +24,8 @@ import {
   invoiceRequestStatusColor
 } from "@/lib/enums";
 import { formatCurrency } from "@/lib/utils";
-import type { InvoiceRequestStatus } from "@prisma/client";
 
-type InvoiceRow = {
-  id: string;
-  amount: { toString(): string };
-  title: string | null;
-  status: InvoiceRequestStatus;
-  requestNote: string | null;
-  requestedAt: Date;
-  processedAt: Date | null;
-  processNote: string | null;
-  requestedBy: { id: string; name: string };
-  processedBy: { id: string; name: string } | null;
-  contractScan: { id: string; name: string } | null;
-  invoiceFile: { id: string; name: string } | null;
-};
+type InvoiceRow = Awaited<ReturnType<typeof listInvoiceRequestsByMatter>>[number];
 
 export function InvoiceSection({ matterId }: { matterId: string }) {
   const [requests, setRequests] = useState<InvoiceRow[] | null>(null);
@@ -50,7 +36,7 @@ export function InvoiceSection({ matterId }: { matterId: string }) {
     setLoading(true);
     try {
       const r = await listInvoiceRequestsByMatter(matterId);
-      setRequests(r as InvoiceRow[]);
+      setRequests(r);
     } finally {
       setLoading(false);
     }

@@ -27,8 +27,9 @@ import { cn, formatCurrency } from "@/lib/utils";
 import { InfoPanel } from "./info-panel";
 import { FinancePanel } from "./finance-panel";
 import { ProcedureRemindersAndMemos } from "./procedure-content";
-import { ProcedureDocumentsSection } from "./procedure-documents-section";
 import { ProcedurePartiesCard } from "./procedure-info-panel";
+import { ProcedureWorkflowPanel } from "./procedure-workflow-panel";
+import type { WorkflowPreservationCase } from "./procedure-workflow-panel";
 
 import { ApprovalsPanel } from "./approvals-panel";
 import type { SealContractItem, ExpressItem } from "./info-extras";
@@ -63,7 +64,7 @@ type MatterPayloadBase = Prisma.MatterGetPayload<{
       include: {
         deadlines: true;
         hearings: true;
-        stages: true;
+        stages: { include: { tasks: true } };
         procedureParties: { include: { party: true } };
         memos: true;
       };
@@ -139,6 +140,8 @@ export function MatterDetailTabs({
   finance,
   userOptions,
   documents,
+  folders,
+  templates,
   colleagues,
   currentUserRole,
   canAssociateThisMatter,
@@ -147,7 +150,8 @@ export function MatterDetailTabs({
   sealContracts,
   expresses,
   latestArchive,
-  customFieldDefs
+  customFieldDefs,
+  preservationCases
 }: {
   matter: MatterPayload;
   finance: FinancePayload;
@@ -180,6 +184,7 @@ export function MatterDetailTabs({
     options: string[];
     required: boolean;
   }[];
+  preservationCases: WorkflowPreservationCase[];
 }) {
   const [selectedProcId, setSelectedProcId] = useState<string | null>(null);
   const [addProcOpen, setAddProcOpen] = useState(false);
@@ -229,7 +234,8 @@ export function MatterDetailTabs({
           size: d.size,
           createdAt: d.createdAt,
           sourceParty: d.sourceParty,
-          path: d.path
+          path: d.path,
+          tags: d.tags ?? []
         }))
     : [];
   const procedureParties = buildProcedurePartyOptions(matter);
@@ -344,13 +350,29 @@ export function MatterDetailTabs({
             onDelete={handleDeleteProcedure}
           />
 
-          <InfoPanel
-            matter={matter}
-            currentProcedure={currentProcedure}
-            requestContent={matter.intake?.claimDescription ?? null}
-            canEdit={false}
-            canManageRelatedMatters={canAssociateThisMatter}
-            onEdit={() => setMatterEditorOpen(true)}
+          <ProcedureWorkflowPanel
+            matter={{
+              id: matter.id,
+              internalCode: matter.internalCode,
+              title: matter.title,
+              category: matter.category
+            }}
+            procedure={currentProcedure}
+            documents={procDocs}
+            preservationCases={preservationCases}
+            folders={folders}
+            templates={templates}
+            users={colleagues}
+            canManage={canAssociateThisMatter}
+            matterInfoNode={
+              <InfoPanel
+                matter={matter}
+                currentProcedure={currentProcedure}
+                canEdit={false}
+                canManageRelatedMatters={canAssociateThisMatter}
+                onEdit={() => setMatterEditorOpen(true)}
+              />
+            }
           />
 
           {currentProcedure && (
@@ -359,16 +381,6 @@ export function MatterDetailTabs({
               parties={procedureParties}
               canEdit={false}
               onEdit={() => setMatterEditorOpen(true)}
-            />
-          )}
-
-          {currentProcedure && (
-            <ProcedureDocumentsSection
-              matterId={matter.id}
-              procedureId={currentProcedure.id}
-              documents={procDocs}
-              procedureParties={currentProcedure.procedureParties}
-              canManage={canAssociateThisMatter}
             />
           )}
 

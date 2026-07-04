@@ -8,20 +8,13 @@ import { getLatestArchiveRecord } from "@/server/archive/actions";
 import { getMatterReviewSummary } from "@/server/ai/matter-review-summary";
 import { getSession } from "@/lib/auth/session";
 import { prisma } from "@/lib/prisma";
+import { decimalToNumber, nullableDecimalToNumber } from "@/lib/decimal";
 import { MatterDetailTabs } from "./_components/matter-detail-tabs";
 import { ReviewSummaryCard } from "./_components/review-summary-card";
 
 type PageProps = {
   params: Promise<{ id: string }>;
 };
-
-function toNumber(value: { toString(): string } | number) {
-  return typeof value === "number" ? value : Number(value);
-}
-
-function toNullableNumber(value: { toString(): string } | number | null | undefined) {
-  return value === null || value === undefined ? null : toNumber(value);
-}
 
 export default async function MatterDetailPage({ params }: PageProps) {
   const { id } = await params;
@@ -33,10 +26,22 @@ export default async function MatterDetailPage({ params }: PageProps) {
 
   const matter = {
     ...matterRaw,
-    claimAmount: toNullableNumber(matterRaw.claimAmount)
+    claimAmount: nullableDecimalToNumber(matterRaw.claimAmount)
   };
 
-  const [financeRaw, userOptions, documents, folders, templates, allColleagues, sealContracts, expresses, latestArchive, customFieldDefs] = await Promise.all([
+  const [
+    financeRaw,
+    userOptions,
+    documents,
+    folders,
+    templates,
+    allColleagues,
+    sealContracts,
+    expresses,
+    latestArchive,
+    customFieldDefs,
+    preservationCases
+  ] = await Promise.all([
     getMatterFinance(matter.id),
     prisma.user.findMany({
       where: { active: true },
@@ -114,6 +119,25 @@ export default async function MatterDetailPage({ params }: PageProps) {
       where: { entityType: "MATTER", enabled: true },
       orderBy: [{ order: "asc" }, { createdAt: "asc" }],
       select: { id: true, key: true, label: true, fieldType: true, options: true, required: true }
+    }),
+    prisma.preservationCase.findMany({
+      where: { matterId: matter.id },
+      orderBy: [{ status: "asc" }, { createdAt: "desc" }],
+      include: {
+        matter: { select: { id: true, internalCode: true, title: true } },
+        owner: { select: { id: true, name: true } },
+        targets: {
+          orderBy: { createdAt: "asc" },
+          include: {
+            properties: {
+              orderBy: { expiryDate: "asc" },
+              include: {
+                renewals: { orderBy: { renewedAt: "desc" }, take: 3 }
+              }
+            }
+          }
+        }
+      }
     })
   ]);
 
@@ -121,15 +145,15 @@ export default async function MatterDetailPage({ params }: PageProps) {
     ...financeRaw,
     billings: financeRaw.billings.map((billing) => ({
       ...billing,
-      contractAmount: toNumber(billing.contractAmount)
+      contractAmount: decimalToNumber(billing.contractAmount)
     })),
     entries: financeRaw.entries.map((entry) => ({
       ...entry,
-      amount: toNumber(entry.amount)
+      amount: decimalToNumber(entry.amount)
     })),
     plans: financeRaw.plans.map((plan) => ({
       ...plan,
-      percent: toNumber(plan.percent)
+      percent: decimalToNumber(plan.percent)
     }))
   };
 
@@ -159,6 +183,16 @@ export default async function MatterDetailPage({ params }: PageProps) {
     folderId: d.folderId,
     templateId: d.templateId,
     createdAt: d.createdAt
+  }));
+  const preservationCasesForClient = preservationCases.map((item) => ({
+    ...item,
+    targets: item.targets.map((target) => ({
+      ...target,
+      properties: target.properties.map((property) => ({
+        ...property,
+        amount: nullableDecimalToNumber(property.amount)
+      }))
+    }))
   }));
 
   return (
@@ -193,6 +227,7 @@ export default async function MatterDetailPage({ params }: PageProps) {
         expresses={expresses}
         latestArchive={latestArchive}
         customFieldDefs={customFieldDefs}
+        preservationCases={preservationCasesForClient}
       />
     </div>
   );

@@ -6,6 +6,7 @@ import { prisma } from "@/lib/prisma";
 import { requireSession } from "@/lib/auth/session";
 import { audit } from "@/server/audit";
 import { assertMatterWritable } from "@/lib/archive/guard";
+import { nullableDecimalToNumber } from "@/lib/decimal";
 import {
   matterAssociationFilter,
   matterVisibilityFilter,
@@ -16,7 +17,8 @@ import {
 } from "@/lib/permissions";
 import { generateInternalCode, generateFirmCaseNo } from "./code-generator";
 import { seedDefaultFolders } from "@/lib/default-folders";
-import { normalizeJurisdictionForAgency } from "@/lib/china-regions";
+import { assertAgencyAllowedForProcedure, normalizeJurisdictionForAgency } from "@/lib/china-regions";
+import { assertCauseAllowedForSelection } from "@/server/causes/validation";
 import {
   matterCreateSchema,
   matterListQuerySchema,
@@ -160,7 +162,10 @@ export async function listMatters(input: Partial<MatterListQuery> = {}) {
     });
 
   const start = (query.page - 1) * query.pageSize;
-  const items = sorted.slice(start, start + query.pageSize);
+  const items = sorted.slice(start, start + query.pageSize).map((matter) => ({
+    ...matter,
+    claimAmount: nullableDecimalToNumber(matter.claimAmount)
+  }));
 
   return { items, total, page: query.page, pageSize: query.pageSize };
 }
@@ -204,11 +209,12 @@ export async function updateProcedureInfo(input: {
   const session = await requireSession();
   const proc = await prisma.matterProcedure.findUnique({
     where: { id: input.procedureId },
-    select: { matterId: true }
+    select: { matterId: true, type: true }
   });
   if (!proc) throw new Error("程序不存在");
   await assertCanAccessMatter(session.user.id, session.user.role, proc.matterId);
   await assertMatterWritable(proc.matterId);
+  assertAgencyAllowedForProcedure(input.handlingAgency, proc.type);
 
   const partyRows = input.procedureParties
     ? normalizeProcedureParties(input.procedureParties)
@@ -647,7 +653,12 @@ export async function getMatterById(id: string) {
         include: {
           deadlines: { orderBy: [{ completed: "asc" }, { dueAt: "asc" }] },
           hearings: { orderBy: { startsAt: "asc" } },
-          stages: { orderBy: { order: "asc" } },
+          stages: {
+            orderBy: { order: "asc" },
+            include: {
+              tasks: { orderBy: [{ completed: "asc" }, { dueAt: "asc" }, { createdAt: "asc" }] }
+            }
+          },
           procedureParties: {
             orderBy: [{ standing: "asc" }, { ordinal: "asc" }],
             include: { party: true }
@@ -673,6 +684,12 @@ export async function getMatterById(id: string) {
 export async function createMatter(input: MatterCreateInput) {
   const session = await requireSession();
   const data = matterCreateSchema.parse(input);
+  assertAgencyAllowedForProcedure(data.firstProcedure.handlingAgency, data.firstProcedure.type);
+  await assertCauseAllowedForSelection({
+    causeId: data.causeId,
+    category: data.category,
+    procedureType: data.firstProcedure.type
+  });
 
   const internalCode = await generateInternalCode(data.category);
   const firmCaseNo = await generateFirmCaseNo(data.category);
@@ -869,11 +886,26 @@ export async function updateMatterBasicInfo(input: MatterUpdateBasicInput) {
 
   const matter = await prisma.matter.findUnique({
     where: { id: data.id, deletedAt: null },
-    select: { id: true, ownerId: true, title: true }
+    select: {
+      id: true,
+      ownerId: true,
+      title: true,
+      category: true,
+      procedures: {
+        orderBy: { order: "asc" },
+        take: 1,
+        select: { type: true }
+      }
+    }
   });
   if (!matter) throw new Error("案件不存在");
   await assertMatterWritable(data.id);
   await assertCanLeadMatter(session.user.id, data.id, "只有案件主办/协办可以编辑案件基本信息");
+  await assertCauseAllowedForSelection({
+    causeId: data.causeId,
+    category: matter.category,
+    procedureType: matter.procedures[0]?.type
+  });
 
   await prisma.matter.update({
     where: { id: data.id },

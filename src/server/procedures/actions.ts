@@ -5,15 +5,24 @@ import { prisma } from "@/lib/prisma";
 import { requireSession } from "@/lib/auth/session";
 import { audit } from "@/server/audit";
 import { assertMatterWritable } from "@/lib/archive/guard";
-import { assertCanAccessMatter, assertCanLeadMatter } from "@/lib/permissions";
-import { normalizeJurisdictionForAgency } from "@/lib/china-regions";
+import { assertCanAccessMatter, assertCanAssociateMatter, assertCanLeadMatter } from "@/lib/permissions";
+import { assertAgencyAllowedForProcedure, normalizeJurisdictionForAgency } from "@/lib/china-regions";
+import {
+  defaultStageNamesForProcedure,
+  normalizeProcedureStageName,
+  stagePresetForName
+} from "@/lib/procedure-stage-defaults";
 import {
   procedureCreateSchema,
   procedureUpdateSchema,
+  procedureStageCreateSchema,
+  procedureStageRemoveSchema,
   deadlineCreateSchema,
   hearingCreateSchema,
   type ProcedureCreateInput,
   type ProcedureUpdateInput,
+  type ProcedureStageCreateInput,
+  type ProcedureStageRemoveInput,
   type DeadlineCreateInput,
   type HearingCreateInput
 } from "./schemas";
@@ -33,6 +42,7 @@ export async function addProcedure(input: ProcedureCreateInput) {
   const data = procedureCreateSchema.parse(input);
   await assertCanAccessMatter(session.user.id, session.user.role, data.matterId);
   await assertMatterWritable(data.matterId);
+  assertAgencyAllowedForProcedure(data.handlingAgency, data.type);
 
   const lastOrder = await prisma.matterProcedure.findFirst({
     where: { matterId: data.matterId },
@@ -89,11 +99,12 @@ export async function updateProcedure(input: ProcedureUpdateInput) {
 
   const existing = await prisma.matterProcedure.findUnique({
     where: { id },
-    select: { matterId: true, jurisdiction: true, handlingAgency: true }
+    select: { matterId: true, type: true, jurisdiction: true, handlingAgency: true }
   });
   if (!existing) throw new Error("程序不存在");
   await assertCanAccessMatter(session.user.id, session.user.role, existing.matterId);
   await assertMatterWritable(existing.matterId);
+  assertAgencyAllowedForProcedure(rest.handlingAgency ?? existing.handlingAgency, rest.type ?? existing.type);
 
   const normalizedRest = {
     ...rest
@@ -140,6 +151,221 @@ export async function deleteProcedure(id: string) {
   });
 
   revalidatePath(`/matters/${procedure.matterId}`);
+  return { ok: true };
+}
+
+// ============ Procedure Stage ============
+
+async function materializeProcedureStage(
+  input: ProcedureStageCreateInput,
+  options: { allowExisting: boolean }
+) {
+  const session = await requireSession();
+  const data = procedureStageCreateSchema.parse(input);
+
+  const procedure = await prisma.matterProcedure.findUnique({
+    where: { id: data.procedureId },
+    select: { matterId: true, type: true }
+  });
+  if (!procedure) throw new Error("程序不存在");
+
+  await assertCanAssociateMatter(session.user.id, procedure.matterId);
+  await assertMatterWritable(procedure.matterId);
+
+  const targetName = data.name.trim();
+  const normalizedTarget = normalizeProcedureStageName(targetName);
+  const result = await prisma.$transaction(async (tx) => {
+    const existingStages = await tx.matterStage.findMany({
+      where: { procedureId: data.procedureId },
+      orderBy: { order: "asc" },
+      select: { id: true, name: true, order: true }
+    });
+    const existing = existingStages.find((stage) => normalizeProcedureStageName(stage.name) === normalizedTarget);
+
+    if (existing) {
+      if (options.allowExisting) {
+        return { stage: existing, created: false, materializedCount: 0 };
+      }
+      throw new Error("该环节已存在");
+    }
+
+    if (existingStages.length === 0) {
+      const names = [...defaultStageNamesForProcedure(procedure.type)];
+      if (!names.some((name) => normalizeProcedureStageName(name) === normalizedTarget)) {
+        const insertionIndex = insertionIndexForNames(names, data);
+        names.splice(insertionIndex, 0, targetName);
+      }
+
+      let targetStage: { id: string; name: string; order: number } | null = null;
+      let order = 0;
+      for (const name of names) {
+        order += 1;
+        const created = await tx.matterStage.create({
+          data: {
+            procedureId: data.procedureId,
+            name,
+            description: normalizeProcedureStageName(name) === normalizedTarget ? data.description || null : null,
+            order
+          },
+          select: { id: true, name: true, order: true }
+        });
+        if (normalizeProcedureStageName(name) === normalizedTarget) {
+          targetStage = created;
+        }
+      }
+
+      if (!targetStage) throw new Error("环节创建失败");
+      return { stage: targetStage, created: true, materializedCount: names.length };
+    }
+
+    const insertOrder = nextStageOrder(existingStages, data);
+    await tx.matterStage.updateMany({
+      where: { procedureId: data.procedureId, order: { gte: insertOrder } },
+      data: { order: { increment: 1 } }
+    });
+
+    const created = await tx.matterStage.create({
+      data: {
+        procedureId: data.procedureId,
+        name: targetName,
+        description: data.description || null,
+        order: insertOrder
+      },
+      select: { id: true, name: true, order: true }
+    });
+    return { stage: created, created: true, materializedCount: 1 };
+  });
+
+  if (result.created) {
+    await prisma.timelineEvent.create({
+      data: {
+        matterId: procedure.matterId,
+        eventType: "STAGE_ADDED",
+        title: `新增环节：${result.stage.name}`,
+        occurredAt: new Date(),
+        refType: "MatterStage",
+        refId: result.stage.id
+      }
+    });
+
+    await audit({
+      userId: session.user.id,
+      action: "MATTER_STAGE_CREATE",
+      targetType: "MatterStage",
+      targetId: result.stage.id,
+      detail: {
+        matterId: procedure.matterId,
+        procedureId: data.procedureId,
+        materializedCount: result.materializedCount
+      }
+    });
+
+    revalidatePath(`/matters/${procedure.matterId}`);
+  }
+
+  return { ok: true, id: result.stage.id, created: result.created };
+}
+
+export async function createProcedureStage(input: ProcedureStageCreateInput) {
+  return materializeProcedureStage(input, { allowExisting: false });
+}
+
+export async function ensureProcedureStage(input: ProcedureStageCreateInput) {
+  return materializeProcedureStage(input, { allowExisting: true });
+}
+
+function insertionIndexForNames(names: string[], data: ProcedureStageCreateInput) {
+  if (data.insertPosition === "START") return 0;
+  if (data.insertPosition !== "AFTER") return names.length;
+  const afterName = data.insertAfterStageName?.trim();
+  if (!afterName) return names.length;
+  const normalizedAfterName = normalizeProcedureStageName(afterName);
+  const afterIndex = names.findIndex((name) => normalizeProcedureStageName(name) === normalizedAfterName);
+  return afterIndex >= 0 ? afterIndex + 1 : names.length;
+}
+
+function nextStageOrder(
+  stages: { id: string; name: string; order: number }[],
+  data: ProcedureStageCreateInput
+) {
+  if (data.insertPosition === "START") return 1;
+  if (data.insertPosition === "AFTER") {
+    const afterStage = data.insertAfterStageId
+      ? stages.find((stage) => stage.id === data.insertAfterStageId)
+      : stages.find(
+          (stage) =>
+            data.insertAfterStageName &&
+            normalizeProcedureStageName(stage.name) === normalizeProcedureStageName(data.insertAfterStageName)
+        );
+    if (afterStage) return afterStage.order + 1;
+  }
+  return (stages[stages.length - 1]?.order ?? 0) + 1;
+}
+
+export async function removeProcedureStage(input: ProcedureStageRemoveInput) {
+  const session = await requireSession();
+  const data = procedureStageRemoveSchema.parse(input);
+
+  const stage = await prisma.matterStage.findUnique({
+    where: { id: data.id },
+    include: {
+      procedure: { select: { matterId: true, type: true } },
+      _count: { select: { tasks: true } }
+    }
+  });
+  if (!stage) return { ok: false };
+
+  await assertCanAssociateMatter(session.user.id, stage.procedure.matterId);
+  await assertMatterWritable(stage.procedure.matterId);
+
+  const preset = stagePresetForName(stage.procedure.type, stage.name);
+  if (preset?.kind === "required") {
+    throw new Error("必备环节不能移除");
+  }
+
+  const taggedDocuments = await prisma.document.count({
+    where: {
+      matterId: stage.procedure.matterId,
+      procedureId: stage.procedureId,
+      deletedAt: null,
+      tags: { has: `阶段:${stage.name}` }
+    }
+  });
+  const preservationRecords = stage.name.includes("保全")
+    ? await prisma.preservationCase.count({ where: { matterId: stage.procedure.matterId } })
+    : 0;
+
+  if (stage._count.tasks > 0 || taggedDocuments > 0 || preservationRecords > 0) {
+    throw new Error("该环节已有任务、材料或专项记录；当前版本先保留数据，完整隐藏需要新增环节状态字段");
+  }
+
+  await prisma.$transaction(async (tx) => {
+    await tx.matterStage.delete({ where: { id: stage.id } });
+    await tx.matterStage.updateMany({
+      where: { procedureId: stage.procedureId, order: { gt: stage.order } },
+      data: { order: { decrement: 1 } }
+    });
+    await tx.timelineEvent.create({
+      data: {
+        matterId: stage.procedure.matterId,
+        eventType: "STAGE_REMOVED",
+        title: `移除环节：${stage.name}`,
+        occurredAt: new Date(),
+        refType: "MatterStage",
+        refId: stage.id
+      }
+    });
+  });
+
+  await audit({
+    userId: session.user.id,
+    action: "MATTER_STAGE_REMOVE",
+    targetType: "MatterStage",
+    targetId: stage.id,
+    detail: { matterId: stage.procedure.matterId, procedureId: stage.procedureId }
+  });
+
+  revalidatePath(`/matters/${stage.procedure.matterId}`);
   return { ok: true };
 }
 

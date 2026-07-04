@@ -82,14 +82,15 @@ export function Topbar({ onMobileMenuToggle, userAvatar }: { onMobileMenuToggle?
       <button
         onClick={() => setSearchOpen(true)}
         className={cn(
-          "flex h-[34px] min-w-0 flex-1 items-center gap-2 rounded-md border border-transparent bg-black/[0.04] px-3 text-left sm:w-[300px] sm:flex-initial",
-          "text-[13px] text-muted-foreground transition-colors hover:bg-black/[0.06] hover:text-foreground"
+          "flex h-8 min-w-0 flex-1 items-center gap-2 rounded-md border border-border/70 bg-card/80 px-2.5 text-left sm:w-[300px] sm:flex-initial",
+          "text-[13px] text-muted-foreground transition-colors hover:border-border hover:bg-muted hover:text-foreground",
+          "focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary/35"
         )}
         aria-label="全局搜索 (Cmd+K)"
       >
         <Search className="h-3.5 w-3.5 shrink-0" strokeWidth={1.8} />
         <span className="flex-1 truncate">搜索案件、客户、材料...</span>
-        <kbd className="hidden h-5 items-center gap-0.5 rounded border border-border bg-white/80 px-1.5 font-mono text-[10px] font-medium sm:inline-flex">
+        <kbd className="hidden h-4 items-center gap-0.5 rounded bg-muted/80 px-1.5 font-mono text-[10px] font-medium text-muted-foreground sm:inline-flex">
           ⌘K
         </kbd>
       </button>
@@ -104,7 +105,7 @@ export function Topbar({ onMobileMenuToggle, userAvatar }: { onMobileMenuToggle?
             <button
               type="button"
               className={cn(
-                "inline-flex h-[34px] items-center gap-1.5 rounded-full border border-input bg-card px-3 text-[13px] shadow-[var(--shadow-low)]",
+                "inline-flex h-8 items-center gap-1.5 rounded-full border border-input bg-card px-2.5 text-[13px] shadow-[var(--shadow-low)]",
                 "text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
               )}
               title="应用"
@@ -153,7 +154,7 @@ export function Topbar({ onMobileMenuToggle, userAvatar }: { onMobileMenuToggle?
         <Button
           size="sm"
           onClick={() => router.push("/matters?tab=intake&new=1")}
-          className="h-[34px] gap-1.5 px-3 text-[13px]"
+          className="h-8 gap-1.5 px-2.5 text-[13px]"
         >
           <Plus className="h-3.5 w-3.5" strokeWidth={2} />
           <span className="hidden sm:inline">新建收案</span>
