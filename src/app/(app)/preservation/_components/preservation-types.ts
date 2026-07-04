@@ -35,15 +35,6 @@ export type MatterOption = {
 
 export type UserOption = { id: string; name: string };
 
-/** @deprecated 旧模型兼容别名 */
-export type PreservationRow = Prisma.PreservationGetPayload<{
-  include: {
-    matter: { select: { id: true; internalCode: true; title: true } };
-    owner: { select: { id: true; name: true } };
-    renewals: true;
-  };
-}>;
-
 export const PRES_TYPE_CN: Record<PreservationType, string> = {
   PRE_LITIGATION: "诉前保全",
   LITIGATION: "诉中保全",

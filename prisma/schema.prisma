@@ -359,11 +359,9 @@ model User {
   sealRequests          SealRequest[]         @relation("SealRequester")
   sealApprovals         SealRequest[]         @relation("SealApprover")
   sealStamps            SealRequest[]         @relation("SealStamper")
-  // v0.9: 短信收件人 / 保全负责人 / 保全续保操作人 / 快递创建人
+  // v0.9: 短信收件人 / 快递创建人
   receivedSmsMessages   SmsMessage[]          @relation("SmsReceiver")
-  ownedPreservations    Preservation[]        @relation("PreservationOwner")
-  preservationRenewals  PreservationRenewal[] @relation("RenewalPerformer")
-  // v0.44: 保全三层重构
+  // v0.44: 保全三层重构（v0.48 移除旧单表模型）
   ownedPreservationCases PreservationCase[]      @relation("PreservationCaseOwner")
   propertyRenewals        PreservationPropertyRenewal[] @relation("PropertyRenewalPerformer")
   createdExpress        ExpressTracking[]     @relation("ExpressCreator")
@@ -598,9 +596,8 @@ model Matter {
   // v0.8: 卷宗 + 用章
   folders          DocumentFolder[]
   sealRequests     SealRequest[]
-  // v0.9: 法院短信 + 财产保全 + 快递追踪
+  // v0.9: 法院短信 + 财产保全 + 快递追踪（保全 v0.48 起仅三层模型）
   smsMessages      SmsMessage[]
-  preservations    Preservation[]
   preservationCases PreservationCase[]
   expressTrackings ExpressTracking[]
   // v0.21: AI 文书审查历史
@@ -1469,64 +1466,10 @@ enum PreservationStatus {
   LIFTED // 已解除
 }
 
-model Preservation {
-  id       String  @id @default(cuid())
-  // 诉前保全可空（决策 §13.8.3）；立案后回填 matterId
-  matterId String?
-  matter   Matter? @relation(fields: [matterId], references: [id], onDelete: SetNull)
-
-  type          PreservationType
-  propertyType  PropertyType
-  amount        Decimal?         @db.Decimal(18, 2)
-  respondent    String // 被保全人
-  guaranteeType GuaranteeType?
-
-  appliedAt  DateTime? // 申请日
-  startDate  DateTime // 生效日（必填）
-  duration   Int // 保全期限（天）；默认按 propertyType 推荐
-  expiryDate DateTime // 到期日 = startDate + duration（可手动覆盖）
-
-  court          String?
-  rulingNumber   String?
-  propertyDetail String?
-  note           String?
-
-  ownerId String?
-  owner   User?   @relation("PreservationOwner", fields: [ownerId], references: [id], onDelete: SetNull)
-
-  // 提醒阈值（天）默认 [30, 15, 7, 3, 1]
-  remindDays Int[]                 @default([30, 15, 7, 3, 1])
-  status     PreservationStatus    @default(ACTIVE)
-  renewals   PreservationRenewal[]
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@index([matterId])
-  @@index([status, expiryDate])
-  @@index([ownerId, status])
-}
-
-model PreservationRenewal {
-  id             String       @id @default(cuid())
-  preservationId String
-  preservation   Preservation @relation(fields: [preservationId], references: [id], onDelete: Cascade)
-
-  renewedAt       DateTime
-  oldExpiryDate   DateTime
-  newExpiryDate   DateTime
-  renewalDuration Int // 新增的天数
-  note            String?
-
-  performedById String
-  performedBy   User     @relation("RenewalPerformer", fields: [performedById], references: [id], onDelete: Restrict)
-  createdAt     DateTime @default(now())
-
-  @@index([preservationId])
-}
-
 // ============================================================
 // v0.44: 保全三层重构（案件 → 被保全人 → 财产）
+// v0.48: 移除旧 Preservation / PreservationRenewal 单表模型，
+//        存量数据已在 migration 中迁入三层模型
 // ============================================================
 
 model PreservationCase {

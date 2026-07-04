@@ -1159,38 +1159,30 @@ PRD §13.2。律师每天被 12368 / 法院短信轰炸，复制粘贴到 `/inbo
 - 附件提取不新增表：成功下载的送达文书落到既有 `Document`；失败、需登录、需验证码或未关联案件等状态回写 `parsedJson.attachmentResults`
 - `receivedBy` onDelete=Restrict：用户被禁用前需清理短信归属
 
-### 4.20 Preservation / PreservationRenewal（财产保全）⭐ v0.9 新增
+### 4.20 财产保全（v0.44 三层模型：PreservationCase → Target → Property）
 
 PRD §13.3。商事案件几乎每案必涉。漏续保 = 冻结失效 = 执业事故。
 
-| 字段 | 说明 |
-|---|---|
-| `matterId` | **可空**（决策 §13.8.3 — 诉前保全期间 Matter 可能未建立，立案后回填） |
-| `type` | 诉前/诉中/执行 |
-| `propertyType` | 银行存款/房产/车辆/股权/知识产权/其他 |
-| `amount` | 保全金额（Decimal 18,2） |
-| `respondent` | 被保全人 |
-| `guaranteeType` | 保证金/保函/财产担保/无需担保 |
-| `startDate` | 生效日（必填） |
-| `duration` | 保全期限（天）；默认按 propertyType 推荐 |
-| `expiryDate` | 到期日 = startDate + duration，可手动覆盖 |
-| `remindDays` | 提醒阈值默认 [30, 15, 7, 3, 1] |
-| `status` | 生效/已续保/已到期/已解除 |
-| `renewals` | 续保记录（PreservationRenewal） |
+> v0.9 的旧 `Preservation` / `PreservationRenewal` 单表模型已于 **v0.48 移除**
+> （migration `20260704070236_v48_drop_legacy_preservation`，存量数据以 `mig_` 前缀 ID
+> 迁入三层模型）。以下为现行结构：
 
-**保全期限默认值（法律依据写死，民诉法第 244 条）**：
+| 模型 | 承载 | 关键字段 |
+|---|---|---|
+| `PreservationCase` | 一次保全程序 | `matterId`（**可空**，诉前保全立案后回填）、`type`（诉前/诉中/执行）、`court`、`rulingNumber`、`guaranteeType`、`remindDays`（默认 [30,15,7,3,1]）、`ownerId` |
+| `PreservationTarget` | 被保全人 | `caseId`、`name` |
+| `PreservationProperty` | 单项财产 | `targetId`、`propertyType`、`amount`（Decimal 18,2）、`startDate`、`duration`、`expiryDate`、`status`（生效/已续保/已到期/已解除） |
+| `PreservationPropertyRenewal` | 续保记录 | `propertyId`、新旧到期日、`performedById` |
 
-| propertyType | 默认天数 |
-|---|---|
-| BANK_DEPOSIT | 365（1 年） |
-| VEHICLE / OTHER | 730（2 年） |
-| REAL_ESTATE / EQUITY / IP | 1095（3 年） |
+**保全期限默认天数**（BANK_DEPOSIT 365 / VEHICLE·OTHER 730 / REAL_ESTATE·EQUITY·IP 1095）：
+⚠️ 旧文档标注的"民诉法第 244 条"系错误引用（民诉法正文无期限天数规定）；通说出处为
+最高法查扣冻规定（2020 修正），具体条文实施期限引擎（ROADMAP v0.49）时逐条过元典核验。
 
 **关键约束**：
 - `matter` onDelete=SetNull：案件被软删时保全记录保留（用于审计），matterId 置空
 - `owner` onDelete=SetNull：跟进人离职不删保全
-- 续保后 `Preservation.expiryDate` 更新为新到期日，status 变 RENEWED
-- 到期预警通过现有 `Deadline` 派生条目（不重复存提醒逻辑），dashboard 显示
+- 续保后 `PreservationProperty.expiryDate` 更新为新到期日，status 变 RENEWED
+- 到期预警与日程统一读 `PreservationProperty.expiryDate`（PRD §10.2.1）
 
 ---
 
