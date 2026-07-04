@@ -100,6 +100,7 @@ type WorkflowStageSource = {
   name: string;
   description: string | null;
   order: number;
+  status: "ACTIVE" | "HIDDEN";
   startedAt: Date | null;
   completedAt: Date | null;
   tasks: WorkflowTask[];
@@ -152,6 +153,7 @@ type WorkflowDocument = {
   sourceParty: string | null;
   path: string;
   tags: string[];
+  stageId: string | null;
 };
 
 type WorkflowMatter = {
@@ -686,11 +688,11 @@ export function ProcedureWorkflowPanel({
       toast.warning("必备环节不能移除");
       return;
     }
-    if (!confirm(`确定从当前程序移除「${stage.name}」？已有内容的环节会被保留。`)) return;
+    if (!confirm(`确定从当前程序移除「${stage.name}」？已有任务或材料的环节将被隐藏（数据保留，可重新添加恢复）。`)) return;
     startStageRemovalTransition(async () => {
       try {
-        await removeProcedureStage({ id: stageId });
-        toast.success("环节已移除");
+        const res = await removeProcedureStage({ id: stageId });
+        toast.success(res.hidden ? "环节已隐藏，数据保留（重新添加同名环节可恢复）" : "环节已移除");
         setSelectedKey(null);
         router.refresh();
       } catch (err) {
@@ -777,6 +779,7 @@ export function ProcedureWorkflowPanel({
             <PreservationWorkflowContent
               matter={matter}
               procedure={procedure}
+              stage={selectedItem}
               cases={preservationCases}
               documents={documents}
               users={users}
@@ -863,7 +866,7 @@ function NormalStageContent({
         .filter((d) => guide.deadlineCategories.includes(d.category))
         .slice(0, 4)
     : [];
-  const relevantDocs = documents.filter((d) => documentMatchesStage(d, stage.name));
+  const relevantDocs = documents.filter((d) => documentMatchesStage(d, stage));
   const stageHearings = guide.includeHearings ? procedure.hearings.slice(0, 3) : [];
   const recordCount = stage.tasks.length + relevantDeadlines.length + stageHearings.length;
 
@@ -993,7 +996,7 @@ function NormalStageContent({
       <StageMaterialsPanel
         matterId={matterId}
         procedure={procedure}
-        stageName={stage.name}
+        stage={stage}
         documents={relevantDocs}
         canManage={canManage}
       />
@@ -1004,6 +1007,7 @@ function NormalStageContent({
 function PreservationWorkflowContent({
   matter,
   procedure,
+  stage,
   cases,
   documents,
   users,
@@ -1014,6 +1018,7 @@ function PreservationWorkflowContent({
 }: {
   matter: WorkflowMatter;
   procedure: WorkflowProcedure;
+  stage: WorkflowStage;
   cases: WorkflowPreservationCase[];
   documents: WorkflowDocument[];
   users: UserOption[];
@@ -1038,7 +1043,7 @@ function PreservationWorkflowContent({
   const activeProperties = properties.filter((p) => p.status === "ACTIVE" || p.status === "RENEWED");
   const expiringCount = activeProperties.filter((p) => daysUntil(p.expiryDate) <= 30).length;
   const renewableProperty = properties.find((p) => p.id === renewPropertyId) ?? null;
-  const relevantDocs = documents.filter((d) => documentMatchesStage(d, "财产保全"));
+  const relevantDocs = documents.filter((d) => documentMatchesStage(d, stage));
 
   function handleLift(propertyId: string) {
     startTransition(async () => {
@@ -1213,7 +1218,7 @@ function PreservationWorkflowContent({
       <StageMaterialsPanel
         matterId={matter.id}
         procedure={procedure}
-        stageName="财产保全"
+        stage={stage}
         documents={relevantDocs}
         canManage={canManage}
       />
@@ -1314,17 +1319,18 @@ function PreservationPropertyRow({
 function StageMaterialsPanel({
   matterId,
   procedure,
-  stageName,
+  stage,
   documents,
   canManage
 }: {
   matterId: string;
   procedure: WorkflowProcedure;
-  stageName: string;
+  stage: WorkflowStage;
   documents: WorkflowDocument[];
   canManage: boolean;
 }) {
   const router = useRouter();
+  const stageName = stage.name;
   const fileRef = useRef<HTMLInputElement>(null);
   const [open, setOpen] = useState(false);
   const [picked, setPicked] = useState<File | null>(null);
@@ -1351,9 +1357,21 @@ function StageMaterialsPanel({
     }
     startTransition(async () => {
       try {
+        // v0.48: 材料按外键归属环节；虚拟环节先物化拿到真实 stageId
+        let stageId = stage.id;
+        if (!stageId) {
+          const ensured = await ensureProcedureStage({
+            procedureId: procedure.id,
+            name: stageName,
+            description: "",
+            insertPosition: "END"
+          });
+          stageId = ensured.id;
+        }
         const fd = new FormData();
         fd.set("matterId", matterId);
         fd.set("procedureId", procedure.id);
+        fd.set("stageId", stageId);
         fd.set("file", picked);
         fd.set("category", category);
         fd.set("name", customName.trim() || picked.name);
@@ -1861,7 +1879,9 @@ function buildWorkflowStages(
   preservationCases: WorkflowPreservationCase[]
 ): WorkflowStage[] {
   if (!procedure) return [];
-  const realStages: WorkflowStage[] = procedure.stages.map((stage) => ({
+  // v0.48: HIDDEN 环节不进工作台（数据保留，可重新添加恢复）
+  const visibleStages = procedure.stages.filter((stage) => stage.status !== "HIDDEN");
+  const realStages: WorkflowStage[] = visibleStages.map((stage) => ({
     ...workflowStageFromName(procedure.type, stage.name, {
       key: `stage-${stage.id}`,
       id: stage.id,
@@ -2021,9 +2041,14 @@ function stageMaterialTag(stageName: string) {
   return `阶段:${stageName}`;
 }
 
-function documentMatchesStage(document: WorkflowDocument, stageName: string) {
-  if (document.tags?.includes(stageMaterialTag(stageName))) return true;
-  const guide = stageGuideFor(stageName);
+function documentMatchesStage(
+  document: WorkflowDocument,
+  stage: { id: string | null; name: string }
+) {
+  // v0.48: 外键归属优先——已明确归属某环节的材料不再按模式匹配到其他环节
+  if (document.stageId) return stage.id !== null && document.stageId === stage.id;
+  if (document.tags?.includes(stageMaterialTag(stage.name))) return true;
+  const guide = stageGuideFor(stage.name);
   return guide.materialCategories.includes(document.category) || guide.materialPattern.test(document.name);
 }
 

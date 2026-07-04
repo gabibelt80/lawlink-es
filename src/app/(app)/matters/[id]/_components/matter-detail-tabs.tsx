@@ -235,7 +235,8 @@ export function MatterDetailTabs({
           createdAt: d.createdAt,
           sourceParty: d.sourceParty,
           path: d.path,
-          tags: d.tags ?? []
+          tags: d.tags ?? [],
+          stageId: d.stageId ?? null
         }))
     : [];
   const procedureParties = buildProcedurePartyOptions(matter);

@@ -39,6 +39,7 @@ export async function uploadDocument(formData: FormData) {
   const encrypted = formData.get("encrypted") === "true";
   const tagsRaw = formData.get("tags");
   const archiveChecklistItemIdRaw = formData.get("archiveChecklistItemId");
+  const stageIdRaw = formData.get("stageId");
   const sourcePartyRaw = formData.get("sourceParty");
   const file = formData.get("file");
 
@@ -58,6 +59,7 @@ export async function uploadDocument(formData: FormData) {
   validateUploadedFile(file, { purpose: "document", maxBytes: MAX_FILE_SIZE });
 
   const folderId = typeof folderIdRaw === "string" && folderIdRaw ? folderIdRaw : null;
+  const stageId = typeof stageIdRaw === "string" && stageIdRaw ? stageIdRaw : null;
 
   // 校验归属对象存在
   let folderName: string | null = null;
@@ -78,6 +80,20 @@ export async function uploadDocument(formData: FormData) {
         throw new Error("目标卷宗与案件不匹配");
       }
       folderName = folder.name;
+    }
+
+    // v0.48: 归属环节必须属于本案件（且与 procedureId 一致时才可信）
+    if (stageId) {
+      const stage = await prisma.matterStage.findUnique({
+        where: { id: stageId },
+        select: { procedureId: true, procedure: { select: { matterId: true } } }
+      });
+      if (!stage || stage.procedure.matterId !== matterId) {
+        throw new Error("归属环节与案件不匹配");
+      }
+      if (typeof procedureId === "string" && procedureId && stage.procedureId !== procedureId) {
+        throw new Error("归属环节与程序不匹配");
+      }
     }
 
     // 归档后仅允许补传到 ARCHIVE 卷宗（结案 / 归档），由 guard 判定
@@ -131,6 +147,7 @@ export async function uploadDocument(formData: FormData) {
       matterId,
       intakeId,
       procedureId: typeof procedureId === "string" && procedureId ? procedureId : null,
+      stageId: matterId ? stageId : null,
       folderId,
       name,
       category: parsedCategory,

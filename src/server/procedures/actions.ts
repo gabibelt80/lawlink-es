@@ -178,13 +178,22 @@ async function materializeProcedureStage(
     const existingStages = await tx.matterStage.findMany({
       where: { procedureId: data.procedureId },
       orderBy: { order: "asc" },
-      select: { id: true, name: true, order: true }
+      select: { id: true, name: true, order: true, status: true }
     });
     const existing = existingStages.find((stage) => normalizeProcedureStageName(stage.name) === normalizedTarget);
 
     if (existing) {
+      // v0.48: 隐藏的环节重新添加时恢复为 ACTIVE（数据未删，直接复用）
+      if (existing.status === "HIDDEN") {
+        const revived = await tx.matterStage.update({
+          where: { id: existing.id },
+          data: { status: "ACTIVE" },
+          select: { id: true, name: true, order: true }
+        });
+        return { stage: revived, created: false, revived: true, materializedCount: 0 };
+      }
       if (options.allowExisting) {
-        return { stage: existing, created: false, materializedCount: 0 };
+        return { stage: existing, created: false, revived: false, materializedCount: 0 };
       }
       throw new Error("该环节已存在");
     }
@@ -215,7 +224,7 @@ async function materializeProcedureStage(
       }
 
       if (!targetStage) throw new Error("环节创建失败");
-      return { stage: targetStage, created: true, materializedCount: names.length };
+      return { stage: targetStage, created: true, revived: false, materializedCount: names.length };
     }
 
     const insertOrder = nextStageOrder(existingStages, data);
@@ -233,15 +242,15 @@ async function materializeProcedureStage(
       },
       select: { id: true, name: true, order: true }
     });
-    return { stage: created, created: true, materializedCount: 1 };
+    return { stage: created, created: true, revived: false, materializedCount: 1 };
   });
 
-  if (result.created) {
+  if (result.created || result.revived) {
     await prisma.timelineEvent.create({
       data: {
         matterId: procedure.matterId,
         eventType: "STAGE_ADDED",
-        title: `新增环节：${result.stage.name}`,
+        title: result.revived ? `恢复环节：${result.stage.name}` : `新增环节：${result.stage.name}`,
         occurredAt: new Date(),
         refType: "MatterStage",
         refId: result.stage.id
@@ -285,7 +294,7 @@ function insertionIndexForNames(names: string[], data: ProcedureStageCreateInput
 }
 
 function nextStageOrder(
-  stages: { id: string; name: string; order: number }[],
+  stages: { id: string; name: string; order: number; status?: string }[],
   data: ProcedureStageCreateInput
 ) {
   if (data.insertPosition === "START") return 1;
@@ -323,20 +332,50 @@ export async function removeProcedureStage(input: ProcedureStageRemoveInput) {
     throw new Error("必备环节不能移除");
   }
 
-  const taggedDocuments = await prisma.document.count({
-    where: {
-      matterId: stage.procedure.matterId,
-      procedureId: stage.procedureId,
-      deletedAt: null,
-      tags: { has: `阶段:${stage.name}` }
-    }
+  // v0.48: 关联材料按 stageId 外键统计（标签仅作展示），环节改名不再影响判定
+  const linkedDocuments = await prisma.document.count({
+    where: { stageId: stage.id, deletedAt: null }
   });
   const preservationRecords = stage.name.includes("保全")
     ? await prisma.preservationCase.count({ where: { matterId: stage.procedure.matterId } })
     : 0;
+  const hasContent = stage._count.tasks > 0 || linkedDocuments > 0 || preservationRecords > 0;
 
-  if (stage._count.tasks > 0 || taggedDocuments > 0 || preservationRecords > 0) {
-    throw new Error("该环节已有任务、材料或专项记录；当前版本先保留数据，完整隐藏需要新增环节状态字段");
+  if (hasContent) {
+    // 有任务/材料/专项记录：置 HIDDEN 保留数据，重新添加同名环节时可恢复
+    await prisma.$transaction(async (tx) => {
+      await tx.matterStage.update({
+        where: { id: stage.id },
+        data: { status: "HIDDEN" }
+      });
+      await tx.timelineEvent.create({
+        data: {
+          matterId: stage.procedure.matterId,
+          eventType: "STAGE_REMOVED",
+          title: `隐藏环节：${stage.name}（数据保留）`,
+          occurredAt: new Date(),
+          refType: "MatterStage",
+          refId: stage.id
+        }
+      });
+    });
+
+    await audit({
+      userId: session.user.id,
+      action: "MATTER_STAGE_HIDE",
+      targetType: "MatterStage",
+      targetId: stage.id,
+      detail: {
+        matterId: stage.procedure.matterId,
+        procedureId: stage.procedureId,
+        tasks: stage._count.tasks,
+        documents: linkedDocuments,
+        preservationRecords
+      }
+    });
+
+    revalidatePath(`/matters/${stage.procedure.matterId}`);
+    return { ok: true, hidden: true };
   }
 
   await prisma.$transaction(async (tx) => {
@@ -366,7 +405,7 @@ export async function removeProcedureStage(input: ProcedureStageRemoveInput) {
   });
 
   revalidatePath(`/matters/${stage.procedure.matterId}`);
-  return { ok: true };
+  return { ok: true, hidden: false };
 }
 
 // ============ Deadline ============

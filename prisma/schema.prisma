@@ -733,18 +733,28 @@ model MatterProcedure {
   @@index([status])
 }
 
+// v0.48: 环节状态。有任务/材料/专项记录的环节移除时置 HIDDEN 而非删除，
+// 数据保留可恢复；工作台只展示 ACTIVE。
+enum MatterStageStatus {
+  ACTIVE
+  HIDDEN
+}
+
 model MatterStage {
-  id          String          @id @default(cuid())
+  id          String            @id @default(cuid())
   procedureId String
-  procedure   MatterProcedure @relation(fields: [procedureId], references: [id], onDelete: Cascade)
+  procedure   MatterProcedure   @relation(fields: [procedureId], references: [id], onDelete: Cascade)
   name        String
   description String?
   order       Int
+  status      MatterStageStatus @default(ACTIVE)
   startedAt   DateTime?
   completedAt DateTime?
   tasks       Task[]
-  createdAt   DateTime        @default(now())
-  updatedAt   DateTime        @updatedAt
+  // v0.48: 阶段材料改外键关联（原字符串标签"阶段:xx"仅作展示，改名不再断链）
+  documents   Document[]
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
 
   @@index([procedureId, order])
 }
@@ -1008,6 +1018,9 @@ model Document {
   intake      Intake?          @relation(fields: [intakeId], references: [id], onDelete: Cascade)
   procedureId String?
   procedure   MatterProcedure? @relation(fields: [procedureId], references: [id])
+  // v0.48: 归属环节（外键，环节改名/隐藏不断链）；环节删除时置空保留材料
+  stageId     String?
+  stage       MatterStage?     @relation(fields: [stageId], references: [id], onDelete: SetNull)
   name        String
   category    DocumentCategory @default(OTHER)
   // v0.42: 材料来源方（我方/对方/第三人 等，取自本案当事人，可空）
@@ -1071,6 +1084,7 @@ model Document {
   @@index([folderId])
   @@index([templateId])
   @@index([matterId, archiveChecklistItemId])
+  @@index([stageId])
 }
 
 // ============================================================
