@@ -13,8 +13,7 @@ import {
   AlertTriangle,
   List,
   Plus,
-  Grid3X3,
-  X
+  Grid3X3
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -48,7 +47,7 @@ export function ScheduleView({
 }) {
   const [view, setView] = useState<"list" | "calendar">("calendar");
   const [monthOffset, setMonthOffset] = useState(0);
-  const [selectedDay, setSelectedDay] = useState<string | null>(null);
+
   const [detailItem, setDetailItem] = useState<ScheduleItem | null>(null);
   const [addOpen, setAddOpen] = useState(false);
   const [addDate, setAddDate] = useState<Date | null>(null);
@@ -67,7 +66,7 @@ export function ScheduleView({
   const weekEnd = new Date(today.getTime() + 7 * 24 * 60 * 60 * 1000);
 
   function openAddDialog(date?: Date | null) {
-    setAddDate(date ?? (selectedDay ? parseDateKey(selectedDay) : today));
+    setAddDate(date ?? today);
     setAddOpen(true);
   }
 
@@ -141,8 +140,6 @@ export function ScheduleView({
           items={itemsWithDate}
           monthOffset={monthOffset}
           onOffsetChange={setMonthOffset}
-          selectedDay={selectedDay}
-          onSelectDay={setSelectedDay}
           onSelectItem={setDetailItem}
           onAddDay={openAddDialog}
         />
@@ -315,16 +312,12 @@ function CalendarView({
   items,
   monthOffset,
   onOffsetChange,
-  selectedDay,
-  onSelectDay,
   onSelectItem,
   onAddDay
 }: {
   items: (ScheduleItem & { dateKey: string })[];
   monthOffset: number;
   onOffsetChange: (n: number) => void;
-  selectedDay: string | null;
-  onSelectDay: (d: string | null) => void;
   onSelectItem: (item: ScheduleItem) => void;
   onAddDay: (date: Date) => void;
 }) {
@@ -361,7 +354,6 @@ function CalendarView({
   today.setHours(0, 0, 0, 0);
   const todayKey = dateKey(today);
 
-  const selectedItems = selectedDay ? itemsByKey.get(selectedDay) ?? [] : [];
   const todayItems = [...(itemsByKey.get(todayKey) ?? [])].sort(
     (a, b) => new Date(a.occurredAt).getTime() - new Date(b.occurredAt).getTime()
   );
@@ -423,27 +415,14 @@ function CalendarView({
           const dayItems = itemsByKey.get(cell.key) ?? [];
           const visibleItems = dayItems.slice(0, VISIBLE_ITEMS_PER_DAY);
           const isToday = cell.key === todayKey;
-          const isSelected = cell.key === selectedDay;
 
           return (
             <div
               key={idx}
-              onClick={() => onSelectDay(cell.key)}
-              onKeyDown={(event) => {
-                if (event.key === "Enter" || event.key === " ") {
-                  event.preventDefault();
-                  onSelectDay(cell.key);
-                }
-              }}
-              role="button"
-              tabIndex={0}
-              aria-label={`${month + 1}月${cell.date.getDate()}日，${dayItems.length}项日程`}
               className={cn(
                 "group flex min-h-[8rem] flex-col rounded-md border p-1.5 text-left transition-colors sm:min-h-[9rem]",
-                isSelected
-                  ? "border-primary bg-primary/15"
-                  : "border-border bg-card hover:border-input hover:bg-muted/35",
-                isToday && !isSelected && "border-primary/40"
+                "border-border bg-card hover:border-input hover:bg-muted/35",
+                isToday && "border-primary/40"
               )}
             >
               <div className="flex items-center justify-between gap-1">
@@ -482,53 +461,6 @@ function CalendarView({
           );
         })}
       </div>
-
-      {selectedDay && (
-        <section className="mt-4 rounded-lg border border-border bg-muted/55 p-4">
-          <header className="mb-3 flex items-start justify-between gap-3">
-            <div>
-              <h3 className="text-base font-semibold">
-                {formatDateKey(selectedDay)}
-              </h3>
-              <p className="text-xs text-muted-foreground">
-                {selectedItems.length} 项
-              </p>
-            </div>
-            <div className="flex items-center gap-1">
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={() => onAddDay(parseDateKey(selectedDay))}
-                className="h-7 gap-1 text-xs"
-              >
-                <Plus className="h-3.5 w-3.5" />
-                添加
-              </Button>
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                onClick={() => onSelectDay(null)}
-                className="h-7 w-7 p-0"
-              >
-                <X className="h-3.5 w-3.5" />
-              </Button>
-            </div>
-          </header>
-          {selectedItems.length === 0 ? (
-            <p className="rounded-md border border-dashed border-border py-6 text-center text-xs text-muted-foreground">
-              这一天没有日程
-            </p>
-          ) : (
-            <ul className="grid grid-cols-1 gap-2 lg:grid-cols-2">
-              {selectedItems.map((it) => (
-                <DayDetailItem key={it.id} item={it} onSelect={onSelectItem} />
-              ))}
-            </ul>
-          )}
-        </section>
-      )}
       </section>
       <ScheduleSideRail
         todayItems={todayItems}
@@ -635,42 +567,6 @@ function ScheduleSideItem({
         </span>
       </button>
     </li>
-  );
-}
-
-function DayDetailItem({
-  item,
-  onSelect
-}: {
-  item: ScheduleItem;
-  onSelect: (item: ScheduleItem) => void;
-}) {
-  const meta = typeMeta[item.type];
-  const Icon = meta.icon;
-  const subject = displaySubject(item);
-
-  return (
-    <button
-      type="button"
-      onClick={() => onSelect(item)}
-      className="flex min-w-0 items-start gap-3 rounded-md border border-border bg-card px-3 py-2 text-left transition-colors hover:border-primary/60 hover:bg-muted/40"
-    >
-      <span className="mt-0.5 rounded-sm p-1" style={{ backgroundColor: `${meta.color}18`, color: meta.color }}>
-        <Icon className="h-3.5 w-3.5" />
-      </span>
-      <span className="min-w-0 flex-1">
-        <span className="flex min-w-0 items-center gap-2">
-          <span className="font-mono text-[11px] tabular" style={{ color: meta.color }}>
-            {formatTime(item.occurredAt)}
-          </span>
-          <span className="truncate text-sm font-medium">{item.title}</span>
-        </span>
-        <span className="mt-0.5 block truncate text-[11px] text-muted-foreground">
-          {subject}
-          {item.procedureLabel ? ` · ${formatProcedureLabel(item.procedureLabel)}` : ""}
-        </span>
-      </span>
-    </button>
   );
 }
 
@@ -801,19 +697,6 @@ function dateKey(d: Date) {
   const m = String(d.getMonth() + 1).padStart(2, "0");
   const day = String(d.getDate()).padStart(2, "0");
   return `${y}-${m}-${day}`;
-}
-
-function parseDateKey(key: string) {
-  const [year, month, day] = key.split("-").map(Number);
-  return new Date(year, month - 1, day);
-}
-
-function formatDateKey(key: string) {
-  return parseDateKey(key).toLocaleDateString("zh-CN", {
-    month: "long",
-    day: "numeric",
-    weekday: "long"
-  });
 }
 
 function formatTime(value: Date) {
