@@ -1,16 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { CalendarClock, FileText, Gavel, Pencil } from "lucide-react";
+import { FileText, Pencil } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import {
-  litigationStandingLabel,
-  matterCategoryKind,
-  matterCategoryLabel,
-  procedureTypeLabel
-} from "@/lib/enums";
-import { formatCurrency, formatDate, cn, daysUntil } from "@/lib/utils";
+import { litigationStandingLabel, matterCategoryKind } from "@/lib/enums";
+import { formatCurrency, formatDate, cn } from "@/lib/utils";
 import type { MatterPayload } from "./matter-detail-tabs";
 import { RelatedMattersField } from "./related-matters-field";
 
@@ -55,11 +49,6 @@ const PROCEDURE_OUTCOME_LABEL: Record<string, string> = {
   OTHER: "其他"
 };
 
-const PROCEDURE_STATUS_LABEL: Record<string, string> = {
-  PENDING: "未开始",
-  IN_PROGRESS: "进行中",
-  CONCLUDED: "已结程序"
-};
 
 export function InfoPanel({
   matter,
@@ -87,18 +76,10 @@ export function InfoPanel({
     return `${s ? formatDate(s) : "—"} ~ ${e ? formatDate(e) : "—"}`;
   };
   const claimText = matter.claimAmount ? formatCurrency(Number(matter.claimAmount)) : "—";
-  const causeCell = matter.cause?.name ?? matter.causeFreeText ?? "—";
-  const matterNatureValue =
-    kind === "litigation"
-      ? causeCell
-      : kind === "project"
-        ? matter.businessType || "—"
-        : matter.counselType || "—";
   const amountLabel = kind === "counsel" ? "服务期限" : "标的";
   const amountValue = kind === "counsel" ? period(matter.serviceStart, matter.serviceEnd) : claimText;
-  // v1.1「信息总览」：这是打开详情页首先看到的内容，把当前程序下能展示的
-  // 信息尽量集中呈现（案件身份 / 近期节点 / 程序档案 / 请求 / 结果），
-  // 团队、当事人、财务由页面其他常驻模块承载，此处不重复
+  // v1.1「信息总览」：只放标题区/侧栏没有的内容——案由、类别、状态、期限
+  // 已由页头与 MatterKeypoints 承载，此处聚焦当前程序的档案字段
   const contactLabels = contactRoleLabels(currentProcedure?.type);
   const leadContact = contactValue(
     currentProcedure?.presidingJudge,
@@ -124,15 +105,6 @@ export function InfoPanel({
   const hasCounterclaim = Boolean(matter.intake?.counterclaim);
   const outcomeText = currentProcedure?.outcomeNote?.trim()
     || (currentProcedure?.outcome ? PROCEDURE_OUTCOME_LABEL[currentProcedure.outcome] : "");
-
-  // 近期节点：本程序未完成期限（按到期升序，最多 3 条）+ 下一次开庭
-  const upcomingDeadlines = (currentProcedure?.deadlines ?? [])
-    .filter((d) => !d.completed)
-    .sort((a, b) => new Date(a.dueAt).getTime() - new Date(b.dueAt).getTime())
-    .slice(0, 3);
-  const nextHearing = (currentProcedure?.hearings ?? [])
-    .filter((h) => daysUntil(h.startsAt) >= 0)
-    .sort((a, b) => new Date(a.startsAt).getTime() - new Date(b.startsAt).getTime())[0];
 
   return (
     <section className="space-y-3">
@@ -161,78 +133,21 @@ export function InfoPanel({
         )}
       </div>
 
-      {/* 案件身份带：案由为主视觉 + 身份 chips */}
-      <div className="rounded-md border border-primary/15 bg-primary/[0.04] px-3.5 py-3">
-        <div className="text-[15px] font-semibold leading-snug">{matterNatureValue}</div>
-        <div className="mt-2 flex flex-wrap items-center gap-1.5 text-[11px]">
-          <Badge variant="outline" className="bg-card">
-            {matterCategoryLabel[matter.category]}
-          </Badge>
-          {standing && (
-            <Badge variant="outline" className="border-primary/30 bg-primary/10 text-primary">
-              {litigationStandingLabel[standing] ?? standing}
-            </Badge>
-          )}
-          {currentProcedure && (
-            <Badge variant="outline" className="bg-card">
-              {currentProcedure.customLabel ?? procedureTypeLabel[currentProcedure.type]} ·{" "}
-              {PROCEDURE_STATUS_LABEL[currentProcedure.status] ?? currentProcedure.status}
-            </Badge>
-          )}
-          <span className="ml-auto flex items-center gap-3 font-mono text-[10.5px] text-muted-foreground tabular">
-            <span>{matter.internalCode}</span>
-            {matter.intakeDate && <span>收案 {formatDate(matter.intakeDate)}</span>}
-          </span>
-        </div>
-      </div>
-
-      {/* 近期节点：期限倒计时 + 下一次开庭 */}
-      {(upcomingDeadlines.length > 0 || nextHearing) && (
-        <div className="flex flex-wrap items-center gap-1.5">
-          {upcomingDeadlines.map((deadline) => {
-            const days = daysUntil(deadline.dueAt);
-            return (
-              <span
-                key={deadline.id}
-                className={cn(
-                  "inline-flex items-center gap-1.5 rounded-md border px-2 py-1 text-[11px]",
-                  days <= 7
-                    ? "border-destructive/25 bg-destructive/10 text-destructive"
-                    : days <= 30
-                      ? "border-amber-500/25 bg-amber-500/10 text-amber-700"
-                      : "border-border bg-card text-muted-foreground"
-                )}
-              >
-                <CalendarClock className="h-3 w-3" />
-                <span className="max-w-[180px] truncate">{deadline.title}</span>
-                <span className="font-mono tabular">
-                  {formatDate(deadline.dueAt)}
-                  {days < 0 ? ` · 逾期 ${-days} 天` : days === 0 ? " · 今天" : ` · 剩 ${days} 天`}
-                </span>
-              </span>
-            );
-          })}
-          {nextHearing && (
-            <span className="inline-flex items-center gap-1.5 rounded-md border border-primary/25 bg-primary/5 px-2 py-1 text-[11px] text-primary">
-              <Gavel className="h-3 w-3" />
-              <span className="max-w-[160px] truncate">{nextHearing.title}</span>
-              <span className="font-mono tabular">
-                {formatDate(nextHearing.startsAt)}{" "}
-                {new Date(nextHearing.startsAt).toTimeString().slice(0, 5)}
-              </span>
-            </span>
-          )}
-        </div>
-      )}
-
-      {/* 程序档案表 */}
       <div className="divide-y divide-border overflow-hidden rounded-md border border-border bg-card">
         <DossierRow>
           <DossierCell label="案号" mono>
             {dash(currentProcedure?.caseNumber)}
           </DossierCell>
+          <DossierCell label="我方地位">
+            {standing ? litigationStandingLabel[standing] ?? standing : "—"}
+          </DossierCell>
+        </DossierRow>
+        <DossierRow>
           <DossierCell label={amountLabel} mono={kind !== "counsel"}>
             {amountValue}
+          </DossierCell>
+          <DossierCell label="编号" mono>
+            {matter.internalCode}
           </DossierCell>
         </DossierRow>
         <DossierRow>
