@@ -235,7 +235,7 @@ type WorkflowStage = {
 type MatterInfoWorkflowItem = {
   key: "matter-info";
   id: null;
-  name: "案件信息";
+  name: "信息总览";
   kind: "matter_info";
   status: "active";
   tasks: [];
@@ -258,7 +258,7 @@ type StageGuide = {
 const MATTER_INFO_ITEM: MatterInfoWorkflowItem = {
   key: "matter-info",
   id: null,
-  name: "案件信息",
+  name: "信息总览",
   kind: "matter_info",
   status: "active",
   tasks: []

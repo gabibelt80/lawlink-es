@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useEffect, useRef, useState, useTransition } from "react";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
 import type { ClientType, Prisma } from "@prisma/client";
@@ -635,6 +635,33 @@ function MatterStickyBar({
   caseNumber: string | null;
   procedures: ProcedureItem[];
 }) {
+  // 标题区自带期限/开庭卡片；摘要条只在标题滚出视野后以 fixed 形式出现，
+  // 页首不占位也不重复（sticky 放在零高容器里不会生效，故用 fixed + 测宽）
+  const wrapRef = useRef<HTMLDivElement>(null);
+  const [pinned, setPinned] = useState(false);
+  const [rect, setRect] = useState<{ left: number; width: number } | null>(null);
+
+  useEffect(() => {
+    const el = wrapRef.current;
+    if (!el) return;
+    const measure = () => {
+      const box = el.getBoundingClientRect();
+      setRect({ left: box.left, width: box.width });
+    };
+    measure();
+    window.addEventListener("resize", measure);
+    // topbar 高 48px，滚过标题底部（即本容器位置）后出现
+    const onScroll = () => {
+      setPinned(el.getBoundingClientRect().top < 56);
+    };
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => {
+      window.removeEventListener("resize", measure);
+      window.removeEventListener("scroll", onScroll);
+    };
+  }, []);
+
   const deadline = nextUncompletedDeadline(procedures);
   const hearing = nextUpcomingHearing(procedures);
   const days = deadline ? daysFromToday(deadline.dueAt) : null;
@@ -644,39 +671,43 @@ function MatterStickyBar({
     days === null ? "" : days < 0 ? `逾期 ${-days} 天` : days === 0 ? "今天到期" : `剩 ${days} 天`;
 
   return (
-    <div className="sticky top-12 z-10">
-      <div className="flex items-center gap-2.5 rounded-md border border-border bg-background/90 px-3 py-1.5 shadow-[var(--shadow-low)] backdrop-blur">
-        <span className="min-w-0 truncate text-[12.5px] font-medium" title={title}>
-          {title}
-        </span>
-        {caseNumber && (
-          <span className="hidden shrink-0 font-mono text-[11px] text-muted-foreground tabular md:inline">
-            {caseNumber}
-          </span>
-        )}
-        <span className="ml-auto flex shrink-0 items-center gap-2 text-[11px]">
-          {deadline ? (
-            <span className={cn("inline-flex items-center gap-1", deadlineTone)}>
-              <Clock3 className="h-3 w-3" />
-              <span className="max-w-[160px] truncate">{deadline.title}</span>
-              <span className="font-mono tabular">
-                {formatMonthDay(deadline.dueAt)} · {deadlineText}
-              </span>
+    <div ref={wrapRef} className="h-0 w-full" aria-hidden={!pinned}>
+      {pinned && rect && (
+        <div className="fixed top-12 z-10" style={{ left: rect.left, width: rect.width }}>
+          <div className="flex items-center gap-2.5 rounded-md border border-border bg-background/90 px-3 py-1.5 shadow-[var(--shadow-low)] backdrop-blur">
+            <span className="min-w-0 truncate text-[12.5px] font-medium" title={title}>
+              {title}
             </span>
-          ) : (
-            <span className="hidden text-muted-foreground sm:inline">无未完成期限</span>
-          )}
-          {hearing && (
-            <span className="inline-flex items-center gap-1 text-muted-foreground">
-              <Gavel className="h-3 w-3" />
-              <span className="font-mono tabular">
-                开庭 {formatMonthDay(hearing.startsAt)}{" "}
-                {new Date(hearing.startsAt).toTimeString().slice(0, 5)}
+            {caseNumber && (
+              <span className="hidden shrink-0 font-mono text-[11px] text-muted-foreground tabular md:inline">
+                {caseNumber}
               </span>
+            )}
+            <span className="ml-auto flex shrink-0 items-center gap-2 text-[11px]">
+              {deadline ? (
+                <span className={cn("inline-flex items-center gap-1", deadlineTone)}>
+                  <Clock3 className="h-3 w-3" />
+                  <span className="max-w-[160px] truncate">{deadline.title}</span>
+                  <span className="font-mono tabular">
+                    {formatMonthDay(deadline.dueAt)} · {deadlineText}
+                  </span>
+                </span>
+              ) : (
+                <span className="hidden text-muted-foreground sm:inline">无未完成期限</span>
+              )}
+              {hearing && (
+                <span className="inline-flex items-center gap-1 text-muted-foreground">
+                  <Gavel className="h-3 w-3" />
+                  <span className="font-mono tabular">
+                    开庭 {formatMonthDay(hearing.startsAt)}{" "}
+                    {new Date(hearing.startsAt).toTimeString().slice(0, 5)}
+                  </span>
+                </span>
+              )}
             </span>
-          )}
-        </span>
-      </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
