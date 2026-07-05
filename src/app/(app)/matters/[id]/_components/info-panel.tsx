@@ -1,17 +1,6 @@
 "use client";
 
-import {
-  CalendarClock,
-  CircleDollarSign,
-  FileText,
-  Gavel,
-  Landmark,
-  Link2,
-  MapPin,
-  Pencil,
-  Phone,
-  Scale
-} from "lucide-react";
+import { FileText, Pencil } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { matterCategoryKind } from "@/lib/enums";
 import { formatCurrency, formatDate, cn } from "@/lib/utils";
@@ -83,31 +72,37 @@ export function InfoPanel({
         : matter.counselType || "—";
   const amountLabel = kind === "counsel" ? "服务期限" : "标的";
   const amountValue = kind === "counsel" ? period(matter.serviceStart, matter.serviceEnd) : claimText;
+  // v1.1 UI: 卡片墙 → 档案表。联系人并入表格一行；空值折叠为「未录入」，
+  // 不再为空数据付版面成本（改进方案 A）
   const contactLabels = contactRoleLabels(currentProcedure?.type);
-  const agencyContacts = [
-    {
-      label: contactLabels.lead,
-      name: dash(currentProcedure?.presidingJudge),
-      contact: dash(currentProcedure?.presidingJudgeContact)
-    },
-    {
-      label: contactLabels.assistant,
-      name: dash(currentProcedure?.judgeAssistant),
-      contact: dash(currentProcedure?.judgeAssistantContact)
-    }
-  ];
+  const leadContact = contactValue(
+    currentProcedure?.presidingJudge,
+    currentProcedure?.presidingJudgeContact
+  );
+  const assistantContact = contactValue(
+    currentProcedure?.judgeAssistant,
+    currentProcedure?.judgeAssistantContact
+  );
+  const jurisdictionText = [
+    currentProcedure?.handlingAgency?.trim(),
+    currentProcedure?.jurisdiction?.trim()
+  ]
+    .filter(Boolean)
+    .join(" · ");
 
   return (
-    <section className="space-y-4">
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <div>
-          <div className="flex items-center gap-2">
+    <section className="space-y-3">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="flex min-w-0 items-baseline gap-2">
+          <span className="flex items-center gap-2">
             <FileText className="h-4 w-4 text-primary" strokeWidth={1.8} />
-            <h3 className="text-[15px] font-medium">案件信息</h3>
-          </div>
-          <p className="mt-1 font-mono text-[11px] text-muted-foreground tabular">
-            所内案号：{dash(matter.firmCaseNo)}
-          </p>
+            <h3 className="text-[15px] font-medium">案件档案</h3>
+          </span>
+          {matter.firmCaseNo && (
+            <span className="truncate font-mono text-[11px] text-muted-foreground tabular">
+              {matter.firmCaseNo}
+            </span>
+          )}
         </div>
         {canEdit && (
           <Button
@@ -122,131 +117,95 @@ export function InfoPanel({
         )}
       </div>
 
-      <div className="rounded-md border border-border bg-background/70 p-4">
-        <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 xl:grid-cols-3">
-          <InfoMetric icon={<Scale className="h-3.5 w-3.5" />} label={matterNatureLabel} value={matterNatureValue} />
-          <InfoMetric
-            icon={<CircleDollarSign className="h-3.5 w-3.5" />}
-            label={amountLabel}
-            value={amountValue}
-            mono={kind !== "counsel"}
-          />
-          <InfoMetric
-            icon={<Gavel className="h-3.5 w-3.5" />}
-            label="案号"
-            value={dash(currentProcedure?.caseNumber)}
-            mono
-          />
-          <InfoMetric
-            icon={<CalendarClock className="h-3.5 w-3.5" />}
-            label="立案时间"
-            value={currentProcedure?.acceptedAt ? formatDate(currentProcedure.acceptedAt) : "—"}
-            mono
-          />
-          <InfoMetric
-            icon={<MapPin className="h-3.5 w-3.5" />}
-            label="管辖地"
-            value={dash(currentProcedure?.jurisdiction)}
-          />
-          <InfoMetric
-            icon={<Landmark className="h-3.5 w-3.5" />}
-            label="管辖机构"
-            value={dash(currentProcedure?.handlingAgency)}
-          />
-        </div>
-      </div>
-
-      <section className="rounded-md border border-border bg-background/60 p-3">
-        <InfoSectionTitle icon={<Phone className="h-3.5 w-3.5" />}>
-          本程序审理机构联系方式
-        </InfoSectionTitle>
-        <div className="mt-3 grid grid-cols-1 gap-2 md:grid-cols-2">
-          {agencyContacts.map((item) => (
-            <ContactCard
-              key={item.label}
-              label={item.label}
-              name={item.name}
-              contact={item.contact}
+      <div className="divide-y divide-border overflow-hidden rounded-md border border-border bg-card">
+        <DossierRow>
+          <DossierCell label={matterNatureLabel}>{matterNatureValue}</DossierCell>
+          <DossierCell label={amountLabel} mono={kind !== "counsel"}>
+            {amountValue}
+          </DossierCell>
+        </DossierRow>
+        <DossierRow>
+          <DossierCell label="案号" mono>
+            {dash(currentProcedure?.caseNumber)}
+          </DossierCell>
+          <DossierCell label="立案" mono>
+            {currentProcedure?.acceptedAt ? formatDate(currentProcedure.acceptedAt) : "—"}
+          </DossierCell>
+        </DossierRow>
+        <DossierRow full>
+          <DossierCell label="管辖">{jurisdictionText || "—"}</DossierCell>
+        </DossierRow>
+        <DossierRow>
+          <DossierCell label={contactLabels.lead}>{leadContact}</DossierCell>
+          <DossierCell label={contactLabels.assistant}>{assistantContact}</DossierCell>
+        </DossierRow>
+        <DossierRow full>
+          <DossierCell label="关联案件">
+            <RelatedMattersField
+              matterId={matter.id}
+              related={relatedMatters}
+              canManage={canManageRelatedMatters}
             />
-          ))}
-        </div>
-      </section>
-
-      <section className="rounded-md border border-border bg-background/60 p-3">
-        <InfoSectionTitle icon={<Link2 className="h-3.5 w-3.5" />}>
-          关联案件
-        </InfoSectionTitle>
-        <div className="mt-3 rounded-md bg-card/70 px-3 py-2">
-          <RelatedMattersField
-            matterId={matter.id}
-            related={relatedMatters}
-            canManage={canManageRelatedMatters}
-          />
-        </div>
-      </section>
+          </DossierCell>
+        </DossierRow>
+      </div>
     </section>
   );
 }
 
 /* —— Sub-components —— */
 
-function InfoMetric({
-  icon,
+/** 姓名 + 联系方式合成一格；两者皆空时折叠为「未录入」 */
+function contactValue(name?: string | null, contact?: string | null): React.ReactNode {
+  const n = name?.trim();
+  const c = contact?.trim();
+  if (!n && !c) return <span className="text-muted-foreground">未录入</span>;
+  return (
+    <span className="min-w-0">
+      {n && <span>{n}</span>}
+      {c && (
+        <span className={cn("font-mono text-muted-foreground tabular", n && "ml-2")}>{c}</span>
+      )}
+    </span>
+  );
+}
+
+function DossierRow({ full, children }: { full?: boolean; children: React.ReactNode }) {
+  return (
+    <div
+      className={cn(
+        "grid items-baseline gap-x-2.5 gap-y-1.5 px-3.5 py-[7px]",
+        full
+          ? "grid-cols-[72px_minmax(0,1fr)]"
+          : "grid-cols-[72px_minmax(0,1fr)] sm:grid-cols-[72px_minmax(0,1fr)_72px_minmax(0,1fr)]"
+      )}
+    >
+      {children}
+    </div>
+  );
+}
+
+function DossierCell({
   label,
-  value,
-  mono
+  mono,
+  children
 }: {
-  icon: React.ReactNode;
   label: string;
-  value: React.ReactNode;
   mono?: boolean;
+  children: React.ReactNode;
 }) {
   return (
-    <div className="min-w-0 rounded-md border border-border bg-card px-3 py-2">
-      <div className="flex items-center gap-1.5 text-[10.5px] text-muted-foreground">
-        <span className="text-primary">{icon}</span>
-        {label}
-      </div>
-      <div
+    <>
+      <span className="text-[11px] leading-[1.6] text-muted-foreground">{label}</span>
+      <span
         className={cn(
-          "mt-1 min-h-[18px] break-words text-[12.5px] leading-snug text-foreground/95",
+          "min-w-0 break-words text-[12.5px] leading-[1.6] text-foreground/95",
           mono && "font-mono tabular"
         )}
       >
-        {value}
-      </div>
-    </div>
-  );
-}
-
-function InfoSectionTitle({ icon, children }: { icon: React.ReactNode; children: React.ReactNode }) {
-  return (
-    <h4 className="flex items-center gap-1.5 text-[12px] font-medium text-muted-foreground">
-      <span className="text-primary">{icon}</span>
-      {children}
-    </h4>
-  );
-}
-
-function ContactCard({
-  label,
-  name,
-  contact
-}: {
-  label: string;
-  name: React.ReactNode;
-  contact: React.ReactNode;
-}) {
-  return (
-    <div className="min-w-0 rounded-md border border-border bg-card/70 px-3 py-2">
-      <div className="text-[11px] text-muted-foreground">{label}</div>
-      <div className="mt-2 grid grid-cols-[48px_minmax(0,1fr)] gap-x-2 gap-y-1 text-[12px] leading-relaxed">
-        <span className="text-muted-foreground">姓名</span>
-        <span className="min-w-0 break-words text-foreground/90">{name}</span>
-        <span className="text-muted-foreground">联系</span>
-        <span className="min-w-0 break-words font-mono text-foreground/90 tabular">{contact}</span>
-      </div>
-    </div>
+        {children}
+      </span>
+    </>
   );
 }
 

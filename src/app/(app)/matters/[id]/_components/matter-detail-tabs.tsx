@@ -9,6 +9,7 @@ import {
   ChevronRight,
   CircleDollarSign,
   Clock3,
+  Gavel,
   Landmark,
   Plus,
   Pencil,
@@ -313,6 +314,14 @@ export function MatterDetailTabs({
         />
       </motion.header>
 
+      {/* v1.1 UI（方案 B）：吸顶摘要条——标题滚出视野后，案件身份 +
+          下一节点倒计时仍常驻可见 */}
+      <MatterStickyBar
+        title={matter.title}
+        caseNumber={currentProcedure?.caseNumber ?? null}
+        procedures={engagedProcedures}
+      />
+
       {/* 归档状态 banner */}
       {latestArchive && (
         <motion.div
@@ -597,6 +606,78 @@ function ProcedureChainBar({
         </div>
       </div>
     </section>
+  );
+}
+
+function nextUncompletedDeadline(procedures: ProcedureItem[]) {
+  const all = procedures
+    .flatMap((procedure) => procedure.deadlines)
+    .filter((deadline) => !deadline.completed)
+    .sort((a, b) => new Date(a.dueAt).getTime() - new Date(b.dueAt).getTime());
+  return all.find((deadline) => daysFromToday(deadline.dueAt) >= 0) ?? all[0] ?? null;
+}
+
+function nextUpcomingHearing(procedures: ProcedureItem[]) {
+  return (
+    procedures
+      .flatMap((procedure) => procedure.hearings)
+      .filter((hearing) => new Date(hearing.startsAt).getTime() >= Date.now() - 2 * 3600_000)
+      .sort((a, b) => new Date(a.startsAt).getTime() - new Date(b.startsAt).getTime())[0] ?? null
+  );
+}
+
+function MatterStickyBar({
+  title,
+  caseNumber,
+  procedures
+}: {
+  title: string;
+  caseNumber: string | null;
+  procedures: ProcedureItem[];
+}) {
+  const deadline = nextUncompletedDeadline(procedures);
+  const hearing = nextUpcomingHearing(procedures);
+  const days = deadline ? daysFromToday(deadline.dueAt) : null;
+  const deadlineTone =
+    days === null ? "" : days < 0 || days <= 7 ? "text-destructive" : days <= 30 ? "text-amber-600" : "text-muted-foreground";
+  const deadlineText =
+    days === null ? "" : days < 0 ? `逾期 ${-days} 天` : days === 0 ? "今天到期" : `剩 ${days} 天`;
+
+  return (
+    <div className="sticky top-12 z-10">
+      <div className="flex items-center gap-2.5 rounded-md border border-border bg-background/90 px-3 py-1.5 shadow-[var(--shadow-low)] backdrop-blur">
+        <span className="min-w-0 truncate text-[12.5px] font-medium" title={title}>
+          {title}
+        </span>
+        {caseNumber && (
+          <span className="hidden shrink-0 font-mono text-[11px] text-muted-foreground tabular md:inline">
+            {caseNumber}
+          </span>
+        )}
+        <span className="ml-auto flex shrink-0 items-center gap-2 text-[11px]">
+          {deadline ? (
+            <span className={cn("inline-flex items-center gap-1", deadlineTone)}>
+              <Clock3 className="h-3 w-3" />
+              <span className="max-w-[160px] truncate">{deadline.title}</span>
+              <span className="font-mono tabular">
+                {formatMonthDay(deadline.dueAt)} · {deadlineText}
+              </span>
+            </span>
+          ) : (
+            <span className="hidden text-muted-foreground sm:inline">无未完成期限</span>
+          )}
+          {hearing && (
+            <span className="inline-flex items-center gap-1 text-muted-foreground">
+              <Gavel className="h-3 w-3" />
+              <span className="font-mono tabular">
+                开庭 {formatMonthDay(hearing.startsAt)}{" "}
+                {new Date(hearing.startsAt).toTimeString().slice(0, 5)}
+              </span>
+            </span>
+          )}
+        </span>
+      </div>
+    </div>
   );
 }
 

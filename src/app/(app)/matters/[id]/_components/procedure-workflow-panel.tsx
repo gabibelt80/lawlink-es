@@ -8,6 +8,8 @@ import {
   AlertTriangle,
   CalendarClock,
   Check,
+  ChevronDown,
+  ChevronRight,
   Circle,
   Download,
   Eye,
@@ -18,6 +20,7 @@ import {
   Loader2,
   Minus,
   Plus,
+  Scale,
   Shield,
   Sparkles,
   Upload
@@ -54,9 +57,10 @@ import { Textarea } from "@/components/ui/textarea";
 import { uploadDocument } from "@/server/documents/actions";
 import { createTask } from "@/server/tasks/actions";
 import { createProcedureStage, ensureProcedureStage, removeProcedureStage } from "@/server/procedures/actions";
+import { AddDeadlineDialog } from "./procedure-forms";
 import { liftProperty } from "@/server/preservations/actions-v2";
 import { cn, daysUntil, formatCurrency, formatDate } from "@/lib/utils";
-import { litigationStandingLabel } from "@/lib/enums";
+import { litigationStandingLabel, procedureTypeLabel } from "@/lib/enums";
 import {
   defaultStageNamesForProcedure,
   normalizeProcedureStageName,
@@ -224,6 +228,8 @@ type WorkflowStage = {
   removable: boolean;
   status: WorkflowStageStatus;
   tasks: WorkflowTask[];
+  /** v1.1 UI（方案 E）：导航徽标——任务数 / 临期倒计时 / 开庭日期 */
+  badge: { text: string; hot: boolean } | null;
 };
 
 type MatterInfoWorkflowItem = {
@@ -725,7 +731,7 @@ export function ProcedureWorkflowPanel({
 
   return (
     <section className="overflow-hidden rounded-lg border border-border bg-card shadow-[var(--shadow-low)]">
-      <div className="grid grid-cols-1 md:grid-cols-[150px_minmax(0,1fr)]">
+      <div className="grid grid-cols-1 md:grid-cols-[168px_minmax(0,1fr)]">
         <nav className="border-b border-border bg-muted/35 p-1.5 md:border-b-0 md:border-r">
           <div className="mb-1.5 flex items-center justify-between gap-2 px-1 text-[10.5px] text-muted-foreground">
             <span>环节进度</span>
@@ -754,6 +760,18 @@ export function ProcedureWorkflowPanel({
                 <span className="min-w-0 flex-1 truncate">{stage.name}</span>
                 {stage.kind === "preservation" && (
                   <Shield className="h-3 w-3 shrink-0 text-primary" />
+                )}
+                {stage.kind !== "matter_info" && stage.badge && (
+                  <span
+                    className={cn(
+                      "shrink-0 rounded-full px-1.5 font-mono text-[10px] leading-[16px] tabular",
+                      stage.badge.hot
+                        ? "bg-amber-500/15 font-semibold text-amber-700"
+                        : "bg-primary/10 text-muted-foreground"
+                    )}
+                  >
+                    {stage.badge.text}
+                  </span>
                 )}
               </button>
             ))}
@@ -859,8 +877,9 @@ function NormalStageContent({
   onRemoveStage?: () => void;
   canManage: boolean;
 }) {
+  // v1.1 UI（方案 C/D）：本案数据（记录+材料）置顶，指导文字收折到底部
+  const [deadlineOpen, setDeadlineOpen] = useState(false);
   const guide = stageGuideFor(stage.name);
-  const stageActions = guide.actions;
   const relevantDeadlines = guide.deadlineCategories.length > 0
     ? procedure.deadlines
         .filter((d) => guide.deadlineCategories.includes(d.category))
@@ -869,128 +888,133 @@ function NormalStageContent({
   const relevantDocs = documents.filter((d) => documentMatchesStage(d, stage));
   const stageHearings = guide.includeHearings ? procedure.hearings.slice(0, 3) : [];
   const recordCount = stage.tasks.length + relevantDeadlines.length + stageHearings.length;
+  const nearestDue = relevantDeadlines
+    .filter((d) => !d.completed)
+    .map((d) => daysUntil(d.dueAt))
+    .sort((a, b) => a - b)[0];
 
   return (
-    <div className="space-y-4">
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <div>
-          <div className="flex items-center gap-2">
-            <StageStatusIcon status={stage.status} large />
-            <h3 className="text-[15px] font-medium">{stage.name}</h3>
-            <StageStatusBadge status={stage.status} />
-          </div>
-          <p className="mt-1 text-[11px] text-muted-foreground">
-            {guide.summary}
-          </p>
-        </div>
+    <div className="space-y-3.5">
+      <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-2">
-          {onRemoveStage && (
-            <Button
+          <StageStatusIcon status={stage.status} large />
+          <h3 className="text-[15px] font-medium">{stage.name}</h3>
+          {nearestDue !== undefined && nearestDue <= 30 ? (
+            <Badge
               variant="outline"
-              size="sm"
-              onClick={onRemoveStage}
-              className="h-7 px-2 text-[11px] text-muted-foreground"
+              className={cn(
+                "font-mono tabular",
+                nearestDue <= 7
+                  ? "border-destructive/30 bg-destructive/10 text-destructive"
+                  : "border-amber-500/30 bg-amber-500/10 text-amber-700"
+              )}
             >
-              移除
-            </Button>
-          )}
-          {canManage && (
-            <Button size="sm" onClick={onAddTask} className="h-7 gap-1 px-2 text-[11px]">
-              <Plus className="h-3 w-3" />
-              任务
-            </Button>
+              {nearestDue < 0 ? `逾期 ${-nearestDue} 天` : nearestDue === 0 ? "今天到期" : `剩 ${nearestDue} 天`}
+            </Badge>
+          ) : (
+            <StageStatusBadge status={stage.status} />
           )}
         </div>
-      </div>
-
-      <div className="grid grid-cols-1 gap-3 xl:grid-cols-2">
-        <section className="rounded-md border border-border bg-background/60 p-3">
-          <SectionTitle icon={<ListChecks className="h-3.5 w-3.5" />}>{guide.checklistTitle}</SectionTitle>
-          <ul className="mt-2 space-y-2">
-            {guide.checklist.map((item) => (
-              <li key={item} className="flex items-start gap-2 text-xs leading-5">
-                <Circle className="mt-[6px] h-2 w-2 shrink-0 fill-primary/70 text-primary/70" />
-                <span className="text-foreground/90">{item}</span>
-              </li>
-            ))}
-          </ul>
-        </section>
-
-        <section className="rounded-md border border-border bg-background/60 p-3">
-          <SectionTitle icon={<CalendarClock className="h-3.5 w-3.5" />}>本环节记录</SectionTitle>
-          {recordCount === 0 ? (
-            <p className="py-4 text-center text-xs text-muted-foreground">暂无本环节任务或时间记录</p>
-          ) : (
-            <ul className="mt-2 divide-y divide-border">
-              {stage.tasks.map((task) => (
-                <li key={task.id} className="flex items-start gap-2 py-2 text-xs">
-                  <span
-                    className={cn(
-                      "mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded border",
-                      task.completed
-                        ? "border-primary bg-primary text-primary-foreground"
-                        : "border-input"
-                    )}
-                  >
-                    {task.completed && <Check className="h-2.5 w-2.5" />}
-                  </span>
-                  <div className="min-w-0 flex-1">
-                    <div className={cn("truncate font-medium", task.completed && "text-muted-foreground line-through")}>
-                      {task.title}
-                    </div>
-                    <div className="mt-0.5 flex flex-wrap gap-2 text-[10.5px] text-muted-foreground">
-                      {task.dueAt && <span>{formatDate(task.dueAt)}</span>}
-                      {task.priority > 0 && <span>{task.priority === 2 ? "紧急" : "高优先级"}</span>}
-                    </div>
-                  </div>
-                </li>
-              ))}
-              {relevantDeadlines.map((deadline) => (
-                <DeadlineMiniRow key={deadline.id} deadline={deadline} />
-              ))}
-              {stageHearings.map((hearing) => (
-                <li key={hearing.id} className="flex items-center gap-2 py-2 text-xs">
-                  <Gavel className="h-3.5 w-3.5 text-primary" />
-                  <span className="min-w-0 flex-1 truncate">{hearing.title}</span>
-                  <span className="shrink-0 font-mono text-[10.5px] text-muted-foreground">
-                    {formatDate(hearing.startsAt)}
-                  </span>
-                </li>
-              ))}
-            </ul>
-          )}
-        </section>
+        {onRemoveStage && (
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={onRemoveStage}
+            className="h-7 px-2 text-[11px] text-muted-foreground"
+          >
+            移除
+          </Button>
+        )}
       </div>
 
       <section className="rounded-md border border-border bg-background/60 p-3">
         <div className="flex flex-wrap items-center justify-between gap-2">
-          <SectionTitle icon={<FileText className="h-3.5 w-3.5" />}>推荐文书</SectionTitle>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={onOpenTemplate}
-            className="h-7 gap-1 px-2 text-[11px] text-primary hover:text-primary"
-          >
-            <Sparkles className="h-3 w-3" />
-            套用模板
-          </Button>
-        </div>
-        <div className="mt-2 flex flex-wrap gap-1.5">
-          {stageActions.map((action) => (
-            <Button
-              key={action}
-              variant="outline"
-              size="sm"
-              onClick={onOpenTemplate}
-              className="h-7 px-2 text-[11px]"
-            >
-              {action}
-            </Button>
-          ))}
-          {stageActions.length === 0 && (
-            <span className="text-xs text-muted-foreground">暂无推荐文书</span>
+          <SectionTitle icon={<CalendarClock className="h-3.5 w-3.5" />}>
+            本环节记录
+            {recordCount > 0 && (
+              <span className="ml-1 font-mono text-[10.5px] text-muted-foreground tabular">
+                {recordCount}
+              </span>
+            )}
+          </SectionTitle>
+          {canManage && recordCount > 0 && (
+            <div className="flex items-center gap-1.5">
+              <Button size="sm" variant="outline" onClick={onAddTask} className="h-7 gap-1 px-2 text-[11px]">
+                <Plus className="h-3 w-3" />
+                任务
+              </Button>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => setDeadlineOpen(true)}
+                className="h-7 gap-1 px-2 text-[11px]"
+              >
+                <Scale className="h-3 w-3" />
+                法定期限
+              </Button>
+            </div>
           )}
         </div>
+        {recordCount === 0 ? (
+          <div className="flex flex-col items-center gap-2.5 py-5">
+            <p className="text-xs text-muted-foreground">本环节还没有任务或时间记录</p>
+            {canManage && (
+              <div className="flex items-center gap-2">
+                <Button size="sm" onClick={onAddTask} className="h-7 gap-1 px-2.5 text-[11px]">
+                  <Plus className="h-3 w-3" />
+                  添加任务
+                </Button>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => setDeadlineOpen(true)}
+                  className="h-7 gap-1 px-2.5 text-[11px]"
+                >
+                  <Scale className="h-3 w-3" />
+                  按法定期限生成
+                </Button>
+              </div>
+            )}
+          </div>
+        ) : (
+          <ul className="mt-2 divide-y divide-border">
+            {relevantDeadlines.map((deadline) => (
+              <DeadlineMiniRow key={deadline.id} deadline={deadline} />
+            ))}
+            {stage.tasks.map((task) => (
+              <li key={task.id} className="flex items-start gap-2 py-2 text-xs">
+                <span
+                  className={cn(
+                    "mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded border",
+                    task.completed
+                      ? "border-primary bg-primary text-primary-foreground"
+                      : "border-input"
+                  )}
+                >
+                  {task.completed && <Check className="h-2.5 w-2.5" />}
+                </span>
+                <div className="min-w-0 flex-1">
+                  <div className={cn("truncate font-medium", task.completed && "text-muted-foreground line-through")}>
+                    {task.title}
+                  </div>
+                  <div className="mt-0.5 flex flex-wrap gap-2 text-[10.5px] text-muted-foreground">
+                    {task.dueAt && <span>{formatDate(task.dueAt)}</span>}
+                    {task.priority > 0 && <span>{task.priority === 2 ? "紧急" : "高优先级"}</span>}
+                  </div>
+                </div>
+              </li>
+            ))}
+            {stageHearings.map((hearing) => (
+              <li key={hearing.id} className="flex items-center gap-2 py-2 text-xs">
+                <Gavel className="h-3.5 w-3.5 text-primary" />
+                <span className="min-w-0 flex-1 truncate">{hearing.title}</span>
+                <span className="shrink-0 font-mono text-[10.5px] text-muted-foreground">
+                  {formatDate(hearing.startsAt)}
+                </span>
+              </li>
+            ))}
+          </ul>
+        )}
       </section>
 
       <StageMaterialsPanel
@@ -999,8 +1023,60 @@ function NormalStageContent({
         stage={stage}
         documents={relevantDocs}
         canManage={canManage}
+        onOpenTemplate={onOpenTemplate}
       />
+
+      <StageGuideDisclosure guide={guide} />
+
+      {deadlineOpen && (
+        <AddDeadlineDialog
+          open={deadlineOpen}
+          onOpenChange={setDeadlineOpen}
+          procedures={[
+            {
+              id: procedure.id,
+              label: procedure.customLabel ?? procedureTypeLabel[procedure.type]
+            }
+          ]}
+          defaultProcedureId={procedure.id}
+        />
+      )}
     </div>
+  );
+}
+
+/** v1.1 UI（方案 D）：办案指引默认折叠——指导性内容对熟手是噪音，收成一行 */
+function StageGuideDisclosure({ guide }: { guide: StageGuide }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <section className="rounded-md border border-dashed border-border/80 px-3 py-2">
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        className="flex w-full items-center gap-1.5 text-left text-[11.5px] text-muted-foreground transition-colors hover:text-foreground"
+      >
+        {open ? <ChevronDown className="h-3 w-3 shrink-0" /> : <ChevronRight className="h-3 w-3 shrink-0" />}
+        <span className="font-medium text-foreground/75">办案指引</span>
+        {!open && <span className="min-w-0 flex-1 truncate">{guide.summary}</span>}
+      </button>
+      {open && (
+        <div className="mt-2 space-y-2 pl-4">
+          <ul className="space-y-1.5">
+            {guide.checklist.map((item) => (
+              <li key={item} className="flex items-start gap-2 text-xs leading-5">
+                <Circle className="mt-[6px] h-2 w-2 shrink-0 fill-primary/70 text-primary/70" />
+                <span className="text-foreground/85">{item}</span>
+              </li>
+            ))}
+          </ul>
+          {guide.actions.length > 0 && (
+            <p className="text-[11px] leading-5 text-muted-foreground">
+              常用文书：{guide.actions.join("、")}（在「模板」弹窗内选用）
+            </p>
+          )}
+        </div>
+      )}
+    </section>
   );
 }
 
@@ -1102,34 +1178,6 @@ function PreservationWorkflowContent({
         </div>
       </div>
 
-      <section className="rounded-md border border-border bg-background/60 p-3">
-        <div className="flex flex-wrap items-center justify-between gap-2">
-          <SectionTitle icon={<FileText className="h-3.5 w-3.5" />}>推荐动作</SectionTitle>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={onOpenTemplate}
-            className="h-7 gap-1 px-2 text-[11px] text-primary hover:text-primary"
-          >
-            <Sparkles className="h-3 w-3" />
-            套用模板
-          </Button>
-        </div>
-        <div className="mt-2 flex flex-wrap gap-1.5">
-          {PRESERVATION_ACTIONS.map((action) => (
-            <Button
-              key={action}
-              variant="outline"
-              size="sm"
-              onClick={onOpenTemplate}
-              className="h-7 px-2 text-[11px]"
-            >
-              {action}
-            </Button>
-          ))}
-        </div>
-      </section>
-
       {cases.length === 0 ? (
         <div className="rounded-md border border-dashed border-border bg-background/60 px-4 py-8 text-center">
           <Shield className="mx-auto mb-2 h-6 w-6 text-muted-foreground/40" />
@@ -1221,7 +1269,10 @@ function PreservationWorkflowContent({
         stage={stage}
         documents={relevantDocs}
         canManage={canManage}
+        onOpenTemplate={onOpenTemplate}
       />
+
+      <StageGuideDisclosure guide={stageGuideFor("财产保全")} />
 
       <PreservationCaseDialog
         open={createOpen}
@@ -1321,13 +1372,16 @@ function StageMaterialsPanel({
   procedure,
   stage,
   documents,
-  canManage
+  canManage,
+  onOpenTemplate
 }: {
   matterId: string;
   procedure: WorkflowProcedure;
   stage: WorkflowStage;
   documents: WorkflowDocument[];
   canManage: boolean;
+  /** v1.1 UI（方案 D）：模板生成收口到材料区的单一入口 */
+  onOpenTemplate?: () => void;
 }) {
   const router = useRouter();
   const stageName = stage.name;
@@ -1399,15 +1453,28 @@ function StageMaterialsPanel({
           </span>
         </SectionTitle>
         {canManage && (
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={openUploadDialog}
-            className="h-7 gap-1 px-2 text-[11px]"
-          >
-            <Upload className="h-3 w-3" />
-            上传材料
-          </Button>
+          <div className="flex items-center gap-1.5">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={openUploadDialog}
+              className="h-7 gap-1 px-2 text-[11px]"
+            >
+              <Upload className="h-3 w-3" />
+              上传
+            </Button>
+            {onOpenTemplate && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={onOpenTemplate}
+                className="h-7 gap-1 px-2 text-[11px] text-primary hover:text-primary"
+              >
+                <Sparkles className="h-3 w-3" />
+                从模板生成
+              </Button>
+            )}
+          </div>
         )}
       </div>
       <p className="mt-1 text-[10.5px] text-muted-foreground">
@@ -1881,24 +1948,35 @@ function buildWorkflowStages(
   if (!procedure) return [];
   // v0.48: HIDDEN 环节不进工作台（数据保留，可重新添加恢复）
   const visibleStages = procedure.stages.filter((stage) => stage.status !== "HIDDEN");
+  const context = { procedure, preservationCases };
   const realStages: WorkflowStage[] = visibleStages.map((stage) => ({
-    ...workflowStageFromName(procedure.type, stage.name, {
-      key: `stage-${stage.id}`,
-      id: stage.id,
-      status: statusForStage(stage.name, stage, procedure, preservationCases),
-      tasks: stage.tasks
-    })
+    ...workflowStageFromName(
+      procedure.type,
+      stage.name,
+      {
+        key: `stage-${stage.id}`,
+        id: stage.id,
+        status: statusForStage(stage.name, stage, procedure, preservationCases),
+        tasks: stage.tasks
+      },
+      context
+    )
   }));
 
   const source = realStages.length > 0
     ? realStages
     : defaultStageNamesForProcedure(procedure.type).map((name, index) => ({
-        ...workflowStageFromName(procedure.type, name, {
-          key: `default-${index}-${name}`,
-          id: null,
-          status: statusForStage(name, null, procedure, preservationCases),
-          tasks: []
-        })
+        ...workflowStageFromName(
+          procedure.type,
+          name,
+          {
+            key: `default-${index}-${name}`,
+            id: null,
+            status: statusForStage(name, null, procedure, preservationCases),
+            tasks: []
+          },
+          context
+        )
       }));
 
   // 已有保全记录时必须能在工作台看到"财产保全"环节——即使真实环节已物化且未包含它，
@@ -1908,12 +1986,17 @@ function buildWorkflowStages(
     !source.some((stage) => stage.name.includes("保全"))
   ) {
     const insertAt = Math.min(2, source.length);
-    const preservationStage = workflowStageFromName(procedure.type, "财产保全", {
-      key: "default-preservation",
-      id: null,
-      status: statusForStage("财产保全", null, procedure, preservationCases),
-      tasks: []
-    });
+    const preservationStage = workflowStageFromName(
+      procedure.type,
+      "财产保全",
+      {
+        key: "default-preservation",
+        id: null,
+        status: statusForStage("财产保全", null, procedure, preservationCases),
+        tasks: []
+      },
+      context
+    );
     return [...source.slice(0, insertAt), preservationStage, ...source.slice(insertAt)];
   }
   return source;
@@ -1922,17 +2005,67 @@ function buildWorkflowStages(
 function workflowStageFromName(
   procedureType: ProcedureType,
   name: string,
-  meta: Pick<WorkflowStage, "key" | "id" | "status" | "tasks">
+  meta: Pick<WorkflowStage, "key" | "id" | "status" | "tasks">,
+  context?: { procedure: WorkflowProcedure; preservationCases: WorkflowPreservationCase[] }
 ): WorkflowStage {
   const preset = stagePresetForName(procedureType, name);
   const presetKind = preset?.kind ?? "custom";
+  const kind: WorkflowStage["kind"] = name.includes("保全") ? "preservation" : "normal";
   return {
     ...meta,
     name,
-    kind: name.includes("保全") ? "preservation" : "normal",
+    kind,
     presetKind,
-    removable: presetKind !== "required"
+    removable: presetKind !== "required",
+    badge: context ? stageBadge(name, kind, meta.tasks, context) : null
   };
+}
+
+function shortDay(date: Date): string {
+  const d = new Date(date);
+  return `${`${d.getMonth() + 1}`.padStart(2, "0")}-${`${d.getDate()}`.padStart(2, "0")}`;
+}
+
+/** 导航徽标：临期期限（含任务数）> 未完成任务数 > 开庭日期，无则不显示 */
+function stageBadge(
+  name: string,
+  kind: WorkflowStage["kind"],
+  tasks: WorkflowTask[],
+  context: { procedure: WorkflowProcedure; preservationCases: WorkflowPreservationCase[] }
+): WorkflowStage["badge"] {
+  if (kind === "preservation") {
+    const properties = context.preservationCases.flatMap((c) =>
+      c.targets.flatMap((t) => t.properties)
+    );
+    const active = properties.filter((p) => p.status === "ACTIVE" || p.status === "RENEWED");
+    if (active.length === 0) return null;
+    const nearest = Math.min(...active.map((p) => daysUntil(p.expiryDate)));
+    return nearest <= 30
+      ? { text: `${active.length} · ${nearest}d`, hot: true }
+      : { text: `${active.length} 项`, hot: false };
+  }
+
+  const openTasks = tasks.filter((t) => !t.completed).length;
+  const guide = stageGuideFor(name);
+  const relevantDue = context.procedure.deadlines
+    .filter((d) => !d.completed && guide.deadlineCategories.includes(d.category))
+    .map((d) => daysUntil(d.dueAt));
+  const nearestDue = relevantDue.length > 0 ? Math.min(...relevantDue) : null;
+
+  if (nearestDue !== null && nearestDue <= 30) {
+    return {
+      text: openTasks > 0 ? `${openTasks} · ${nearestDue}d` : `${nearestDue}d`,
+      hot: true
+    };
+  }
+  if (openTasks > 0) return { text: `${openTasks}`, hot: false };
+  if (guide.includeHearings) {
+    const nextHearing = context.procedure.hearings
+      .filter((h) => daysUntil(h.startsAt) >= 0)
+      .sort((a, b) => new Date(a.startsAt).getTime() - new Date(b.startsAt).getTime())[0];
+    if (nextHearing) return { text: shortDay(nextHearing.startsAt), hot: false };
+  }
+  return null;
 }
 
 function statusForStage(
