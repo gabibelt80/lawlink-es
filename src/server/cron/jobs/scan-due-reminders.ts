@@ -13,6 +13,7 @@
  */
 import { prisma } from "@/lib/prisma";
 import { createNotification } from "@/server/notifications/create";
+import { sendWebhookText } from "@/server/settings/webhook";
 import { audit } from "@/server/audit";
 
 const OFFSETS = [-3, -1, 0, 1] as const;
@@ -72,6 +73,8 @@ export async function scanDueReminders(): Promise<DueReminderScanResult> {
   let hearingScanned = 0;
   let hearingNotified = 0;
   let suppressed = 0;
+  // v0.50: 汇总本次新提醒，扫描结束后一次性推 webhook（避免逐条刷群）
+  const digestLines: string[] = [];
 
   for (const offset of OFFSETS) {
     const target = new Date(now);
@@ -126,6 +129,9 @@ export async function scanDueReminders(): Promise<DueReminderScanResult> {
         refId: d.id
       });
       deadlineNotified++;
+      digestLines.push(
+        `· ${stateText(offset)}：${d.title}（${d.procedure.matter.internalCode}）`
+      );
     }
 
     // Hearing 扫描（开庭提醒）—— 开庭过去不再提醒，跳过 T+1 这档
@@ -179,8 +185,26 @@ export async function scanDueReminders(): Promise<DueReminderScanResult> {
           refId: h.id
         });
         hearingNotified++;
+        digestLines.push(
+          `· ${hearingWhenText(offset, h.startsAt)}：${h.title}（${h.procedure.matter.internalCode}）`
+        );
       }
     }
+  }
+
+  // v0.50: 企微/钉钉 webhook 摘要（未配置时静默跳过；失败写 audit 不中断）
+  let webhookResult: { ok: boolean; skipped?: boolean; error?: string } | null = null;
+  if (digestLines.length > 0) {
+    const MAX_LINES = 20;
+    const shown = digestLines.slice(0, MAX_LINES);
+    const more = digestLines.length - shown.length;
+    webhookResult = await sendWebhookText(
+      [
+        `LawLink 今日提醒（${digestLines.length} 条）`,
+        ...shown,
+        ...(more > 0 ? [`… 另有 ${more} 条，详见系统通知`] : [])
+      ].join("\n")
+    );
   }
 
   await audit({
@@ -194,7 +218,8 @@ export async function scanDueReminders(): Promise<DueReminderScanResult> {
       hearingScanned,
       hearingNotified,
       suppressed,
-      offsets: OFFSETS
+      offsets: OFFSETS,
+      webhook: webhookResult
     }
   });
 

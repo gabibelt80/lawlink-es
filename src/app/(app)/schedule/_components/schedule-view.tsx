@@ -26,7 +26,7 @@ import {
   DialogTitle
 } from "@/components/ui/dialog";
 import { cn, daysUntil } from "@/lib/utils";
-import type { ScheduleItem } from "@/server/schedule/actions";
+import type { ScheduleItem } from "@/server/schedule/query";
 import { procedureTypeLabel } from "@/lib/enums";
 import { AddTaskDialog } from "./add-task-dialog";
 

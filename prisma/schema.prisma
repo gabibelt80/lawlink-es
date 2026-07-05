@@ -344,6 +344,8 @@ model User {
   avatar       String?
   active       Boolean   @default(true)
   lastLoginAt  DateTime?
+  // v0.50: ICS 日历订阅 token（URL 即凭证，可重置）
+  calendarToken String?  @unique
 
   ownedMatters          Matter[]              @relation("MatterOwner")
   memberships           MatterMember[]
