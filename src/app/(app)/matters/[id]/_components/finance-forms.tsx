@@ -252,7 +252,7 @@ export function AddFeeEntrySheet({
       try {
         await createFeeEntry(values);
         toast.success(
-          values.type === "RECEIVED" ? "实收已录入，分成已自动计算" : "记录已创建"
+          values.type === "RECEIVED" ? "实收已录入" : "记录已创建"
         );
         reset();
         onOpenChange(false);
@@ -412,7 +412,7 @@ export function AddFeeEntrySheet({
             </Button>
             <Button type="submit" disabled={isPending} className="gap-1.5">
               {isPending && <Loader2 className="h-4 w-4 animate-spin" />}
-              {type === "RECEIVED" ? "记录实收（自动分成）" : "保存"}
+              {type === "RECEIVED" ? "记录实收" : "保存"}
             </Button>
           </DialogFooter>
         </form>

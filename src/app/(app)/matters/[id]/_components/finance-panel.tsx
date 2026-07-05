@@ -39,7 +39,10 @@ export function FinancePanel({
     { label: "已收", value: stats.received, tone: "emerald" },
     { label: "待收", value: outstanding, tone: "amber" },
     { label: "支出", value: stats.cost, tone: "red" },
-    { label: "分成", value: stats.commission, tone: "neutral" }
+    // v1.0: 分成降级——没配分成方案的案件不展示该卡（独立律师无此概念）
+    ...(stats.commission > 0
+      ? [{ label: "分成", value: stats.commission, tone: "neutral" as StatTone }]
+      : [])
   ];
 
   return (

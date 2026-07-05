@@ -211,18 +211,23 @@ export function FinanceView({
           icon={<Receipt className="h-3.5 w-3.5" />}
           color="#5B8DEF"
         />
-        <StatCard
-          label="我的本月分成"
-          value={stats.personalMonthly}
-          icon={<Percent className="h-3.5 w-3.5" />}
-          color="#9B7BF7"
-        />
-        <StatCard
-          label="我的本年分成"
-          value={stats.personalYearly}
-          icon={<Percent className="h-3.5 w-3.5" />}
-          color="#9B7BF7"
-        />
+        {/* v1.0: 分成降级——从未产生分成时不展示个人分成卡 */}
+        {(stats.personalMonthly > 0 || stats.personalYearly > 0) && (
+          <>
+            <StatCard
+              label="我的本月分成"
+              value={stats.personalMonthly}
+              icon={<Percent className="h-3.5 w-3.5" />}
+              color="#9B7BF7"
+            />
+            <StatCard
+              label="我的本年分成"
+              value={stats.personalYearly}
+              icon={<Percent className="h-3.5 w-3.5" />}
+              color="#9B7BF7"
+            />
+          </>
+        )}
       </div>
 
       {/* 月度趋势图 */}
