@@ -63,3 +63,9 @@ export const smsGenerateDeadlineSchema = z.object({
 });
 
 export const smsIdSchema = z.object({ id: z.string().cuid() });
+
+export const smsBackfillCaseNumberSchema = z.object({
+  smsId: z.string().cuid(),
+  procedureId: z.string().cuid(),
+  caseNumber: z.string().trim().min(5, "案号过短").max(60)
+});

@@ -14,6 +14,7 @@ import { enrichWithAi } from "@/lib/sms-parser-ai";
 import { downloadSmsAttachments } from "./attachments";
 import {
   smsParseAndSaveSchema,
+  smsBackfillCaseNumberSchema,
   smsListFilterSchema,
   smsMatchToMatterSchema,
   smsGenerateHearingSchema,
@@ -527,4 +528,72 @@ export async function parseDateString(s: string) {
   await requireSession();
   const d = toDate(s);
   return d ? d.toISOString() : null;
+}
+
+/**
+ * v0.51: 立案/受理短信解析出的案号回填到程序（收件箱闭环）。
+ * 只允许回填短信里真实解析出的案号；只填空案号的程序，已有案号不覆盖
+ * （更正走程序信息编辑，留痕清晰）。
+ */
+export async function backfillCaseNumberFromSms(
+  input: z.infer<typeof smsBackfillCaseNumberSchema>
+) {
+  const session = await requireSession();
+  const data = smsBackfillCaseNumberSchema.parse(input);
+
+  const sms = await prisma.smsMessage.findUnique({
+    where: { id: data.smsId },
+    select: { id: true, rawText: true, parsedJson: true, matchedMatterId: true }
+  });
+  if (!sms) throw new Error("短信不存在");
+  if (!sms.matchedMatterId) throw new Error("请先关联案件");
+  await assertCanAssociateMatter(session.user.id, sms.matchedMatterId);
+  await assertMatterWritable(sms.matchedMatterId);
+
+  const parsed = normalizeStoredParsed(sms.rawText, sms.parsedJson);
+  if (!parsed.caseNumbers.includes(data.caseNumber)) {
+    throw new Error("只能回填本条短信解析出的案号");
+  }
+
+  const procedure = await prisma.matterProcedure.findUnique({
+    where: { id: data.procedureId },
+    select: { id: true, matterId: true, caseNumber: true, type: true, customLabel: true }
+  });
+  if (!procedure || procedure.matterId !== sms.matchedMatterId) {
+    throw new Error("程序与短信关联的案件不匹配");
+  }
+  if (procedure.caseNumber === data.caseNumber) {
+    return { ok: true, unchanged: true };
+  }
+  if (procedure.caseNumber) {
+    throw new Error(`该程序已有案号 ${procedure.caseNumber}，如需更正请在程序信息中修改`);
+  }
+
+  await prisma.matterProcedure.update({
+    where: { id: procedure.id },
+    data: { caseNumber: data.caseNumber }
+  });
+
+  await prisma.timelineEvent.create({
+    data: {
+      matterId: sms.matchedMatterId,
+      eventType: "PROCEDURE_UPDATED",
+      title: `案号回填：${data.caseNumber}（来自法院短信）`,
+      occurredAt: new Date(),
+      refType: "MatterProcedure",
+      refId: procedure.id
+    }
+  });
+
+  await audit({
+    userId: session.user.id,
+    action: "SMS_CASE_NUMBER_BACKFILL",
+    targetType: "MatterProcedure",
+    targetId: procedure.id,
+    detail: { smsId: sms.id, matterId: sms.matchedMatterId, caseNumber: data.caseNumber }
+  });
+
+  revalidatePath("/inbox");
+  revalidatePath(`/matters/${sms.matchedMatterId}`);
+  return { ok: true, unchanged: false };
 }

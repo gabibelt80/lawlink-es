@@ -20,6 +20,7 @@ import {
   ArrowRight,
   CalendarClock,
   FileCheck2,
+  FileDigit,
   FileDown,
   KeyRound
 } from "lucide-react";
@@ -53,7 +54,11 @@ import {
   type ParsedJson
 } from "./sms-types";
 import { SmsPasteDialog } from "./sms-paste-dialog";
-import { GenerateHearingDialog, GenerateDeadlineDialog } from "./sms-actions-dialogs";
+import {
+  BackfillCaseNumberDialog,
+  GenerateHearingDialog,
+  GenerateDeadlineDialog
+} from "./sms-actions-dialogs";
 
 type Tab = "unprocessed" | "needsManual" | "processed";
 
@@ -76,6 +81,10 @@ export function InboxView({
     matter: NonNullable<SmsRow["matchedMatter"]>;
   } | null>(null);
   const [deadlineTarget, setDeadlineTarget] = useState<{
+    sms: SmsRow;
+    matter: NonNullable<SmsRow["matchedMatter"]>;
+  } | null>(null);
+  const [backfillTarget, setBackfillTarget] = useState<{
     sms: SmsRow;
     matter: NonNullable<SmsRow["matchedMatter"]>;
   } | null>(null);
@@ -142,6 +151,9 @@ export function InboxView({
               onGenerateDeadline={() => {
                 if (sms.matchedMatter) setDeadlineTarget({ sms, matter: sms.matchedMatter });
               }}
+              onBackfillCaseNumber={() => {
+                if (sms.matchedMatter) setBackfillTarget({ sms, matter: sms.matchedMatter });
+              }}
             />
           ))
         )}
@@ -163,6 +175,14 @@ export function InboxView({
           onOpenChange={(o) => !o && setDeadlineTarget(null)}
           sms={deadlineTarget.sms}
           matter={deadlineTarget.matter}
+        />
+      )}
+      {backfillTarget && (
+        <BackfillCaseNumberDialog
+          open
+          onOpenChange={(o) => !o && setBackfillTarget(null)}
+          sms={backfillTarget.sms}
+          matter={backfillTarget.matter}
         />
       )}
     </div>
@@ -213,12 +233,14 @@ function SmsCard({
   sms,
   matters,
   onGenerateHearing,
-  onGenerateDeadline
+  onGenerateDeadline,
+  onBackfillCaseNumber
 }: {
   sms: SmsRow;
   matters: MatterOption[];
   onGenerateHearing: () => void;
   onGenerateDeadline: () => void;
+  onBackfillCaseNumber: () => void;
 }) {
   const parsed = normalizeParsedJson(sms);
   const accent = SMS_TYPE_ACCENT[sms.smsType];
@@ -246,6 +268,16 @@ function SmsCard({
       }
     });
   };
+
+  // v0.51: 解析出新案号 + 案件里有缺案号的程序 → 可回填
+  const usedCaseNumbers = new Set(
+    (sms.matchedMatter?.procedures ?? []).map((p) => p.caseNumber).filter(Boolean) as string[]
+  );
+  const canBackfillCaseNumber = Boolean(
+    sms.matchedMatter &&
+      parsed.caseNumbers.some((n) => !usedCaseNumbers.has(n)) &&
+      sms.matchedMatter.procedures.some((p) => !p.caseNumber)
+  );
 
   const onExtractAttachments = () =>
     startTransition(async () => {
@@ -481,6 +513,18 @@ function SmsCard({
                 <Clock className="h-3 w-3" />
                 生成期限
               </Button>
+              {canBackfillCaseNumber && (
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={onBackfillCaseNumber}
+                  className="h-7 gap-1 text-[11px]"
+                  title="把短信解析出的案号回填到缺案号的程序"
+                >
+                  <FileDigit className="h-3 w-3" />
+                  回填案号
+                </Button>
+              )}
             </>
           )}
           {parsed.urls.length > 0 && (
