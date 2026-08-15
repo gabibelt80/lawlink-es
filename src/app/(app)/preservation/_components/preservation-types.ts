@@ -1,4 +1,4 @@
-import type { Prisma, PreservationType, PropertyType, GuaranteeType, PreservationStatus } from "@prisma/client";
+import type { Prisma, PreservationType, GuaranteeType, PreservationStatus } from "@prisma/client";
 
 type PreservationCaseRaw = Prisma.PreservationCaseGetPayload<{
   include: {
@@ -41,14 +41,8 @@ export const PRES_TYPE_CN: Record<PreservationType, string> = {
   ENFORCEMENT: "执行保全"
 };
 
-export const PROPERTY_TYPE_CN: Record<PropertyType, string> = {
-  BANK_DEPOSIT: "银行存款",
-  REAL_ESTATE: "房产",
-  VEHICLE: "车辆",
-  EQUITY: "股权",
-  IP: "知识产权",
-  OTHER: "其他财产"
-};
+// v1.2: 定义已挪到 @/lib/preservation-defaults（cron 通知也要用），此处仅转出
+export { PROPERTY_TYPE_CN } from "@/lib/preservation-defaults";
 
 export const GUARANTEE_TYPE_CN: Record<GuaranteeType, string> = {
   CASH_DEPOSIT: "保证金",

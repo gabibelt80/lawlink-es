@@ -16,6 +16,16 @@
 import type { PropertyType } from "@prisma/client";
 import { computeDeadlineDate } from "@/lib/deadline-rules";
 
+/** 财产类型中文名。放在 lib 而非页面局部组件，供 cron / 通知等服务端代码复用。 */
+export const PROPERTY_TYPE_CN: Record<PropertyType, string> = {
+  BANK_DEPOSIT: "银行存款",
+  REAL_ESTATE: "房产",
+  VEHICLE: "车辆",
+  EQUITY: "股权",
+  IP: "知识产权",
+  OTHER: "其他财产"
+};
+
 /** 各财产类型的保全期限（年）。上位法以「年」为单位，不折算成固定天数。 */
 export const PRESERVATION_DURATION_YEARS: Record<PropertyType, number> = {
   BANK_DEPOSIT: 1, // 银行存款：不超过一年

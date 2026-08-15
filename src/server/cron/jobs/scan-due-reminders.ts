@@ -16,6 +16,7 @@ import { createNotification } from "@/server/notifications/create";
 import { sendWebhookText } from "@/server/settings/webhook";
 import { audit } from "@/server/audit";
 import { matterHref } from "@/lib/matters/route";
+import { PROPERTY_TYPE_CN } from "@/lib/preservation-defaults";
 
 const OFFSETS = [-3, -1, 0, 1] as const;
 type Offset = (typeof OFFSETS)[number];
@@ -25,6 +26,9 @@ export type DueReminderScanResult = {
   deadlineNotified: number;
   hearingScanned: number;
   hearingNotified: number;
+  /** v1.2: 保全续封提醒 */
+  preservationScanned: number;
+  preservationNotified: number;
   suppressed: number;
 };
 
@@ -73,6 +77,8 @@ export async function scanDueReminders(): Promise<DueReminderScanResult> {
   let deadlineNotified = 0;
   let hearingScanned = 0;
   let hearingNotified = 0;
+  let preservationScanned = 0;
+  let preservationNotified = 0;
   let suppressed = 0;
   // v0.50: 汇总本次新提醒，扫描结束后一次性推 webhook（避免逐条刷群）
   const digestLines: string[] = [];
@@ -193,6 +199,95 @@ export async function scanDueReminders(): Promise<DueReminderScanResult> {
     }
   }
 
+  // ── v1.2: 保全续封提醒 ──────────────────────────────────────────────
+  //
+  // 不走上面的 OFFSETS，也不在 Deadline 表里建镜像行，原因有二：
+  // 1. 提前量不同。OFFSETS 是 -3/-1/0/+1，对答辩、举证够用；续封要备材料、
+  //    跑法院、等裁定，提前 3 天通知等于没通知。各保全案件自带
+  //    remindDays（默认 30/15/7/3/1），此前只写不读，是死配置，这里让它生效。
+  // 2. 建镜像 Deadline 行要多一个关联字段和一套同步逻辑，expiryDate 一改
+  //    两处就可能不一致；直接扫源表没有这个问题。
+  //
+  // 后果的严重性决定了这条不能省：《最高人民法院关于人民法院民事执行中
+  // 查封、扣押、冻结财产的规定》（2020 修正）第二十七条——期限届满未办理
+  // 延期手续的，查封、扣押、冻结的效力消灭。
+  const activeProperties = await prisma.preservationProperty.findMany({
+    where: { status: { in: ["ACTIVE", "RENEWED"] } },
+    select: {
+      id: true,
+      propertyType: true,
+      propertyDetail: true,
+      expiryDate: true,
+      target: {
+        select: {
+          name: true,
+          case: {
+            select: {
+              id: true,
+              remindDays: true,
+              ownerId: true,
+              matter: {
+                select: { id: true, title: true, internalCode: true, ownerId: true }
+              }
+            }
+          }
+        }
+      }
+    }
+  });
+
+  for (const prop of activeProperties) {
+    const cs = prop.target.case;
+    const daysUntil = Math.round(
+      (startOfLocalDay(prop.expiryDate).getTime() - todayStart.getTime()) / 86_400_000
+    );
+
+    // 到期当天与逾期首日一律提醒（此时效力可能已消灭），此外按本案 remindDays
+    const isCritical = daysUntil === 0 || daysUntil === -1;
+    if (!isCritical && !cs.remindDays.includes(daysUntil)) continue;
+
+    preservationScanned++;
+
+    const userId = cs.ownerId ?? cs.matter?.ownerId;
+    if (!userId) continue;
+
+    const refType = `PreservationExpiry:${daysUntil}`;
+    const dup = await prisma.notification.findFirst({
+      where: { refType, refId: prop.id, createdAt: { gte: todayStart } },
+      select: { id: true }
+    });
+    if (dup) {
+      suppressed++;
+      continue;
+    }
+
+    const whenText =
+      daysUntil === 0
+        ? "今天到期"
+        : daysUntil < 0
+          ? `已逾期 ${-daysUntil} 天，保全效力可能已消灭`
+          : `还有 ${daysUntil} 天到期`;
+    const propertyLabel = prop.propertyDetail?.trim() || PROPERTY_TYPE_CN[prop.propertyType];
+    const matterText = cs.matter
+      ? `案件 ${cs.matter.internalCode}·${cs.matter.title}`
+      : "未关联案件";
+
+    await createNotification({
+      userId,
+      type: "DEADLINE_REMINDER",
+      priority: daysUntil <= 3 ? "URGENT" : daysUntil <= 15 ? "HIGH" : "NORMAL",
+      title: `保全${whenText}：${prop.target.name} · ${propertyLabel}`,
+      content: `${matterText}。逾期未办续封手续的，查封、扣押、冻结的效力消灭（查扣冻规定第二十七条）。`,
+      href: cs.matter ? matterHref(cs.matter) : "/preservation",
+      refType,
+      refId: prop.id
+    });
+    preservationNotified++;
+    digestLines.push(
+      `· 保全${whenText}：${prop.target.name}·${propertyLabel}（${cs.matter?.internalCode ?? "未关联案件"}）`
+    );
+  }
+
   // v0.50: 企微/钉钉 webhook 摘要（未配置时静默跳过；失败写 audit 不中断）
   let webhookResult: { ok: boolean; skipped?: boolean; error?: string } | null = null;
   if (digestLines.length > 0) {
@@ -218,6 +313,8 @@ export async function scanDueReminders(): Promise<DueReminderScanResult> {
       deadlineNotified,
       hearingScanned,
       hearingNotified,
+      preservationScanned,
+      preservationNotified,
       suppressed,
       offsets: OFFSETS,
       webhook: webhookResult
@@ -229,6 +326,8 @@ export async function scanDueReminders(): Promise<DueReminderScanResult> {
     deadlineNotified,
     hearingScanned,
     hearingNotified,
+    preservationScanned,
+    preservationNotified,
     suppressed
   };
 }
