@@ -14,6 +14,7 @@ import {
 } from "@/lib/enums";
 import { ConflictSection } from "./_components/conflict-section";
 import { IntakeActions } from "./_components/intake-actions";
+import { matterHref } from "@/lib/matters/route";
 
 type PageProps = {
   params: Promise<{ id: string }>;
@@ -157,7 +158,7 @@ export default async function IntakeDetailPage({ params }: PageProps) {
               </Badge>
               {intake.matter && (
                 <Link
-                  href={`/matters/${intake.matter.id}`}
+                  href={matterHref(intake.matter)}
                   className="inline-flex items-center gap-1 rounded-md border border-primary/30 bg-primary/10 px-2 py-0.5 text-xs text-primary hover:bg-primary/15"
                 >
                   已转为案件 {intake.matter.internalCode} →

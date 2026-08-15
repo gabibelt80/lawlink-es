@@ -34,6 +34,7 @@ import { MatterCombobox } from "@/app/(app)/approvals/seals/_components/matter-c
 import { cn } from "@/lib/utils";
 import { createExpress, refreshExpress, deleteExpress } from "@/server/express/actions";
 import { SUPPORTED_COMPANIES, detectCompany } from "@/lib/express/companies";
+import { matterHref } from "@/lib/matters/route";
 
 type Row = Prisma.ExpressTrackingGetPayload<{
   include: {
@@ -262,7 +263,7 @@ function Card({ e }: { e: Row }) {
         )}
         {e.matter && (
           <Link
-            href={`/matters/${e.matter.id}`}
+            href={matterHref(e.matter)}
             className="inline-flex items-center gap-1 hover:text-primary"
           >
             <Briefcase className="h-3 w-3" />

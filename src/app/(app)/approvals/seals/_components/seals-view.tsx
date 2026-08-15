@@ -17,6 +17,7 @@ import {
   SEAL_STATUS_CN,
   SEAL_STATUS_COLOR
 } from "./seal-types";
+import { matterHref } from "@/lib/matters/route";
 
 type Tab = "allMine" | "pending" | "processed" | "toApprove" | "firm";
 
@@ -314,7 +315,7 @@ function SealRow({
       <td className="px-3 py-2 text-muted-foreground">
         {row.matter ? (
           <a
-            href={`/matters/${row.matter.id}`}
+            href={matterHref(row.matter)}
             className="inline-block max-w-[180px] truncate text-[11px] hover:text-primary"
             title={row.matter.title}
           >

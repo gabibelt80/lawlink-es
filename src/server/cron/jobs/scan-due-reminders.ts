@@ -15,6 +15,7 @@ import { prisma } from "@/lib/prisma";
 import { createNotification } from "@/server/notifications/create";
 import { sendWebhookText } from "@/server/settings/webhook";
 import { audit } from "@/server/audit";
+import { matterHref } from "@/lib/matters/route";
 
 const OFFSETS = [-3, -1, 0, 1] as const;
 type Offset = (typeof OFFSETS)[number];
@@ -124,7 +125,7 @@ export async function scanDueReminders(): Promise<DueReminderScanResult> {
         priority: priorityFor(offset),
         title: `${stateText(offset)}：${d.title}`,
         content: `案件 ${d.procedure.matter.internalCode}·${d.procedure.matter.title}`,
-        href: `/matters/${d.procedure.matter.id}`,
+        href: matterHref(d.procedure.matter),
         refType: refTypeDL,
         refId: d.id
       });
@@ -180,7 +181,7 @@ export async function scanDueReminders(): Promise<DueReminderScanResult> {
           priority: priorityFor(offset),
           title: `${hearingWhenText(offset, h.startsAt)}：${h.title}`,
           content: `案件 ${h.procedure.matter.internalCode}·${h.procedure.matter.title}${place ? ` · ${place}` : ""}`,
-          href: `/matters/${h.procedure.matter.id}`,
+          href: matterHref(h.procedure.matter),
           refType: refTypeHearing,
           refId: h.id
         });

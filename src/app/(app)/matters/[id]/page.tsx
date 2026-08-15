@@ -1,4 +1,4 @@
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { getMatterById } from "@/server/matters/actions";
@@ -7,6 +7,8 @@ import { listActiveColleagues } from "@/server/users/actions";
 import { getLatestArchiveRecord } from "@/server/archive/actions";
 import { getMatterReviewSummary } from "@/server/ai/matter-review-summary";
 import { getSession } from "@/lib/auth/session";
+import { resolveMatterRoute } from "@/server/matters/route";
+import { matterHref } from "@/lib/matters/route";
 import { prisma } from "@/lib/prisma";
 import { nullableDecimalToNumber, serializeDecimals } from "@/lib/decimal";
 import { MatterDetailTabs } from "./_components/matter-detail-tabs";
@@ -17,12 +19,20 @@ type PageProps = {
 };
 
 export default async function MatterDetailPage({ params }: PageProps) {
-  const { id } = await params;
+  const { id: param } = await params;
+
+  // 路由键是 internalCode（`LL-2026-CC-0001`），但历史书签、通知与审计日志里
+  // 存的是 cuid 地址，两者都要认；命中 cuid 时在鉴权通过后再跳规范地址。
+  const route = await resolveMatterRoute(param);
+  if (!route) notFound();
+
   const [matterRaw, session] = await Promise.all([
-    getMatterById(id),
+    getMatterById(route.id),
     getSession()
   ]);
   if (!matterRaw) notFound();
+
+  if (param !== route.internalCode) redirect(matterHref(route));
 
   const matter = {
     ...matterRaw,

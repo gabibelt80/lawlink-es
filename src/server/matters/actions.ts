@@ -573,7 +573,7 @@ export async function searchMattersForLink(matterId: string, q: string) {
           }
         : {})
     },
-    select: { id: true, firmCaseNo: true, title: true },
+    select: { id: true, internalCode: true, firmCaseNo: true, title: true },
     orderBy: { createdAt: "desc" },
     take: 8
   });
@@ -640,10 +640,10 @@ export async function getMatterById(id: string) {
       relatedEntities: { orderBy: { createdAt: "asc" } },
       intake: { select: { counterclaim: true, claimDescription: true } },
       linksFrom: {
-        include: { relatedMatter: { select: { id: true, firmCaseNo: true, title: true } } }
+        include: { relatedMatter: { select: { id: true, internalCode: true, firmCaseNo: true, title: true } } }
       },
       linksTo: {
-        include: { matter: { select: { id: true, firmCaseNo: true, title: true } } }
+        include: { matter: { select: { id: true, internalCode: true, firmCaseNo: true, title: true } } }
       },
       procedures: {
         orderBy: { order: "asc" },

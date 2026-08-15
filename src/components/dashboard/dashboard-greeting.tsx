@@ -7,6 +7,7 @@ import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { ConflictSearchButton } from "./conflict-search-button";
 import type { ScheduleItem } from "@/server/dashboard/actions";
+import { matterHref } from "@/lib/matters/route";
 
 function getGreeting(hour: number) {
   if (hour < 6) return "夜深了";
@@ -79,7 +80,9 @@ export function DashboardGreeting({
       </div>
 
       <Link
-        href={focusItem?.matterId ? `/matters/${focusItem.matterId}` : "/schedule"}
+        href={focusItem?.matterId
+          ? matterHref({ id: focusItem.matterId, internalCode: focusItem.matterCode })
+          : "/schedule"}
         className="ll-surface group relative flex min-h-[150px] min-w-0 flex-col justify-between overflow-hidden p-4 transition-colors hover:border-input hover:bg-muted/35"
       >
         <div className="pointer-events-none absolute -right-8 -top-8 h-32 w-32 rounded-full bg-red-500/10 blur-sm" />
@@ -169,7 +172,7 @@ function ScheduleBriefItem({ item }: { item: ScheduleItem }) {
   return (
     <li>
       {item.matterId ? (
-        <Link href={`/matters/${item.matterId}`} className={className}>
+        <Link href={matterHref({ id: item.matterId, internalCode: item.matterCode })} className={className}>
           {content}
         </Link>
       ) : (

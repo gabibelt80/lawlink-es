@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { getSession } from "@/lib/auth/session";
 import { matterVisibilityFilter } from "@/lib/permissions";
 import { cn } from "@/lib/utils";
+import { matterHref } from "@/lib/matters/route";
 
 type AlertItem = {
   id: string;
@@ -106,7 +107,7 @@ async function loadAlerts(userId: string | null, role: string | null): Promise<A
       detail: matter
         ? `${matter.internalCode} ${matter.title}`
         : "未关联案件（诉前保全）",
-      href: matter ? `/matters/${matter.id}` : "/preservation",
+      href: matter ? matterHref(matter) : "/preservation",
       date: p.expiryDate,
       tone: classifyByDays(days)
     });

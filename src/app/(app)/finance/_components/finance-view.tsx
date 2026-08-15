@@ -62,6 +62,7 @@ type Entry = {
 import type { InvoiceRequestStatus } from "@prisma/client";
 import { InvoiceManagementSection } from "./invoice-management";
 import { InvoiceCreateDialog } from "./invoice-create-dialog";
+import { matterHref } from "@/lib/matters/route";
 
 export type InvoiceRequestRow = {
   id: string;
@@ -358,7 +359,7 @@ export function FinanceView({
                       )}
                     </div>
                     <Link
-                      href={`/matters/${e.matter.id}`}
+                      href={matterHref(e.matter)}
                       className="mt-0.5 inline-flex items-center gap-1 text-[11px] text-muted-foreground hover:text-primary"
                     >
                       <span className="font-mono">{e.matter.internalCode}</span>

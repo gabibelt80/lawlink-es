@@ -8,6 +8,7 @@ import { audit } from "@/server/audit";
 import { createNotification } from "@/server/notifications/create";
 import { assertMatterWritable } from "@/lib/archive/guard";
 import { assertCanAssociateMatter } from "@/lib/permissions";
+import { matterHrefById } from "@/server/matters/route";
 
 const taskCreateSchema = z.object({
   matterId: z.string().cuid(),
@@ -71,7 +72,7 @@ export async function createTask(input: TaskCreateInput) {
       type: "TASK_ASSIGNED",
       title: "您有新事项",
       content: `事项「${created.title}」已指派给您`,
-      href: `/matters/${data.matterId}`,
+      href: await matterHrefById(data.matterId),
       refType: "Task",
       refId: created.id
     });

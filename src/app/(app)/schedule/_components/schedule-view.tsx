@@ -28,6 +28,7 @@ import { cn, daysUntil } from "@/lib/utils";
 import type { ScheduleItem } from "@/server/schedule/query";
 import { procedureTypeLabel } from "@/lib/enums";
 import { AddTaskDialog } from "./add-task-dialog";
+import { matterHref } from "@/lib/matters/route";
 
 const typeMeta = {
   hearing: { icon: Gavel, label: "开庭", color: "#5B8DEF" },
@@ -236,7 +237,7 @@ function Row({ item }: { item: ScheduleItem }) {
 
   return (
     <li className="px-5 py-3 transition-colors hover:bg-popover">
-      <Link href={`/matters/${item.matter.id}`} className="flex items-start gap-3">
+      <Link href={matterHref(item.matter)} className="flex items-start gap-3">
         <span className="w-12 shrink-0 font-mono text-sm tabular text-muted-foreground">
           {time}
         </span>
@@ -617,7 +618,7 @@ function ScheduleItemDialog({
                 label="关联案件"
                 value={
                   <Link
-                    href={`/matters/${item.matter.id}`}
+                    href={matterHref(item.matter)}
                     className="font-medium text-primary underline-offset-4 hover:underline"
                   >
                     {item.matter.title}
@@ -649,7 +650,7 @@ function ScheduleItemDialog({
                 关闭
               </Button>
               <Button asChild>
-                <Link href={`/matters/${item.matter.id}`}>查看案件</Link>
+                <Link href={matterHref(item.matter)}>查看案件</Link>
               </Button>
             </DialogFooter>
           </>

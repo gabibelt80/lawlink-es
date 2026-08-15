@@ -13,8 +13,9 @@ import {
   addMatterLink,
   removeMatterLink
 } from "@/server/matters/actions";
+import { matterHref } from "@/lib/matters/route";
 
-type MatterRef = { id: string; firmCaseNo?: string | null; title: string };
+type MatterRef = { id: string; internalCode: string | null; firmCaseNo?: string | null; title: string };
 
 export function RelatedMattersField({
   matterId,
@@ -139,7 +140,7 @@ export function RelatedMattersField({
           className="group flex min-w-0 max-w-full items-center gap-1 text-[12px]"
         >
           <Link
-            href={`/matters/${m.id}`}
+            href={matterHref(m)}
             target="_blank"
             rel="noreferrer"
             className="inline-flex min-w-0 items-center gap-1 text-primary hover:underline"

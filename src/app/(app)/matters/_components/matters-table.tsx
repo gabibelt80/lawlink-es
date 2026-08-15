@@ -8,6 +8,7 @@ import {
   matterStatusLabel
 } from "@/lib/enums";
 import { formatCurrency, cn } from "@/lib/utils";
+import { matterHref } from "@/lib/matters/route";
 
 export type MatterRow = Omit<Matter, "claimAmount"> & {
   primaryClient: { id: string; name: string } | null;
@@ -107,7 +108,7 @@ export function MattersTable({
         {items.map((m) => (
           <CaseListCard
             key={m.id}
-            href={`/matters/${m.id}`}
+            href={matterHref(m)}
             title={m.title}
             accent={matterCategoryColor[m.category]}
             status={{

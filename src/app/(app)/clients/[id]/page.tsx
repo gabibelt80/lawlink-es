@@ -23,6 +23,7 @@ import {
   matterStatusLabel
 } from "@/lib/enums";
 import { cn } from "@/lib/utils";
+import { matterHref } from "@/lib/matters/route";
 import { ClientEditButton } from "./_components/client-edit-button";
 
 const billingStatusLabel: Record<string, string> = {
@@ -163,7 +164,7 @@ export default async function ClientDetailPage({ params }: { params: { id: strin
                       key={m.id}
                       className="grid gap-3 py-3 lg:grid-cols-[minmax(0,1fr)_320px] lg:items-start"
                     >
-                      <Link href={`/matters/${m.id}`} className="group min-w-0">
+                      <Link href={matterHref(m)} className="group min-w-0">
                         <div className="truncate text-[13.5px] font-medium transition-colors group-hover:text-primary">
                           {m.title}
                         </div>

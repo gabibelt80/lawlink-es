@@ -59,6 +59,7 @@ import {
   GenerateHearingDialog,
   GenerateDeadlineDialog
 } from "./sms-actions-dialogs";
+import { matterHref } from "@/lib/matters/route";
 
 type Tab = "unprocessed" | "needsManual" | "processed";
 
@@ -464,7 +465,7 @@ function SmsCard({
       <div className="mt-3 flex flex-wrap items-center gap-2 border-t border-border pt-3">
         {sms.matchedMatter ? (
           <Link
-            href={`/matters/${sms.matchedMatter.id}`}
+            href={matterHref(sms.matchedMatter)}
             className="group inline-flex items-center gap-1 rounded border border-primary/30 bg-primary/5 px-2 py-1 text-[11px] hover:bg-primary/10"
           >
             <Briefcase className="h-3 w-3 text-primary" />

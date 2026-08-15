@@ -5,6 +5,7 @@ import { motion } from "framer-motion";
 import { AlertTriangle, Calendar, ArrowRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { ScheduleItem } from "@/server/dashboard/actions";
+import { matterHref } from "@/lib/matters/route";
 
 const typeMeta = {
   deadline: { icon: AlertTriangle, color: "text-amber-600", label: "期限" },
@@ -104,7 +105,7 @@ function ScheduleRow({ item }: { item: ScheduleItem }) {
 
   const cls = "ll-row flex w-full items-center gap-3 rounded-md px-2 py-1.5 text-left";
   return item.matterId ? (
-    <Link href={`/matters/${item.matterId}`} className={cls}>
+    <Link href={matterHref({ id: item.matterId, internalCode: item.matterCode })} className={cls}>
       {inner}
     </Link>
   ) : (

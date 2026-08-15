@@ -56,10 +56,10 @@ type MatterPayloadBase = Prisma.MatterGetPayload<{
     relatedEntities: true;
     intake: { select: { counterclaim: true; claimDescription: true } };
     linksFrom: {
-      include: { relatedMatter: { select: { id: true; firmCaseNo: true; title: true } } };
+      include: { relatedMatter: { select: { id: true; internalCode: true; firmCaseNo: true; title: true } } };
     };
     linksTo: {
-      include: { matter: { select: { id: true; firmCaseNo: true; title: true } } };
+      include: { matter: { select: { id: true; internalCode: true; firmCaseNo: true; title: true } } };
     };
     procedures: {
       include: {
