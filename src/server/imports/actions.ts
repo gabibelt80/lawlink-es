@@ -9,6 +9,7 @@ import { audit } from "@/server/audit";
 import { seedDefaultFolders } from "@/lib/default-folders";
 import { generateInternalCode, generateFirmCaseNo } from "@/server/matters/code-generator";
 import { generateClientCode } from "@/server/clients/code-generator";
+import { assertCauseAllowedForSelection } from "@/server/causes/validation";
 import {
   IMPORT_COLUMNS,
   validateRow,
@@ -156,6 +157,15 @@ async function createOneMatter(n: NormalizedRow, currentUserId: string) {
     if (cause) causeId = cause.id;
     else causeFreeText = n.causeText;
   }
+
+  // v1.2：导入曾是唯一绕过案由校验的写入路径，能造出界面创建不出来的组合
+  // （如劳动仲裁案件挂婚姻家庭类案由）。校验基准与创建案件一致：类别 + 首程序类型。
+  // 失败即抛，由 commitMatterImportAction 逐行捕获后写进 failed 清单。
+  await assertCauseAllowedForSelection({
+    causeId,
+    category: n.category,
+    procedureType: firstProcedureTypeFor(n.category)
+  });
 
   const internalCode = await generateInternalCode(n.category);
   const firmCaseNo = await generateFirmCaseNo(n.category);

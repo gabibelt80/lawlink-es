@@ -18,7 +18,10 @@ import {
 import { generateInternalCode, generateFirmCaseNo } from "./code-generator";
 import { seedDefaultFolders } from "@/lib/default-folders";
 import { assertAgencyAllowedForProcedure, normalizeJurisdictionForAgency } from "@/lib/china-regions";
-import { assertCauseAllowedForSelection } from "@/server/causes/validation";
+import {
+  assertCauseAllowedForMatter,
+  assertCauseAllowedForSelection
+} from "@/server/causes/validation";
 import {
   matterCreateSchema,
   matterListQuerySchema,
@@ -888,22 +891,13 @@ export async function updateMatterBasicInfo(input: MatterUpdateBasicInput) {
       id: true,
       ownerId: true,
       title: true,
-      category: true,
-      procedures: {
-        orderBy: { order: "asc" },
-        take: 1,
-        select: { type: true }
-      }
+      category: true
     }
   });
   if (!matter) throw new Error("案件不存在");
   await assertMatterWritable(data.id);
   await assertCanLeadMatter(session.user.id, data.id, "只有案件主办/协办可以编辑案件基本信息");
-  await assertCauseAllowedForSelection({
-    causeId: data.causeId,
-    category: matter.category,
-    procedureType: matter.procedures[0]?.type
-  });
+  await assertCauseAllowedForMatter(data.id, data.causeId);
 
   await prisma.matter.update({
     where: { id: data.id },

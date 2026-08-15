@@ -6,6 +6,37 @@ import {
 } from "@/lib/cause-scope";
 import { prisma } from "@/lib/prisma";
 
+/**
+ * 以案件当前状态为基准做案由校验（v1.2 收口入口）。
+ *
+ * 基准程序取「当前 ENGAGED 的首个程序」，而不是 order 最小的程序：
+ * 后者可能是补录的 INFORMATIONAL 前序程序（如别人代理的一审），
+ * 用它当基准会让校验对着一个我们并不代理的程序类型判断。
+ *
+ * 所有「改案件案由」的入口都应走这里，不要各自去查程序类型。
+ */
+export async function assertCauseAllowedForMatter(matterId: string, causeId?: string | null) {
+  const matter = await prisma.matter.findUnique({
+    where: { id: matterId },
+    select: {
+      category: true,
+      procedures: {
+        where: { engagement: "ENGAGED" },
+        orderBy: { order: "asc" },
+        take: 1,
+        select: { type: true }
+      }
+    }
+  });
+  if (!matter) throw new Error("案件不存在");
+
+  await assertCauseAllowedForSelection({
+    causeId,
+    category: matter.category,
+    procedureType: matter.procedures[0]?.type
+  });
+}
+
 export async function assertCauseAllowedForSelection(input: {
   causeId?: string | null;
   category: MatterCategory;
