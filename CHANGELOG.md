@@ -9,6 +9,16 @@
 
 ## 1.2
 
+### Fixed —— 全新安装无法初始化（重要）
+
+- **补上 v0.44 保全三层模型缺失的建表迁移**。`20260601_v044_preservation_three_layer`
+  是一个空迁移，`PreservationCase` / `PreservationTarget` / `PreservationProperty` /
+  `PreservationPropertyRenewal` 四张表的 DDL 从未进入迁移历史。
+  **后果：任何全新安装在执行 `prisma migrate deploy` 时都会中断**（P3009，
+  报 `relation "PreservationCase" does not exist`），无法完成初始化。
+  已补 `20260601010000_v44_preservation_three_layer_tables`，其全部语句均为幂等，
+  已在运行中的实例执行时为无操作，不会报错、不会丢数据。
+
 ### 法律准确性修正
 
 - **更正财产保全期限的法条依据**。原引用「民诉法第 244 条」有误——该条实为执行回转，与保全期限无关。
