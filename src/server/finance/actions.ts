@@ -27,6 +27,7 @@ import {
   invoiceMatterSearchLimit,
   invoiceMatterSearchWhere
 } from "./invoice-matter-search";
+import { revalidateMatter } from "@/server/matters/route";
 
 // ============ Billing ============
 
@@ -54,7 +55,7 @@ export async function createBilling(input: BillingCreateInput) {
     detail: { matterId: data.matterId }
   });
 
-  revalidatePath(`/matters/${data.matterId}`);
+  await revalidateMatter(data.matterId);
   return { ok: true, id: created.id };
 }
 
@@ -80,7 +81,7 @@ export async function deleteBilling(id: string) {
     targetType: "Billing",
     targetId: id
   });
-  revalidatePath(`/matters/${billing.matterId}`);
+  await revalidateMatter(billing.matterId);
   return { ok: true };
 }
 
@@ -160,7 +161,7 @@ export async function createFeeEntry(input: FeeEntryCreateInput) {
     detail: { matterId: data.matterId, type: data.type, amount: data.amount }
   });
 
-  revalidatePath(`/matters/${data.matterId}`);
+  await revalidateMatter(data.matterId);
   revalidatePath("/finance");
   return { ok: true, id: created.id };
 }
@@ -197,7 +198,7 @@ export async function deleteFeeEntry(id: string) {
       cascadedChildren: entry.commissionChildren.length
     }
   });
-  revalidatePath(`/matters/${entry.matterId}`);
+  await revalidateMatter(entry.matterId);
   revalidatePath("/finance");
   return { ok: true };
 }
@@ -235,7 +236,7 @@ export async function setCommissionPlan(input: CommissionPlanSetInput) {
     detail: { itemCount: data.items.length }
   });
 
-  revalidatePath(`/matters/${data.matterId}`);
+  await revalidateMatter(data.matterId);
   return { ok: true };
 }
 
@@ -490,7 +491,7 @@ export async function createInvoiceRequest(input: {
   });
 
   revalidatePath("/finance");
-  if (input.matterId) revalidatePath(`/matters/${input.matterId}`);
+  if (input.matterId) await revalidateMatter(input.matterId);
   return created;
 }
 

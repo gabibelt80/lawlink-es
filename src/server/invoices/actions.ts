@@ -19,6 +19,7 @@ import { validateUploadedFile } from "@/lib/storage/file-validator";
 import { encryptBuffer, sha256 } from "@/lib/storage/crypto";
 import { notifyRoleApprovers } from "@/server/notifications/approval";
 import { serializeDecimals } from "@/lib/decimal";
+import { revalidateMatter } from "@/server/matters/route";
 
 const MAX_FILE_SIZE = 20 * 1024 * 1024;
 
@@ -103,7 +104,7 @@ export async function createInvoiceRequest(input: z.infer<typeof createSchema>) 
     priority: "HIGH"
   });
 
-  revalidatePath(`/matters/${data.matterId}`);
+  await revalidateMatter(data.matterId);
   revalidatePath("/finance");
   return { ok: true, id: created.id };
 }
@@ -281,7 +282,7 @@ export async function approveInvoiceRequest(formData: FormData) {
     }
   });
 
-  if (existing.matterId) revalidatePath(`/matters/${existing.matterId}`);
+  if (existing.matterId) await revalidateMatter(existing.matterId);
   revalidatePath("/finance");
   return { ok: true, status: finalStatus };
 }
@@ -325,7 +326,7 @@ export async function rejectInvoiceRequest(input: z.infer<typeof rejectSchema>) 
     detail: { matterId: existing.matterId, reason: data.reason }
   });
 
-  if (existing.matterId) revalidatePath(`/matters/${existing.matterId}`);
+  if (existing.matterId) await revalidateMatter(existing.matterId);
   revalidatePath("/finance");
   return { ok: true };
 }

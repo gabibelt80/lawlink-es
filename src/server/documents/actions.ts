@@ -11,6 +11,7 @@ import { matterVisibilityFilter, isManager, assertCanAccessMatter, assertCanLead
 import { storage } from "@/lib/storage";
 import { validateUploadedFile } from "@/lib/storage/file-validator";
 import { encryptBuffer, sha256 } from "@/lib/storage/crypto";
+import { revalidateMatter } from "@/server/matters/route";
 
 const documentCategorySchema = z.enum([
   "EVIDENCE",
@@ -191,7 +192,7 @@ export async function uploadDocument(formData: FormData) {
     });
   }
 
-  if (matterId) revalidatePath(`/matters/${matterId}`);
+  if (matterId) await revalidateMatter(matterId);
   if (intakeId) revalidatePath(`/intakes/${intakeId}`);
   return { ok: true, id: created.id };
 }
@@ -228,7 +229,7 @@ export async function deleteDocument(id: string) {
     detail: { matterId: doc.matterId, intakeId: doc.intakeId, name: doc.name }
   });
 
-  if (doc.matterId) revalidatePath(`/matters/${doc.matterId}`);
+  if (doc.matterId) await revalidateMatter(doc.matterId);
   if (doc.intakeId) revalidatePath(`/intakes/${doc.intakeId}`);
   return { ok: true };
 }
@@ -253,7 +254,7 @@ export async function hardDeleteDocument(id: string) {
     detail: { matterId: doc.matterId, intakeId: doc.intakeId, name: doc.name }
   });
 
-  if (doc.matterId) revalidatePath(`/matters/${doc.matterId}`);
+  if (doc.matterId) await revalidateMatter(doc.matterId);
   if (doc.intakeId) revalidatePath(`/intakes/${doc.intakeId}`);
   return { ok: true };
 }
@@ -321,7 +322,7 @@ export async function submitDocumentForReview(id: string) {
     detail: { matterId: doc.matterId, name: doc.name },
   });
 
-  if (doc.matterId) revalidatePath(`/matters/${doc.matterId}`);
+  if (doc.matterId) await revalidateMatter(doc.matterId);
   return { ok: true };
 }
 
@@ -351,7 +352,7 @@ export async function approveDocument(id: string) {
     detail: { matterId: doc.matterId, name: doc.name },
   });
 
-  if (doc.matterId) revalidatePath(`/matters/${doc.matterId}`);
+  if (doc.matterId) await revalidateMatter(doc.matterId);
   return { ok: true };
 }
 
@@ -381,7 +382,7 @@ export async function rejectDocument(id: string, reason?: string) {
     detail: { matterId: doc.matterId, name: doc.name, reason },
   });
 
-  if (doc.matterId) revalidatePath(`/matters/${doc.matterId}`);
+  if (doc.matterId) await revalidateMatter(doc.matterId);
   return { ok: true };
 }
 
@@ -406,6 +407,6 @@ export async function fileDocument(id: string) {
     detail: { matterId: doc.matterId, name: doc.name },
   });
 
-  if (doc.matterId) revalidatePath(`/matters/${doc.matterId}`);
+  if (doc.matterId) await revalidateMatter(doc.matterId);
   return { ok: true };
 }

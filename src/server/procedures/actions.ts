@@ -1,6 +1,5 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { requireSession } from "@/lib/auth/session";
 import { audit } from "@/server/audit";
@@ -26,6 +25,7 @@ import {
   type DeadlineCreateInput,
   type HearingCreateInput
 } from "./schemas";
+import { revalidateMatter } from "@/server/matters/route";
 
 function emptyToNull<T extends Record<string, unknown>>(obj: T): T {
   const out: Record<string, unknown> = {};
@@ -88,7 +88,7 @@ export async function addProcedure(input: ProcedureCreateInput) {
     detail: { matterId: data.matterId, type: data.type }
   });
 
-  revalidatePath(`/matters/${data.matterId}`);
+  await revalidateMatter(data.matterId);
   return { ok: true, id: created.id };
 }
 
@@ -128,7 +128,7 @@ export async function updateProcedure(input: ProcedureUpdateInput) {
     targetId: id
   });
 
-  revalidatePath(`/matters/${updated.matterId}`);
+  await revalidateMatter(updated.matterId);
   return { ok: true };
 }
 
@@ -150,7 +150,7 @@ export async function deleteProcedure(id: string) {
     detail: { matterId: procedure.matterId }
   });
 
-  revalidatePath(`/matters/${procedure.matterId}`);
+  await revalidateMatter(procedure.matterId);
   return { ok: true };
 }
 
@@ -269,7 +269,7 @@ async function materializeProcedureStage(
       }
     });
 
-    revalidatePath(`/matters/${procedure.matterId}`);
+    await revalidateMatter(procedure.matterId);
   }
 
   return { ok: true, id: result.stage.id, created: result.created };
@@ -374,7 +374,7 @@ export async function removeProcedureStage(input: ProcedureStageRemoveInput) {
       }
     });
 
-    revalidatePath(`/matters/${stage.procedure.matterId}`);
+    await revalidateMatter(stage.procedure.matterId);
     return { ok: true, hidden: true };
   }
 
@@ -404,7 +404,7 @@ export async function removeProcedureStage(input: ProcedureStageRemoveInput) {
     detail: { matterId: stage.procedure.matterId, procedureId: stage.procedureId }
   });
 
-  revalidatePath(`/matters/${stage.procedure.matterId}`);
+  await revalidateMatter(stage.procedure.matterId);
   return { ok: true, hidden: false };
 }
 
@@ -457,7 +457,7 @@ export async function addDeadline(input: DeadlineCreateInput) {
         refId: created.id
       }
     });
-    revalidatePath(`/matters/${procedure.matterId}`);
+    await revalidateMatter(procedure.matterId);
   }
 
   return { ok: true, id: created.id };
@@ -489,7 +489,7 @@ export async function toggleDeadlineCompleted(id: string) {
     targetId: id
   });
 
-  revalidatePath(`/matters/${current.procedure.matterId}`);
+  await revalidateMatter(current.procedure.matterId);
   return { ok: true };
 }
 
@@ -510,7 +510,7 @@ export async function deleteDeadline(id: string) {
     targetType: "Deadline",
     targetId: id
   });
-  revalidatePath(`/matters/${current.procedure.matterId}`);
+  await revalidateMatter(current.procedure.matterId);
   return { ok: true };
 }
 
@@ -566,7 +566,7 @@ export async function addHearing(input: HearingCreateInput) {
       targetId: created.id,
       detail: { matterId: procedure.matterId, procedureId: data.procedureId }
     });
-    revalidatePath(`/matters/${procedure.matterId}`);
+    await revalidateMatter(procedure.matterId);
   }
 
   return { ok: true, id: created.id };
@@ -589,7 +589,7 @@ export async function deleteHearing(id: string) {
     targetType: "Hearing",
     targetId: id
   });
-  revalidatePath(`/matters/${current.procedure.matterId}`);
+  await revalidateMatter(current.procedure.matterId);
   return { ok: true };
 }
 
@@ -619,7 +619,7 @@ export async function addProcedureMemo(input: {
       createdById: session.user.id
     }
   });
-  revalidatePath(`/matters/${proc.matterId}`);
+  await revalidateMatter(proc.matterId);
   return { ok: true, id: created.id };
 }
 
@@ -638,7 +638,7 @@ export async function toggleProcedureMemo(id: string) {
     where: { id },
     data: { done: next, doneAt: next ? new Date() : null }
   });
-  revalidatePath(`/matters/${current.procedure.matterId}`);
+  await revalidateMatter(current.procedure.matterId);
   return { ok: true };
 }
 
@@ -653,6 +653,6 @@ export async function deleteProcedureMemo(id: string) {
   await assertMatterWritable(current.procedure.matterId);
 
   await prisma.procedureMemo.delete({ where: { id } });
-  revalidatePath(`/matters/${current.procedure.matterId}`);
+  await revalidateMatter(current.procedure.matterId);
   return { ok: true };
 }

@@ -21,6 +21,7 @@ import {
   smsGenerateDeadlineSchema,
   smsIdSchema
 } from "./schemas";
+import { revalidateMatter } from "@/server/matters/route";
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 // 解析并保存（支持批量）
@@ -281,7 +282,7 @@ export async function extractSmsAttachments(input: z.infer<typeof smsIdSchema>) 
   });
 
   revalidatePath("/inbox");
-  if (sms.matchedMatterId) revalidatePath(`/matters/${sms.matchedMatterId}`);
+  if (sms.matchedMatterId) await revalidateMatter(sms.matchedMatterId);
   return { ok: true, count: attachmentResults.length, attachmentResults };
 }
 
@@ -420,7 +421,7 @@ export async function generateHearingFromSms(input: z.infer<typeof smsGenerateHe
   });
 
   revalidatePath("/inbox");
-  revalidatePath(`/matters/${proc.matterId}`);
+  await revalidateMatter(proc.matterId);
   return { ok: true, hearingId: hearing.id };
 }
 
@@ -469,7 +470,7 @@ export async function generateDeadlineFromSms(input: z.infer<typeof smsGenerateD
   });
 
   revalidatePath("/inbox");
-  revalidatePath(`/matters/${proc.matterId}`);
+  await revalidateMatter(proc.matterId);
   return { ok: true, deadlineId: deadline.id };
 }
 
@@ -594,6 +595,6 @@ export async function backfillCaseNumberFromSms(
   });
 
   revalidatePath("/inbox");
-  revalidatePath(`/matters/${sms.matchedMatterId}`);
+  await revalidateMatter(sms.matchedMatterId);
   return { ok: true, unchanged: false };
 }

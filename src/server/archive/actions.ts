@@ -13,6 +13,7 @@ import { assertCanLeadMatter } from "@/lib/permissions";
 import { renderArchiveCover, renderArchiveCatalog } from "./render";
 import { archiveSubmitSchema, type ArchiveSubmitInput, CLOSED_REASON_CN } from "./schemas";
 import { matterHref } from "@/lib/matters/route";
+import { revalidateMatter } from "@/server/matters/route";
 
 /**
  * v0.9.4 归档：完整流程
@@ -134,7 +135,7 @@ export async function archiveMatter(input: ArchiveSubmitInput) {
     }
   });
 
-  revalidatePath(`/matters/${matter.id}`);
+  await revalidateMatter(matter.id);
   revalidatePath("/matters");
   revalidatePath("/archive");
   return { ok: true, archiveNo, status: "PENDING_REVIEW" };
@@ -215,7 +216,7 @@ export async function approveArchiveRecord(input: { archiveId: string; note?: st
     detail: { matterId: record.matterId, archiveNo: record.archiveNo }
   });
 
-  revalidatePath(`/matters/${record.matterId}`);
+  await revalidateMatter(record.matterId);
   revalidatePath("/matters");
   revalidatePath("/archive");
   return { ok: true };
@@ -280,7 +281,7 @@ export async function rejectArchiveRecord(input: { archiveId: string; note: stri
     detail: { matterId: record.matterId, archiveNo: record.archiveNo, note: input.note.trim() }
   });
 
-  revalidatePath(`/matters/${record.matterId}`);
+  await revalidateMatter(record.matterId);
   revalidatePath("/archive");
   return { ok: true };
 }

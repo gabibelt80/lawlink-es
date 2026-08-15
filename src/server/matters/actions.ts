@@ -27,6 +27,7 @@ import {
   type MatterListQuery,
   type MatterUpdateBasicInput
 } from "./schemas";
+import { revalidateMatter } from "@/server/matters/route";
 
 function emptyToNull<T extends Record<string, unknown>>(obj: T): T {
   const out: Record<string, unknown> = {};
@@ -388,7 +389,7 @@ export async function updateProcedureInfo(input: {
     targetId: input.procedureId,
     detail: { matterId: proc.matterId }
   });
-  revalidatePath(`/matters/${proc.matterId}`);
+  await revalidateMatter(proc.matterId);
 }
 
 type NewProcedurePartyInput = {
@@ -597,7 +598,7 @@ export async function addMatterLink(matterId: string, relatedMatterId: string) {
     targetId: matterId,
     detail: { relatedMatterId }
   });
-  revalidatePath(`/matters/${matterId}`);
+  await revalidateMatter(matterId);
 }
 
 export async function removeMatterLink(matterId: string, relatedMatterId: string) {
@@ -620,7 +621,7 @@ export async function removeMatterLink(matterId: string, relatedMatterId: string
     targetId: matterId,
     detail: { relatedMatterId }
   });
-  revalidatePath(`/matters/${matterId}`);
+  await revalidateMatter(matterId);
 }
 
 export async function getMatterById(id: string) {
@@ -872,7 +873,7 @@ export async function updateMatterTeam(input: {
     }
   });
 
-  revalidatePath(`/matters/${input.matterId}`);
+  await revalidateMatter(input.matterId);
   return { ok: true };
 }
 
@@ -926,7 +927,7 @@ export async function updateMatterBasicInfo(input: MatterUpdateBasicInput) {
     detail: { titleBefore: matter.title, titleAfter: data.title }
   });
 
-  revalidatePath(`/matters/${data.id}`);
+  await revalidateMatter(data.id);
   return { ok: true };
 }
 

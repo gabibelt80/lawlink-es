@@ -20,6 +20,7 @@ import {
   propertyRenewSchema,
   deleteSchema,
 } from "./schemas-v2";
+import { revalidateMatter } from "@/server/matters/route";
 
 // ━━━━ Read ━━━━
 
@@ -154,7 +155,7 @@ export async function createPreservationCase(input: z.infer<typeof caseCreateSch
   });
 
   revalidatePath("/preservation");
-  if (created.matterId) revalidatePath(`/matters/${created.matterId}`);
+  if (created.matterId) await revalidateMatter(created.matterId);
   return { ok: true, id: created.id };
 }
 
@@ -188,7 +189,7 @@ export async function updatePreservationCase(input: z.infer<typeof caseUpdateSch
   });
 
   revalidatePath("/preservation");
-  if (existing.matterId) revalidatePath(`/matters/${existing.matterId}`);
+  if (existing.matterId) await revalidateMatter(existing.matterId);
   return { ok: true };
 }
 
@@ -212,7 +213,7 @@ export async function deletePreservationCase(input: z.infer<typeof deleteSchema>
   });
 
   revalidatePath("/preservation");
-  if (cs.matterId) revalidatePath(`/matters/${cs.matterId}`);
+  if (cs.matterId) await revalidateMatter(cs.matterId);
   return { ok: true };
 }
 
@@ -230,7 +231,7 @@ export async function addTarget(input: z.infer<typeof targetCreateSchema>) {
   });
 
   revalidatePath("/preservation");
-  if (cs.matterId) revalidatePath(`/matters/${cs.matterId}`);
+  if (cs.matterId) await revalidateMatter(cs.matterId);
   return { ok: true, id: created.id };
 }
 
@@ -305,7 +306,7 @@ export async function addProperty(input: z.infer<typeof propertyCreateSchema>) {
   });
 
   revalidatePath("/preservation");
-  if (target.case.matterId) revalidatePath(`/matters/${target.case.matterId}`);
+  if (target.case.matterId) await revalidateMatter(target.case.matterId);
   return { ok: true, id: created.id };
 }
 
@@ -366,7 +367,7 @@ export async function renewProperty(input: z.infer<typeof propertyRenewSchema>) 
   ]);
 
   revalidatePath("/preservation");
-  if (prop.target.case.matterId) revalidatePath(`/matters/${prop.target.case.matterId}`);
+  if (prop.target.case.matterId) await revalidateMatter(prop.target.case.matterId);
   return { ok: true };
 }
 
@@ -388,7 +389,7 @@ export async function liftProperty(propertyId: string) {
   });
 
   revalidatePath("/preservation");
-  if (prop.target.case.matterId) revalidatePath(`/matters/${prop.target.case.matterId}`);
+  if (prop.target.case.matterId) await revalidateMatter(prop.target.case.matterId);
   return { ok: true };
 }
 
