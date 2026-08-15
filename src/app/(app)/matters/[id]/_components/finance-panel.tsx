@@ -35,7 +35,7 @@ export function FinancePanel({
   const outstanding = Math.max(stats.receivable - stats.received, 0);
 
   const cards: { label: string; value: number; tone: StatTone; className?: string }[] = [
-    { label: "合同额", value: stats.contractAmount, tone: "neutral", className: "col-span-2" },
+    { label: "合同约定律师费", value: stats.contractAmount, tone: "neutral", className: "col-span-3" },
     { label: "已收", value: stats.received, tone: "emerald" },
     { label: "待收", value: outstanding, tone: "amber" },
     { label: "支出", value: stats.cost, tone: "red" },
@@ -70,7 +70,7 @@ export function FinancePanel({
       <div
         className={
           compact
-            ? "grid grid-cols-2 gap-px border-b border-border bg-border"
+            ? "grid grid-cols-3 gap-px border-b border-border bg-border"
             : "grid grid-cols-3 gap-px border-b border-border bg-border sm:grid-cols-6"
         }
       >
@@ -97,20 +97,14 @@ export function FinancePanel({
               key={e.id}
               className={
                 compact
-                  ? "space-y-1 px-3 py-2 text-[12px]"
+                  ? "flex items-center gap-2 px-3 py-2 text-[12px]"
                   : "flex items-center gap-3 px-4 py-2 text-[12.5px]"
               }
             >
-              <span className="font-mono tabular text-[14px] font-medium text-emerald-600">
+              <span className="shrink-0 font-mono tabular text-[14px] font-medium text-emerald-600">
                 {formatCurrency(Number(e.amount))}
               </span>
-              <span
-                className={
-                  compact
-                    ? "block truncate text-muted-foreground"
-                    : "min-w-0 flex-1 truncate text-muted-foreground"
-                }
-              >
+              <span className="min-w-0 flex-1 truncate text-muted-foreground">
                 {e.payerOrPayee && <span>{e.payerOrPayee}</span>}
                 {e.method && (
                   <span className="ml-2 text-[10.5px]">· {e.method}</span>
@@ -122,7 +116,7 @@ export function FinancePanel({
                 )}
                 {e.note && <span className="ml-2 text-[10.5px]">· {e.note}</span>}
               </span>
-              <span className="font-mono text-[11px] tabular text-muted-foreground">
+              <span className="shrink-0 font-mono text-[11px] tabular text-muted-foreground">
                 {new Date(e.occurredAt).toLocaleDateString("zh-CN")}
               </span>
             </li>

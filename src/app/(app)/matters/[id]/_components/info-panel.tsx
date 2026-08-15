@@ -34,7 +34,7 @@ function contactRoleLabels(type: string | undefined) {
     return { lead: "执行法官", assistant: "书记员" };
   }
 
-  return { lead: "法官", assistant: "书记员" };
+  return { lead: "主办法官", assistant: "书记员" };
 }
 
 const PROCEDURE_OUTCOME_LABEL: Record<string, string> = {
@@ -81,20 +81,6 @@ export function InfoPanel({
   // v1.1「信息总览」：只放标题区/侧栏没有的内容——案由、类别、状态、期限
   // 已由页头与 MatterKeypoints 承载，此处聚焦当前程序的档案字段
   const contactLabels = contactRoleLabels(currentProcedure?.type);
-  const leadContact = contactValue(
-    currentProcedure?.presidingJudge,
-    currentProcedure?.presidingJudgeContact
-  );
-  const assistantContact = contactValue(
-    currentProcedure?.judgeAssistant,
-    currentProcedure?.judgeAssistantContact
-  );
-  const jurisdictionText = [
-    currentProcedure?.handlingAgency?.trim(),
-    currentProcedure?.jurisdiction?.trim()
-  ]
-    .filter(Boolean)
-    .join(" · ");
 
   const standing = currentProcedure?.ourStanding ?? matter.ourStanding;
   const isArbitration = Boolean(
@@ -102,7 +88,18 @@ export function InfoPanel({
   );
   const requestLabel = isArbitration ? "仲裁请求" : "诉讼请求";
   const requestContent = matter.intake?.claimDescription?.trim() || "";
-  const hasCounterclaim = Boolean(matter.intake?.counterclaim);
+  const causeText = matter.cause?.name?.trim() || matter.causeFreeText?.trim() || "";
+  const clientName =
+    matter.primaryClient?.name?.trim() ||
+    matter.clientLinks.map((l) => l.client.name).join("、");
+  const opposingNames = matter.parties
+    .filter((p) => p.role === "OPPOSING_PARTY")
+    .map((p) => p.name)
+    .join("、");
+  // barFiling 记录的是「是否需向律协备案」，NONE 视为未备案
+  const barFilingText =
+    matter.barFiling && matter.barFiling !== "NONE" ? "已备案" : "未备案";
+  const counterclaimText = matter.intake ? (matter.intake.counterclaim ? "是" : "否") : "";
   const outcomeText = currentProcedure?.outcomeNote?.trim()
     || (currentProcedure?.outcome ? PROCEDURE_OUTCOME_LABEL[currentProcedure.outcome] : "");
 
@@ -133,70 +130,80 @@ export function InfoPanel({
         )}
       </div>
 
-      <div className="divide-y divide-border overflow-hidden rounded-md border border-border bg-card">
-        <DossierRow>
-          <DossierCell label="案号" mono>
-            {dash(currentProcedure?.caseNumber)}
-          </DossierCell>
-          <DossierCell label="我方地位">
+      <div className="overflow-hidden rounded-md border border-border">
+        <InfoRow>
+          <Pair label="收案时间">
+            <Mono>{matter.intakeDate ? formatDate(matter.intakeDate) : "—"}</Mono>
+          </Pair>
+          <Pair label="立案时间">
+            <Mono>{currentProcedure?.acceptedAt ? formatDate(currentProcedure.acceptedAt) : "—"}</Mono>
+          </Pair>
+        </InfoRow>
+        <InfoRow>
+          <Pair label="案由">{dash(causeText)}</Pair>
+          <Pair label="案号">
+            <Mono>{dash(currentProcedure?.caseNumber)}</Mono>
+          </Pair>
+        </InfoRow>
+        <InfoRow>
+          <Pair label="客户名称">{dash(clientName)}</Pair>
+          <Pair label="相对方">{dash(opposingNames)}</Pair>
+        </InfoRow>
+        <InfoRow>
+          <Pair label="我方地位">
             {standing ? litigationStandingLabel[standing] ?? standing : "—"}
-          </DossierCell>
-        </DossierRow>
-        <DossierRow>
-          <DossierCell label={amountLabel} mono={kind !== "counsel"}>
-            {amountValue}
-          </DossierCell>
-          <DossierCell label="编号" mono>
-            {matter.internalCode}
-          </DossierCell>
-        </DossierRow>
-        <DossierRow>
-          <DossierCell label="立案" mono>
-            {currentProcedure?.acceptedAt ? formatDate(currentProcedure.acceptedAt) : "—"}
-          </DossierCell>
-          <DossierCell label="结案" mono>
-            {currentProcedure?.concludedAt ? formatDate(currentProcedure.concludedAt) : "—"}
-          </DossierCell>
-        </DossierRow>
-        <DossierRow full>
-          <DossierCell label="管辖">{jurisdictionText || "—"}</DossierCell>
-        </DossierRow>
-        <DossierRow>
-          <DossierCell label={contactLabels.lead}>{leadContact}</DossierCell>
-          <DossierCell label={contactLabels.assistant}>{assistantContact}</DossierCell>
-        </DossierRow>
+          </Pair>
+          <Pair label={amountLabel}>
+            {kind !== "counsel" ? <Mono>{amountValue}</Mono> : amountValue}
+          </Pair>
+        </InfoRow>
+        <InfoRow>
+          <Pair label="是否反诉">{dash(counterclaimText)}</Pair>
+          <Pair label="律协备案">{barFilingText}</Pair>
+        </InfoRow>
+        <InfoRow>
+          <Pair label="管辖地">{dash(currentProcedure?.jurisdiction)}</Pair>
+          <Pair label="管辖机构">{dash(currentProcedure?.handlingAgency)}</Pair>
+        </InfoRow>
+        <InfoRow>
+          <Pair label={contactLabels.lead}>{personName(currentProcedure?.presidingJudge)}</Pair>
+          <Pair label="联系方式">
+            <ContactText value={currentProcedure?.presidingJudgeContact} />
+          </Pair>
+        </InfoRow>
+        <InfoRow>
+          <Pair label={contactLabels.assistant}>{personName(currentProcedure?.judgeAssistant)}</Pair>
+          <Pair label="联系方式">
+            <ContactText value={currentProcedure?.judgeAssistantContact} />
+          </Pair>
+        </InfoRow>
         {currentProcedure?.panel?.trim() && (
-          <DossierRow full>
-            <DossierCell label="合议庭">{currentProcedure.panel}</DossierCell>
-          </DossierRow>
+          <InfoRow>
+            <Pair label="合议庭">{currentProcedure.panel}</Pair>
+          </InfoRow>
         )}
         {requestContent && (
-          <DossierRow full>
-            <DossierCell
-              label={hasCounterclaim ? `${requestLabel}※` : requestLabel}
-            >
+          <InfoRow>
+            <Pair label={requestLabel}>
               <ClampedText text={requestContent} />
-            </DossierCell>
-          </DossierRow>
+            </Pair>
+          </InfoRow>
         )}
         {outcomeText && (
-          <DossierRow full>
-            <DossierCell label="裁判结果">{outcomeText}</DossierCell>
-          </DossierRow>
+          <InfoRow>
+            <Pair label="裁判结果">{outcomeText}</Pair>
+          </InfoRow>
         )}
-        <DossierRow full>
-          <DossierCell label="关联案件">
+        <InfoRow>
+          <Pair label="关联案件">
             <RelatedMattersField
               matterId={matter.id}
               related={relatedMatters}
               canManage={canManageRelatedMatters}
             />
-          </DossierCell>
-        </DossierRow>
+          </Pair>
+        </InfoRow>
       </div>
-      {hasCounterclaim && (
-        <p className="text-[10.5px] text-muted-foreground">※ 本案含反诉。</p>
-      )}
     </section>
   );
 }
@@ -225,58 +232,23 @@ function ClampedText({ text }: { text: string }) {
   );
 }
 
-/** 姓名 + 联系方式合成一格；两者皆空时折叠为「未录入」 */
-function contactValue(name?: string | null, contact?: string | null): React.ReactNode {
+/** 数字/案号/日期类取值统一等宽字体 */
+function Mono({ children }: { children: React.ReactNode }) {
+  return <span className="font-mono tabular">{children}</span>;
+}
+
+/** 人名为空时显示「未录入」 */
+function personName(name?: string | null): React.ReactNode {
   const n = name?.trim();
-  const c = contact?.trim();
-  if (!n && !c) return <span className="text-muted-foreground">未录入</span>;
-  return (
-    <span className="min-w-0">
-      {n && <span>{n}</span>}
-      {c && (
-        <span className={cn("font-mono text-muted-foreground tabular", n && "ml-2")}>{c}</span>
-      )}
-    </span>
-  );
+  if (!n) return <span className="text-muted-foreground">未录入</span>;
+  return n;
 }
 
-function DossierRow({ full, children }: { full?: boolean; children: React.ReactNode }) {
-  return (
-    <div
-      className={cn(
-        "grid items-baseline gap-x-2.5 gap-y-1.5 px-3.5 py-[7px]",
-        full
-          ? "grid-cols-[72px_minmax(0,1fr)]"
-          : "grid-cols-[72px_minmax(0,1fr)] sm:grid-cols-[72px_minmax(0,1fr)_72px_minmax(0,1fr)]"
-      )}
-    >
-      {children}
-    </div>
-  );
-}
-
-function DossierCell({
-  label,
-  mono,
-  children
-}: {
-  label: string;
-  mono?: boolean;
-  children: React.ReactNode;
-}) {
-  return (
-    <>
-      <span className="text-[11px] leading-[1.6] text-muted-foreground">{label}</span>
-      <span
-        className={cn(
-          "min-w-0 break-words text-[12.5px] leading-[1.6] text-foreground/95",
-          mono && "font-mono tabular"
-        )}
-      >
-        {children}
-      </span>
-    </>
-  );
+/** 联系方式（电话等）等宽展示，空值折叠为「—」 */
+function ContactText({ value }: { value?: string | null }) {
+  const v = value?.trim();
+  if (!v) return <>—</>;
+  return <span className="font-mono tabular">{v}</span>;
 }
 
 // 一行：移动端纵向堆叠（pair 间横线），md+ 横向排列（pair 间竖线）
