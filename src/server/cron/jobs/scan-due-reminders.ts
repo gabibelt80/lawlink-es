@@ -29,6 +29,8 @@ export type DueReminderScanResult = {
   /** v1.2: 保全续封提醒 */
   preservationScanned: number;
   preservationNotified: number;
+  /** v1.2: 过期未续封、自动置为 EXPIRED 的条目数 */
+  preservationExpired: number;
   suppressed: number;
 };
 
@@ -79,6 +81,7 @@ export async function scanDueReminders(): Promise<DueReminderScanResult> {
   let hearingNotified = 0;
   let preservationScanned = 0;
   let preservationNotified = 0;
+  let preservationExpired = 0;
   let suppressed = 0;
   // v0.50: 汇总本次新提醒，扫描结束后一次性推 webhook（避免逐条刷群）
   const digestLines: string[] = [];
@@ -288,6 +291,88 @@ export async function scanDueReminders(): Promise<DueReminderScanResult> {
     );
   }
 
+  // ── v1.2: 过期未续封的保全自动置为 EXPIRED ───────────────────────────
+  //
+  // 依据查扣冻规定第二十七条，期限届满未办延期手续的，效力「消灭」——
+  // 这是法律上自动发生的事实，不需要任何人做动作。因此库里仍写 ACTIVE
+  // 不是「待处理状态」，而是错误数据，改正它不等于擅自变更业务数据。
+  //
+  // 两个方向的错误代价不对称，据此选择朝安全方向失败：
+  //   显示生效中但实际已失效 → 律师不行动、财产被转移，不可逆；
+  //   显示已过期但实际已续封 → 律师看到告警去核对并更新记录，可自我修正。
+  //
+  // 但不静默翻转：每条都发通知并单独记审计，翻转可见、可纠正。
+  // 到期当日仍在期限内，故只处理 expiryDate 早于今天零点的条目。
+  const lapsed = await prisma.preservationProperty.findMany({
+    where: {
+      status: { in: ["ACTIVE", "RENEWED"] },
+      expiryDate: { lt: todayStart }
+    },
+    select: {
+      id: true,
+      propertyType: true,
+      propertyDetail: true,
+      expiryDate: true,
+      target: {
+        select: {
+          name: true,
+          case: {
+            select: {
+              ownerId: true,
+              matter: { select: { id: true, title: true, internalCode: true, ownerId: true } }
+            }
+          }
+        }
+      }
+    }
+  });
+
+  for (const prop of lapsed) {
+    const cs = prop.target.case;
+    const daysOverdue = Math.round(
+      (todayStart.getTime() - startOfLocalDay(prop.expiryDate).getTime()) / 86_400_000
+    );
+
+    await prisma.preservationProperty.update({
+      where: { id: prop.id },
+      data: { status: "EXPIRED" }
+    });
+    preservationExpired++;
+
+    await audit({
+      userId: null,
+      action: "PRESERVATION_STATUS_AUTO_EXPIRED",
+      targetType: "PreservationProperty",
+      targetId: prop.id,
+      detail: {
+        expiryDate: prop.expiryDate.toISOString(),
+        daysOverdue,
+        matterId: cs.matter?.id ?? null
+      }
+    });
+
+    const userId = cs.ownerId ?? cs.matter?.ownerId;
+    if (!userId) continue;
+
+    const propertyLabel = prop.propertyDetail?.trim() || PROPERTY_TYPE_CN[prop.propertyType];
+    await createNotification({
+      userId,
+      type: "DEADLINE_REMINDER",
+      priority: "URGENT",
+      title: `保全已过期未续封：${prop.target.name} · ${propertyLabel}`,
+      content:
+        `到期日 ${prop.expiryDate.toLocaleDateString("zh-CN")}，已过 ${daysOverdue} 天。` +
+        `未办理续封手续的，查封、扣押、冻结的效力消灭（查扣冻规定第二十七条），` +
+        `系统已将该条保全标记为「已到期」。若实际已办理续封，请在系统中更新记录。`,
+      href: cs.matter ? matterHref(cs.matter) : "/preservation",
+      refType: "PreservationExpired",
+      refId: prop.id
+    });
+    digestLines.push(
+      `· 保全已过期未续封：${prop.target.name}·${propertyLabel}（逾期 ${daysOverdue} 天）`
+    );
+  }
+
   // v0.50: 企微/钉钉 webhook 摘要（未配置时静默跳过；失败写 audit 不中断）
   let webhookResult: { ok: boolean; skipped?: boolean; error?: string } | null = null;
   if (digestLines.length > 0) {
@@ -315,6 +400,7 @@ export async function scanDueReminders(): Promise<DueReminderScanResult> {
       hearingNotified,
       preservationScanned,
       preservationNotified,
+      preservationExpired,
       suppressed,
       offsets: OFFSETS,
       webhook: webhookResult
@@ -328,6 +414,7 @@ export async function scanDueReminders(): Promise<DueReminderScanResult> {
     hearingNotified,
     preservationScanned,
     preservationNotified,
+    preservationExpired,
     suppressed
   };
 }
