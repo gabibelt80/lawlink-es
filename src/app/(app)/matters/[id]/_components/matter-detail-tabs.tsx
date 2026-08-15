@@ -491,6 +491,33 @@ type DeadlineProgressItem = ProcedureItem["deadlines"][number] & {
   procedureLabel: string;
 };
 
+/**
+ * 删除程序的确认文案。
+ *
+ * 原文案是「该程序下的所有开庭、期限、备忘和材料记录将被一并删除」——两个问题：
+ * 1. 笼统。人对「所有相关记录」会习惯性点确定，对「3 条期限」会停手。
+ * 2. 不准确。材料（Document）的外键是 SetNull，只会丢失程序关联，本身不删。
+ *
+ * 级联硬删的实际范围（schema onDelete: Cascade）：Deadline / Hearing /
+ * MatterStage（含其下 Task 的关联）/ ProcedureMemo。
+ */
+function deleteProcedureWarning(procedure: ProcedureItem, label: string): string {
+  const parts: string[] = [];
+  if (procedure.deadlines.length > 0) parts.push(`${procedure.deadlines.length} 条期限`);
+  if (procedure.hearings.length > 0) parts.push(`${procedure.hearings.length} 场开庭`);
+  if (procedure.stages.length > 0) parts.push(`${procedure.stages.length} 个环节`);
+  if (procedure.memos.length > 0) parts.push(`${procedure.memos.length} 条备忘`);
+
+  if (parts.length === 0) {
+    return `确定删除程序「${label}」？该程序下暂无期限、开庭、环节和备忘记录。`;
+  }
+  return (
+    `确定删除程序「${label}」？\n\n` +
+    `该程序下的 ${parts.join("、")} 将被一并删除，此操作不可撤销。\n` +
+    `（材料不会被删除，仅解除与本程序的关联。）`
+  );
+}
+
 function ProcedureChainBar({
   procedures,
   currentProcedure,
@@ -565,11 +592,7 @@ function ProcedureChainBar({
                       <button
                         type="button"
                         onClick={() => {
-                          if (
-                            confirm(
-                              `确定删除程序「${label}」？该程序下的所有开庭、期限、备忘和材料记录将被一并删除，此操作不可撤销。`
-                            )
-                          ) {
+                          if (confirm(deleteProcedureWarning(procedure, label))) {
                             onDelete(procedure.id);
                           }
                         }}
