@@ -67,7 +67,11 @@ jobs:
       # schema.prisma 与迁移历史必须一致。历史上两次事故都源于用 db push 改本地库
       # 却没生成迁移：v0.44 保全三层模型四张表、Hearing 的 address/contact 两列，
       # 都只存在于 schema 而不在迁移里，导致全新安装装不起来或一进工作台就崩。
-      # --exit-code 在存在差异时返回非零，把这类漂移挡在合并之前。
+      #
+      # 注意 `prisma migrate status` 抓不到这类问题——它只检查迁移文件是否都执行过，
+      # 不检查执行结果是否等于 schema，所以会报 "up to date"。必须用 migrate diff。
+      #
+      # 本检查由 @liuzl 在 PR #3 中提出并给出具体方案，见该 PR 的 Suggested follow-up。
       - name: Check for schema drift
         run: |
           npx prisma migrate diff \
