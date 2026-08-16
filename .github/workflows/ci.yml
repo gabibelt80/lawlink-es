@@ -64,6 +64,20 @@ jobs:
       - name: Validate Prisma schema
         run: npm run prisma:validate
 
+      # schema.prisma 与迁移历史必须一致。历史上两次事故都源于用 db push 改本地库
+      # 却没生成迁移：v0.44 保全三层模型四张表、Hearing 的 address/contact 两列，
+      # 都只存在于 schema 而不在迁移里，导致全新安装装不起来或一进工作台就崩。
+      # --exit-code 在存在差异时返回非零，把这类漂移挡在合并之前。
+      - name: Check for schema drift
+        run: |
+          npx prisma migrate diff \
+            --from-migrations prisma/migrations \
+            --to-schema-datamodel prisma/schema.prisma \
+            --shadow-database-url "$DATABASE_URL" \
+            --exit-code \
+          && echo "无漂移：迁移历史与 schema.prisma 一致" \
+          || (echo "::error::schema.prisma 与迁移历史不一致。请用 prisma migrate dev 生成迁移，不要用 db push 改库。" && exit 1)
+
       # 以下三步模拟「全新安装」：迁移 → seed → 用 README 所载账号验证可登录。
       # v0.44 曾因空迁移导致全新安装无法初始化，且两个多月无人发现，
       # 原因就是没有任何环节会从零装一次。这三步专门守住这条线。
@@ -93,8 +107,12 @@ jobs:
             if (causes === 0) throw new Error('案由库为空');
             if (templates === 0) throw new Error('内置文书模板为空');
             if (rules === 0) throw new Error('法定期限规则为空');
-            // 三层保全模型的表必须由迁移建出，否则全新安装的保全功能不可用
+            // 以下查询按 schema 的全部列取数，任何迁移漏建的列都会在此暴露。
+            // 保全四张表（v0.44）与 Hearing.address/contact 都曾因漂移缺失。
             await prisma.preservationCase.count();
+            await prisma.hearing.findMany({ take: 1 });
+            await prisma.deadline.findMany({ take: 1 });
+            await prisma.matter.findMany({ take: 1 });
             console.log('全新安装可用：案由 ' + causes + ' / 模板 ' + templates + ' / 期限规则 ' + rules);
             await prisma.\$disconnect();
           })().catch((e) => { console.error(e.message); process.exit(1); });

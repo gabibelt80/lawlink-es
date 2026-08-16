@@ -19,6 +19,13 @@
   已补 `20260601010000_v44_preservation_three_layer_tables`，其全部语句均为幂等，
   已在运行中的实例执行时为无操作，不会报错、不会丢数据。
 
+- **补上 `Hearing.address` / `Hearing.contact` 两列的迁移**。这两列同样只存在于
+  `schema.prisma` 而不在迁移历史中，导致全新安装即使完成初始化，一进工作台也会崩溃
+  （`The column Hearing.address does not exist in the current database.`）。
+  此问题由外部贡献者 **[@liuzl](https://github.com/liuzl)** 于 2026-06-26 首次报告并提交修复（PR #3）。
+- **CI 增加 schema 漂移检查**。`prisma migrate diff --exit-code` 会在 `schema.prisma`
+  与迁移历史不一致时使构建失败，防止再出现「用 `db push` 改库却没生成迁移」的情况。
+
 ### 法律准确性修正
 
 - **更正财产保全期限的法条依据**。原引用「民诉法第 244 条」有误——该条实为执行回转，与保全期限无关。
