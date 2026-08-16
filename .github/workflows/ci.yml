@@ -34,6 +34,8 @@ jobs:
       DATABASE_URL: postgresql://lawlink:lawlink@localhost:5432/lawlink?schema=public
       NEXTAUTH_URL: http://localhost:3000
       NEXTAUTH_SECRET: ci-only-nextauth-secret-change-in-deployments
+      # seed 会加密内置模板，必须是 base64 编码的 32 字节；仅供 CI 使用
+      STORAGE_ENCRYPTION_KEY: Y2ktb25seS1rZXktbm90LWZvci1kZXBsb3ltZW50cyE=
       SEED_ADMIN_EMAIL: admin@lawlink.local
       SEED_ADMIN_PASSWORD: ChangeMe!2026
 
@@ -62,8 +64,41 @@ jobs:
       - name: Validate Prisma schema
         run: npm run prisma:validate
 
-      - name: Validate migrations
+      # 以下三步模拟「全新安装」：迁移 → seed → 用 README 所载账号验证可登录。
+      # v0.44 曾因空迁移导致全新安装无法初始化，且两个多月无人发现，
+      # 原因就是没有任何环节会从零装一次。这三步专门守住这条线。
+      - name: Migrate fresh database
         run: npx prisma migrate deploy
+
+      - name: Seed fresh database
+        run: npx prisma db seed
+
+      - name: Verify fresh install is usable
+        run: |
+          node -e "
+          const { PrismaClient } = require('@prisma/client');
+          const bcrypt = require('bcryptjs');
+          const prisma = new PrismaClient();
+          (async () => {
+            const email = process.env.SEED_ADMIN_EMAIL;
+            const password = process.env.SEED_ADMIN_PASSWORD;
+            const admin = await prisma.user.findUnique({ where: { email } });
+            if (!admin) throw new Error('seed 未创建管理员账号：' + email);
+            if (!(await bcrypt.compare(password, admin.passwordHash))) {
+              throw new Error('README 所载初始密码无法登录，seed 与文档已不一致');
+            }
+            const causes = await prisma.causeOfAction.count();
+            const templates = await prisma.documentTemplate.count();
+            const rules = await prisma.deadlineRule.count();
+            if (causes === 0) throw new Error('案由库为空');
+            if (templates === 0) throw new Error('内置文书模板为空');
+            if (rules === 0) throw new Error('法定期限规则为空');
+            // 三层保全模型的表必须由迁移建出，否则全新安装的保全功能不可用
+            await prisma.preservationCase.count();
+            console.log('全新安装可用：案由 ' + causes + ' / 模板 ' + templates + ' / 期限规则 ' + rules);
+            await prisma.\$disconnect();
+          })().catch((e) => { console.error(e.message); process.exit(1); });
+          "
 
       - name: Test
         run: npm run test:run
