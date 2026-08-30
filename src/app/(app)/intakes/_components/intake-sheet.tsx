@@ -1,7 +1,13 @@
 "use client";
 
 import { useState, useTransition, useRef, useMemo, useEffect } from "react";
-import { useForm, useFieldArray, FormProvider, useWatch } from "react-hook-form";
+import {
+  useForm,
+  useFieldArray,
+  FormProvider,
+  useWatch,
+  type FieldErrors
+} from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
@@ -14,7 +20,8 @@ import {
   FileText,
   X,
   ScanLine,
-  ChevronDown
+  ChevronDown,
+  AlertCircle
 } from "lucide-react";
 import type {
   MatterCategory,
@@ -182,6 +189,17 @@ const defaults: IntakeCreateInput = {
 };
 
 type Colleague = { id: string; name: string; role: UserRole };
+
+function firstFormErrorMessage(value: unknown): string | undefined {
+  if (!value || typeof value !== "object") return undefined;
+  if ("message" in value && typeof value.message === "string") return value.message;
+
+  for (const child of Object.values(value)) {
+    const message = firstFormErrorMessage(child);
+    if (message) return message;
+  }
+  return undefined;
+}
 
 export function IntakeSheet({
   open,
@@ -421,6 +439,12 @@ export function IntakeSheet({
       parties: all.filter((p) => p.role !== "CLIENT_PARTY")
     };
     startTransition(() => performSubmit(payload));
+  }
+
+  function onInvalid(formErrors: FieldErrors<IntakeCreateInput>) {
+    toast.warning("请补全必填项", {
+      description: firstFormErrorMessage(formErrors) ?? "请检查表单中的红色提示"
+    });
   }
 
   function handleFiles(list: FileList | null) {
@@ -949,9 +973,26 @@ export function IntakeSheet({
           </div>
         </DialogHeader>
         <FormProvider {...methods}>
-        <form onSubmit={handleSubmit(onSubmit)} className="flex flex-1 flex-col overflow-hidden">
+        <form
+          onSubmit={handleSubmit(onSubmit, onInvalid)}
+          className="flex flex-1 flex-col overflow-hidden"
+        >
           <div className="flex-1 overflow-y-auto bg-[#e6ebf2] px-4 py-4">
             <div className="mx-auto max-w-[888px] space-y-3.5 [&_button[role=combobox]]:h-[34px] [&_button[role=combobox]]:min-h-0 [&_button[role=combobox]]:rounded-sm [&_button[role=combobox]]:border-[#c6d0dd] [&_button[role=combobox]]:bg-white [&_button[role=combobox]]:text-[12.5px] [&_button[role=combobox]]:shadow-[var(--shadow-inset-deep)] [&_input]:h-[34px] [&_input]:min-h-0 [&_input]:rounded-sm [&_input]:border-[#c6d0dd] [&_input]:bg-white [&_input]:text-[12.5px] [&_textarea]:rounded-sm [&_textarea]:border-[#c6d0dd] [&_textarea]:bg-white [&_textarea]:text-[12.5px]">
+            {Object.keys(errors).length > 0 && (
+              <div
+                role="alert"
+                className="flex items-start gap-2 rounded-md border border-destructive/30 bg-destructive/5 px-3 py-2.5 text-destructive"
+              >
+                <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
+                <div>
+                  <p className="text-[12.5px] font-medium">尚有必填信息未完成</p>
+                  <p className="mt-0.5 text-[11.5px] leading-4">
+                    {firstFormErrorMessage(errors) ?? "请检查表单中的红色提示"}
+                  </p>
+                </div>
+              </div>
+            )}
             {/* ① 基本信息（共用：类别 / 名称 / 收案 / 经办）*/}
             <Section title="① 基本信息" required>
               {/* 案件类别 | 收案时间（与类别等宽）| 案件名称（剩余）*/}
@@ -1006,19 +1047,8 @@ export function IntakeSheet({
               {/* 诉讼/仲裁：案情信息（并入基本信息）*/}
               {kind === "litigation" && (
                 <>
-                {/* 案由 | 当前程序 | 管辖地 | 争议解决机构 */}
+                {/* 当前程序 | 案由 | 管辖地 | 争议解决机构 */}
                 <div className="grid grid-cols-1 gap-3 lg:grid-cols-4">
-                  <Field label="案由" required>
-                    <CauseCombobox
-                      category={category}
-                      procedureType={firstProcedureType}
-                      value={watch("causeId") || ""}
-                      onChange={(id, name) => {
-                        setValue("causeId", id, { shouldDirty: true });
-                        setCauseName(name);
-                      }}
-                    />
-                  </Field>
                   <Field label="当前程序" required error={errors.firstProcedureType?.message}>
                     <Select
                       value={firstProcedureType ?? ""}
@@ -1036,10 +1066,28 @@ export function IntakeSheet({
                       </SelectContent>
                     </Select>
                   </Field>
+                  <Field
+                    label="案由"
+                    required
+                    hint={!firstProcedureType ? "请先选择当前程序 / 审级" : undefined}
+                  >
+                    <CauseCombobox
+                      category={category}
+                      procedureType={firstProcedureType}
+                      value={watch("causeId") || ""}
+                      disabled={!firstProcedureType}
+                      placeholder={firstProcedureType ? "点击选择" : "请先选择当前程序"}
+                      onChange={(id, name) => {
+                        setValue("causeId", id, { shouldDirty: true });
+                        setCauseName(name);
+                      }}
+                    />
+                  </Field>
                   <Field label="管辖地">
                     <JurisdictionSelect
                       value={jurisdiction}
                       onChange={handleJurisdictionChange}
+                      triggerClassName="h-[34px]"
                     />
                   </Field>
                   <Field label="争议解决机构">
@@ -1064,14 +1112,16 @@ export function IntakeSheet({
 
                 {/* 标的额（1/4）| 标的描述（3/4）*/}
                 <div className="grid grid-cols-1 gap-3 lg:grid-cols-4">
-                  <Field label="标的额（元）">
+                  <Field label="标的额（元）" error={errors.claimAmount?.message}>
                     <Input
                       type="number"
                       inputMode="decimal"
                       step="0.01"
                       placeholder="0.00"
                       className="font-mono"
-                      {...register("claimAmount", { valueAsNumber: true })}
+                      {...register("claimAmount", {
+                        setValueAs: (value) => (value === "" ? undefined : Number(value))
+                      })}
                     />
                   </Field>
                   <Field label="标的描述（非金钱标的或其他诉求）" className="sm:col-span-3">
@@ -1113,14 +1163,16 @@ export function IntakeSheet({
                       </SelectContent>
                     </Select>
                   </Field>
-                  <Field label="项目金额（元）">
+                  <Field label="项目金额（元）" error={errors.claimAmount?.message}>
                     <Input
                       type="number"
                       inputMode="decimal"
                       step="0.01"
                       placeholder="0.00"
                       className="font-mono"
-                      {...register("claimAmount", { valueAsNumber: true })}
+                      {...register("claimAmount", {
+                        setValueAs: (value) => (value === "" ? undefined : Number(value))
+                      })}
                     />
                   </Field>
                   <Field label="起始时间">
@@ -1363,6 +1415,7 @@ export function IntakeSheet({
                           : "总金额（元）"
                     }
                     required
+                    error={errors.feeAmount?.message}
                   >
                     <Input
                       type="number"
@@ -1370,7 +1423,9 @@ export function IntakeSheet({
                       step="0.01"
                       placeholder="0.00"
                       className="font-mono"
-                      {...register("feeAmount", { valueAsNumber: true })}
+                      {...register("feeAmount", {
+                        setValueAs: (value) => (value === "" ? undefined : Number(value))
+                      })}
                     />
                   </Field>
                 )}

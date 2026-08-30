@@ -153,6 +153,7 @@ export function PartyCard({
   }
 
   const fieldErr = (errors as any)?.[fieldPrefix]?.[index] ?? {};
+  const nameErr = fieldErr.name;
   const idErr = partyType === "NATURAL_PERSON" ? fieldErr.idNumber : fieldErr.enterpriseSocialCode;
   const nameReg = register(`${p}.name`);
 
@@ -183,7 +184,7 @@ export function PartyCard({
           {nameSlot ?? (
             !isOrg ? (
               <Input
-                className={PARTY_CELL_CONTROL_CLASS}
+                className={cn(PARTY_CELL_CONTROL_CLASS, nameErr && "border-destructive")}
                 placeholder="姓名"
                 {...register(`${p}.name`)}
               />
@@ -197,7 +198,7 @@ export function PartyCard({
                 <PopoverTrigger asChild>
                   <div className="relative">
                     <Input
-                      className={cn(PARTY_CELL_CONTROL_CLASS, "pr-7")}
+                      className={cn(PARTY_CELL_CONTROL_CLASS, "pr-7", nameErr && "border-destructive")}
                       placeholder="单位 / 组织名称（输入自动匹配）"
                       {...nameReg}
                       onChange={(e) => {
@@ -302,8 +303,10 @@ export function PartyCard({
       </div>
 
       {/* 必填项错误（折叠态也要可见） */}
-      {idErr && (
-        <p className="px-2 pb-1.5 text-[10px] text-destructive">{idErr.message as string}</p>
+      {(nameErr || idErr) && (
+        <p className="px-2 pb-1.5 text-[10px] text-destructive">
+          {[nameErr?.message, idErr?.message].filter(Boolean).join("；")}
+        </p>
       )}
 
       {/* 次要字段（展开） */}

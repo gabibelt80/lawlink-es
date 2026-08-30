@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo, useTransition } from "react";
+import { useState, useEffect, useMemo, useRef, useTransition } from "react";
 import { ChevronRight, ChevronsUpDown, Loader2, X } from "lucide-react";
 import type { MatterCategory, ProcedureType } from "@prisma/client";
 import { Button } from "@/components/ui/button";
@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/popover";
 import { Input } from "@/components/ui/input";
 import { searchCauses, type CauseSearchResult } from "@/server/causes/actions";
+import { causeScopeForSelection } from "@/lib/cause-scope";
 import { cn } from "@/lib/utils";
 
 type Node = CauseSearchResult;
@@ -21,6 +22,7 @@ type Props = {
   category: MatterCategory;
   procedureType?: ProcedureType | null;
   disabled?: boolean;
+  placeholder?: string;
   triggerClassName?: string;
 };
 
@@ -38,6 +40,7 @@ export function CauseCombobox({
   category,
   procedureType,
   disabled,
+  placeholder = "点击选择",
   triggerClassName
 }: Props) {
   const [open, setOpen] = useState(false);
@@ -49,6 +52,16 @@ export function CauseCombobox({
   const [pickedL3, setPickedL3] = useState<string | null>(null);
 
   const [searchInput, setSearchInput] = useState<string>("");
+
+  const causeScopeKey = useMemo(() => {
+    const scope = causeScopeForSelection(category, procedureType);
+    return [
+      scope.dbCategory,
+      scope.includeCodePrefixes?.join(",") ?? "*",
+      scope.excludeCodePrefixes.join(",")
+    ].join("|");
+  }, [category, procedureType]);
+  const previousCauseScopeKey = useRef(causeScopeKey);
 
   // 打开时拉全量
   function handleOpen(o: boolean) {
@@ -67,15 +80,18 @@ export function CauseCombobox({
     }
   }
 
-  // category / procedureType 变化时重置
+  // 仅在案由可选范围真正变化时重置。
+  // 一审切二审等审级调整共用同一案由范围，不应误清空用户已经选好的案由。
   useEffect(() => {
+    if (previousCauseScopeKey.current === causeScopeKey) return;
+    previousCauseScopeKey.current = causeScopeKey;
     setAllNodes([]);
     if (value) {
       onChange("", "");
       setSelectedName("");
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [category, procedureType]);
+  }, [causeScopeKey]);
 
   // 同步显示已选名字 / l2 路径
   useEffect(() => {
@@ -149,7 +165,7 @@ export function CauseCombobox({
           {value && selectedName ? (
             <span className="truncate">{selectedName}</span>
           ) : (
-            <span className="text-muted-foreground">点击选择</span>
+            <span className="truncate text-muted-foreground">{placeholder}</span>
           )}
           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
