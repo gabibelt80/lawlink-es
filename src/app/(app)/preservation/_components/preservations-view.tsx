@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo, useTransition } from "react";
-import { motion } from "framer-motion";
 import {
   Shield, Plus, Search, ChevronDown, ChevronRight,
   Pencil, Trash2, UserPlus, Landmark
@@ -159,7 +158,7 @@ function CaseCard({ caseData: cs, expanded, onToggle, matters, users }: { caseDa
   const expiryInfo = worstExpiry !== null ? classifyExpiry(worstExpiry) : null;
 
   return (
-    <motion.div initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} className="rounded-xl border border-border bg-card">
+    <div className="rounded-xl border border-border bg-card">
       <div className="flex items-center gap-3 px-4 py-3">
         <button type="button" onClick={onToggle} className="flex min-w-0 flex-1 items-center gap-3 text-left">
           {expanded ? <ChevronDown className="h-4 w-4 shrink-0 text-muted-foreground" /> : <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground" />}
@@ -229,6 +228,6 @@ function CaseCard({ caseData: cs, expanded, onToggle, matters, users }: { caseDa
       <AddTargetDialog open={addTargetOpen} onOpenChange={setAddTargetOpen} caseId={cs.id} />
       {addPropOpen && <AddPropertyDialog open={!!addPropOpen} onOpenChange={(o) => { if (!o) setAddPropOpen(null); }} targetId={addPropOpen} />}
       {renewPropOpen && (() => { const prop = allProps.find((p) => p.id === renewPropOpen); return prop ? <RenewPropertyDialog open={!!renewPropOpen} onOpenChange={(o) => { if (!o) setRenewPropOpen(null); }} property={prop} /> : null; })()}
-    </motion.div>
+    </div>
   );
 }

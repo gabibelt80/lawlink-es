@@ -2,7 +2,6 @@
 
 import { useState, useMemo } from "react";
 import Link from "next/link";
-import { motion } from "framer-motion";
 import {
   Calendar,
   ChevronLeft,
@@ -86,12 +85,7 @@ export function ScheduleView({
   }, [itemsWithDate]);
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 8 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.4 }}
-      className="space-y-4"
-    >
+    <div className="space-y-4">
       <header className="ll-page-head">
         <div>
           <h1 className="ll-page-title">日程</h1>
@@ -152,7 +146,7 @@ export function ScheduleView({
         date={addDate}
         matters={matters}
       />
-    </motion.div>
+    </div>
   );
 }
 

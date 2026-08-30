@@ -2,7 +2,6 @@
 
 import { useState, useTransition, useCallback, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { motion } from "framer-motion";
 import {
   Plus,
   Search,
@@ -288,12 +287,7 @@ export function MattersView({
     sortDir !== "desc";
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 8 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.4 }}
-      className="space-y-4"
-    >
+    <div className="space-y-4">
       <header className="ll-page-head">
         <div>
           <h1 className="ll-page-title">案件</h1>
@@ -494,7 +488,7 @@ export function MattersView({
         clientOptions={clientOptions}
         colleagues={colleagues}
       />
-    </motion.div>
+    </div>
   );
 }
 

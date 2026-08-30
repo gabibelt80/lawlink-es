@@ -1,6 +1,5 @@
 "use client";
 
-import { motion } from "framer-motion";
 import {
   ResponsiveContainer,
   AreaChart,
@@ -13,12 +12,7 @@ import {
 
 export function RevenueChart({ data }: { data: { month: string; received: number; receivable: number }[] }) {
   return (
-    <motion.section
-      initial={{ opacity: 0, y: 8 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5, delay: 0.45 }}
-      className="ll-surface flex h-full min-h-[280px] flex-col"
-    >
+    <section className="ll-surface flex h-full min-h-[280px] flex-col">
       <header className="ll-panel-head">
         <div>
           <h2 className="ll-panel-title">近 6 个月实收趋势</h2>
@@ -99,7 +93,7 @@ export function RevenueChart({ data }: { data: { month: string; received: number
           </AreaChart>
         </ResponsiveContainer>
       </div>
-    </motion.section>
+    </section>
   );
 }
 

@@ -1,28 +1,15 @@
 "use client";
 
-import { motion } from "framer-motion";
 import { ArrowUp, ArrowDown, AlertTriangle, Minus } from "lucide-react";
 import { cn, formatCurrency } from "@/lib/utils";
 import type { KpiItem } from "@/server/dashboard/actions";
 
 export function KpiCards({ data }: { data: KpiItem[] }) {
   return (
-    <motion.section
-      initial="hidden"
-      animate="show"
-      variants={{
-        hidden: {},
-        show: { transition: { staggerChildren: 0.07, delayChildren: 0.15 } }
-      }}
-      className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4"
-    >
+    <section className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
       {data.map((kpi) => (
-        <motion.div
+        <div
           key={kpi.key}
-          variants={{
-            hidden: { opacity: 0, y: 8 },
-            show: { opacity: 1, y: 0 }
-          }}
           className="ll-surface group relative overflow-hidden px-4 py-3.5 transition-colors hover:border-input hover:bg-muted/35"
         >
           <div className="flex items-center justify-between">
@@ -43,9 +30,9 @@ export function KpiCards({ data }: { data: KpiItem[] }) {
           <div className="mt-3 h-6">
             <Sparkline values={kpi.sparkline} />
           </div>
-        </motion.div>
+        </div>
       ))}
-    </motion.section>
+    </section>
   );
 }
 

@@ -91,7 +91,7 @@ function NavLink({
       href={item.href}
       onClick={onClick}
       className={cn(
-        "group relative flex h-[30px] items-center gap-2.5 rounded-md px-2.5 text-[12.5px] transition-colors",
+        "group relative flex h-[30px] items-center gap-2.5 rounded-md px-2.5 text-[12.5px] transition-[background-color,color,transform] [transition-duration:var(--motion-press)] [transition-timing-function:var(--ease-out)] active:scale-[0.98] motion-reduce:transform-none motion-reduce:transition-colors",
         isCourtSms
           ? active
             ? "bg-sky-500/12 text-sky-700 font-medium ring-1 ring-sky-500/20"

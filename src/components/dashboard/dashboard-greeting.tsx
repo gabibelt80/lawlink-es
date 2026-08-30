@@ -3,7 +3,6 @@
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Plus, Calendar, AlertTriangle, ArrowRight } from "lucide-react";
-import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { ConflictSearchButton } from "./conflict-search-button";
 import type { ScheduleItem } from "@/server/dashboard/actions";
@@ -44,12 +43,7 @@ export function DashboardGreeting({
   const focusItem = scheduleItems[0] ?? null;
 
   return (
-    <motion.section
-      initial={{ opacity: 0, y: 10 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5, ease: [0.2, 0.7, 0.3, 1] }}
-      className="grid grid-cols-1 gap-3 lg:grid-cols-[1.7fr_1fr]"
-    >
+    <section className="grid grid-cols-1 gap-3 lg:grid-cols-[1.7fr_1fr]">
       <div className="ll-hero-surface flex min-h-[150px] flex-col justify-between px-5 py-4">
         <div className="relative z-[1]">
           <div className="mb-2 inline-flex items-center gap-2 text-[11.5px] text-muted-foreground">
@@ -144,7 +138,7 @@ export function DashboardGreeting({
           </div>
         )}
       </div>
-    </motion.section>
+    </section>
   );
 }
 

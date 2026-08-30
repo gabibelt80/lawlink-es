@@ -2,7 +2,6 @@
 
 import { useEffect, useRef, useState, useTransition } from "react";
 import { toast } from "sonner";
-import { motion } from "framer-motion";
 import type { ClientType, Prisma } from "@prisma/client";
 import {
   CalendarClock,
@@ -251,12 +250,8 @@ export function MatterDetailTabs({
 
   return (
     <div className="space-y-4">
-      <motion.header
-        initial={{ opacity: 0, y: 4 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.3 }}
-        className="ll-hero-surface px-5 py-4"
-      >
+      {/* 案件详情是每天要开几十次的页面，页面级入场动画只会让它显得慢，故不加动效 */}
+      <header className="ll-hero-surface px-5 py-4">
         <div className="relative z-[1] flex flex-wrap items-start justify-between gap-4">
           <div className="min-w-0 flex-1">
             <div className="mb-1.5 flex flex-wrap items-center gap-2 font-mono text-[11px] text-muted-foreground">
@@ -312,7 +307,7 @@ export function MatterDetailTabs({
           procedures={engagedProcedures}
           currentProcedureId={currentProcedure?.id ?? null}
         />
-      </motion.header>
+      </header>
 
       {/* v1.1 UI（方案 B）：吸顶摘要条——标题滚出视野后，案件身份 +
           下一节点倒计时仍常驻可见 */}
@@ -324,11 +319,7 @@ export function MatterDetailTabs({
 
       {/* 归档状态 banner */}
       {latestArchive && (
-        <motion.div
-          initial={{ opacity: 0, y: 4 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.3, delay: 0.05 }}
-        >
+        <div>
           <ArchiveStatusBanner
             record={latestArchive}
             onReArchive={
@@ -338,16 +329,11 @@ export function MatterDetailTabs({
                 : undefined
             }
           />
-        </motion.div>
+        </div>
       )}
 
       {/* 主内容 + 右侧动作栏：主区承载办案内容，侧栏承载速览和即时动作 */}
-      <motion.div
-        initial={{ opacity: 0, y: 8 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.4, delay: 0.05 }}
-        className="grid grid-cols-1 gap-4 xl:grid-cols-[minmax(0,1fr)_320px] 2xl:grid-cols-[minmax(0,1fr)_340px]"
-      >
+      <div className="grid grid-cols-1 gap-4 xl:grid-cols-[minmax(0,1fr)_320px] 2xl:grid-cols-[minmax(0,1fr)_340px]">
         <div className="min-w-0 space-y-4">
           <ProcedureChainBar
             procedures={engagedProcedures}
@@ -431,7 +417,7 @@ export function MatterDetailTabs({
             compact
           />
         </aside>
-      </motion.div>
+      </div>
 
       {canAssociateThisMatter && (
         <AddProcedureSheet

@@ -1,18 +1,29 @@
 # LawLink UI 设计规范
 
-> 当前执行版本：v3.3（高密度浅色工作台）
-> 最后更新：2026-06-16
-> 状态：以 `docs/mockup/v3/` 为准开始迁移；下方 v0.2 暗色规范仅作历史记录，不再作为当前实现依据。
+> 当前执行版本：v3.4（高密度浅色工作台 + Apple 式交互质感）
+> 最后更新：2026-08-23
+> 状态：以 v3.3 信息架构为基础，新增全站材质、动效与无障碍规则；下方 v0.2 暗色规范仅作历史记录，不再作为当前实现依据。
 
 ---
 
-## v3.3 当前规范（执行版）
+## v3.4 当前规范（执行版）
 
 ### 一、设计方向
 
 LawLink V1 当前采用 **冷调灰白底 + 原有 teal 主色 + 高密度业务界面**。
 
 目标不是做营销页，也不是普通后台，而是给律师高频使用的案件管理工具：信息密度要高、状态要清楚、页面层级要稳，操作入口要贴近业务流程。
+
+### 1.1 Apple 式质感的边界
+
+LawLink 采用 Apple 设计中的直接反馈、空间一致、克制材质和平台字体，不模仿 macOS 窗口外观：
+
+- **直接**：按钮在按下时立即反馈；高频页面和键盘操作不播放整页入场动画。
+- **克制**：毛玻璃只用于顶栏、浮层和抽屉等悬浮结构，表格、表单和案件正文保持实体表面，禁止多层玻璃叠加。
+- **精确**：普通 UI 动效控制在 140—240ms，抽屉控制在 220—300ms；默认不弹跳，只有真实拖拽、甩动等动量交互可使用轻微弹簧。
+- **连续**：popover、dropdown、tooltip 从触发位置出现，进入和退出保持同一路径；可中断交互从当前画面值继续。
+- **可访问**：尊重 `prefers-reduced-motion`、`prefers-reduced-transparency` 和 `prefers-contrast`，降级后仍保留状态反馈和清晰边界。
+- **高密度不等于小字**：正文基线保持 13px 左右，关键身份、期限、金额和状态不得依赖 9—10px 文本。
 
 ### 二、核心视觉 token
 
@@ -38,8 +49,19 @@ LawLink V1 当前采用 **冷调灰白底 + 原有 teal 主色 + 高密度业务
   --primary:     #007B7F;
   --primary-h:   #006669;
   --primary-soft:#ECF4F4;
+
+  --motion-press: 100ms;
+  --motion-fast:  160ms;
+  --motion-base:  220ms;
+  --motion-sheet: 280ms;
+  --ease-out:     cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-in-out:  cubic-bezier(0.77, 0, 0.175, 1);
+  --ease-drawer:  cubic-bezier(0.32, 0.72, 0, 1);
 }
 ```
+
+`--ease-drawer` 只用于 `Sheet` 一类位移主导的滑入面板（源自 Ionic 的 iOS 抽屉曲线）；
+其余进出场一律 `--ease-out`，屏内移动 / 形变用 `--ease-in-out`。
 
 实现时继续使用 shadcn/ui 的 HSL 变量体系，以上 token 映射到 `src/app/globals.css` 中的 `--background`、`--card`、`--primary`、`--border`、`--muted` 等变量。
 
@@ -80,11 +102,16 @@ LawLink V1 当前采用 **冷调灰白底 + 原有 teal 主色 + 高密度业务
 
 - v3 是视觉系统迁移，不改业务规则、不绕过权限、不弱化审计。
 - mockup 没覆盖的现有功能入口必须保留，尤其是通知、应用菜单、用印审批、开票、材料、归档和系统设置。
+- 页面首次出现不应成为统一装饰动作。只有能说明空间关系、反馈状态或避免突变的内容才使用动效；工作台、案件列表、客户、财务、日程和冲突检索等高频路由默认即时呈现。
+- 预设动效优先使用 CSS 的 `transform`、`opacity`；手势驱动且需要中断时才使用 Framer Motion 弹簧。禁止 `transition: all`、UI `ease-in`、从 `scale(0)` 出现以及无降级的位移动效。
+- **按压反馈**：任何可按压元素（Button、TabsTrigger、侧栏导航、RadioChips）都要有 `active:scale-[0.98]`，配 `--motion-press` + `--ease-out`，并带 `motion-reduce:transform-none`。
+- **hover 必须门控**：Tailwind 已开启 `future.hoverOnlyWhenSupported`，所有 `hover:` 变体自动包进 `@media (hover: hover) and (pointer: fine)`。在 `globals.css` 手写 hover 规则或使用 `[&>x:hover]` 这类任意选择器时，必须自己补同样的媒体查询，否则触屏点击后 hover 态会粘住。仅有把样式重置为 `none` 的规则可豁免。
 - UI 变更后必须跑 `npm run lint`、`npm run typecheck`、`npm run prisma:validate`、`npm run build`，并打开本地站点检查 `/login` 和核心工作流页面。
 
 ### 六、控件一致性
 
 - 同类交互优先走 `src/components/ui/*` 共享组件，不在页面里重复手写 hover / focus / selected 样式。
+- **全局单例组件只允许挂一份**：`Toaster` 只从 `@/components/ui/sonner` 引入（样式与图标在该文件定型，不要另起裸 `<Toaster/>`）；`TooltipProvider` 在 `components/providers.tsx` 统一挂载，`delayDuration={300} skipDelayDuration={200}`——首次悬停延迟防误触，相邻 tooltip 瞬开保持跟手。
 - `SelectItem`、`DropdownMenuItem`、`CommandItem`、`RadioChips` 以及业务 combobox / 候选列表里的选项统一：鼠标经过 / 键盘高亮为 `bg-muted text-foreground`，已选中为 `bg-accent text-primary` 或对应主色选中态。
 - 菜单、下拉、popover 等轻量浮层容器统一：白底、`border-border`、`shadow-medium`、`rounded-md`、紧凑内边距。
 - 弹窗 / 抽屉内必须形成内外层级：外层内容区使用 `background` 浅灰，输入框、文本框、下拉框等可编辑方框内部使用 `card` 白色；内外不能同色，也不能同时为白色。

@@ -221,7 +221,7 @@ export async function AlertsList() {
                   </div>
                 </div>
                 <ArrowRight
-                  className="mt-1 h-3 w-3 shrink-0 text-muted-foreground/60 transition-all group-hover:translate-x-0.5 group-hover:text-foreground"
+                  className="mt-1 h-3 w-3 shrink-0 text-muted-foreground/60 transition-[color,transform] [transition-duration:var(--motion-press)] [transition-timing-function:var(--ease-out)] group-hover:translate-x-0.5 group-hover:text-foreground motion-reduce:transform-none"
                   strokeWidth={1.8}
                 />
               </Link>

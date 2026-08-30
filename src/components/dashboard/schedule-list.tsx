@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import { motion } from "framer-motion";
 import { AlertTriangle, Calendar, ArrowRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { ScheduleItem } from "@/server/dashboard/actions";
@@ -21,12 +20,7 @@ export function ScheduleList({ data }: { data: ScheduleItem[] }) {
   }, {});
 
   return (
-    <motion.section
-      initial={{ opacity: 0, y: 8 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5, delay: 0.3 }}
-      className="ll-surface flex h-full flex-col"
-    >
+    <section className="ll-surface flex h-full flex-col">
       <header className="flex items-center justify-between px-5 pb-3 pt-4">
         <div>
           <h2 className="text-lg font-medium tracking-tight">近期日程</h2>
@@ -67,7 +61,7 @@ export function ScheduleList({ data }: { data: ScheduleItem[] }) {
           </div>
         ))}
       </div>
-    </motion.section>
+    </section>
   );
 }
 

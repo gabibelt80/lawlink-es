@@ -21,7 +21,7 @@
 |---|---|---|
 | 框架 | Next.js 16 App Router + TypeScript | SSR + RSC，单仓单进程 |
 | UI 组件 | **shadcn/ui** + Radix UI | 拷贝式组件，深度可定制 |
-| 样式 | **Tailwind CSS** | 暗色优先 |
+| 样式 | **Tailwind CSS** | 高密度浅色工作台，保留主题扩展能力 |
 | 动效 | **Framer Motion** | 微交互、页面切换 |
 | React | React 19 | Next.js 16 配套 |
 | 图标 | lucide-react | |
@@ -52,7 +52,8 @@ LawLink/
 │   │   ├── (app)/         # 登录后的主应用路由分组
 │   │   └── api/           # API 路由
 │   ├── components/
-│   │   ├── ui/            # shadcn/ui 组件（不直接改，按需重新生成）
+│   │   ├── ui/            # shadcn/Radix 原子组件与全局无障碍、动效适配
+│   │   ├── patterns/      # LawLink 跨页面视觉与交互模式
 │   │   ├── layout/        # AppShell、Sidebar、Topbar
 │   │   ├── matters/       # 案件相关组合组件
 │   │   └── ...
@@ -67,8 +68,9 @@ LawLink/
 ```
 
 **规则**：
-- `src/components/ui/` 只能放 shadcn CLI 生成的原子组件，业务组件放兄弟目录。
-- 跨页面复用的组件提到 `src/components/`，仅单页用的组件就近放在路由目录下 `_components/`。
+- `src/components/ui/` 只放 shadcn/Radix 原子组件。允许在原子层维护全站统一的语义 token、无障碍和基础动效适配，但禁止加入 LawLink 业务结构或领域判断；更新 shadcn 时必须审计并保留这些适配。
+- `src/components/patterns/` 放 `PageHeader`、`ListToolbar`、`FormSection`、全局动效策略等 LawLink 品牌化跨页面模式，不承载 Server Action 或领域状态机。
+- 跨页面复用的业务组件提到对应领域目录，仅单页用的组件就近放在路由目录下 `_components/`。
 - 业务规则（金额计算、状态机、冲突匹配算法）一律沉淀到 `src/lib/` 或 `src/server/`，禁止散落在页面里。
 
 ---

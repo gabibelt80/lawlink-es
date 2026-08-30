@@ -2,7 +2,6 @@
 
 import { useState, useTransition } from "react";
 import Link from "next/link";
-import { motion } from "framer-motion";
 import {
   Plus,
   Search,
@@ -141,12 +140,7 @@ export function ConflictsView() {
   }
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 8 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.3 }}
-      className="space-y-4"
-    >
+    <div className="space-y-4">
       <header className="ll-hero-surface px-5 py-4">
         <h1 className="relative z-[1] flex items-center gap-2 text-[20px] font-semibold">
           <ShieldCheck className="h-5 w-5 text-primary" strokeWidth={1.8} />
@@ -323,7 +317,7 @@ export function ConflictsView() {
           )}
         </section>
       )}
-    </motion.div>
+    </div>
   );
 }
 

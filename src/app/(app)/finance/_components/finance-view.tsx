@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import {
   Wallet,
@@ -139,12 +138,7 @@ export function FinanceView({
   const filtered = entries.filter((e) => typeFilter === "ALL" || e.type === typeFilter);
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 8 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.4 }}
-      className="space-y-4"
-    >
+    <div className="space-y-4">
       <header className="ll-page-head">
         <div>
           <h1 className="ll-page-title">财务</h1>
@@ -388,7 +382,7 @@ export function FinanceView({
         onOpenChange={setInvoiceCreateOpen}
         canCreateUnlinkedInvoice={canApproveInvoice}
       />
-    </motion.div>
+    </div>
   );
 }
 

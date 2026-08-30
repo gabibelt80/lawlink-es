@@ -2,7 +2,6 @@
 
 import { useState, useTransition } from "react";
 import Link from "next/link";
-import { motion } from "framer-motion";
 import {
   Inbox,
   Plus,
@@ -125,12 +124,7 @@ export function InboxView({
         </div>
       </div>
 
-      <motion.div
-        initial={{ opacity: 0, y: 4 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.3 }}
-        className="space-y-2"
-      >
+      <div className="space-y-2">
         {rows.length === 0 ? (
           <div className="ll-surface rounded-lg border border-border p-12 text-center text-sm text-muted-foreground">
             <Inbox className="mx-auto mb-2 h-6 w-6 opacity-40" />
@@ -158,7 +152,7 @@ export function InboxView({
             />
           ))
         )}
-      </motion.div>
+      </div>
 
       <SmsPasteDialog open={pasteOpen} onOpenChange={setPasteOpen} />
 

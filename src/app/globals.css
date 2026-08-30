@@ -54,8 +54,19 @@
 
     --sidebar-bg: 0 0% 100%;
     --glass-bg: rgba(237, 240, 244, 0.82);
+    --scrim-bg: rgba(15, 27, 45, 0.38);
     --primary-hover: 180 100% 21%;     /* #006669 */
     --primary-soft: 180 22% 94%;       /* #ECF4F4 */
+
+    /* v3.4: Apple 式直接反馈，避免页面级慢入场 */
+    --motion-press: 100ms;
+    --motion-fast: 160ms;
+    --motion-base: 220ms;
+    --motion-sheet: 280ms;
+    --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+    --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+    /* 抽屉/侧滑面板专用（Ionic 的 iOS 曲线）：位移主导的动效用它更贴手 */
+    --ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);
 
     /* 状态色 */
     --status-green: 142 72% 29%;       /* #15803D */
@@ -82,6 +93,7 @@
     font-size: 13.5px;
     line-height: 1.5;
     letter-spacing: 0;
+    font-optical-sizing: auto;
     font-feature-settings: "cv02","cv03","cv04","cv11","ss01";
   }
 
@@ -158,10 +170,12 @@
   /* 列表行 hover */
   .ll-row {
     position: relative;
-    transition: background-color 0.15s ease;
+    transition: background-color var(--motion-fast) var(--ease-out);
   }
-  .ll-row:hover {
-    background: hsl(var(--muted) / 0.5);
+  @media (hover: hover) and (pointer: fine) {
+    .ll-row:hover {
+      background: hsl(var(--muted) / 0.5);
+    }
   }
 
   /* chip status colors */
@@ -220,10 +234,12 @@
       background-color 0.15s ease;
   }
 
-  .ll-form-control:hover {
-    background-color: hsl(var(--card)) !important;
-    border-color: hsl(var(--border-strong)) !important;
-    box-shadow: var(--shadow-inset-deep), 0 1px 3px rgba(15, 23, 42, 0.06) !important;
+  @media (hover: hover) and (pointer: fine) {
+    .ll-form-control:hover {
+      background-color: hsl(var(--card)) !important;
+      border-color: hsl(var(--border-strong)) !important;
+      box-shadow: var(--shadow-inset-deep), 0 1px 3px rgba(15, 23, 42, 0.06) !important;
+    }
   }
 
   .ll-form-control:focus,
@@ -288,13 +304,15 @@
       background-color 0.15s ease;
   }
 
-  .ll-modal-surface :is(
-    input:not([type="checkbox"]):not([type="radio"]):not([type="file"]),
-    textarea,
-    button[role="combobox"]
-  ):hover {
-    background-color: hsl(var(--card)) !important;
-    box-shadow: var(--shadow-inset-deep), 0 1px 3px rgba(15, 23, 42, 0.06) !important;
+  @media (hover: hover) and (pointer: fine) {
+    .ll-modal-surface :is(
+      input:not([type="checkbox"]):not([type="radio"]):not([type="file"]),
+      textarea,
+      button[role="combobox"]
+    ):hover {
+      background-color: hsl(var(--card)) !important;
+      box-shadow: var(--shadow-inset-deep), 0 1px 3px rgba(15, 23, 42, 0.06) !important;
+    }
   }
 
   .ll-modal-surface :is(
@@ -409,11 +427,16 @@
     color: hsl(var(--muted-foreground));
     font-size: 12.5px;
     font-weight: 500;
-    transition: background-color 0.15s ease, color 0.15s ease, box-shadow 0.15s ease;
+    transition:
+      background-color var(--motion-fast) var(--ease-out),
+      color var(--motion-fast) var(--ease-out),
+      box-shadow var(--motion-fast) var(--ease-out);
   }
 
-  .ll-seg:hover {
-    color: hsl(var(--foreground));
+  @media (hover: hover) and (pointer: fine) {
+    .ll-seg:hover {
+      color: hsl(var(--foreground));
+    }
   }
 
   .ll-seg-active {
@@ -435,6 +458,36 @@
     border-radius: var(--radius-lg);
     background: hsl(var(--card));
     box-shadow: var(--shadow-low), var(--shadow-inset);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  :root {
+    --glass-bg: rgba(237, 240, 244, 0.98);
+  }
+
+  .ll-material {
+    -webkit-backdrop-filter: none !important;
+    backdrop-filter: none !important;
+  }
+}
+
+@media (prefers-contrast: more) {
+  :root {
+    --border: 216 20% 72%;
+    --border-strong: 216 22% 58%;
+    --muted-foreground: 215 18% 34%;
   }
 }
 

@@ -1,6 +1,5 @@
 "use client";
 
-import { motion } from "framer-motion";
 import { PieChart, Pie, Cell, ResponsiveContainer } from "recharts";
 
 type CategoryItem = { name: string; value: number; code: string; color: string };
@@ -9,12 +8,7 @@ export function CategoryChart({ data }: { data: CategoryItem[] }) {
   const total = data.reduce((sum, item) => sum + item.value, 0);
 
   return (
-    <motion.section
-      initial={{ opacity: 0, y: 8 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5, delay: 0.5 }}
-      className="ll-surface flex h-full min-h-[280px] flex-col"
-    >
+    <section className="ll-surface flex h-full min-h-[280px] flex-col">
       <header className="ll-panel-head">
         <h2 className="ll-panel-title">案件类型分布</h2>
       </header>
@@ -72,6 +66,6 @@ export function CategoryChart({ data }: { data: CategoryItem[] }) {
           })}
         </ul>
       </div>
-    </motion.section>
+    </section>
   );
 }

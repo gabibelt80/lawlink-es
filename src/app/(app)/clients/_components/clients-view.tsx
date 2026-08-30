@@ -2,7 +2,6 @@
 
 import { useState, useTransition, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import { motion } from "framer-motion";
 import { Plus, Search, X } from "lucide-react";
 import type { Client, ClientType, Contact } from "@prisma/client";
 import { Button } from "@/components/ui/button";
@@ -80,12 +79,7 @@ export function ClientsView({ initialData, initialFilters }: Props) {
   }
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 8 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.4 }}
-      className="space-y-4"
-    >
+    <div className="space-y-4">
       <header className="ll-page-head">
         <div>
           <h1 className="ll-page-title">客户</h1>
@@ -152,6 +146,6 @@ export function ClientsView({ initialData, initialFilters }: Props) {
         onOpenChange={setSheetOpen}
         editingClient={editingClient}
       />
-    </motion.div>
+    </div>
   );
 }

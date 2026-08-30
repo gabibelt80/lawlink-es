@@ -954,7 +954,7 @@ export function IntakeSheet({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="flex max-h-[92vh] w-[92vw] max-w-[960px] flex-col gap-0 overflow-hidden border-border bg-card p-0 shadow-[var(--shadow-high)] sm:rounded-xl [&>button]:right-5 [&>button]:top-5 [&>button]:rounded-md [&>button]:bg-transparent [&>button]:text-muted-foreground [&>button]:opacity-100 [&>button:hover]:bg-muted [&>button:hover]:text-foreground">
+      <DialogContent className="flex max-h-[92vh] w-[92vw] max-w-[960px] flex-col gap-0 overflow-hidden border-border bg-card p-0 shadow-[var(--shadow-high)] sm:rounded-xl [&>button]:right-5 [&>button]:top-5 [&>button]:rounded-md [&>button]:bg-transparent [&>button]:text-muted-foreground [&>button]:opacity-100 [@media(hover:hover)]:[&>button:hover]:bg-muted [@media(hover:hover)]:[&>button:hover]:text-foreground">
         <DialogHeader className="border-b border-border bg-card px-5 pb-4 pt-4">
           <div className="pr-9">
             <div className="flex flex-wrap items-start justify-between gap-4">

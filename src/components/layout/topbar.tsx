@@ -67,7 +67,7 @@ export function Topbar({ onMobileMenuToggle, userAvatar }: { onMobileMenuToggle?
   const initial = displayName ? displayName.charAt(0) : "?";
 
   return (
-    <header className="sticky top-0 z-20 flex h-12 items-center gap-2.5 border-b border-border bg-background/80 px-4 backdrop-blur-xl sm:px-5">
+    <header className="ll-material sticky top-0 z-20 flex h-12 items-center gap-2.5 border-b border-white/70 bg-[var(--glass-bg)] px-4 shadow-[0_1px_0_rgba(255,255,255,0.65)] backdrop-blur-xl sm:px-5">
       {/* 移动端汉堡菜单 */}
       {onMobileMenuToggle && (
         <button
