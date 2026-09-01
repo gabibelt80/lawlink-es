@@ -1,26 +1,29 @@
 import Link from "next/link";
 import { Bell, CheckCheck } from "lucide-react";
-import { getNotifications, markAllNotificationsRead } from "@/server/notifications/actions";
+import {
+  getNotifications,
+  markAllNotificationsRead,
+} from "@/server/notifications/actions";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 const typeLabels: Record<string, string> = {
-  PRESERVATION_EXPIRY: "Preservación到期",
-  HEARING_REMINDER: "庭审",
-  DEADLINE_REMINDER: "期限",
-  SEAL_STATUS_CHANGE: "用章",
+  PRESERVATION_EXPIRY: "Vencimiento de preservación",
+  HEARING_REMINDER: "Audiencia",
+  DEADLINE_REMINDER: "Plazo",
+  SEAL_STATUS_CHANGE: "Sello",
   SMS_ARRIVAL: "SMS",
   TASK_ASSIGNED: "Sistema",
   SYSTEM: "Sistema",
-  ARCHIVE_APPROVED: "归档",
-  ARCHIVE_REJECTED: "归档"
+  ARCHIVE_APPROVED: "Archivo",
+  ARCHIVE_REJECTED: "Archivo",
 };
 
 const priorityClass: Record<string, string> = {
   URGENT: "text-red-600",
   HIGH: "text-orange-600",
   NORMAL: "text-foreground",
-  LOW: "text-muted-foreground"
+  LOW: "text-muted-foreground",
 };
 
 export default async function NotificationsPage() {
@@ -38,14 +41,20 @@ export default async function NotificationsPage() {
         <div>
           <h1 className="text-2xl">Notificaciones</h1>
           <p className="mt-0.5 text-[11px] text-muted-foreground">
-            SistemaRecordatorios、用章、期限和庭审Notificaciones
+            Recordatorios del sistema, sellos, plazos y notificaciones de
+            audiencias
           </p>
         </div>
         {unreadCount > 0 && (
           <form action={markAllReadAction}>
-            <Button type="submit" variant="outline" size="sm" className="gap-1.5">
+            <Button
+              type="submit"
+              variant="outline"
+              size="sm"
+              className="gap-1.5"
+            >
               <CheckCheck className="h-3.5 w-3.5" />
-              Ver todos已读
+              Marcar todo como leído
             </Button>
           </form>
         )}
@@ -55,7 +64,7 @@ export default async function NotificationsPage() {
         {notifications.length === 0 ? (
           <div className="p-12 text-center text-sm text-muted-foreground">
             <Bell className="mx-auto mb-2 h-6 w-6 opacity-40" />
-            暂无Notificaciones
+            No hay notificaciones
           </div>
         ) : (
           <div className="divide-y divide-border">
@@ -64,13 +73,13 @@ export default async function NotificationsPage() {
                 <div
                   className={cn(
                     "flex min-w-0 items-start gap-3 px-4 py-3 transition-colors hover:bg-muted/60",
-                    !n.read && "bg-primary/5"
+                    !n.read && "bg-primary/5",
                   )}
                 >
                   <span
                     className={cn(
                       "mt-1 h-2 w-2 shrink-0 rounded-full",
-                      n.read ? "bg-muted" : "bg-primary"
+                      n.read ? "bg-muted" : "bg-primary",
                     )}
                   />
                   <div className="min-w-0 flex-1">
@@ -82,7 +91,7 @@ export default async function NotificationsPage() {
                         className={cn(
                           "min-w-0 truncate text-[13px]",
                           !n.read && "font-medium",
-                          priorityClass[n.priority] ?? "text-foreground"
+                          priorityClass[n.priority] ?? "text-foreground",
                         )}
                       >
                         {n.title}
@@ -122,6 +131,6 @@ function formatTime(date: Date | string) {
     day: "2-digit",
     hour: "2-digit",
     minute: "2-digit",
-    hour12: false
+    hour12: false,
   });
 }

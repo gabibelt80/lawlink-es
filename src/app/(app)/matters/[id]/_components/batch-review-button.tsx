@@ -6,7 +6,7 @@ import { Sparkles, Loader2, Check, X } from "lucide-react";
 import { toast } from "sonner";
 import {
   batchReviewMatterDocuments,
-  type BatchReviewSummary
+  type BatchReviewSummary,
 } from "@/server/ai/batch-review-matter";
 import { Button } from "@/components/ui/button";
 import {
@@ -15,7 +15,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogDescription,
-  DialogFooter
+  DialogFooter,
 } from "@/components/ui/dialog";
 
 // v0.27: AI 复检功能暂时隐藏（后端 server action 保留），改回时去掉此 flag
@@ -31,7 +31,9 @@ export function BatchReviewButton({ matterId }: { matterId: string }) {
 
   function run() {
     if (
-      !confirm("将对本案最多 5 份未审查过的文档发起 AI 审查（会消耗 AI tokens），继续？")
+      !confirm(
+        "¿Desea continuar? Se revisarán hasta 5 documentos del caso que aún no hayan sido revisados con IA (se consumirán tokens de IA).",
+      )
     )
       return;
     startTransition(async () => {
@@ -41,18 +43,18 @@ export function BatchReviewButton({ matterId }: { matterId: string }) {
         setOpen(true);
         const totalErrors = r.errors.length;
         if (r.reviewed.length === 0 && totalErrors === 0) {
-          toast.info("没有需要审查的新文档");
+          toast.info("No hay documentos nuevos que revisar");
         } else if (totalErrors > 0) {
           toast.warning(
-            `已审查 ${r.reviewed.length}，失败 ${totalErrors}`
+            `Revisados ${r.reviewed.length}, fallidos ${totalErrors}`,
           );
         } else {
-          toast.success(`已审查 ${r.reviewed.length} 份文档`);
+          toast.success(`Se revisaron ${r.reviewed.length} documentos`);
         }
         router.refresh();
       } catch (err) {
-        toast.error("批量审查失败", {
-          description: err instanceof Error ? err.message : ""
+        toast.error("Error al revisar por lotes", {
+          description: err instanceof Error ? err.message : "",
         });
       }
     });
@@ -67,10 +69,14 @@ export function BatchReviewButton({ matterId }: { matterId: string }) {
         onClick={run}
         disabled={pending}
         className="gap-1"
-        title="对本案未审查过的文档批量发起 AI 审查（单次最多 5 个）"
+        title="Inicia la revisión por IA de los documentos no revisados del caso en lote (máximo 5 por vez)"
       >
-        {pending ? <Loader2 className="h-3 w-3 animate-spin" /> : <Sparkles className="h-3 w-3" />}
-        AI 复检Ver todos
+        {pending ? (
+          <Loader2 className="h-3 w-3 animate-spin" />
+        ) : (
+          <Sparkles className="h-3 w-3" />
+        )}
+        Revisión AI Ver todos
       </Button>
 
       <Dialog open={open} onOpenChange={setOpen}>
@@ -78,10 +84,11 @@ export function BatchReviewButton({ matterId }: { matterId: string }) {
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2 text-base">
               <Sparkles className="h-4 w-4 text-violet-500" />
-              AI 复检结果
+              Resultado de la revisión de IA
             </DialogTitle>
             <DialogDescription>
-              单次最多审查 5 份文档；已审过的 7 天内跳过
+              Se pueden revisar hasta 5 documentos por vez; los revisados en los
+              últimos 7 días se omiten
             </DialogDescription>
           </DialogHeader>
 
@@ -91,7 +98,7 @@ export function BatchReviewButton({ matterId }: { matterId: string }) {
                 <section>
                   <h4 className="mb-1.5 flex items-center gap-1 text-[11px] font-medium text-emerald-700">
                     <Check className="h-3 w-3" />
-                    已审查（{result.reviewed.length}）
+                    Revisados ({result.reviewed.length})
                   </h4>
                   <ul className="space-y-1">
                     {result.reviewed.map((r) => (
@@ -101,7 +108,7 @@ export function BatchReviewButton({ matterId }: { matterId: string }) {
                       >
                         <span className="truncate">{r.documentName}</span>
                         <span className="ml-2 font-mono text-[10px] text-emerald-700">
-                          {r.itemCount} 条问题
+                          {r.itemCount} cuestiones
                         </span>
                       </li>
                     ))}
@@ -113,7 +120,7 @@ export function BatchReviewButton({ matterId }: { matterId: string }) {
                 <section>
                   <h4 className="mb-1.5 flex items-center gap-1 text-[11px] font-medium text-destructive">
                     <X className="h-3 w-3" />
-                    失败（{result.errors.length}）
+                    Fallidos ({result.errors.length})
                   </h4>
                   <ul className="space-y-1">
                     {result.errors.map((r) => (
@@ -132,7 +139,7 @@ export function BatchReviewButton({ matterId }: { matterId: string }) {
               {result.skipped.length > 0 && (
                 <section>
                   <h4 className="mb-1.5 text-[11px] font-medium text-muted-foreground">
-                    跳过（{result.skipped.length}）
+                    Omitidos ({result.skipped.length})
                   </h4>
                   <ul className="max-h-32 space-y-1 overflow-y-auto">
                     {result.skipped.map((s) => (

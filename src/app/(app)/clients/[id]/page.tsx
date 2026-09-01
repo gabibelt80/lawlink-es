@@ -31,7 +31,7 @@ const billingStatusLabel: Record<string, string> = {
   ACTIVE: "生效中",
   CLOSED: "已结"
 };
-const yuan = (n: number) => `¥${n.toLocaleString()}`;
+const yuan = (n: number) => `$${n.toLocaleString()}`;
 const dash = <span className="text-muted-foreground/50">—</span>;
 
 const COOP_TONE: Record<string, string> = {

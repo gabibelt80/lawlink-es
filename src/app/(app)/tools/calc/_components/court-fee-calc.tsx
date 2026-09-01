@@ -99,7 +99,7 @@ function ResultCard({ label, value, accent }: { label: string; value: number; ac
         className="mt-1 font-mono text-[26px] font-medium tabular"
         style={{ color: accent }}
       >
-        ¥{value.toLocaleString()}
+        ${value.toLocaleString()}
       </div>
     </div>
   );

@@ -143,7 +143,7 @@ export async function createFeeEntry(input: FeeEntryCreateInput) {
         data: {
           matterId: data.matterId,
           eventType: "FEE_RECEIVED",
-          title: `实收 ¥${data.amount.toLocaleString("zh-CN")}`,
+          title: `实收 $${data.amount.toLocaleString("zh-CN")}`,
           content: data.note ?? undefined,
           occurredAt: data.occurredAt
         }

@@ -7,7 +7,7 @@ export function cn(...inputs: ClassValue[]) {
 
 export function formatCurrency(amount: number, options?: { compact?: boolean }) {
   if (options?.compact && Math.abs(amount) >= 10000) {
-    return `¥${(amount / 10000).toFixed(1)}万`;
+    return `$${(amount / 10000).toFixed(1)}万`;
   }
   return new Intl.NumberFormat("zh-CN", {
     style: "currency",

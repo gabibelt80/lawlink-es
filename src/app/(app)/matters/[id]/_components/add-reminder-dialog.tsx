@@ -14,7 +14,7 @@ import {
   DialogDescription,
   DialogFooter,
   DialogHeader,
-  DialogTitle
+  DialogTitle,
 } from "@/components/ui/dialog";
 import { createTask } from "@/server/tasks/actions";
 
@@ -25,7 +25,7 @@ import { createTask } from "@/server/tasks/actions";
 export function AddReminderDialog({
   open,
   onOpenChange,
-  matterId
+  matterId,
 }: {
   open: boolean;
   onOpenChange: (o: boolean) => void;
@@ -34,7 +34,9 @@ export function AddReminderDialog({
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [title, setTitle] = useState("");
-  const [date, setDate] = useState<string>(() => new Date().toISOString().slice(0, 10));
+  const [date, setDate] = useState<string>(() =>
+    new Date().toISOString().slice(0, 10),
+  );
   const [time, setTime] = useState("09:00");
   const [allDay, setAllDay] = useState(false);
   const [priority, setPriority] = useState<0 | 1 | 2>(0);
@@ -52,11 +54,11 @@ export function AddReminderDialog({
 
   function submit() {
     if (!title.trim()) {
-      toast.warning("请填写Recordatorios标题");
+      toast.warning("Por favor complete el título del recordatorio");
       return;
     }
     if (!date) {
-      toast.warning("请选择Fecha");
+      toast.warning("Seleccione la Fecha");
       return;
     }
 
@@ -79,14 +81,14 @@ export function AddReminderDialog({
           dueAt,
           priority,
           assigneeId: "",
-          stageId: ""
+          stageId: "",
         });
-        toast.success("已Agregar");
+        toast.success("Se agregó");
         onOpenChange(false);
         router.refresh();
       } catch (err) {
-        toast.error("Agregar失败", {
-          description: err instanceof Error ? err.message : ""
+        toast.error("No se pudo agregar", {
+          description: err instanceof Error ? err.message : "",
         });
       }
     });
@@ -98,20 +100,21 @@ export function AddReminderDialog({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Bell className="h-4 w-4 text-primary" />
-            Agregar重要时限 / Recordatorios
+            Agregar plazo importante / Recordatorios
           </DialogTitle>
           <DialogDescription className="text-xs">
-            可用作截止Fecha、关键节点或自定义Recordatorios事项
+            Se puede usar como Fecha límite, hito clave o un Recordatorio
+            personalizado
           </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-3">
           <div className="space-y-1.5">
             <Label className="text-xs">
-              标题 <span className="text-destructive">*</span>
+              Título <span className="text-destructive">*</span>
             </Label>
             <Input
-              placeholder="如：Enviar答辩状 / 缴纳Preservación费 / Enviar证据清单"
+              placeholder="Ej.: Enviar alegato / Pagar Preservación / Enviar lista de pruebas"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
             />
@@ -122,10 +125,14 @@ export function AddReminderDialog({
               <Label className="text-xs">
                 Fecha <span className="text-destructive">*</span>
               </Label>
-              <Input type="date" value={date} onChange={(e) => setDate(e.target.value)} />
+              <Input
+                type="date"
+                value={date}
+                onChange={(e) => setDate(e.target.value)}
+              />
             </div>
             <div className="space-y-1.5">
-              <Label className="text-xs">时间</Label>
+              <Label className="text-xs">Hora</Label>
               <div className="flex items-center gap-2">
                 <input
                   type="time"
@@ -142,19 +149,19 @@ export function AddReminderDialog({
                     onChange={(e) => setAllDay(e.target.checked)}
                     className="h-3 w-3"
                   />
-                  全天
+                  Todo el día
                 </label>
               </div>
             </div>
           </div>
 
           <div className="space-y-1.5">
-            <Label className="text-xs">优先级</Label>
+            <Label className="text-xs">Prioridad</Label>
             <div className="flex gap-2">
               {[
-                { value: 0, label: "普通" },
-                { value: 1, label: "高" },
-                { value: 2, label: "紧急" }
+                { value: 0, label: "Normal" },
+                { value: 1, label: "Alta" },
+                { value: 2, label: "Urgente" },
               ].map((p) => (
                 <button
                   key={p.value}
@@ -173,10 +180,10 @@ export function AddReminderDialog({
           </div>
 
           <div className="space-y-1.5">
-            <Label className="text-xs">Observaciones（可选）</Label>
+            <Label className="text-xs">Observaciones (opcional)</Label>
             <Textarea
               rows={2}
-              placeholder="补充说明、相关材料等"
+              placeholder="Agregue detalles, materiales relacionados, etc."
               value={description}
               onChange={(e) => setDescription(e.target.value)}
             />
@@ -184,7 +191,11 @@ export function AddReminderDialog({
         </div>
 
         <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)} disabled={isPending}>
+          <Button
+            variant="outline"
+            onClick={() => onOpenChange(false)}
+            disabled={isPending}
+          >
             Cancelar
           </Button>
           <Button onClick={submit} disabled={isPending} className="gap-1.5">

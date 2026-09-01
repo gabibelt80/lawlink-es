@@ -6,18 +6,21 @@ import { Button } from "@/components/ui/button";
 import {
   Popover,
   PopoverContent,
-  PopoverTrigger
+  PopoverTrigger,
 } from "@/components/ui/popover";
 import {
   Command,
   CommandGroup,
   CommandInput,
   CommandItem,
-  CommandList
+  CommandList,
 } from "@/components/ui/command";
 import { cn } from "@/lib/utils";
 import type { ClientOption } from "@/app/(app)/matters/_components/matters-view";
-import { searchEnterpriseCandidates, type EnterpriseSearchItem } from "@/server/yuandian/enterprise";
+import {
+  searchEnterpriseCandidates,
+  type EnterpriseSearchItem,
+} from "@/server/yuandian/enterprise";
 
 type YuandianCandidate = EnterpriseSearchItem;
 
@@ -30,7 +33,7 @@ export function ClientCombobox({
   onTypeNew,
   onPickYuandian,
   onClear,
-  triggerClassName
+  triggerClassName,
 }: {
   clientId: string;
   clientName: string;
@@ -45,14 +48,16 @@ export function ClientCombobox({
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
   const triggerRef = useRef<HTMLButtonElement>(null);
-  const [yuandianResults, setYuandianResults] = useState<YuandianCandidate[]>([]);
+  const [yuandianResults, setYuandianResults] = useState<YuandianCandidate[]>(
+    [],
+  );
   const [yuandianLoading, setYuandianLoading] = useState(false);
   const [yuandianConfigured, setYuandianConfigured] = useState(true);
   const [, startTransition] = useTransition();
   const searchVersionRef = useRef(0);
 
   const display = clientId
-    ? options.find((o) => o.id === clientId)?.name ?? clientName ?? ""
+    ? (options.find((o) => o.id === clientId)?.name ?? clientName ?? "")
     : clientName;
 
   const filtered = options
@@ -60,7 +65,7 @@ export function ClientCombobox({
     .slice(0, 20);
 
   const hasExactMatch = filtered.some(
-    (o) => o.name.toLowerCase() === query.trim().toLowerCase()
+    (o) => o.name.toLowerCase() === query.trim().toLowerCase(),
   );
 
   const searchYuandian = useCallback((q: string, version: number) => {
@@ -120,14 +125,14 @@ export function ClientCombobox({
           className={cn(
             "h-10 w-full justify-between font-normal",
             triggerClassName,
-            !display && "text-muted-foreground"
+            !display && "text-muted-foreground",
           )}
         >
           <span className="flex items-center gap-1.5 truncate text-xs">
-            {display || "Buscar或直接输入Nombre"}
+            {display || "Buscar o ingresar nombre"}
             {!clientId && clientName && (
               <span className="ml-1 rounded-sm bg-primary/10 px-1 text-[10px] text-primary/80">
-                新Cliente
+                Nuevo cliente
               </span>
             )}
           </span>
@@ -157,7 +162,8 @@ export function ClientCombobox({
                 >
                   <Plus className="h-3.5 w-3.5 text-primary" />
                   <span>
-                    新建 <span className="text-primary">{query.trim()}</span> 为委托方
+                    新建 <span className="text-primary">{query.trim()}</span>{" "}
+                    为委托方
                   </span>
                 </CommandItem>
               </CommandGroup>
@@ -177,7 +183,7 @@ export function ClientCombobox({
                     <Check
                       className={cn(
                         "mr-2 h-3.5 w-3.5",
-                        clientId === o.id ? "opacity-100" : "opacity-0"
+                        clientId === o.id ? "opacity-100" : "opacity-0",
                       )}
                     />
                     {o.name}
@@ -186,35 +192,36 @@ export function ClientCombobox({
               </CommandGroup>
             )}
 
-            {(yuandianLoading || yuandianResults.length > 0) && yuandianConfigured && (
-              <CommandGroup heading="企业信息库（元典）">
-                {yuandianLoading && yuandianResults.length === 0 && (
-                  <div className="flex items-center gap-2 px-2 py-3 text-xs text-muted-foreground">
-                    <Loader2 className="h-3 w-3 animate-spin" />
-                    Buscar中…
-                  </div>
-                )}
-                {yuandianResults.map((c) => (
-                  <CommandItem
-                    key={`yd-${c.id}`}
-                    value={`yd-${c.name}`}
-                    onSelect={() => {
-                      onPickYuandian(c);
-                      setOpen(false);
-                    }}
-                    className="gap-2"
-                  >
-                    <Building2 className="h-3.5 w-3.5 shrink-0 text-blue-600" />
-                    <span className="truncate">{c.name}</span>
-                    {c.creditCode && (
-                      <span className="ml-auto shrink-0 text-[10px] font-mono text-muted-foreground">
-                        {c.creditCode}
-                      </span>
-                    )}
-                  </CommandItem>
-                ))}
-              </CommandGroup>
-            )}
+            {(yuandianLoading || yuandianResults.length > 0) &&
+              yuandianConfigured && (
+                <CommandGroup heading="企业信息库（元典）">
+                  {yuandianLoading && yuandianResults.length === 0 && (
+                    <div className="flex items-center gap-2 px-2 py-3 text-xs text-muted-foreground">
+                      <Loader2 className="h-3 w-3 animate-spin" />
+                      Buscar中…
+                    </div>
+                  )}
+                  {yuandianResults.map((c) => (
+                    <CommandItem
+                      key={`yd-${c.id}`}
+                      value={`yd-${c.name}`}
+                      onSelect={() => {
+                        onPickYuandian(c);
+                        setOpen(false);
+                      }}
+                      className="gap-2"
+                    >
+                      <Building2 className="h-3.5 w-3.5 shrink-0 text-blue-600" />
+                      <span className="truncate">{c.name}</span>
+                      {c.creditCode && (
+                        <span className="ml-auto shrink-0 text-[10px] font-mono text-muted-foreground">
+                          {c.creditCode}
+                        </span>
+                      )}
+                    </CommandItem>
+                  ))}
+                </CommandGroup>
+              )}
 
             {!query && filtered.length === 0 && (
               <div className="py-4 text-center text-xs text-muted-foreground">

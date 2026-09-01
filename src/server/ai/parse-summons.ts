@@ -1,24 +1,30 @@
 "use server";
 
 /**
- * v0.44: 法院传票 OCR
+ * v0.44: OCR de citación judicial
  *
- * Abogado上传传票图片 → aiVision 提取开庭Fecha、时间、法庭、案号、法官、当事人
- * 失败时Volver null 字段，让Abogado手动填写
+ * Abogado carga imagen de citación → aiVision extrae fecha de audiencia, hora, sala, número de caso, juez, partes
+ * Si falla, retorna campos null para que Abogado complete manualmente
  */
 import { requireSession } from "@/lib/auth/session";
 import { aiVision, extractJson, AiNotConfiguredError } from "@/lib/ai/client";
 
 export type ParsedSummons = {
-  hearingDate: string | null;   // YYYY-MM-DD
-  hearingTime: string | null;   // HH:mm
-  courtRoom: string | null;     // 法庭（如：第三法庭）
-  caseNumber: string | null;    // 案号（如：(2024)京0105民初1234号）
-  judge: string | null;         // 法官姓名
-  parties: string[] | null;     // 当事人列表
+  hearingDate: string | null; // YYYY-MM-DD
+  hearingTime: string | null; // HH:mm
+  courtRoom: string | null; // 法庭（如：第三法庭）
+  caseNumber: string | null; // 案号（如：(2024)京0105民初1234号）
+  judge: string | null; // 法官姓名
+  parties: string[] | null; // 当事人列表
 };
 
-const SUPPORTED = new Set(["image/jpeg", "image/png", "image/webp", "image/heic", "application/pdf"]);
+const SUPPORTED = new Set([
+  "image/jpeg",
+  "image/png",
+  "image/webp",
+  "image/heic",
+  "application/pdf",
+]);
 
 const PROMPT = `下方图片是一张中国法院传票（开庭传票）。请严格Volver JSON：
 {
@@ -52,7 +58,7 @@ export async function parseSummons(form: FormData): Promise<ParsedSummons> {
     const { content } = await aiVision({
       image: { dataUrl },
       prompt: PROMPT,
-      maxTokens: 500
+      maxTokens: 500,
     });
     const parsed = extractJson<ParsedSummons>(content);
     return {
@@ -61,7 +67,9 @@ export async function parseSummons(form: FormData): Promise<ParsedSummons> {
       courtRoom: parsed?.courtRoom?.trim() || null,
       caseNumber: parsed?.caseNumber?.trim() || null,
       judge: parsed?.judge?.trim() || null,
-      parties: Array.isArray(parsed?.parties) ? parsed.parties.filter(Boolean) : null
+      parties: Array.isArray(parsed?.parties)
+        ? parsed.parties.filter(Boolean)
+        : null,
     };
   } catch (err) {
     if (err instanceof AiNotConfiguredError) throw err;

@@ -40,7 +40,7 @@ describe("批量导入 — 文本映射", () => {
     expect(parseImportDate("2026/5/3")?.getMonth()).toBe(4);
     expect(parseImportDate("无效")).toBeNull();
     expect(parseAmount("120,000")).toBe(120000);
-    expect(parseAmount("¥12万")).toBeNull(); // 「万」不解析
+    expect(parseAmount("$12万")).toBeNull(); // 「万」不解析
     expect(parseAmount("")).toBeNull();
   });
 

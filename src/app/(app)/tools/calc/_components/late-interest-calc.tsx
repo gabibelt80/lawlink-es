@@ -124,7 +124,7 @@ export function LateInterestCalc() {
             />
             <ResultCard
               label="加倍利息（推荐采用）"
-              value={`¥${result.interest.toLocaleString()}`}
+              value={`$${result.interest.toLocaleString()}`}
               accent="#DC2626"
             />
           </div>
@@ -132,7 +132,7 @@ export function LateInterestCalc() {
             <div className="flex items-baseline justify-between gap-3">
               <span className="text-muted-foreground">本金 + 加倍利息合计</span>
               <span className="font-mono text-[16px] font-medium tabular text-foreground">
-                ¥{result.totalToPay.toLocaleString()}
+                ${result.totalToPay.toLocaleString()}
               </span>
             </div>
             <p className="mt-1.5 text-[10px] text-muted-foreground">

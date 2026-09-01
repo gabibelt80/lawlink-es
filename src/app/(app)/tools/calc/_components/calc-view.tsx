@@ -10,9 +10,9 @@ import { DaysCalc } from "./days-calc";
 type Tab = "courtFee" | "lateInterest" | "days";
 
 const TABS: { key: Tab; label: string; icon: typeof Scale }[] = [
-  { key: "courtFee", label: "诉讼费", icon: Scale },
-  { key: "lateInterest", label: "迟延履行金", icon: Coins },
-  { key: "days", label: "天数计算", icon: CalendarDays }
+  { key: "courtFee", label: "Tarifa judicial", icon: Scale },
+  { key: "lateInterest", label: "Interés por demora", icon: Coins },
+  { key: "days", label: "Cálculo de días", icon: CalendarDays },
 ];
 
 export function CalcView({ hideHeader }: { hideHeader?: boolean } = {}) {
@@ -20,15 +20,15 @@ export function CalcView({ hideHeader }: { hideHeader?: boolean } = {}) {
 
   return (
     <div className="space-y-5">
-      {/* 标题（应用页内嵌时由 tab 标注，隐藏）*/}
       {!hideHeader && (
         <div>
           <h1 className="flex items-center gap-2 text-2xl">
             <Calculator className="h-5 w-5 text-primary" strokeWidth={1.6} />
-            实务工具
+            Herramientas prácticas
           </h1>
           <p className="mt-0.5 text-[11px] text-muted-foreground">
-            诉讼费 / 迟延履行金 / 天数 —— 纯前端速算，无需联网
+            Tarifa judicial / Interés por demora / Días —— cálculo instantáneo
+            solo en front-end, sin conexión
           </p>
         </div>
       )}
@@ -46,7 +46,9 @@ export function CalcView({ hideHeader }: { hideHeader?: boolean } = {}) {
                 onClick={() => setTab(t.key)}
                 className={cn(
                   "relative inline-flex items-center gap-1.5 pb-2.5 pt-1 text-[13px] transition-colors",
-                  active ? "text-foreground" : "text-muted-foreground hover:text-foreground"
+                  active
+                    ? "text-foreground"
+                    : "text-muted-foreground hover:text-foreground",
                 )}
               >
                 <Icon className="h-3.5 w-3.5" strokeWidth={1.8} />

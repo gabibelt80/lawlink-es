@@ -199,7 +199,7 @@ export function CauseCombobox({
         <div className="border-b border-border p-2">
           <div className="relative w-[240px]">
             <Input
-              placeholder="Buscar案由，或下方逐级浏览"
+              placeholder="Buscar causa o explorar por niveles"
               value={searchInput}
               onChange={(e) => setSearchInput(e.target.value)}
               className="h-8 pr-7 text-xs"

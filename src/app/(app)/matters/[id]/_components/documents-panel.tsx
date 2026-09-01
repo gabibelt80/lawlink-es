@@ -15,7 +15,7 @@ import {
   FileSpreadsheet,
   FileImage,
   FileArchive,
-  Sparkles
+  Sparkles,
 } from "lucide-react";
 import type { DocumentCategory, Document } from "@prisma/client";
 import { Button } from "@/components/ui/button";
@@ -28,7 +28,7 @@ import {
   SelectContent,
   SelectItem,
   SelectTrigger,
-  SelectValue
+  SelectValue,
 } from "@/components/ui/select";
 import {
   Sheet,
@@ -36,7 +36,7 @@ import {
   SheetHeader,
   SheetTitle,
   SheetDescription,
-  SheetFooter
+  SheetFooter,
 } from "@/components/ui/sheet";
 import { uploadDocument, deleteDocument } from "@/server/documents/actions";
 import { cn } from "@/lib/utils";
@@ -48,7 +48,7 @@ const AI_REVIEW_MIMES = new Set([
   "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
   "application/docx",
   "text/plain",
-  "text/markdown"
+  "text/markdown",
 ]);
 function canReviewByAi(mime: string | null | undefined) {
   if (!mime) return false;
@@ -67,7 +67,7 @@ const categoryLabel: Record<DocumentCategory, string> = {
   PROCEDURE: "程序性材料",
   JUDGMENT: "裁判文书",
   CONTRACT: "合同",
-  OTHER: "其他"
+  OTHER: "其他",
 };
 
 const categoryColor: Record<DocumentCategory, string> = {
@@ -76,14 +76,20 @@ const categoryColor: Record<DocumentCategory, string> = {
   PROCEDURE: "#9B7BF7",
   JUDGMENT: "#FBBF24",
   CONTRACT: "#4ADE80",
-  OTHER: "#9BA8C7"
+  OTHER: "#9BA8C7",
 };
 
 function iconFor(mimeType: string | null) {
   if (!mimeType) return FileIcon;
   if (mimeType.startsWith("image/")) return FileImage;
-  if (mimeType.includes("spreadsheet") || mimeType.includes("excel")) return FileSpreadsheet;
-  if (mimeType.includes("pdf") || mimeType.includes("word") || mimeType.startsWith("text/")) return FileText;
+  if (mimeType.includes("spreadsheet") || mimeType.includes("excel"))
+    return FileSpreadsheet;
+  if (
+    mimeType.includes("pdf") ||
+    mimeType.includes("word") ||
+    mimeType.startsWith("text/")
+  )
+    return FileText;
   if (mimeType.includes("zip") || mimeType.includes("rar")) return FileArchive;
   return FileIcon;
 }
@@ -100,7 +106,7 @@ const CATEGORIES: DocumentCategory[] = [
   "PROCEDURE",
   "JUDGMENT",
   "CONTRACT",
-  "OTHER"
+  "OTHER",
 ];
 
 export function DocumentsPanel({
@@ -108,7 +114,7 @@ export function DocumentsPanel({
   matterStatus,
   documents,
   procedures,
-  folders
+  folders,
 }: {
   matterId: string;
   matterStatus?: string;
@@ -117,7 +123,9 @@ export function DocumentsPanel({
   folders: { id: string; name: string }[];
 }) {
   const [sheetOpen, setSheetOpen] = useState(false);
-  const [activeCategory, setActiveCategory] = useState<DocumentCategory | "ALL">("ALL");
+  const [activeCategory, setActiveCategory] = useState<
+    DocumentCategory | "ALL"
+  >("ALL");
   const [isPending, startTransition] = useTransition();
   const [reviewDocId, setReviewDocId] = useState<string | null>(null);
 
@@ -132,17 +140,26 @@ export function DocumentsPanel({
       acc[c] = documents.filter((d) => d.category === c).length;
       return acc;
     },
-    { EVIDENCE: 0, PLEADING: 0, PROCEDURE: 0, JUDGMENT: 0, CONTRACT: 0, OTHER: 0 }
+    {
+      EVIDENCE: 0,
+      PLEADING: 0,
+      PROCEDURE: 0,
+      JUDGMENT: 0,
+      CONTRACT: 0,
+      OTHER: 0,
+    },
   );
 
   function handleDelete(id: string, name: string) {
-    if (!confirm(`Eliminar材料"${name}"？`)) return;
+    if (!confirm(`Eliminar material "${name}"?`)) return;
     startTransition(async () => {
       try {
         await deleteDocument(id);
-        toast.success("已Eliminar（保留在审计中）");
+        toast.success("Se eliminó (se conserva en la auditoría)");
       } catch (err) {
-        toast.error("Eliminar失败", { description: err instanceof Error ? err.message : "" });
+        toast.error("Error al eliminar", {
+          description: err instanceof Error ? err.message : "",
+        });
       }
     });
   }
@@ -151,7 +168,8 @@ export function DocumentsPanel({
     <div className="space-y-4">
       <header className="flex items-center justify-between">
         <p className="text-sm text-muted-foreground">
-          共 {documents.length} 份材料 · 单文件 ≤ 20MB · 加密为可选
+          Hay {documents.length} materiales · Archivo único ≤ 20MB · cifrado
+          opcional
         </p>
         <Button
           onClick={() => setSheetOpen(true)}
@@ -159,7 +177,7 @@ export function DocumentsPanel({
           className="gap-1.5 "
         >
           <Plus className="h-4 w-4" />
-          上传材料
+          Subir material
         </Button>
       </header>
 
@@ -188,7 +206,9 @@ export function DocumentsPanel({
         <div className="rounded-xl border border-dashed border-border bg-card py-16 text-center">
           <FileBox className="mx-auto mb-2 h-8 w-8 text-muted-foreground/40" />
           <p className="text-sm text-muted-foreground">
-            {activeCategory === "ALL" ? "还没有材料" : `没有「${categoryLabel[activeCategory]}」分类材料`}
+            {activeCategory === "ALL"
+              ? "Todavía no hay materiales"
+              : `No hay materiales de la categoría "${categoryLabel[activeCategory]}"`}
           </p>
         </div>
       ) : (
@@ -209,14 +229,16 @@ export function DocumentsPanel({
                 </div>
                 <div className="flex-1 overflow-hidden">
                   <div className="flex items-center gap-2">
-                    <span className="truncate text-sm font-medium">{d.name}</span>
+                    <span className="truncate text-sm font-medium">
+                      {d.name}
+                    </span>
                     {d.encrypted && (
                       <span
                         className="inline-flex items-center gap-0.5 rounded-md border border-[#9B7BF7]/40 px-1 py-0.5 text-[9px] text-[#9B7BF7]"
-                        title="AES-256-GCM 加密存储"
+                        title="Almacenamiento cifrado AES-256-GCM"
                       >
                         <Lock className="h-2.5 w-2.5" />
-                        加密
+                        Cifrado
                       </span>
                     )}
                   </div>
@@ -231,11 +253,15 @@ export function DocumentsPanel({
                     {d.procedure && (
                       <span>{d.procedure.customLabel ?? d.procedure.type}</span>
                     )}
-                    {d.size && <span className="font-mono tabular">{formatBytes(d.size)}</span>}
+                    {d.size && (
+                      <span className="font-mono tabular">
+                        {formatBytes(d.size)}
+                      </span>
+                    )}
                     <span>·</span>
                     <span>{d.uploadedBy.name}</span>
                     <span className="font-mono tabular">
-                      {new Date(d.createdAt).toLocaleDateString("zh-CN")}
+                      {new Date(d.createdAt).toLocaleDateString("es-AR")}
                     </span>
                   </div>
                 </div>
@@ -245,7 +271,7 @@ export function DocumentsPanel({
                       type="button"
                       onClick={() => setReviewDocId(d.id)}
                       className="rounded-md p-1.5 text-muted-foreground hover:bg-popover hover:text-violet-600"
-                      title="AI 审查"
+                      title="Revisión con IA"
                     >
                       <Sparkles className="h-3.5 w-3.5" />
                     </button>
@@ -253,7 +279,7 @@ export function DocumentsPanel({
                   <a
                     href={`/api/documents/${d.id}/download`}
                     className="rounded-md p-1.5 text-muted-foreground hover:bg-popover hover:text-primary"
-                    title="下载"
+                    title="Descargar"
                   >
                     <Download className="h-3.5 w-3.5" />
                   </a>
@@ -298,7 +324,7 @@ function CategoryChip({
   color,
   count,
   active,
-  onClick
+  onClick,
 }: {
   label: string;
   color: string;
@@ -314,10 +340,13 @@ function CategoryChip({
         "inline-flex items-center gap-1.5 rounded-md border px-3 py-1.5 text-xs transition-colors",
         active
           ? "border-primary bg-primary/15 text-primary"
-          : "border-border bg-background text-muted-foreground hover:border-input hover:bg-muted hover:text-foreground"
+          : "border-border bg-background text-muted-foreground hover:border-input hover:bg-muted hover:text-foreground",
       )}
     >
-      <span className="h-1.5 w-1.5 rounded-full" style={{ backgroundColor: color }} />
+      <span
+        className="h-1.5 w-1.5 rounded-full"
+        style={{ backgroundColor: color }}
+      />
       {label}
       <span className="font-mono text-[10px] tabular opacity-70">{count}</span>
     </button>
@@ -332,7 +361,7 @@ function UploadSheet({
   procedures,
   folders,
   open,
-  onOpenChange
+  onOpenChange,
 }: {
   matterId: string;
   matterStatus?: string;
@@ -353,7 +382,7 @@ function UploadSheet({
   const [category, setCategory] = useState<DocumentCategory>("EVIDENCE");
   const [procedureId, setProcedureId] = useState<string>("none");
   const [folderId, setFolderId] = useState<string>(
-    isArchived ? (visibleFolders[0]?.id ?? "none") : "none"
+    isArchived ? (visibleFolders[0]?.id ?? "none") : "none",
   );
   const [encrypted, setEncrypted] = useState(false);
 
@@ -379,15 +408,17 @@ function UploadSheet({
 
   function handleSubmit() {
     if (!file) {
-      toast.warning("请选择文件");
+      toast.warning("Seleccione un archivo");
       return;
     }
     if (!name.trim()) {
-      toast.warning("请填写材料Nombre");
+      toast.warning("Complete el nombre del material");
       return;
     }
     if (isArchived && folderId === "none") {
-      toast.warning("Caso已归档，需选择「结案」或「归档」卷宗");
+      toast.warning(
+        "El caso ya está archivado; debe seleccionar el expediente «Cierre» o «Archivo»",
+      );
       return;
     }
     const fd = new FormData();
@@ -402,11 +433,13 @@ function UploadSheet({
     startTransition(async () => {
       try {
         await uploadDocument(fd);
-        toast.success("已上传");
+        toast.success("Se subió");
         reset();
         onOpenChange(false);
       } catch (err) {
-        toast.error("上传失败", { description: err instanceof Error ? err.message : "" });
+        toast.error("Error al subir", {
+          description: err instanceof Error ? err.message : "",
+        });
       }
     });
   }
@@ -419,22 +452,28 @@ function UploadSheet({
         onOpenChange(o);
       }}
     >
-      <SheetContent side="right" className="flex w-full max-w-md flex-col gap-0 p-0">
+      <SheetContent
+        side="right"
+        className="flex w-full max-w-md flex-col gap-0 p-0"
+      >
         <SheetHeader className="border-b border-border bg-background px-6 py-4">
-          <SheetTitle>上传材料</SheetTitle>
+          <SheetTitle>Subir material</SheetTitle>
           <SheetDescription className="text-xs">
-            单文件最大 20MB · 加密后下载需经鉴权解密
+            Archivo único máximo 20MB · la descarga después de cifrar requiere
+            descifrado con autenticación
           </SheetDescription>
         </SheetHeader>
 
         <div className="flex-1 space-y-4 overflow-y-auto px-6 py-5">
           {/* 文件选择 */}
           <div className="space-y-1.5">
-            <Label className="text-xs">文件 *</Label>
+            <Label className="text-xs">Archivo *</Label>
             <div
               className={cn(
                 "flex items-center gap-3 rounded-md border border-dashed p-4",
-                file ? "border-primary bg-primary/5" : "border-border bg-background"
+                file
+                  ? "border-primary bg-primary/5"
+                  : "border-border bg-background",
               )}
             >
               <input
@@ -457,7 +496,9 @@ function UploadSheet({
                     </div>
                   </div>
                 ) : (
-                  <span className="text-sm text-muted-foreground">点击选择文件</span>
+                  <span className="text-sm text-muted-foreground">
+                    Haz clic para seleccionar un archivo
+                  </span>
                 )}
               </label>
               {file && (
@@ -470,22 +511,25 @@ function UploadSheet({
                   }}
                   className="h-7 text-xs"
                 >
-                  清除
+                  Limpiar
                 </Button>
               )}
             </div>
           </div>
 
-          <Field label="材料Nombre" required>
+          <Field label="Nombre del material" required>
             <Input
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder="如：证据 1 - 工程承包合同"
+              placeholder="Por ejemplo: Evidencia 1 - Contrato de obra"
             />
           </Field>
 
-          <Field label="分类">
-            <Select value={category} onValueChange={(v) => setCategory(v as DocumentCategory)}>
+          <Field label="Categoría">
+            <Select
+              value={category}
+              onValueChange={(v) => setCategory(v as DocumentCategory)}
+            >
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>
@@ -499,36 +543,53 @@ function UploadSheet({
             </Select>
           </Field>
 
-          <Field label={isArchived ? "归档卷宗 *" : "归属卷宗"}>
+          <Field
+            label={
+              isArchived ? "Expediente de archivo *" : "Expediente asignado"
+            }
+          >
             <Select value={folderId} onValueChange={setFolderId}>
               <SelectTrigger>
-                <SelectValue placeholder={isArchived ? "请选择归档卷宗" : "可选"} />
+                <SelectValue
+                  placeholder={
+                    isArchived
+                      ? "Seleccione el expediente de archivo"
+                      : "Opcional"
+                  }
+                />
               </SelectTrigger>
               <SelectContent>
-                {!isArchived && <SelectItem value="none">不归属卷宗（散件）</SelectItem>}
+                {!isArchived && (
+                  <SelectItem value="none">
+                    No pertenece a un expediente (documento suelto)
+                  </SelectItem>
+                )}
                 {visibleFolders.map((f) => (
                   <SelectItem key={f.id} value={f.id}>
                     {f.name}
-                    {ARCHIVE_FOLDER_NAMES.has(f.name) ? " · 归档" : ""}
+                    {ARCHIVE_FOLDER_NAMES.has(f.name) ? " · Archivo" : ""}
                   </SelectItem>
                 ))}
               </SelectContent>
             </Select>
             {isArchived && (
               <p className="text-[11px] text-[#9B7BF7]">
-                Caso已归档，仅允许补传到「结案」或「归档」卷宗
+                El caso ya está archivado; solo se permite cargar material
+                adicional en el expediente «Cierre» o «Archivo»
               </p>
             )}
           </Field>
 
           {procedures.length > 0 && (
-            <Field label="归属程序">
+            <Field label="Procedimiento asignado">
               <Select value={procedureId} onValueChange={setProcedureId}>
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="none">不归属特定程序</SelectItem>
+                  <SelectItem value="none">
+                    No pertenece a un procedimiento específico
+                  </SelectItem>
                   {procedures.map((p) => (
                     <SelectItem key={p.id} value={p.id}>
                       {p.label}
@@ -543,11 +604,12 @@ function UploadSheet({
             <div className="flex-1">
               <div className="flex items-center gap-1.5 text-sm">
                 <Lock className="h-3.5 w-3.5 text-[#9B7BF7]" />
-                加密存储
+                Almacenamiento cifrado
               </div>
               <p className="mt-0.5 text-[11px] text-muted-foreground">
-                敏感材料建议开启。下载时自动解密；STORAGE_ENCRYPTION_KEY 丢失则
-                此材料不可恢复
+                Se recomienda activar para materiales sensibles. Se descifra
+                automáticamente al descargar; si falta STORAGE_ENCRYPTION_KEY,
+                este material no se podrá recuperar
               </p>
             </div>
             <Switch checked={encrypted} onCheckedChange={setEncrypted} />
@@ -563,9 +625,13 @@ function UploadSheet({
           >
             Cancelar
           </Button>
-          <Button onClick={handleSubmit} disabled={isPending || !file} className="gap-1.5">
+          <Button
+            onClick={handleSubmit}
+            disabled={isPending || !file}
+            className="gap-1.5"
+          >
             {isPending && <Loader2 className="h-4 w-4 animate-spin" />}
-            上传
+            Subir
           </Button>
         </SheetFooter>
       </SheetContent>
@@ -576,7 +642,7 @@ function UploadSheet({
 function Field({
   label,
   required,
-  children
+  children,
 }: {
   label: string;
   required?: boolean;

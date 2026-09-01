@@ -11,7 +11,7 @@ import {
   BookmarkPlus,
   Check,
   History,
-  ChevronLeft
+  ChevronLeft,
 } from "lucide-react";
 import { toast } from "sonner";
 import {
@@ -19,7 +19,7 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogDescription
+  DialogDescription,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { reviewDocument, type ReviewResult } from "@/server/ai/review-document";
@@ -27,12 +27,12 @@ import { saveReviewToMatter } from "@/server/ai/save-review";
 import {
   listReviewHistory,
   getReviewRecord,
-  type ReviewHistoryEntry
+  type ReviewHistoryEntry,
 } from "@/server/ai/review-history";
 import type {
   ReviewItem,
   ReviewType,
-  ReviewSeverity
+  ReviewSeverity,
 } from "@/lib/ai/review-parser";
 import { cn } from "@/lib/utils";
 
@@ -43,17 +43,39 @@ type Props = {
   onOpenChange: (open: boolean) => void;
 };
 
-const typeMeta: Record<ReviewType, { label: string; Icon: typeof AlertTriangle; color: string }> = {
-  MISSING: { label: "缺失要素", Icon: FileWarning, color: "text-amber-600" },
-  RISK: { label: "法律风险", Icon: AlertTriangle, color: "text-rose-600" },
-  ISSUE: { label: "条款问题", Icon: AlertCircle, color: "text-orange-600" },
-  SUGGESTION: { label: "优化建议", Icon: Lightbulb, color: "text-sky-600" }
+const typeMeta: Record<
+  ReviewType,
+  { label: string; Icon: typeof AlertTriangle; color: string }
+> = {
+  MISSING: {
+    label: "Elementos faltantes",
+    Icon: FileWarning,
+    color: "text-amber-600",
+  },
+  RISK: {
+    label: "Riesgos legales",
+    Icon: AlertTriangle,
+    color: "text-rose-600",
+  },
+  ISSUE: {
+    label: "Problemas de cláusulas",
+    Icon: AlertCircle,
+    color: "text-orange-600",
+  },
+  SUGGESTION: {
+    label: "Sugerencias de mejora",
+    Icon: Lightbulb,
+    color: "text-sky-600",
+  },
 };
 
 const sevStyle: Record<ReviewSeverity, { label: string; cls: string }> = {
-  HIGH: { label: "高", cls: "bg-rose-50 text-rose-700 border-rose-200" },
-  MEDIUM: { label: "中", cls: "bg-amber-50 text-amber-700 border-amber-200" },
-  LOW: { label: "低", cls: "bg-slate-50 text-slate-600 border-slate-200" }
+  HIGH: { label: "Alta", cls: "bg-rose-50 text-rose-700 border-rose-200" },
+  MEDIUM: {
+    label: "Media",
+    cls: "bg-amber-50 text-amber-700 border-amber-200",
+  },
+  LOW: { label: "Baja", cls: "bg-slate-50 text-slate-600 border-slate-200" },
 };
 
 const TYPE_ORDER: ReviewType[] = ["MISSING", "RISK", "ISSUE", "SUGGESTION"];
@@ -61,13 +83,18 @@ const TYPE_ORDER: ReviewType[] = ["MISSING", "RISK", "ISSUE", "SUGGESTION"];
 type View =
   | { kind: "list" } // 历史 + 新审查入口
   | { kind: "result"; result: ReviewResult; isNew: boolean }
-  | { kind: "history-detail"; entry: ReviewHistoryEntry; items: ReviewItem[]; documentName: string };
+  | {
+      kind: "history-detail";
+      entry: ReviewHistoryEntry;
+      items: ReviewItem[];
+      documentName: string;
+    };
 
 export function DocumentReviewDialog({
   open,
   documentId,
   matterId,
-  onOpenChange
+  onOpenChange,
 }: Props) {
   const [view, setView] = useState<View>({ kind: "list" });
   const [history, setHistory] = useState<ReviewHistoryEntry[]>([]);
@@ -110,9 +137,11 @@ export function DocumentReviewDialog({
       setView({ kind: "result", result: r, isNew: true });
       setSaved(false);
       // 重新拉历史（新审查已落库）
-      listReviewHistory({ documentId }).then(setHistory).catch(() => {});
+      listReviewHistory({ documentId })
+        .then(setHistory)
+        .catch(() => {});
     } catch (err) {
-      setError(err instanceof Error ? err.message : "AI 审查失败");
+      setError(err instanceof Error ? err.message : "La revisión con IA falló");
     } finally {
       setReviewing(false);
     }
@@ -122,19 +151,19 @@ export function DocumentReviewDialog({
     try {
       const rec = await getReviewRecord({ recordId: entry.id });
       if (!rec) {
-        toast.error("记录不存在或已Eliminar");
+        toast.error("El registro no existe o fue eliminado");
         return;
       }
       setView({
         kind: "history-detail",
         entry,
         items: rec.items,
-        documentName: rec.documentName
+        documentName: rec.documentName,
       });
       setSaved(false);
     } catch (err) {
-      toast.error("Cargar历史详情失败", {
-        description: err instanceof Error ? err.message : ""
+      toast.error("Error al cargar el detalle del historial", {
+        description: err instanceof Error ? err.message : "",
       });
     }
   }
@@ -147,13 +176,15 @@ export function DocumentReviewDialog({
         matterId,
         reviewedDocId: documentId!,
         reviewedDocName: view.result.documentName,
-        items: view.result.items
+        items: view.result.items,
       });
       setSaved(true);
-      toast.success("已Guardar审查结果到本案", { description: res.documentName });
+      toast.success("Se guardó el resultado de la revisión en el caso", {
+        description: res.documentName,
+      });
     } catch (err) {
-      toast.error("Guardar失败", {
-        description: err instanceof Error ? err.message : ""
+      toast.error("Error al guardar", {
+        description: err instanceof Error ? err.message : "",
       });
     } finally {
       setSaving(false);
@@ -162,7 +193,11 @@ export function DocumentReviewDialog({
 
   // 当前要展示的 items（list view 无内容）
   const currentItems: ReviewItem[] | null =
-    view.kind === "result" ? view.result.items : view.kind === "history-detail" ? view.items : null;
+    view.kind === "result"
+      ? view.result.items
+      : view.kind === "history-detail"
+        ? view.items
+        : null;
   const currentDocName =
     view.kind === "result"
       ? view.result.documentName
@@ -174,7 +209,7 @@ export function DocumentReviewDialog({
     currentItems !== null
       ? TYPE_ORDER.map((t) => ({
           type: t,
-          items: currentItems.filter((i) => i.type === t)
+          items: currentItems.filter((i) => i.type === t),
         })).filter((g) => g.items.length > 0)
       : [];
 
@@ -194,14 +229,15 @@ export function DocumentReviewDialog({
               </button>
             )}
             <Sparkles className="h-4 w-4 text-violet-500" />
-            AI 文书审查
+            Revisión de documentos con IA
           </DialogTitle>
           <DialogDescription className="text-xs">
-            {view.kind === "list" && "Ver历史或发起新审查"}
+            {view.kind === "list" &&
+              "Ver historial o iniciar una nueva revisión"}
             {view.kind === "result" &&
-              `${view.result.documentName}${view.result.truncated ? "（已截断前 6000 字）" : ""}`}
+              `${view.result.documentName}${view.result.truncated ? " (se recortó a 6000 caracteres)" : ""}`}
             {view.kind === "history-detail" &&
-              `${currentDocName} · 历史 ${view.entry.reviewedAt.toLocaleString("zh-CN")}`}
+              `${currentDocName} · historial ${view.entry.reviewedAt.toLocaleString("zh-CN")}`}
           </DialogDescription>
         </DialogHeader>
 
@@ -220,7 +256,9 @@ export function DocumentReviewDialog({
                 ) : (
                   <Sparkles className="h-4 w-4" />
                 )}
-                {history.length === 0 ? "开始 AI 审查" : "重新 AI 审查"}
+                {history.length === 0
+                  ? "Iniciar revisión con IA"
+                  : "Revisar nuevamente con IA"}
               </Button>
 
               {error && (
@@ -232,16 +270,18 @@ export function DocumentReviewDialog({
               <div>
                 <h4 className="mb-2 flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
                   <History className="h-3.5 w-3.5" />
-                  审查历史
+                  Historial de revisiones
                   <span className="font-mono text-[10px]">
                     {loadingHistory ? "…" : history.length}
                   </span>
                 </h4>
                 {loadingHistory ? (
-                  <p className="py-6 text-center text-xs text-muted-foreground">Cargar中…</p>
+                  <p className="py-6 text-center text-xs text-muted-foreground">
+                    Cargando...
+                  </p>
                 ) : history.length === 0 ? (
                   <p className="py-6 text-center text-xs text-muted-foreground">
-                    还没有 AI 审查记录
+                    Todavía no hay registros de revisión con IA
                   </p>
                 ) : (
                   <ul className="space-y-1.5">
@@ -257,8 +297,8 @@ export function DocumentReviewDialog({
                               {h.reviewedAt.toLocaleString("zh-CN")}
                             </span>
                             <span className="text-[10px] text-muted-foreground">
-                              {h.reviewedBy.name} · {h.itemCount} 条
-                              {h.truncated ? " · 已截断" : ""}
+                              {h.reviewedBy.name} · {h.itemCount} elementos
+                              {h.truncated ? " · recortado" : ""}
                             </span>
                           </div>
                           <div className="flex items-center gap-1">
@@ -266,7 +306,10 @@ export function DocumentReviewDialog({
                               <SevCount sev="HIGH" n={h.severityCounts.HIGH} />
                             )}
                             {h.severityCounts.MEDIUM > 0 && (
-                              <SevCount sev="MEDIUM" n={h.severityCounts.MEDIUM} />
+                              <SevCount
+                                sev="MEDIUM"
+                                n={h.severityCounts.MEDIUM}
+                              />
                             )}
                             {h.severityCounts.LOW > 0 && (
                               <SevCount sev="LOW" n={h.severityCounts.LOW} />
@@ -286,8 +329,8 @@ export function DocumentReviewDialog({
             (currentItems.length === 0 ? (
               <div className="py-10 text-center text-sm text-muted-foreground">
                 {view.kind === "result" && view.isNew
-                  ? "AI 未发现明显问题（不代表无瑕疵，请Abogado人工复核）"
-                  : "本次审查无条目"}
+                  ? "La IA no detectó problemas evidentes (esto no garantiza que no haya defectos; por favor, revise manualmente un abogado)"
+                  : "Esta revisión no tiene elementos"}
               </div>
             ) : (
               <div className="space-y-5">
@@ -299,7 +342,7 @@ export function DocumentReviewDialog({
                       <h4
                         className={cn(
                           "mb-2 flex items-center gap-1.5 text-xs font-medium",
-                          meta.color
+                          meta.color,
                         )}
                       >
                         <Icon className="h-3.5 w-3.5" />
@@ -323,17 +366,18 @@ export function DocumentReviewDialog({
         <div className="flex items-center justify-between border-t border-border px-5 py-2.5">
           <span className="text-[11px] text-muted-foreground">
             {view.kind === "result"
-              ? `分析字符数：${view.result.textPreviewChars}`
+              ? `Cantidad de caracteres analizados: ${view.result.textPreviewChars}`
               : view.kind === "history-detail"
-                ? `分析字符数：${view.entry.textPreviewChars}`
+                ? `Cantidad de caracteres analizados: ${view.entry.textPreviewChars}`
                 : ""}
           </span>
           <div className="flex items-center gap-2">
-            {view.kind === "result" && view.result.items.length > 0 && (
-              saved ? (
+            {view.kind === "result" &&
+              view.result.items.length > 0 &&
+              (saved ? (
                 <span className="inline-flex items-center gap-1 rounded-md border border-emerald-500/40 bg-emerald-500/10 px-2 py-1 text-[11px] text-emerald-700">
                   <Check className="h-3 w-3" />
-                  已存到本案
+                  Guardado en el caso
                 </span>
               ) : (
                 <Button
@@ -349,11 +393,15 @@ export function DocumentReviewDialog({
                   ) : (
                     <BookmarkPlus className="h-3 w-3" />
                   )}
-                  存到本案
+                  Guardar en el caso
                 </Button>
-              )
-            )}
-            <Button type="button" variant="ghost" size="sm" onClick={() => onOpenChange(false)}>
+              ))}
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={() => onOpenChange(false)}
+            >
               Cerrar
             </Button>
           </div>
@@ -372,20 +420,27 @@ function ReviewItemRow({ item }: { item: ReviewItem }) {
         <span
           className={cn(
             "shrink-0 rounded border px-1.5 py-0.5 text-[10px] leading-none",
-            sev.cls
+            sev.cls,
           )}
         >
           {sev.label}
         </span>
       </div>
-      <p className="mt-1 text-xs leading-relaxed text-foreground/75">{item.detail}</p>
+      <p className="mt-1 text-xs leading-relaxed text-foreground/75">
+        {item.detail}
+      </p>
     </li>
   );
 }
 
 function SevCount({ sev, n }: { sev: ReviewSeverity; n: number }) {
   return (
-    <span className={cn("rounded border px-1 py-0.5 text-[10px] leading-none", sevStyle[sev].cls)}>
+    <span
+      className={cn(
+        "rounded border px-1 py-0.5 text-[10px] leading-none",
+        sevStyle[sev].cls,
+      )}
+    >
       {sevStyle[sev].label}
       <span className="ml-0.5 font-mono">{n}</span>
     </span>

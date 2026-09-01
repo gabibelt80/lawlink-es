@@ -2,20 +2,24 @@
 
 import { MapPin, ChevronsUpDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
-  SelectValue
+  SelectValue,
 } from "@/components/ui/select";
 import {
   provinces,
   citiesOf,
   areasOf,
   joinJurisdiction,
-  parseJurisdiction
+  parseJurisdiction,
 } from "@/lib/china-regions";
 import { cn } from "@/lib/utils";
 
@@ -26,7 +30,7 @@ import { cn } from "@/lib/utils";
 export function JurisdictionSelect({
   value,
   onChange,
-  triggerClassName
+  triggerClassName,
 }: {
   value: string;
   onChange: (v: string) => void;
@@ -44,20 +48,29 @@ export function JurisdictionSelect({
         <Button
           type="button"
           variant="outline"
-          className={cn("h-10 w-full justify-between rounded-sm font-normal", triggerClassName)}
+          className={cn(
+            "h-10 w-full justify-between rounded-sm font-normal",
+            triggerClassName,
+          )}
         >
           <span className="flex min-w-0 items-center gap-1.5">
             <MapPin className="h-3.5 w-3.5 shrink-0 opacity-50" />
             {display ? (
               <span className="truncate">{display}</span>
             ) : (
-              <span className="text-muted-foreground">选择管辖地</span>
+              <span className="text-muted-foreground">
+                Seleccionar jurisdicción
+              </span>
             )}
           </span>
           <ChevronsUpDown className="ml-1 h-4 w-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
-      <PopoverContent align="start" portalled={false} className="w-64 space-y-2 p-2">
+      <PopoverContent
+        align="start"
+        portalled={false}
+        className="w-64 space-y-2 p-2"
+      >
         <Field label="省 / 直辖市">
           <Select
             value={province}
@@ -128,7 +141,13 @@ export function JurisdictionSelect({
   );
 }
 
-function Field({ label, children }: { label: string; children: React.ReactNode }) {
+function Field({
+  label,
+  children,
+}: {
+  label: string;
+  children: React.ReactNode;
+}) {
   return (
     <div className="space-y-1">
       <div className="text-[10px] text-muted-foreground">{label}</div>

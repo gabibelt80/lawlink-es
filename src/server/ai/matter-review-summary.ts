@@ -1,13 +1,13 @@
 /**
- * v0.22: Caso级 AI 审查Total览（聚合本案Ver todos ReviewRecord）
+ * v0.22: Resumen de revisión de IA a nivel de caso (agregación de todos los registros de revisión del caso)
  *
- * read-only，无 "use server"，server component 直接调用。
+ * solo lectura, sin "use server", llamado directamente por server component.
  */
 import { prisma } from "@/lib/prisma";
 import type {
   ReviewItem,
   ReviewSeverity,
-  ReviewType
+  ReviewType,
 } from "@/lib/ai/review-parser";
 
 export type MatterReviewTopItem = {
@@ -30,7 +30,7 @@ export type MatterReviewSummary = {
 };
 
 export async function getMatterReviewSummary(
-  matterId: string
+  matterId: string,
 ): Promise<MatterReviewSummary> {
   const records = await prisma.reviewRecord.findMany({
     where: { matterId },
@@ -40,12 +40,16 @@ export async function getMatterReviewSummary(
       reviewedAt: true,
       documentId: true,
       itemsJson: true,
-      document: { select: { name: true } }
-    }
+      document: { select: { name: true } },
+    },
   });
 
   const docSet = new Set<string>();
-  const bySeverity: Record<ReviewSeverity, number> = { HIGH: 0, MEDIUM: 0, LOW: 0 };
+  const bySeverity: Record<ReviewSeverity, number> = {
+    HIGH: 0,
+    MEDIUM: 0,
+    LOW: 0,
+  };
   let totalItems = 0;
   // 收集所有 HIGH，按 reviewedAt 倒序（records 已倒序），取最近 3 条不重复 title
   const seenTitles = new Set<string>();
@@ -55,7 +59,9 @@ export async function getMatterReviewSummary(
   for (const r of records) {
     if (!latest) latest = r.reviewedAt;
     docSet.add(r.documentId);
-    const items = (Array.isArray(r.itemsJson) ? r.itemsJson : []) as ReviewItem[];
+    const items = (
+      Array.isArray(r.itemsJson) ? r.itemsJson : []
+    ) as ReviewItem[];
     for (const it of items) {
       totalItems++;
       if (it.severity in bySeverity) bySeverity[it.severity]++;
@@ -70,7 +76,7 @@ export async function getMatterReviewSummary(
             detail: it.detail,
             documentId: r.documentId,
             documentName: r.document.name,
-            reviewedAt: r.reviewedAt
+            reviewedAt: r.reviewedAt,
           });
         }
       }
@@ -83,6 +89,6 @@ export async function getMatterReviewSummary(
     totalItems,
     bySeverity,
     topHighItems: topHigh,
-    latestReviewedAt: latest
+    latestReviewedAt: latest,
   };
 }

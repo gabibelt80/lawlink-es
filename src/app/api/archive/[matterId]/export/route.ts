@@ -11,29 +11,44 @@ export const dynamic = "force-dynamic";
 
 export async function GET(
   _req: Request,
-  { params }: { params: { matterId: string } }
+  { params }: { params: { matterId: string } },
 ) {
   const session = await getServerSession(authOptions);
   if (!session?.user) {
-    return NextResponse.json({ error: "未Iniciar sesión" }, { status: 401 });
+    return NextResponse.json(
+      { error: "No has iniciado sesión" },
+      { status: 401 },
+    );
   }
 
   // 权限：ADMIN / PRINCIPAL_LAWYER 或Caso成员
   const matter = await prisma.matter.findUnique({
     where: { id: params.matterId },
-    select: { id: true, status: true, internalCode: true }
+    select: { id: true, status: true, internalCode: true },
   });
-  if (!matter) return NextResponse.json({ error: "Caso不存在" }, { status: 404 });
+  if (!matter)
+    return NextResponse.json({ error: "El caso no existe" }, { status: 404 });
   if (matter.status !== "ARCHIVED") {
-    return NextResponse.json({ error: "Caso尚未归档" }, { status: 400 });
+    return NextResponse.json(
+      { error: "El caso aún no está archivado" },
+      { status: 400 },
+    );
   }
 
-  if (session.user.role !== "ADMIN" && session.user.role !== "PRINCIPAL_LAWYER") {
+  if (
+    session.user.role !== "ADMIN" &&
+    session.user.role !== "PRINCIPAL_LAWYER"
+  ) {
     const member = await prisma.matterMember.findUnique({
-      where: { matterId_userId: { matterId: matter.id, userId: session.user.id } }
+      where: {
+        matterId_userId: { matterId: matter.id, userId: session.user.id },
+      },
     });
     if (!member) {
-      return NextResponse.json({ error: "无权访问" }, { status: 403 });
+      return NextResponse.json(
+        { error: "No tienes permisos para acceder" },
+        { status: 403 },
+      );
     }
   }
 
@@ -43,17 +58,20 @@ export async function GET(
   } catch (err) {
     console.error("[archive export] 构建失败：", err);
     return NextResponse.json(
-      { error: err instanceof Error ? err.message : "导出失败" },
-      { status: 500 }
+      { error: err instanceof Error ? err.message : "Error al exportar" },
+      { status: 500 },
     );
   }
 
   // 持久化路径 + checksum 回填到最新 ArchiveRecord
   try {
-    const storagePath = await storage.writeFile(`archive_${matter.id}`, result.buffer);
+    const storagePath = await storage.writeFile(
+      `archive_${matter.id}`,
+      result.buffer,
+    );
     await prisma.archiveRecord.updateMany({
       where: { matterId: matter.id },
-      data: { exportPath: storagePath, checksum: result.checksum }
+      data: { exportPath: storagePath, checksum: result.checksum },
     });
   } catch (err) {
     console.error("[archive export] 落盘失败（不阻断下载）：", err);
@@ -64,12 +82,12 @@ export async function GET(
     action: "ARCHIVE_EXPORT",
     targetType: "Matter",
     targetId: matter.id,
-    detail: { size: result.size, checksum: result.checksum }
+    detail: { size: result.size, checksum: result.checksum },
   });
 
   const ab = result.buffer.buffer.slice(
     result.buffer.byteOffset,
-    result.buffer.byteOffset + result.buffer.byteLength
+    result.buffer.byteOffset + result.buffer.byteLength,
   ) as ArrayBuffer;
 
   return new NextResponse(ab, {
@@ -77,7 +95,7 @@ export async function GET(
     headers: {
       "Content-Type": "application/zip",
       "Content-Length": String(result.size),
-      "Content-Disposition": `attachment; filename*=UTF-8''${encodeURIComponent(result.fileName)}`
-    }
+      "Content-Disposition": `attachment; filename*=UTF-8''${encodeURIComponent(result.fileName)}`,
+    },
   });
 }

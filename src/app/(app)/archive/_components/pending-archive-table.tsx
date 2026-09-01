@@ -79,7 +79,7 @@ export function PendingArchiveTable({ records }: { records: PendingRecord[] }) {
   if (records.length === 0) {
     return (
       <div className="rounded-lg border border-dashed border-border/60 py-16 text-center text-sm text-muted-foreground">
-        No hay solicitudes de archivo pendientes por aprobar. Las solicitudes
+        No hay solicitudes de archivo pendientes de aprobación. Las solicitudes
         enviadas por los abogados aparecerán aquí.
       </div>
     );

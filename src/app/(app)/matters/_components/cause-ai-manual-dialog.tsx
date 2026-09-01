@@ -102,10 +102,11 @@ export function CauseAiManualDialog({
         <DialogHeader className="border-b border-border px-5 py-3">
           <DialogTitle className="flex items-center gap-2 text-base">
             <Sparkles className="h-4 w-4 text-violet-500" />
-            AI 案由推荐
+            Recomendación de causa con IA
           </DialogTitle>
           <DialogDescription className="text-xs">
-            Descripción案情后 AI 推荐 3 个候选案由，请人工核对后选用
+            Describa el caso y la IA recomendará 3 posibles causas; revise
+            manualmente antes de seleccionar.
           </DialogDescription>
         </DialogHeader>
 

@@ -1,15 +1,20 @@
 "use server";
 
 /**
- * v0.11: 起诉状 / 申请书 OCR 骨架（v0.27 扩展：支持扫描版 PDF）
+ * v0.11: Demanda / Solicitud - Esqueleto OCR (v0.27 extendido: compatible con PDF escaneado)
  *
- * 支持图片（jpg/png/webp）和 PDF。
- * - 图片走 aiVision 视觉识别
- * - PDF 优先走 unpdf 文本抽取 + aiChat（成本低、速度快）
- * - PDF 文本层为空（扫描件）时 fallback：unpdf renderPageAsImage 渲染前 3 页 → 逐页 aiVision → 合并结果
+ * Compatible con imágenes (jpg/png/webp) y PDF.
+ * - Imágenes utilizan reconocimiento visual aiVision
+ * - PDF intenta primero extracción de texto unpdf + aiChat (bajo costo, rápido)
+ * - Cuando la capa de texto de PDF está vacía (documento escaneado) retroceso: unpdf renderPageAsImage renderiza las primeras 3 páginas → reconocimiento aiVision por página → fusión de resultados
  */
 import { requireSession } from "@/lib/auth/session";
-import { aiChat, aiVision, extractJson, AiNotConfiguredError } from "@/lib/ai/client";
+import {
+  aiChat,
+  aiVision,
+  extractJson,
+  AiNotConfiguredError,
+} from "@/lib/ai/client";
 import { extractText, getDocumentProxy, renderPageAsImage } from "unpdf";
 
 export type PleadingPartyHint = {
@@ -48,15 +53,18 @@ const SYSTEM_PROMPT = `你是法律文书解析助手。下方图片是一份起
 - 不要Volver被告 / 被申请人 / 被上诉人（那是用户自己）
 - 金额单位统一为人民币元`;
 
-function normalizeResult(parsed: Partial<ParsedPleading> | null | undefined): ParsedPleading {
+function normalizeResult(
+  parsed: Partial<ParsedPleading> | null | undefined,
+): ParsedPleading {
   if (!parsed) throw new Error("AI Volver结果无法解析为 JSON");
   return {
     plaintiffs: Array.isArray(parsed.plaintiffs) ? parsed.plaintiffs : [],
     thirdParties: Array.isArray(parsed.thirdParties) ? parsed.thirdParties : [],
     cause: parsed.cause ?? undefined,
-    claimAmount: typeof parsed.claimAmount === "number" ? parsed.claimAmount : undefined,
+    claimAmount:
+      typeof parsed.claimAmount === "number" ? parsed.claimAmount : undefined,
     claimDescription: parsed.claimDescription ?? undefined,
-    court: parsed.court ?? undefined
+    court: parsed.court ?? undefined,
   };
 }
 
@@ -77,9 +85,10 @@ function mergeResults(results: ParsedPleading[]): ParsedPleading {
     plaintiffs: dedupe(results.flatMap((r) => r.plaintiffs)),
     thirdParties: dedupe(results.flatMap((r) => r.thirdParties)),
     cause: results.find((r) => r.cause)?.cause,
-    claimAmount: results.find((r) => typeof r.claimAmount === "number")?.claimAmount,
+    claimAmount: results.find((r) => typeof r.claimAmount === "number")
+      ?.claimAmount,
     claimDescription: results.find((r) => r.claimDescription)?.claimDescription,
-    court: results.find((r) => r.court)?.court
+    court: results.find((r) => r.court)?.court,
   };
 }
 
@@ -91,7 +100,9 @@ export async function parsePleading(form: FormData): Promise<ParsedPleading> {
   const isImage = SUPPORTED_IMAGE_MIME.includes(file.type);
   const isPdf = SUPPORTED_PDF_MIME.includes(file.type);
   if (!isImage && !isPdf) {
-    throw new Error(`仅支持 JPG / PNG / WebP / PDF，当前 ${file.type || "未知"}`);
+    throw new Error(
+      `仅支持 JPG / PNG / WebP / PDF，当前 ${file.type || "未知"}`,
+    );
   }
   if (file.size > 20 * 1024 * 1024) throw new Error("文件超过 20MB");
 
@@ -103,7 +114,7 @@ export async function parsePleading(form: FormData): Promise<ParsedPleading> {
       const { content } = await aiVision({
         image: { dataUrl },
         prompt: SYSTEM_PROMPT,
-        maxTokens: 1500
+        maxTokens: 1500,
       });
       return normalizeResult(extractJson<ParsedPleading>(content));
     }
@@ -117,9 +128,12 @@ export async function parsePleading(form: FormData): Promise<ParsedPleading> {
       const { content } = await aiChat({
         messages: [
           { role: "system", content: SYSTEM_PROMPT },
-          { role: "user", content: `下方为起诉状 / 申请书的全文：\n\n${cleaned.slice(0, 12000)}` }
+          {
+            role: "user",
+            content: `下方为起诉状 / 申请书的全文：\n\n${cleaned.slice(0, 12000)}`,
+          },
         ],
-        maxTokens: 1500
+        maxTokens: 1500,
       });
       return normalizeResult(extractJson<ParsedPleading>(content));
     }
@@ -133,13 +147,13 @@ export async function parsePleading(form: FormData): Promise<ParsedPleading> {
     for (let i = 1; i <= pagesToRender; i++) {
       const arrayBuf = await renderPageAsImage(new Uint8Array(buf), i, {
         canvasImport,
-        scale: 2.0
+        scale: 2.0,
       });
       const dataUrl = `data:image/png;base64,${Buffer.from(arrayBuf).toString("base64")}`;
       const { content } = await aiVision({
         image: { dataUrl },
         prompt: `${SYSTEM_PROMPT}\n\n（这是扫描版起诉状 / 申请书第 ${i}/${pagesToRender} 页）`,
-        maxTokens: 1500
+        maxTokens: 1500,
       });
       const parsed = extractJson<ParsedPleading>(content);
       if (parsed) pageResults.push(normalizeResult(parsed));

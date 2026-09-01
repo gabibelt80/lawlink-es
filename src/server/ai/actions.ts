@@ -44,7 +44,9 @@ const PROMPT = `请识别这张中国增值税发票图片中的信息，输出 
 
 只回复 JSON，不要其他文字。无法识别的字段填空字符串或省略。`;
 
-export async function recognizeInvoiceFromImage(formData: FormData): Promise<
+export async function recognizeInvoiceFromImage(
+  formData: FormData,
+): Promise<
   | { ok: true; data: RecognizedInvoice; raw: string }
   | { ok: false; message: string }
 > {
@@ -52,17 +54,20 @@ export async function recognizeInvoiceFromImage(formData: FormData): Promise<
 
   const file = formData.get("file");
   if (!(file instanceof File) || file.size === 0) {
-    return { ok: false, message: "请上传发票图片" };
+    return { ok: false, message: "Por favor, sube la imagen de la factura" };
   }
   if (file.size > MAX_IMAGE_SIZE) {
-    return { ok: false, message: `图片超过 ${MAX_IMAGE_SIZE / 1024 / 1024}MB` };
+    return {
+      ok: false,
+      message: `La imagen supera ${MAX_IMAGE_SIZE / 1024 / 1024} MB`,
+    };
   }
   // v0.11: PDF 也允许上传，但识别效果取决于 vision 模型是否原生支持 PDF
   // 若模型不认 PDF，aiVision 会失败并Volver明确错误
   const isImage = file.type.startsWith("image/");
   const isPdf = file.type === "application/pdf";
   if (!isImage && !isPdf) {
-    return { ok: false, message: "仅支持图片或 PDF" };
+    return { ok: false, message: "Solo se admiten imágenes o PDF" };
   }
 
   const buf = Buffer.from(await file.arrayBuffer());
@@ -72,7 +77,7 @@ export async function recognizeInvoiceFromImage(formData: FormData): Promise<
     const res = await aiVision({
       image: { dataUrl },
       prompt: PROMPT,
-      timeoutMs: 30_000
+      timeoutMs: 30_000,
     });
 
     const data = extractJson<RecognizedInvoice>(res.content) ?? {};
@@ -86,8 +91,8 @@ export async function recognizeInvoiceFromImage(formData: FormData): Promise<
         ok: true,
         fileName: file.name,
         size: file.size,
-        invoiceNumber: data.invoiceNumber ?? null
-      }
+        invoiceNumber: data.invoiceNumber ?? null,
+      },
     });
 
     return { ok: true, data, raw: res.content };

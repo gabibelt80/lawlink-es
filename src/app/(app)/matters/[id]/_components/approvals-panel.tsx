@@ -15,8 +15,8 @@ type Filter = "all" | "pending" | "done";
 
 const FILTERS: { value: Filter; label: string }[] = [
   { value: "all", label: "Ver todos" },
-  { value: "pending", label: "Aprobación中" },
-  { value: "done", label: "已Aprobación" }
+  { value: "pending", label: "En aprobación" },
+  { value: "done", label: "Aprobados" },
 ];
 
 /**
@@ -29,7 +29,7 @@ export function ApprovalsPanel({
   matterId,
   matterTitle,
   sealContracts,
-  canRequest
+  canRequest,
 }: {
   matterId: string;
   matterTitle: string;
@@ -44,7 +44,12 @@ export function ApprovalsPanel({
   const filtered = sealContracts.filter((s) => {
     if (filter === "all") return true;
     if (filter === "pending") return s.status === "PENDING";
-    return s.status === "APPROVED" || s.status === "STAMPED" || s.status === "REJECTED" || s.status === "CANCELLED";
+    return (
+      s.status === "APPROVED" ||
+      s.status === "STAMPED" ||
+      s.status === "REJECTED" ||
+      s.status === "CANCELLED"
+    );
   });
 
   async function handleOpenSheet() {
@@ -83,15 +88,19 @@ export function ApprovalsPanel({
                   "rounded px-2 py-0.5 text-[11px] transition-colors",
                   filter === f.value
                     ? "bg-primary text-primary-foreground"
-                    : "text-muted-foreground hover:text-foreground"
+                    : "text-muted-foreground hover:text-foreground",
                 )}
               >
                 {f.label}
-                {f.value === "pending" && sealContracts.some((s) => s.status === "PENDING") && (
-                  <span className="ml-1 font-mono text-[10px]">
-                    {sealContracts.filter((s) => s.status === "PENDING").length}
-                  </span>
-                )}
+                {f.value === "pending" &&
+                  sealContracts.some((s) => s.status === "PENDING") && (
+                    <span className="ml-1 font-mono text-[10px]">
+                      {
+                        sealContracts.filter((s) => s.status === "PENDING")
+                          .length
+                      }
+                    </span>
+                  )}
               </button>
             ))}
           </div>
@@ -116,7 +125,11 @@ export function ApprovalsPanel({
 
       {filtered.length === 0 ? (
         <p className="py-4 text-center text-xs text-muted-foreground">
-          {filter === "all" ? "暂无Aprobación" : filter === "pending" ? "无Aprobación中" : "无已Aprobación"}
+          {filter === "all"
+            ? "暂无Aprobación"
+            : filter === "pending"
+              ? "无Aprobación中"
+              : "无已Aprobación"}
         </p>
       ) : (
         <ul className="divide-y divide-border">
@@ -125,7 +138,9 @@ export function ApprovalsPanel({
               key={s.id}
               className="flex items-center gap-3 px-4 py-2 text-[12.5px]"
             >
-              <span className="font-mono text-[11px] text-muted-foreground">{s.code}</span>
+              <span className="font-mono text-[11px] text-muted-foreground">
+                {s.code}
+              </span>
               <span className="min-w-0 flex-1 truncate">{s.documentTitle}</span>
               <SealStatusBadge status={s.status} />
               <Link
@@ -157,7 +172,7 @@ const SEAL_STATUS_LABEL: Record<string, string> = {
   APPROVED: "已批准",
   STAMPED: "已盖章",
   REJECTED: "驳回",
-  CANCELLED: "撤销"
+  CANCELLED: "撤销",
 };
 
 function SealStatusBadge({ status }: { status: string }) {
@@ -168,7 +183,10 @@ function SealStatusBadge({ status }: { status: string }) {
         ? "text-red-700 bg-red-500/10 border-red-500/20"
         : "text-amber-700 bg-amber-500/10 border-amber-500/20";
   return (
-    <Badge variant="outline" className={cn("h-5 border px-1.5 text-[10px]", tone)}>
+    <Badge
+      variant="outline"
+      className={cn("h-5 border px-1.5 text-[10px]", tone)}
+    >
       {SEAL_STATUS_LABEL[status] ?? status}
     </Badge>
   );

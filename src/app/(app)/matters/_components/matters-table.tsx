@@ -5,7 +5,7 @@ import type { Matter, PartyRole, LitigationStanding } from "@prisma/client";
 import {
   matterCategoryColor,
   matterCategoryShort,
-  matterStatusLabel
+  matterStatusLabel,
 } from "@/lib/enums";
 import { formatCurrency, cn } from "@/lib/utils";
 import { matterHref } from "@/lib/matters/route";
@@ -14,8 +14,18 @@ export type MatterRow = Omit<Matter, "claimAmount"> & {
   primaryClient: { id: string; name: string } | null;
   owner: { id: string; name: string } | null;
   cause: { id: string; name: string } | null;
-  procedures: { id: string; type: string; caseNumber: string | null; status: string }[];
-  parties: { id: string; name: string; role: PartyRole; standing: LitigationStanding | null }[];
+  procedures: {
+    id: string;
+    type: string;
+    caseNumber: string | null;
+    status: string;
+  }[];
+  parties: {
+    id: string;
+    name: string;
+    role: PartyRole;
+    standing: LitigationStanding | null;
+  }[];
   archiveRecords?: { id: string }[];
   _count: { procedures: number };
   claimAmount: number | null;
@@ -35,16 +45,20 @@ const MATTER_ROW_GRID_WITH_ARCHIVE =
 
 export function CaseListHeader({
   metaColumn = "hearing",
-  detailColumnLabel = "案号",
+  detailColumnLabel = "N° de caso",
   showIntakeDateColumn = false,
-  showArchiveDateColumn = false
+  showArchiveDateColumn = false,
 }: {
   metaColumn?: MetaColumn;
   detailColumnLabel?: string;
   showIntakeDateColumn?: boolean;
   showArchiveDateColumn?: boolean;
 }) {
-  const metaHeader = <div>{metaColumn === "firmCaseNo" ? "所内案号" : "开庭时间"}</div>;
+  const metaHeader = (
+    <div>
+      {metaColumn === "firmCaseNo" ? "N° interno" : "Fecha de audiencia"}
+    </div>
+  );
 
   return (
     <div
@@ -54,13 +68,13 @@ export function CaseListHeader({
           : showIntakeDateColumn
             ? MATTER_ROW_GRID_WITH_INTAKE
             : MATTER_ROW_GRID,
-        "hidden border-b border-border bg-muted px-5 py-2 text-[10px] font-semibold uppercase text-muted-foreground lg:grid"
+        "hidden border-b border-border bg-muted px-5 py-2 text-[10px] font-semibold uppercase text-muted-foreground lg:grid",
       )}
     >
       {showArchiveDateColumn ? (
-        <div>归档时间</div>
+        <div>Fecha de archivo</div>
       ) : showIntakeDateColumn ? (
-        <div>收案时间</div>
+        <div>Fecha de admisión</div>
       ) : (
         <div />
       )}
@@ -69,7 +83,7 @@ export function CaseListHeader({
       <div>Cliente</div>
       <div>{detailColumnLabel}</div>
       {showArchiveDateColumn ? metaHeader : null}
-      {showArchiveDateColumn ? null : <div>标的</div>}
+      {showArchiveDateColumn ? null : <div>Monto</div>}
       <div>Estado</div>
     </div>
   );
@@ -79,7 +93,7 @@ export function MattersTable({
   items,
   metaColumn = "hearing",
   showIntakeDateColumn = false,
-  showArchiveDateColumn = false
+  showArchiveDateColumn = false,
 }: {
   items: MatterRow[];
   metaColumn?: MetaColumn;
@@ -89,9 +103,12 @@ export function MattersTable({
   if (items.length === 0) {
     return (
       <div className="flex flex-col items-center gap-2 rounded-md border border-border bg-card py-20 text-center">
-        <div className="text-base text-muted-foreground">没有匹配的Caso</div>
+        <div className="text-base text-muted-foreground">
+          No hay Casos coincidentes
+        </div>
         <div className="text-xs text-muted-foreground/70">
-          点击右上角 <span className="text-foreground/80">新建收案</span> 开始
+          Haz clic en <span className="text-foreground/80">Nuevo caso</span>{" "}
+          arriba a la derecha para comenzar
         </div>
       </div>
     );
@@ -114,12 +131,12 @@ export function MattersTable({
             status={{
               label:
                 (m.archiveRecords?.length ?? 0) > 0
-                  ? "归档中"
+                  ? "Archivado"
                   : matterStatusLabel[m.status],
               dot:
                 (m.archiveRecords?.length ?? 0) > 0
                   ? MATTER_STATUS_DOT.ARCHIVED
-                  : MATTER_STATUS_DOT[m.status]
+                  : MATTER_STATUS_DOT[m.status],
             }}
             categoryShort={matterCategoryShort[m.category]}
             intakeDate={m.intakeDate}
@@ -128,9 +145,9 @@ export function MattersTable({
             firmCaseNo={m.firmCaseNo}
             showTitleMeta={false}
             clientName={m.primaryClient?.name ?? null}
-            detailColumnLabel="案号"
+            detailColumnLabel="N° de caso"
             procedureLabel={m.procedures[0]?.caseNumber ?? null}
-            procedureFallback="暂无案号"
+            procedureFallback="Sin número aún"
             proceduresCount={m._count.procedures}
             claimAmount={m.claimAmount}
             metaColumn={metaColumn}
@@ -149,10 +166,10 @@ const MATTER_STATUS_DOT: Record<MatterRow["status"], string> = {
   IN_PROGRESS: "#1E40AF",
   ON_HOLD: "#94a3b8",
   CLOSED: "#15803D",
-  ARCHIVED: "#6B21A8"
+  ARCHIVED: "#6B21A8",
 };
 
-// 通用卡片：供 MattersTable + IntakesTable 共用
+// Tarjeta general: para MattersTable + IntakesTable
 export function CaseListCard({
   href,
   title,
@@ -166,9 +183,9 @@ export function CaseListCard({
   showTitleMeta = true,
   showTitleFirmCaseNo = true,
   clientName = null,
-  detailColumnLabel = "案号",
+  detailColumnLabel = "N° de caso",
   procedureLabel = null,
-  procedureFallback = "暂无案号",
+  procedureFallback = "Sin número aún",
   procedureValueClassName,
   showProcedureDots = true,
   proceduresCount = 0,
@@ -176,7 +193,7 @@ export function CaseListCard({
   metaColumn = "hearing",
   showIntakeDateColumn = false,
   showArchiveDateColumn = false,
-  inTable = false
+  inTable = false,
 }: {
   href: string;
   title: string;
@@ -204,7 +221,9 @@ export function CaseListCard({
 }) {
   const hasLeadingDateColumn = showIntakeDateColumn || showArchiveDateColumn;
   const metaCell = showIntakeDateColumn ? null : (
-    <DataCell label={metaColumn === "firmCaseNo" ? "所内案号" : "开庭时间"}>
+    <DataCell
+      label={metaColumn === "firmCaseNo" ? "N° interno" : "Fecha de audiencia"}
+    >
       {metaColumn === "firmCaseNo" ? (
         <span className="font-mono tabular-nums text-foreground/75">
           {firmCaseNo || "—"}
@@ -213,7 +232,7 @@ export function CaseListCard({
         <span
           className={cn(
             "font-mono tabular-nums",
-            latestHearingAt ? "text-primary" : "text-muted-foreground/55"
+            latestHearingAt ? "text-primary" : "text-muted-foreground/55",
           )}
         >
           {formatDateTime(latestHearingAt)}
@@ -223,12 +242,20 @@ export function CaseListCard({
   );
 
   return (
-    <li className={cn(inTable ? "border-t border-border first:border-t-0" : "rounded-lg border border-border bg-card")}>
+    <li
+      className={cn(
+        inTable
+          ? "border-t border-border first:border-t-0"
+          : "rounded-lg border border-border bg-card",
+      )}
+    >
       <Link
         href={href}
         className={cn(
           "group block transition-colors",
-          inTable ? "px-5 py-3 hover:bg-muted" : "rounded-lg px-4 py-3 hover:bg-muted"
+          inTable
+            ? "px-5 py-3 hover:bg-muted"
+            : "rounded-lg px-4 py-3 hover:bg-muted",
         )}
       >
         <div
@@ -241,7 +268,11 @@ export function CaseListCard({
           }
         >
           {hasLeadingDateColumn ? (
-            <DataCell label={showArchiveDateColumn ? "归档时间" : "收案时间"}>
+            <DataCell
+              label={
+                showArchiveDateColumn ? "Fecha de archivo" : "Fecha de admisión"
+              }
+            >
               <span className="font-mono tabular-nums text-foreground/75">
                 {formatDate(showArchiveDateColumn ? archivedAt : intakeDate)}
               </span>
@@ -251,7 +282,9 @@ export function CaseListCard({
               <span
                 className={cn(
                   "ll-dot",
-                  latestHearingAt ? "bg-[#B91C1C] shadow-[0_0_0_3px_rgba(185,28,28,0.14)]" : "bg-primary"
+                  latestHearingAt
+                    ? "bg-[#B91C1C] shadow-[0_0_0_3px_rgba(185,28,28,0.14)]"
+                    : "bg-primary",
                 )}
               />
             </div>
@@ -265,18 +298,20 @@ export function CaseListCard({
                 style={{
                   background: `${accent}14`,
                   borderColor: `${accent}66`,
-                  color: accent
+                  color: accent,
                 }}
               >
                 {categoryShort}
               </span>
               <div className="min-w-0">
                 <span className="block min-w-0 truncate text-[13.5px] font-medium leading-5 text-foreground">
-                  {title || "（未命名）"}
+                  {title || "(Sin nombre)"}
                 </span>
                 {showTitleMeta ? (
                   <span className="mt-0.5 block font-mono text-[11px] text-muted-foreground tabular">
-                    {showTitleFirmCaseNo && firmCaseNo ? firmCaseNo : formatDate(intakeDate)}
+                    {showTitleFirmCaseNo && firmCaseNo
+                      ? firmCaseNo
+                      : formatDate(intakeDate)}
                   </span>
                 ) : null}
               </div>
@@ -288,22 +323,26 @@ export function CaseListCard({
           <DataCell label="Cliente">
             <span className="flex min-w-0 items-center gap-2">
               <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-accent text-[10px] font-semibold text-primary">
-                {(clientName ?? "未").charAt(0)}
+                {(clientName ?? "Sin").charAt(0)}
               </span>
               <span className="truncate text-[12.5px] text-muted-foreground">
-                {clientName ?? "未关联Cliente"}
+                {clientName ?? "Cliente no asociado"}
               </span>
             </span>
           </DataCell>
 
           <DataCell label={detailColumnLabel}>
             <span className="flex min-w-0 items-center gap-1.5">
-              {showProcedureDots ? <span className="ll-dot bg-primary" /> : null}
-              {showProcedureDots && proceduresCount > 1 ? <span className="ll-dot bg-primary/40" /> : null}
+              {showProcedureDots ? (
+                <span className="ll-dot bg-primary" />
+              ) : null}
+              {showProcedureDots && proceduresCount > 1 ? (
+                <span className="ll-dot bg-primary/40" />
+              ) : null}
               <span
                 className={cn(
                   "truncate text-[12px] text-muted-foreground",
-                  procedureValueClassName ?? "font-mono tabular-nums"
+                  procedureValueClassName ?? "font-mono tabular-nums",
                 )}
               >
                 {procedureLabel ?? procedureFallback}
@@ -314,9 +353,11 @@ export function CaseListCard({
           {hasLeadingDateColumn ? metaCell : null}
 
           {showArchiveDateColumn ? null : (
-            <DataCell label="标的">
+            <DataCell label="Monto">
               <span className="font-mono text-[12px] tabular-nums text-foreground/75">
-                {claimAmount != null ? formatCurrency(claimAmount, { compact: true }) : "—"}
+                {claimAmount != null
+                  ? formatCurrency(claimAmount, { compact: true })
+                  : "—"}
               </span>
             </DataCell>
           )}
@@ -333,14 +374,19 @@ export function CaseListCard({
 function DataCell({
   label,
   className,
-  children
+  children,
 }: {
   label: string;
   className?: string;
   children: React.ReactNode;
 }) {
   return (
-    <div className={cn("flex min-w-0 items-center gap-1 text-[12px] text-muted-foreground lg:block", className)}>
+    <div
+      className={cn(
+        "flex min-w-0 items-center gap-1 text-[12px] text-muted-foreground lg:block",
+        className,
+      )}
+    >
       <span className="shrink-0 text-[11px] text-muted-foreground/60 lg:hidden">
         {label}：
       </span>
@@ -355,7 +401,7 @@ function formatDate(value: Date | null) {
 }
 
 function formatDateTime(value: Date | null) {
-  if (!value) return "暂无开庭";
+  if (!value) return "Sin audiencia aún";
   const date = new Date(value);
   const yyyy = date.getFullYear();
   const mm = pad2(date.getMonth() + 1);
@@ -376,7 +422,7 @@ function StatusChip({ label, dot }: { label: string; dot: string }) {
       style={{
         background: `${dot}12`,
         borderColor: `${dot}55`,
-        color: dot
+        color: dot,
       }}
     >
       <span className="h-1.5 w-1.5 rounded-full" style={{ background: dot }} />

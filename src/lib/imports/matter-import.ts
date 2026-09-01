@@ -99,7 +99,7 @@ export function parseImportDate(text: string | undefined): Date | null {
 
 /** 标的额解析：去掉逗号/￥/元，转数字 */
 export function parseAmount(text: string | undefined): number | null {
-  const t = (text ?? "").trim().replace(/[,¥￥\s元]/g, "");
+  const t = (text ?? "").trim().replace(/[,$￥\s元]/g, "");
   if (!t) return null;
   const n = Number(t);
   return Number.isFinite(n) && n >= 0 ? n : null;

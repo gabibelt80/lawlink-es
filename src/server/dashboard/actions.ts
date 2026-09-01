@@ -121,7 +121,7 @@ export async function getDashboardKpis(): Promise<KpiItem[]> {
       label: "本月实收",
       value: receivedTotal,
       valueFormat: "currency",
-      trend: { direction: "up", text: `¥${(receivedTotal / 10000).toFixed(1)}万` },
+      trend: { direction: "up", text: `$${(receivedTotal / 10000).toFixed(1)}万` },
       sparkline: spark(Math.round(receivedTotal / 1000))
     }
   ];

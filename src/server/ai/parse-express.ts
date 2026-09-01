@@ -14,7 +14,12 @@ export type ParsedExpressLabel = {
   companyCode: string | null; // 中文公司名（顺丰速运 / 中通快递 等）
 };
 
-const SUPPORTED = new Set(["image/jpeg", "image/png", "image/webp", "image/heic"]);
+const SUPPORTED = new Set([
+  "image/jpeg",
+  "image/png",
+  "image/webp",
+  "image/heic",
+]);
 
 const PROMPT = `下方图片是一张快递面单 / 快递单照片。请严格Volver JSON：
 {"trackingNo": "单号", "companyCode": "中文快递公司名（如：顺丰速运 / 中通快递 / 京东快递）"}
@@ -23,14 +28,18 @@ const PROMPT = `下方图片是一张快递面单 / 快递单照片。请严格V
 - 找不到任何一项Volver null，不要编造
 - 仅 JSON，不要解释`;
 
-export async function parseExpressLabel(form: FormData): Promise<ParsedExpressLabel> {
+export async function parseExpressLabel(
+  form: FormData,
+): Promise<ParsedExpressLabel> {
   await requireSession();
   const file = form.get("file");
-  if (!(file instanceof File)) throw new Error("缺少文件");
+  if (!(file instanceof File)) throw new Error("Falta el archivo");
   if (!SUPPORTED.has(file.type)) {
-    throw new Error(`仅支持图片格式（JPG/PNG/WebP），当前 ${file.type || "未知"}`);
+    throw new Error(
+      `Solo se admiten imágenes (JPG/PNG/WebP); actual: ${file.type || "desconocido"}`,
+    );
   }
-  if (file.size > 10 * 1024 * 1024) throw new Error("文件超过 10MB");
+  if (file.size > 10 * 1024 * 1024) throw new Error("El archivo supera 10 MB");
 
   const buf = Buffer.from(await file.arrayBuffer());
   const dataUrl = `data:${file.type};base64,${buf.toString("base64")}`;
@@ -39,12 +48,12 @@ export async function parseExpressLabel(form: FormData): Promise<ParsedExpressLa
     const { content } = await aiVision({
       image: { dataUrl },
       prompt: PROMPT,
-      maxTokens: 300
+      maxTokens: 300,
     });
     const parsed = extractJson<ParsedExpressLabel>(content);
     return {
       trackingNo: parsed?.trackingNo?.trim() || null,
-      companyCode: parsed?.companyCode?.trim() || null
+      companyCode: parsed?.companyCode?.trim() || null,
     };
   } catch (err) {
     if (err instanceof AiNotConfiguredError) throw err;

@@ -10,7 +10,7 @@ import {
   SelectContent,
   SelectItem,
   SelectTrigger,
-  SelectValue
+  SelectValue,
 } from "@/components/ui/select";
 
 type AuditItem = {
@@ -38,13 +38,14 @@ const actionColor: Record<string, string> = {
   FEE_ENTRY_CREATE: "#4ADE80",
   USER_CREATE: "#4ADE80",
   USER_DEACTIVATE: "#F87171",
-  USER_PASSWORD_RESET: "#FB923C"
+  USER_PASSWORD_RESET: "#FB923C",
 };
 
 function colorFor(action: string) {
   if (actionColor[action]) return actionColor[action];
   if (action.endsWith("_CREATE") || action.endsWith("_ADD")) return "#4ADE80";
-  if (action.endsWith("_DELETE") || action.endsWith("_DEACTIVATE")) return "#F87171";
+  if (action.endsWith("_DELETE") || action.endsWith("_DEACTIVATE"))
+    return "#F87171";
   if (action.endsWith("_UPDATE") || action.endsWith("_EDIT")) return "#FBBF24";
   if (action.endsWith("_VIEW")) return "#9BA8C7";
   return "#5B8DEF";
@@ -54,7 +55,7 @@ export function AuditView({
   items,
   distinctActions,
   userOptions,
-  initialFilters
+  initialFilters,
 }: {
   items: AuditItem[];
   distinctActions: string[];
@@ -77,10 +78,12 @@ export function AuditView({
       if (u && u !== "ALL") params.set("userId", u);
       if (d && d !== "30") params.set("days", d);
       startTransition(() => {
-        router.replace(`/settings/audit${params.toString() ? `?${params.toString()}` : ""}`);
+        router.replace(
+          `/settings/audit${params.toString() ? `?${params.toString()}` : ""}`,
+        );
       });
     },
-    [router, action, userId, days]
+    [router, action, userId, days],
   );
 
   function reset() {
@@ -95,7 +98,7 @@ export function AuditView({
       <header className="flex items-center justify-between">
         <h2 className="flex items-center gap-2 text-base font-semibold">
           <ScrollText className="h-4 w-4 text-primary" />
-          审计日志{" "}
+          Registro de auditoría{" "}
           <span className="text-muted-foreground">({items.length})</span>
         </h2>
       </header>
@@ -182,7 +185,10 @@ export function AuditView({
               >
                 <span
                   className="mt-1 inline-block h-1.5 w-1.5 shrink-0 rounded-full"
-                  style={{ backgroundColor: color, boxShadow: `0 0 6px ${color}` }}
+                  style={{
+                    backgroundColor: color,
+                    boxShadow: `0 0 6px ${color}`,
+                  }}
                 />
                 <div className="flex-1 overflow-hidden">
                   <div className="flex flex-wrap items-center gap-2">
@@ -217,7 +223,7 @@ export function AuditView({
                       month: "2-digit",
                       day: "2-digit",
                       hour: "2-digit",
-                      minute: "2-digit"
+                      minute: "2-digit",
                     })}
                   </div>
                 </div>

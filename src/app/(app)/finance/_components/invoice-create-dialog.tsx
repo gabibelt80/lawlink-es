@@ -368,7 +368,7 @@ export function InvoiceCreateDialog({
 
           {/* 金额 + 类型 */}
           <div className="grid grid-cols-2 gap-3">
-            <Field label="Monto de la factura (¥)" required>
+            <Field label="Monto de la factura ($)" required>
               <Input
                 type="number"
                 step="0.01"

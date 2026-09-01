@@ -38,24 +38,32 @@ export async function draftDocument(input: DraftInput): Promise<DraftResult> {
 
   const docType = input.docType?.trim();
   if (!docType) {
-    return { ok: false, reason: "error", message: "请先选择或填写文书类型" };
+    return {
+      ok: false,
+      reason: "error",
+      message: "Primero seleccione o complete el tipo de documento",
+    };
   }
 
   const lines = [`请起草一份「${docType}」。`];
-  if (input.selfParty?.trim()) lines.push(`我方当事人：${input.selfParty.trim()}`);
-  if (input.opposingParty?.trim()) lines.push(`对方当事人：${input.opposingParty.trim()}`);
-  if (input.background?.trim()) lines.push(`Caso背景：\n${input.background.trim()}`);
-  if (input.claims?.trim()) lines.push(`诉讼请求 / 核心主张：\n${input.claims.trim()}`);
+  if (input.selfParty?.trim())
+    lines.push(`我方当事人：${input.selfParty.trim()}`);
+  if (input.opposingParty?.trim())
+    lines.push(`对方当事人：${input.opposingParty.trim()}`);
+  if (input.background?.trim())
+    lines.push(`Caso背景：\n${input.background.trim()}`);
+  if (input.claims?.trim())
+    lines.push(`诉讼请求 / 核心主张：\n${input.claims.trim()}`);
   if (input.extra?.trim()) lines.push(`其他补充：\n${input.extra.trim()}`);
 
   try {
     const { content } = await aiChat({
       messages: [
         { role: "system", content: SYSTEM_PROMPT },
-        { role: "user", content: lines.join("\n\n") }
+        { role: "user", content: lines.join("\n\n") },
       ],
       maxTokens: 2800,
-      temperature: 0.4
+      temperature: 0.4,
     });
     return { ok: true, content };
   } catch (err) {
@@ -65,7 +73,7 @@ export async function draftDocument(input: DraftInput): Promise<DraftResult> {
     return {
       ok: false,
       reason: "error",
-      message: err instanceof Error ? err.message : "生成失败，请稍后重试"
+      message: err instanceof Error ? err.message : "生成失败，请稍后重试",
     };
   }
 }

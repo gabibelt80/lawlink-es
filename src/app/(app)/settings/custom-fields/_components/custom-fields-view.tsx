@@ -13,42 +13,53 @@ import {
   DialogHeader,
   DialogTitle,
   DialogDescription,
-  DialogFooter
+  DialogFooter,
 } from "@/components/ui/dialog";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
-  SelectValue
+  SelectValue,
 } from "@/components/ui/select";
 import {
   createCustomFieldDef,
   updateCustomFieldDef,
   deleteCustomFieldDef,
-  toggleCustomFieldDef
+  toggleCustomFieldDef,
 } from "@/server/custom-fields/actions";
 
 const TYPE_LABEL: Record<CustomFieldDef["fieldType"], string> = {
-  TEXT: "文本",
-  NUMBER: "数字",
+  TEXT: "Texto",
+  NUMBER: "Número",
   DATE: "Fecha",
-  SELECT: "下拉"
+  SELECT: "Desplegable",
 };
 
-export function CustomFieldsView({ matterFields }: { matterFields: CustomFieldDef[] }) {
+export function CustomFieldsView({
+  matterFields,
+}: {
+  matterFields: CustomFieldDef[];
+}) {
   const [editing, setEditing] = useState<CustomFieldDef | null>(null);
   const [createOpen, setCreateOpen] = useState(false);
   const [pending, startTransition] = useTransition();
 
   function handleDelete(id: string, label: string) {
-    if (!confirm(`Eliminar自定义字段「${label}」？已录入的对应值将不再显示。`)) return;
+    if (
+      !confirm(
+        `¿Eliminar el campo personalizado «${label}»? Los valores ya ingresados dejarán de mostrarse.`,
+      )
+    )
+      return;
     startTransition(async () => {
       try {
         await deleteCustomFieldDef(id);
-        toast.success("已Eliminar");
+        toast.success("Eliminado");
       } catch (err) {
-        toast.error("Eliminar失败", { description: err instanceof Error ? err.message : "" });
+        toast.error("Error al eliminar", {
+          description: err instanceof Error ? err.message : "",
+        });
       }
     });
   }
@@ -58,7 +69,9 @@ export function CustomFieldsView({ matterFields }: { matterFields: CustomFieldDe
       try {
         await toggleCustomFieldDef(id, enabled);
       } catch (err) {
-        toast.error("Operación fallida", { description: err instanceof Error ? err.message : "" });
+        toast.error("Operación fallida", {
+          description: err instanceof Error ? err.message : "",
+        });
       }
     });
   }
@@ -69,15 +82,16 @@ export function CustomFieldsView({ matterFields }: { matterFields: CustomFieldDe
         <div>
           <h2 className="flex items-center gap-2 text-lg font-medium">
             <ListChecks className="h-4 w-4 text-primary" />
-            Caso自定义字段
+            Campos personalizados del caso
           </h2>
           <p className="mt-1 text-[13px] text-muted-foreground">
-            为CasoAgregar机构特有的字段，新建/EditarCaso详情时填写。
+            Agrega campos exclusivos de tu institución para completar al crear o
+            editar el detalle del caso.
           </p>
         </div>
         <Button onClick={() => setCreateOpen(true)} size="sm" className="gap-1">
           <Plus className="h-4 w-4" />
-          Agregar字段
+          Agregar campo
         </Button>
       </header>
 
@@ -85,27 +99,40 @@ export function CustomFieldsView({ matterFields }: { matterFields: CustomFieldDe
         <table className="w-full text-[13px]">
           <thead>
             <tr className="border-b border-border text-left text-[12px] text-muted-foreground">
-              <th className="px-4 py-2 font-medium">字段Nombre</th>
-              <th className="px-4 py-2 font-medium">类型</th>
-              <th className="px-4 py-2 font-medium">必填</th>
-              <th className="px-4 py-2 font-medium">选项值</th>
-              <th className="px-4 py-2 font-medium">启用</th>
+              <th className="px-4 py-2 font-medium">Nombre del campo</th>
+              <th className="px-4 py-2 font-medium">Tipo</th>
+              <th className="px-4 py-2 font-medium">Obligatorio</th>
+              <th className="px-4 py-2 font-medium">Opciones</th>
+              <th className="px-4 py-2 font-medium">Habilitado</th>
               <th className="px-4 py-2 text-right font-medium">Acciones</th>
             </tr>
           </thead>
           <tbody>
             {matterFields.length === 0 ? (
               <tr>
-                <td colSpan={6} className="px-4 py-10 text-center text-muted-foreground">
-                  还没有自定义字段，点击右上角「Agregar字段」
+                <td
+                  colSpan={6}
+                  className="px-4 py-10 text-center text-muted-foreground"
+                >
+                  Todavía no hay campos personalizados. Haz clic en «Agregar
+                  campo» en la esquina superior derecha.
                 </td>
               </tr>
             ) : (
               matterFields.map((f) => (
-                <tr key={f.id} className="border-b border-border/60 last:border-0">
-                  <td className="px-4 py-2.5 font-medium text-foreground">{f.label}</td>
-                  <td className="px-4 py-2.5 text-muted-foreground">{TYPE_LABEL[f.fieldType]}</td>
-                  <td className="px-4 py-2.5 text-muted-foreground">{f.required ? "是" : "—"}</td>
+                <tr
+                  key={f.id}
+                  className="border-b border-border/60 last:border-0"
+                >
+                  <td className="px-4 py-2.5 font-medium text-foreground">
+                    {f.label}
+                  </td>
+                  <td className="px-4 py-2.5 text-muted-foreground">
+                    {TYPE_LABEL[f.fieldType]}
+                  </td>
+                  <td className="px-4 py-2.5 text-muted-foreground">
+                    {f.required ? "是" : "—"}
+                  </td>
                   <td className="px-4 py-2.5 text-muted-foreground">
                     {f.fieldType === "SELECT" && f.options.length > 0
                       ? f.options.join(" / ")
@@ -162,7 +189,7 @@ export function CustomFieldsView({ matterFields }: { matterFields: CustomFieldDe
 function FieldFormDialog({
   open,
   field,
-  onClose
+  onClose,
 }: {
   open: boolean;
   field: CustomFieldDef | null;
@@ -170,10 +197,12 @@ function FieldFormDialog({
 }) {
   const [label, setLabel] = useState(field?.label ?? "");
   const [fieldType, setFieldType] = useState<CustomFieldDef["fieldType"]>(
-    field?.fieldType ?? "TEXT"
+    field?.fieldType ?? "TEXT",
   );
   const [required, setRequired] = useState(field?.required ?? false);
-  const [optionsText, setOptionsText] = useState((field?.options ?? []).join("\n"));
+  const [optionsText, setOptionsText] = useState(
+    (field?.options ?? []).join("\n"),
+  );
   const [pending, startTransition] = useTransition();
 
   function submit() {
@@ -195,14 +224,28 @@ function FieldFormDialog({
     startTransition(async () => {
       try {
         if (field) {
-          await updateCustomFieldDef({ id: field.id, label, fieldType, required, options });
+          await updateCustomFieldDef({
+            id: field.id,
+            label,
+            fieldType,
+            required,
+            options,
+          });
         } else {
-          await createCustomFieldDef({ entityType: "MATTER", label, fieldType, required, options });
+          await createCustomFieldDef({
+            entityType: "MATTER",
+            label,
+            fieldType,
+            required,
+            options,
+          });
         }
         toast.success(field ? "已Actualizar" : "已Agregar");
         onClose();
       } catch (err) {
-        toast.error("Guardar失败", { description: err instanceof Error ? err.message : "" });
+        toast.error("Guardar失败", {
+          description: err instanceof Error ? err.message : "",
+        });
       }
     });
   }
@@ -212,19 +255,31 @@ function FieldFormDialog({
       <DialogContent className="max-w-md">
         <DialogHeader>
           <DialogTitle>{field ? "Editar字段" : "Agregar字段"}</DialogTitle>
-          <DialogDescription>字段将出现在Caso详情的「自定义信息」中。</DialogDescription>
+          <DialogDescription>
+            字段将出现在Caso详情的「自定义信息」中。
+          </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-3">
           <div className="space-y-1">
-            <label className="text-xs font-medium text-muted-foreground">字段Nombre</label>
-            <Input value={label} onChange={(e) => setLabel(e.target.value)} placeholder="如：内部承办编号" />
+            <label className="text-xs font-medium text-muted-foreground">
+              字段Nombre
+            </label>
+            <Input
+              value={label}
+              onChange={(e) => setLabel(e.target.value)}
+              placeholder="如：内部承办编号"
+            />
           </div>
           <div className="space-y-1">
-            <label className="text-xs font-medium text-muted-foreground">字段类型</label>
+            <label className="text-xs font-medium text-muted-foreground">
+              字段类型
+            </label>
             <Select
               value={fieldType}
-              onValueChange={(v) => setFieldType(v as CustomFieldDef["fieldType"])}
+              onValueChange={(v) =>
+                setFieldType(v as CustomFieldDef["fieldType"])
+              }
             >
               <SelectTrigger>
                 <SelectValue />
@@ -239,7 +294,9 @@ function FieldFormDialog({
           </div>
           {fieldType === "SELECT" && (
             <div className="space-y-1">
-              <label className="text-xs font-medium text-muted-foreground">选项值（每行一个）</label>
+              <label className="text-xs font-medium text-muted-foreground">
+                选项值（每行一个）
+              </label>
               <textarea
                 value={optionsText}
                 onChange={(e) => setOptionsText(e.target.value)}

@@ -26,14 +26,18 @@ import {
   SelectContent,
   SelectItem,
   SelectTrigger,
-  SelectValue
+  SelectValue,
 } from "@/components/ui/select";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
 import {
   searchEnterpriseCandidates,
   getEnterpriseDetail,
-  type EnterpriseSearchItem
+  type EnterpriseSearchItem,
 } from "@/server/yuandian/enterprise";
 
 /** 表头与每一行共用，保证列对齐。诉讼/仲裁类含「诉讼地位」列（置于联系人前）。姓名/证件列较 v0 收窄约 15% */
@@ -74,14 +78,16 @@ export function PartyCard({
   standingSlot,
   showStanding = true,
   removable = true,
-  nameSlot
+  nameSlot,
 }: Props) {
   const { register, watch, setValue } = useFormContext();
   const p = `${fieldPrefix}.${index}`;
   const partyType = (watch(`${p}.partyType`) as PartyType) ?? "NATURAL_PERSON";
   const isOrg = partyType !== "NATURAL_PERSON";
 
-  const [candidates, setCandidates] = useState<EnterpriseSearchItem[] | null>(null);
+  const [candidates, setCandidates] = useState<EnterpriseSearchItem[] | null>(
+    null,
+  );
   const [searching, startSearch] = useTransition();
   const [filling, startFill] = useTransition();
   const [expanded, setExpanded] = useState(false);
@@ -91,11 +97,14 @@ export function PartyCard({
   const secondaryFilled = [
     watch(`${p}.address`),
     watch(`${p}.notes`),
-    isOrg ? watch(`${p}.legalRep`) : undefined
+    isOrg ? watch(`${p}.legalRep`) : undefined,
   ].filter((v) => typeof v === "string" && v.trim() !== "").length;
 
   function changeType(next: PartyType) {
-    setValue(`${p}.partyType`, next, { shouldDirty: true, shouldValidate: true });
+    setValue(`${p}.partyType`, next, {
+      shouldDirty: true,
+      shouldValidate: true,
+    });
     // 切换类型时清空对侧的必填字段，避免提示串台
     if (next === "NATURAL_PERSON") {
       setValue(`${p}.enterpriseSocialCode`, "");
@@ -129,7 +138,10 @@ export function PartyCard({
   function handlePickCandidate(item: EnterpriseSearchItem) {
     startFill(async () => {
       // 先回填 social code + 企业Nombre（Buscar结果已有）
-      setValue(`${p}.enterpriseSocialCode`, item.creditCode, { shouldDirty: true, shouldValidate: true });
+      setValue(`${p}.enterpriseSocialCode`, item.creditCode, {
+        shouldDirty: true,
+        shouldValidate: true,
+      });
       setValue(`${p}.enterpriseName`, item.name, { shouldDirty: true });
       setValue(`${p}.name`, item.name, { shouldDirty: true });
       setCandidates(null);
@@ -138,23 +150,31 @@ export function PartyCard({
       try {
         const r = await getEnterpriseDetail(item.id);
         if (r.configured && r.info) {
-          if (r.info.legalRep) setValue(`${p}.legalRep`, r.info.legalRep, { shouldDirty: true });
-          if (r.info.address) setValue(`${p}.address`, r.info.address, { shouldDirty: true });
+          if (r.info.legalRep)
+            setValue(`${p}.legalRep`, r.info.legalRep, { shouldDirty: true });
+          if (r.info.address)
+            setValue(`${p}.address`, r.info.address, { shouldDirty: true });
           setExpanded(true); // 展开让用户核对回填的法代 / 地址
-          toast.success(`已回填：${item.name}`);
+          toast.success(`Se rellenó: ${item.name}`);
         }
       } catch (err) {
         // 详情失败不阻塞，已填的 social code 仍有效
-        toast.warning("法代 / 地址自动填充失败，可手动补充", {
-          description: err instanceof Error ? err.message : ""
-        });
+        toast.warning(
+          "La autocompletación de representante legal / dirección falló; puedes completarlo manualmente",
+          {
+            description: err instanceof Error ? err.message : "",
+          },
+        );
       }
     });
   }
 
   const fieldErr = (errors as any)?.[fieldPrefix]?.[index] ?? {};
   const nameErr = fieldErr.name;
-  const idErr = partyType === "NATURAL_PERSON" ? fieldErr.idNumber : fieldErr.enterpriseSocialCode;
+  const idErr =
+    partyType === "NATURAL_PERSON"
+      ? fieldErr.idNumber
+      : fieldErr.enterpriseSocialCode;
   const nameReg = register(`${p}.name`);
 
   const grid = showStanding ? PARTY_GRID : PARTY_GRID_NO_STANDING;
@@ -166,7 +186,10 @@ export function PartyCard({
         <div className="min-w-0 text-center">{roleSlot}</div>
 
         {/* 主体类型 */}
-        <Select value={partyType} onValueChange={(v) => changeType(v as PartyType)}>
+        <Select
+          value={partyType}
+          onValueChange={(v) => changeType(v as PartyType)}
+        >
           <SelectTrigger className={PARTY_CELL_SELECT_CLASS}>
             <SelectValue />
           </SelectTrigger>
@@ -181,10 +204,13 @@ export function PartyCard({
 
         {/* 姓名 / Nombre（单位类型：输入自动匹配元典企业） */}
         <div className="min-w-0">
-          {nameSlot ?? (
-            !isOrg ? (
+          {nameSlot ??
+            (!isOrg ? (
               <Input
-                className={cn(PARTY_CELL_CONTROL_CLASS, nameErr && "border-destructive")}
+                className={cn(
+                  PARTY_CELL_CONTROL_CLASS,
+                  nameErr && "border-destructive",
+                )}
                 placeholder="姓名"
                 {...register(`${p}.name`)}
               />
@@ -198,7 +224,11 @@ export function PartyCard({
                 <PopoverTrigger asChild>
                   <div className="relative">
                     <Input
-                      className={cn(PARTY_CELL_CONTROL_CLASS, "pr-7", nameErr && "border-destructive")}
+                      className={cn(
+                        PARTY_CELL_CONTROL_CLASS,
+                        "pr-7",
+                        nameErr && "border-destructive",
+                      )}
                       placeholder="单位 / 组织Nombre（输入自动匹配）"
                       {...nameReg}
                       onChange={(e) => {
@@ -218,7 +248,8 @@ export function PartyCard({
                   onOpenAutoFocus={(e) => e.preventDefault()}
                 >
                   <div className="mb-1 flex items-center gap-1 px-1 text-[10px] text-muted-foreground">
-                    <Search className="h-3 w-3" />元典匹配，点击回填Nombre + 信用代码
+                    <Search className="h-3 w-3" />
+                    元典匹配，点击回填Nombre + 信用代码
                   </div>
                   <ul className="max-h-64 space-y-1 overflow-y-auto">
                     {candidates?.map((c) => (
@@ -230,15 +261,16 @@ export function PartyCard({
                           className="w-full rounded border border-border bg-background px-2 py-1.5 text-left text-xs transition-colors hover:border-input hover:bg-muted hover:text-foreground disabled:opacity-50"
                         >
                           <div className="font-medium">{c.name}</div>
-                          <div className="font-mono text-[10px] text-muted-foreground">{c.creditCode}</div>
+                          <div className="font-mono text-[10px] text-muted-foreground">
+                            {c.creditCode}
+                          </div>
                         </button>
                       </li>
                     ))}
                   </ul>
                 </PopoverContent>
               </Popover>
-            )
-          )}
+            ))}
         </div>
 
         {/* 证件号 / 信用代码（自动匹配后回填，亦可手填） */}
@@ -246,13 +278,21 @@ export function PartyCard({
           {!isOrg ? (
             <Input
               placeholder="身份证号（必填）"
-              className={cn(PARTY_CELL_CONTROL_CLASS, "font-mono", idErr && "border-destructive")}
+              className={cn(
+                PARTY_CELL_CONTROL_CLASS,
+                "font-mono",
+                idErr && "border-destructive",
+              )}
               {...register(`${p}.idNumber`)}
             />
           ) : (
             <Input
               placeholder="统一社会信用代码（必填）"
-              className={cn(PARTY_CELL_CONTROL_CLASS, "font-mono", idErr && "border-destructive")}
+              className={cn(
+                PARTY_CELL_CONTROL_CLASS,
+                "font-mono",
+                idErr && "border-destructive",
+              )}
               {...register(`${p}.enterpriseSocialCode`)}
             />
           )}
@@ -280,13 +320,20 @@ export function PartyCard({
           <button
             type="button"
             onClick={() => setExpanded((v) => !v)}
-            title={expanded ? "收起" : "更多（法定代表人 / 地址 / Observaciones）"}
+            title={
+              expanded ? "收起" : "更多（法定代表人 / 地址 / Observaciones）"
+            }
             className={cn(
               "flex h-7 w-7 items-center justify-center rounded-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground",
-              !expanded && secondaryFilled > 0 && "text-primary"
+              !expanded && secondaryFilled > 0 && "text-primary",
             )}
           >
-            <ChevronDown className={cn("h-3.5 w-3.5 transition-transform", expanded && "rotate-180")} />
+            <ChevronDown
+              className={cn(
+                "h-3.5 w-3.5 transition-transform",
+                expanded && "rotate-180",
+              )}
+            />
           </button>
           {removable && (
             <Button
@@ -327,7 +374,11 @@ export function PartyCard({
             />
           </div>
           <div className="sm:col-span-2">
-            <Input className="h-[34px] rounded-sm border-[#c6d0dd] bg-white text-[12.5px]" placeholder="Observaciones（可选）" {...register(`${p}.notes`)} />
+            <Input
+              className="h-[34px] rounded-sm border-[#c6d0dd] bg-white text-[12.5px]"
+              placeholder="Observaciones（可选）"
+              {...register(`${p}.notes`)}
+            />
           </div>
         </div>
       )}

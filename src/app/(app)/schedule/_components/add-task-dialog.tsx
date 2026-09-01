@@ -14,14 +14,14 @@ import {
   DialogDescription,
   DialogFooter,
   DialogHeader,
-  DialogTitle
+  DialogTitle,
 } from "@/components/ui/dialog";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
-  SelectValue
+  SelectValue,
 } from "@/components/ui/select";
 import { createTask } from "@/server/tasks/actions";
 
@@ -31,7 +31,7 @@ export function AddTaskDialog({
   open,
   onOpenChange,
   date,
-  matters
+  matters,
 }: {
   open: boolean;
   onOpenChange: (o: boolean) => void;
@@ -59,19 +59,19 @@ export function AddTaskDialog({
 
   function submit() {
     if (!matterId) {
-      toast.warning("请选择关联Caso");
+      toast.warning("Selecciona un Caso asociado");
       return;
     }
     if (!title.trim()) {
-      toast.warning("请填写事项标题");
+      toast.warning("Completa el título de la tarea");
       return;
     }
     if (!date) {
-      toast.warning("缺少Fecha");
+      toast.warning("Falta la fecha");
       return;
     }
 
-    // 合成 dueAt：全天 → 23:59；有时间 → 解析 HH:MM
+    // Construir dueAt: todo el día → 23:59; con hora → analizar HH:MM
     const dueAt = new Date(date);
     if (allDay) {
       dueAt.setHours(23, 59, 0, 0);
@@ -91,14 +91,14 @@ export function AddTaskDialog({
           dueAt,
           priority,
           assigneeId: "",
-          stageId: ""
+          stageId: "",
         });
-        toast.success("事项已Agregar");
+        toast.success("Tarea agregada");
         onOpenChange(false);
         router.refresh();
       } catch (err) {
-        toast.error("Agregar失败", {
-          description: err instanceof Error ? err.message : ""
+        toast.error("Error al agregar", {
+          description: err instanceof Error ? err.message : "",
         });
       }
     });
@@ -118,7 +118,7 @@ export function AddTaskDialog({
                   year: "numeric",
                   month: "long",
                   day: "numeric",
-                  weekday: "long"
+                  weekday: "long",
                 })
               : "—"}
           </DialogDescription>
@@ -199,7 +199,7 @@ export function AddTaskDialog({
               {[
                 { value: 0, label: "普通" },
                 { value: 1, label: "高" },
-                { value: 2, label: "紧急" }
+                { value: 2, label: "紧急" },
               ].map((p) => (
                 <button
                   key={p.value}

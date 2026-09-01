@@ -2,8 +2,15 @@
 
 import { useState, useMemo, useTransition } from "react";
 import {
-  Shield, Plus, Search, ChevronDown, ChevronRight,
-  Pencil, Trash2, UserPlus, Landmark
+  Shield,
+  Plus,
+  Search,
+  ChevronDown,
+  ChevronRight,
+  Pencil,
+  Trash2,
+  UserPlus,
+  Landmark,
 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -16,7 +23,7 @@ import {
   PreservationCaseDialog,
   AddTargetDialog,
   AddPropertyDialog,
-  RenewPropertyDialog
+  RenewPropertyDialog,
 } from "./preservation-dialog";
 import {
   PRES_TYPE_CN,
@@ -26,21 +33,21 @@ import {
   classifyExpiry,
   type PreservationCaseRow,
   type MatterOption,
-  type UserOption
+  type UserOption,
 } from "./preservation-types";
 
 const STATUS_FILTERS = [
   { value: "ALL", label: "Ver todos" },
-  { value: "ACTIVE", label: "生效中" },
-  { value: "RENEWED", label: "已续保" },
-  { value: "EXPIRED", label: "已到期" },
-  { value: "LIFTED", label: "已解除" }
+  { value: "ACTIVE", label: "Vigente" },
+  { value: "RENEWED", label: "Renovada" },
+  { value: "EXPIRED", label: "Vencida" },
+  { value: "LIFTED", label: "Levantada" },
 ];
 
 export function PreservationsView({
   items,
   matters,
-  users
+  users,
 }: {
   items: PreservationCaseRow[];
   matters: MatterOption[];
@@ -53,25 +60,35 @@ export function PreservationsView({
 
   const allProperties = useMemo(
     () => items.flatMap((c) => c.targets.flatMap((t) => t.properties)),
-    [items]
+    [items],
   );
-  const activeCount = allProperties.filter((p) => p.status === "ACTIVE" || p.status === "RENEWED").length;
-  const totalAmount = allProperties.reduce((s, p) => s + Number(p.amount ?? 0), 0);
+  const activeCount = allProperties.filter(
+    (p) => p.status === "ACTIVE" || p.status === "RENEWED",
+  ).length;
+  const totalAmount = allProperties.reduce(
+    (s, p) => s + Number(p.amount ?? 0),
+    0,
+  );
   const expiring30 = allProperties.filter((p) => {
     if (p.status !== "ACTIVE" && p.status !== "RENEWED") return false;
     const days = Math.ceil((p.expiryDate.getTime() - Date.now()) / 86400000);
     return days <= 30;
   }).length;
-  const expiredCount = allProperties.filter((p) => p.status === "EXPIRED").length;
+  const expiredCount = allProperties.filter(
+    (p) => p.status === "EXPIRED",
+  ).length;
 
   const filtered = useMemo(() => {
     let list = items;
     if (statusFilter !== "ALL") {
       list = list.filter((c) => {
         const ps = c.targets.flatMap((t) => t.properties);
-        if (statusFilter === "ACTIVE") return ps.some((p) => p.status === "ACTIVE");
-        if (statusFilter === "RENEWED") return ps.some((p) => p.status === "RENEWED");
-        if (statusFilter === "EXPIRED") return ps.some((p) => p.status === "EXPIRED");
+        if (statusFilter === "ACTIVE")
+          return ps.some((p) => p.status === "ACTIVE");
+        if (statusFilter === "RENEWED")
+          return ps.some((p) => p.status === "RENEWED");
+        if (statusFilter === "EXPIRED")
+          return ps.some((p) => p.status === "EXPIRED");
         if (statusFilter === "LIFTED") return c.status === "LIFTED";
         return true;
       });
@@ -83,7 +100,7 @@ export function PreservationsView({
           c.court?.toLowerCase().includes(q) ||
           c.rulingNumber?.toLowerCase().includes(q) ||
           c.targets.some((t) => t.name.toLowerCase().includes(q)) ||
-          c.matter?.title?.toLowerCase().includes(q)
+          c.matter?.title?.toLowerCase().includes(q),
       );
     }
     return list;
@@ -94,59 +111,126 @@ export function PreservationsView({
       <header>
         <h1 className="flex items-center gap-2 text-xl">
           <Shield className="h-5 w-5 text-primary" strokeWidth={1.8} />
-          财产Preservación
+          Preservación de bienes
         </h1>
         <p className="mt-0.5 text-[12px] text-muted-foreground">
-          按被Preservación人及财产跟踪Preservación期限，到期前持续Recordatorios
+          Siga los plazos de la preservación de los bienes y de las personas
+          afectadas, y recuerde antes de que venzan.
         </p>
       </header>
 
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-        <KpiCard label="生效Preservación" value={activeCount} />
-        <KpiCard label="累计Preservación金额" value={formatCurrency(totalAmount)} />
-        <KpiCard label="30天内到期" value={expiring30} tone="warn" />
-        <KpiCard label="已过期未处理" value={expiredCount} tone="danger" />
+        <KpiCard label="Preservación vigente" value={activeCount} />
+        <KpiCard
+          label="Monto total de preservación"
+          value={formatCurrency(totalAmount)}
+        />
+        <KpiCard label="Vence en 30 días" value={expiring30} tone="warn" />
+        <KpiCard
+          label="Vencidas sin gestionar"
+          value={expiredCount}
+          tone="danger"
+        />
       </div>
 
       <div className="flex flex-wrap items-center gap-3">
         <div className="relative flex-1 max-w-xs">
           <Search className="absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
-          <Input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Buscar被Preservación人 / Caso / 法院" className="pl-8 text-xs" />
+          <Input
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Buscar persona afectada / caso / tribunal"
+            className="pl-8 text-xs"
+          />
         </div>
-        <RadioChips items={STATUS_FILTERS} value={statusFilter} onChange={setStatusFilter} />
-        <Button size="sm" onClick={() => setCreateOpen(true)} className="ml-auto gap-1.5">
-          <Plus className="h-3.5 w-3.5" /> 新建Preservación
+        <RadioChips
+          items={STATUS_FILTERS}
+          value={statusFilter}
+          onChange={setStatusFilter}
+        />
+        <Button
+          size="sm"
+          onClick={() => setCreateOpen(true)}
+          className="ml-auto gap-1.5"
+        >
+          <Plus className="h-3.5 w-3.5" /> Nueva preservación
         </Button>
       </div>
 
       {filtered.length === 0 ? (
         <div className="rounded-xl border border-dashed border-border bg-card py-16 text-center">
           <Shield className="mx-auto mb-2 h-8 w-8 text-muted-foreground/40" />
-          <p className="text-sm text-muted-foreground">{search ? `没有匹配「${search}」的Preservación记录` : "还没有Preservación记录"}</p>
+          <p className="text-sm text-muted-foreground">
+            {search
+              ? `No hay registros de preservación que coincidan con "${search}"`
+              : "Aún no hay registros de preservación"}
+          </p>
         </div>
       ) : (
         <div className="space-y-3">
           {filtered.map((cs) => (
-            <CaseCard key={cs.id} caseData={cs} expanded={expandedId === cs.id} onToggle={() => setExpandedId(expandedId === cs.id ? null : cs.id)} matters={matters} users={users} />
+            <CaseCard
+              key={cs.id}
+              caseData={cs}
+              expanded={expandedId === cs.id}
+              onToggle={() =>
+                setExpandedId(expandedId === cs.id ? null : cs.id)
+              }
+              matters={matters}
+              users={users}
+            />
           ))}
         </div>
       )}
 
-      <PreservationCaseDialog open={createOpen} onOpenChange={setCreateOpen} matters={matters} users={users} />
+      <PreservationCaseDialog
+        open={createOpen}
+        onOpenChange={setCreateOpen}
+        matters={matters}
+        users={users}
+      />
     </div>
   );
 }
 
-function KpiCard({ label, value, tone }: { label: string; value: string | number; tone?: "warn" | "danger" }) {
+function KpiCard({
+  label,
+  value,
+  tone,
+}: {
+  label: string;
+  value: string | number;
+  tone?: "warn" | "danger";
+}) {
   return (
     <div className="rounded-lg border border-border bg-card p-3">
       <div className="text-[11px] text-muted-foreground">{label}</div>
-      <div className={cn("mt-1 text-lg font-semibold tabular", tone === "danger" && "text-destructive", tone === "warn" && "text-amber-500")}>{value}</div>
+      <div
+        className={cn(
+          "mt-1 text-lg font-semibold tabular",
+          tone === "danger" && "text-destructive",
+          tone === "warn" && "text-amber-500",
+        )}
+      >
+        {value}
+      </div>
     </div>
   );
 }
 
-function CaseCard({ caseData: cs, expanded, onToggle, matters, users }: { caseData: PreservationCaseRow; expanded: boolean; onToggle: () => void; matters: MatterOption[]; users: UserOption[] }) {
+function CaseCard({
+  caseData: cs,
+  expanded,
+  onToggle,
+  matters,
+  users,
+}: {
+  caseData: PreservationCaseRow;
+  expanded: boolean;
+  onToggle: () => void;
+  matters: MatterOption[];
+  users: UserOption[];
+}) {
   const [, startTransition] = useTransition();
   const [addTargetOpen, setAddTargetOpen] = useState(false);
   const [addPropOpen, setAddPropOpen] = useState<string | null>(null);
@@ -154,80 +238,251 @@ function CaseCard({ caseData: cs, expanded, onToggle, matters, users }: { caseDa
   const [editOpen, setEditOpen] = useState(false);
 
   const allProps = cs.targets.flatMap((t) => t.properties);
-  const worstExpiry = allProps.length ? Math.min(...allProps.map((p) => Math.ceil((p.expiryDate.getTime() - Date.now()) / 86400000))) : null;
+  const worstExpiry = allProps.length
+    ? Math.min(
+        ...allProps.map((p) =>
+          Math.ceil((p.expiryDate.getTime() - Date.now()) / 86400000),
+        ),
+      )
+    : null;
   const expiryInfo = worstExpiry !== null ? classifyExpiry(worstExpiry) : null;
 
   return (
     <div className="rounded-xl border border-border bg-card">
       <div className="flex items-center gap-3 px-4 py-3">
-        <button type="button" onClick={onToggle} className="flex min-w-0 flex-1 items-center gap-3 text-left">
-          {expanded ? <ChevronDown className="h-4 w-4 shrink-0 text-muted-foreground" /> : <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground" />}
+        <button
+          type="button"
+          onClick={onToggle}
+          className="flex min-w-0 flex-1 items-center gap-3 text-left"
+        >
+          {expanded ? (
+            <ChevronDown className="h-4 w-4 shrink-0 text-muted-foreground" />
+          ) : (
+            <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground" />
+          )}
           <Shield className="h-4 w-4 shrink-0 text-primary" strokeWidth={1.8} />
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-2">
-              <span className="text-sm font-medium truncate">{cs.matter ? cs.matter.title : "未关联Caso"}</span>
-              <span className="shrink-0 rounded border px-1.5 py-0.5 text-[10px] text-primary border-primary/30 bg-primary/5">{PRES_TYPE_CN[cs.type]}</span>
-              {expiryInfo && <span className={cn("shrink-0 text-[10px] font-medium", expiryInfo.tone === "danger" ? "text-destructive" : expiryInfo.tone === "warn" ? "text-amber-500" : "text-muted-foreground")}>{expiryInfo.label}</span>}
+              <span className="text-sm font-medium truncate">
+                {cs.matter ? cs.matter.title : "Caso no relacionado"}
+              </span>
+              <span className="shrink-0 rounded border px-1.5 py-0.5 text-[10px] text-primary border-primary/30 bg-primary/5">
+                {PRES_TYPE_CN[cs.type]}
+              </span>
+              {expiryInfo && (
+                <span
+                  className={cn(
+                    "shrink-0 text-[10px] font-medium",
+                    expiryInfo.tone === "danger"
+                      ? "text-destructive"
+                      : expiryInfo.tone === "warn"
+                        ? "text-amber-500"
+                        : "text-muted-foreground",
+                  )}
+                >
+                  {expiryInfo.label}
+                </span>
+              )}
             </div>
             <div className="mt-0.5 text-[11px] text-muted-foreground">
-              {cs.court && <span>{cs.court}</span>}{cs.rulingNumber && <span> · {cs.rulingNumber}</span>}{" · "}{cs.targets.length} 个被Preservación人 · {allProps.length} 项财产
+              {cs.court && <span>{cs.court}</span>}
+              {cs.rulingNumber && <span> · {cs.rulingNumber}</span>}
+              {" · "}
+              {cs.targets.length} personas afectadas · {allProps.length} bienes
             </div>
           </div>
         </button>
         <div className="flex shrink-0 items-center gap-1">
-          <button type="button" onClick={() => setEditOpen(true)} className="rounded-md p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground"><Pencil className="h-3.5 w-3.5" /></button>
-          <button type="button" onClick={() => { if (confirm("确认Eliminar此PreservaciónCaso及所有记录？")) { startTransition(async () => { try { await deletePreservationCase({ id: cs.id }); toast.success("已Eliminar"); } catch { toast.error("Eliminar失败"); } }); } }} className="rounded-md p-1.5 text-muted-foreground hover:bg-muted hover:text-destructive"><Trash2 className="h-3.5 w-3.5" /></button>
+          <button
+            type="button"
+            onClick={() => setEditOpen(true)}
+            className="rounded-md p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground"
+          >
+            <Pencil className="h-3.5 w-3.5" />
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              if (
+                confirm(
+                  "¿Confirmás eliminar este caso de preservación y todos sus registros?",
+                )
+              ) {
+                startTransition(async () => {
+                  try {
+                    await deletePreservationCase({ id: cs.id });
+                    toast.success("Eliminado");
+                  } catch {
+                    toast.error("Error al eliminar");
+                  }
+                });
+              }
+            }}
+            className="rounded-md p-1.5 text-muted-foreground hover:bg-muted hover:text-destructive"
+          >
+            <Trash2 className="h-3.5 w-3.5" />
+          </button>
         </div>
       </div>
 
       {expanded && (
         <div className="border-t border-border px-4 py-3 space-y-4">
           {cs.targets.length === 0 ? (
-            <p className="py-4 text-center text-xs text-muted-foreground">还没有被Preservación人</p>
-          ) : cs.targets.map((target) => (
-            <div key={target.id} className="space-y-2">
-              <div className="flex items-center gap-2">
-                <UserPlus className="h-3.5 w-3.5 text-muted-foreground" />
-                <span className="text-sm font-medium">{target.name}</span>
-                <button type="button" onClick={() => setAddPropOpen(target.id)} className="ml-auto text-[11px] text-primary hover:underline">+ Agregar财产</button>
-              </div>
-              {target.properties.length === 0 ? (
-                <p className="pl-6 text-xs text-muted-foreground">暂无财产记录</p>
-              ) : (
-                <div className="pl-6 space-y-1.5">
-                  {target.properties.map((prop) => {
-                    const days = Math.ceil((prop.expiryDate.getTime() - Date.now()) / 86400000);
-                    const exp = classifyExpiry(days);
-                    const sc = PRES_STATUS_COLOR[prop.status] ?? PRES_STATUS_COLOR.ACTIVE;
-                    return (
-                      <div key={prop.id} className="flex items-center gap-2 rounded-md border border-border bg-background px-3 py-2">
-                        <Landmark className="h-3 w-3 shrink-0 text-muted-foreground" />
-                        <span className="text-xs font-medium">{PROPERTY_TYPE_CN[prop.propertyType]}</span>
-                        {prop.amount && <span className="text-[11px] text-muted-foreground">{formatCurrency(Number(prop.amount))}</span>}
-                        {prop.propertyDetail && <span className="truncate text-[10px] text-muted-foreground">({prop.propertyDetail})</span>}
-                        <span className={cn("ml-auto shrink-0 text-[10px] font-medium", exp.tone === "danger" ? "text-destructive" : exp.tone === "warn" ? "text-amber-500" : "text-muted-foreground")}>{exp.label}</span>
-                        <span className="shrink-0 rounded border px-1.5 py-0 text-[9px]" style={{ borderColor: sc.border, color: sc.text, backgroundColor: sc.bg }}>{PRES_STATUS_CN[prop.status]}</span>
-                        {(prop.status === "ACTIVE" || prop.status === "RENEWED") && (
-                          <>
-                            <button type="button" onClick={() => setRenewPropOpen(prop.id)} className="shrink-0 text-[10px] text-primary hover:underline">续保</button>
-                            <button type="button" onClick={() => { startTransition(async () => { try { const { liftProperty } = await import("@/server/preservations/actions-v2"); await liftProperty(prop.id); toast.success("已解除"); } catch { toast.error("Operación fallida"); } }); }} className="shrink-0 text-[10px] text-muted-foreground hover:text-foreground">解除</button>
-                          </>
-                        )}
-                      </div>
-                    );
-                  })}
+            <p className="py-4 text-center text-xs text-muted-foreground">
+              Todavía no hay personas afectadas
+            </p>
+          ) : (
+            cs.targets.map((target) => (
+              <div key={target.id} className="space-y-2">
+                <div className="flex items-center gap-2">
+                  <UserPlus className="h-3.5 w-3.5 text-muted-foreground" />
+                  <span className="text-sm font-medium">{target.name}</span>
+                  <button
+                    type="button"
+                    onClick={() => setAddPropOpen(target.id)}
+                    className="ml-auto text-[11px] text-primary hover:underline"
+                  >
+                    + Agregar bien
+                  </button>
                 </div>
-              )}
-            </div>
-          ))}
-          <Button size="sm" variant="outline" onClick={() => setAddTargetOpen(true)} className="gap-1 text-xs"><UserPlus className="h-3 w-3" /> Agregar被Preservación人</Button>
+                {target.properties.length === 0 ? (
+                  <p className="pl-6 text-xs text-muted-foreground">
+                    Sin registros de bienes
+                  </p>
+                ) : (
+                  <div className="pl-6 space-y-1.5">
+                    {target.properties.map((prop) => {
+                      const days = Math.ceil(
+                        (prop.expiryDate.getTime() - Date.now()) / 86400000,
+                      );
+                      const exp = classifyExpiry(days);
+                      const sc =
+                        PRES_STATUS_COLOR[prop.status] ??
+                        PRES_STATUS_COLOR.ACTIVE;
+                      return (
+                        <div
+                          key={prop.id}
+                          className="flex items-center gap-2 rounded-md border border-border bg-background px-3 py-2"
+                        >
+                          <Landmark className="h-3 w-3 shrink-0 text-muted-foreground" />
+                          <span className="text-xs font-medium">
+                            {PROPERTY_TYPE_CN[prop.propertyType]}
+                          </span>
+                          {prop.amount && (
+                            <span className="text-[11px] text-muted-foreground">
+                              {formatCurrency(Number(prop.amount))}
+                            </span>
+                          )}
+                          {prop.propertyDetail && (
+                            <span className="truncate text-[10px] text-muted-foreground">
+                              ({prop.propertyDetail})
+                            </span>
+                          )}
+                          <span
+                            className={cn(
+                              "ml-auto shrink-0 text-[10px] font-medium",
+                              exp.tone === "danger"
+                                ? "text-destructive"
+                                : exp.tone === "warn"
+                                  ? "text-amber-500"
+                                  : "text-muted-foreground",
+                            )}
+                          >
+                            {exp.label}
+                          </span>
+                          <span
+                            className="shrink-0 rounded border px-1.5 py-0 text-[9px]"
+                            style={{
+                              borderColor: sc.border,
+                              color: sc.text,
+                              backgroundColor: sc.bg,
+                            }}
+                          >
+                            {PRES_STATUS_CN[prop.status]}
+                          </span>
+                          {(prop.status === "ACTIVE" ||
+                            prop.status === "RENEWED") && (
+                            <>
+                              <button
+                                type="button"
+                                onClick={() => setRenewPropOpen(prop.id)}
+                                className="shrink-0 text-[10px] text-primary hover:underline"
+                              >
+                                Renovar
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  startTransition(async () => {
+                                    try {
+                                      const { liftProperty } =
+                                        await import("@/server/preservations/actions-v2");
+                                      await liftProperty(prop.id);
+                                      toast.success("Levantada");
+                                    } catch {
+                                      toast.error("Operación fallida");
+                                    }
+                                  });
+                                }}
+                                className="shrink-0 text-[10px] text-muted-foreground hover:text-foreground"
+                              >
+                                Levantar
+                              </button>
+                            </>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            ))
+          )}
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => setAddTargetOpen(true)}
+            className="gap-1 text-xs"
+          >
+            <UserPlus className="h-3 w-3" /> Agregar persona afectada
+          </Button>
         </div>
       )}
 
-      <PreservationCaseDialog open={editOpen} onOpenChange={setEditOpen} editCase={cs} matters={matters} users={users} />
-      <AddTargetDialog open={addTargetOpen} onOpenChange={setAddTargetOpen} caseId={cs.id} />
-      {addPropOpen && <AddPropertyDialog open={!!addPropOpen} onOpenChange={(o) => { if (!o) setAddPropOpen(null); }} targetId={addPropOpen} />}
-      {renewPropOpen && (() => { const prop = allProps.find((p) => p.id === renewPropOpen); return prop ? <RenewPropertyDialog open={!!renewPropOpen} onOpenChange={(o) => { if (!o) setRenewPropOpen(null); }} property={prop} /> : null; })()}
+      <PreservationCaseDialog
+        open={editOpen}
+        onOpenChange={setEditOpen}
+        editCase={cs}
+        matters={matters}
+        users={users}
+      />
+      <AddTargetDialog
+        open={addTargetOpen}
+        onOpenChange={setAddTargetOpen}
+        caseId={cs.id}
+      />
+      {addPropOpen && (
+        <AddPropertyDialog
+          open={!!addPropOpen}
+          onOpenChange={(o) => {
+            if (!o) setAddPropOpen(null);
+          }}
+          targetId={addPropOpen}
+        />
+      )}
+      {renewPropOpen &&
+        (() => {
+          const prop = allProps.find((p) => p.id === renewPropOpen);
+          return prop ? (
+            <RenewPropertyDialog
+              open={!!renewPropOpen}
+              onOpenChange={(o) => {
+                if (!o) setRenewPropOpen(null);
+              }}
+              property={prop}
+            />
+          ) : null;
+        })()}
     </div>
   );
 }

@@ -21,7 +21,7 @@ const RECENT_HOURS = 24 * 7;
 const REVIEWABLE_MIMES = new Set([
   "application/pdf",
   "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-  "application/docx"
+  "application/docx",
 ]);
 function isReviewable(mime: string | null | undefined): boolean {
   if (!mime) return false;
@@ -40,13 +40,17 @@ export async function batchReviewMatterDocuments(input: {
   matterId: string;
 }): Promise<BatchReviewSummary> {
   const session = await requireSession();
-  await assertCanAccessMatter(session.user.id, session.user.role, input.matterId);
+  await assertCanAccessMatter(
+    session.user.id,
+    session.user.role,
+    input.matterId,
+  );
 
   // 拿本案 documents 当中可审查的
   const docs = await prisma.document.findMany({
     where: { matterId: input.matterId, deletedAt: null },
     orderBy: { createdAt: "desc" },
-    select: { id: true, name: true, mimeType: true, createdAt: true }
+    select: { id: true, name: true, mimeType: true, createdAt: true },
   });
   const reviewable = docs.filter((d) => isReviewable(d.mimeType));
 
@@ -56,9 +60,9 @@ export async function batchReviewMatterDocuments(input: {
     where: {
       matterId: input.matterId,
       reviewedAt: { gte: cutoff },
-      documentId: { in: reviewable.map((d) => d.id) }
+      documentId: { in: reviewable.map((d) => d.id) },
     },
-    select: { documentId: true }
+    select: { documentId: true },
   });
   const recentSet = new Set(recent.map((r) => r.documentId));
 
@@ -69,7 +73,7 @@ export async function batchReviewMatterDocuments(input: {
       skipped.push({
         documentId: d.id,
         documentName: d.name,
-        reason: `不支持的格式：${d.mimeType ?? "未知"}`
+        reason: `Formato no compatible: ${d.mimeType ?? "desconocido"}`,
       });
       continue;
     }
@@ -77,7 +81,7 @@ export async function batchReviewMatterDocuments(input: {
       skipped.push({
         documentId: d.id,
         documentName: d.name,
-        reason: "7 天内已审查过"
+        reason: "Revisado en los últimos 7 días",
       });
       continue;
     }
@@ -91,7 +95,7 @@ export async function batchReviewMatterDocuments(input: {
       skipped.push({
         documentId: d.id,
         documentName: d.name,
-        reason: `本次跳过（每次最多 ${MAX_DOCS_PER_BATCH} 个，可再次点扫描）`
+        reason: `Se omitió esta vez (máximo ${MAX_DOCS_PER_BATCH} por lote, puede volver a escanear)`,
       });
     }
   }
@@ -104,13 +108,13 @@ export async function batchReviewMatterDocuments(input: {
       reviewed.push({
         documentId: d.id,
         documentName: d.name,
-        itemCount: r.items.length
+        itemCount: r.items.length,
       });
     } catch (err) {
       errors.push({
         documentId: d.id,
         documentName: d.name,
-        error: err instanceof Error ? err.message : "未知错误"
+        error: err instanceof Error ? err.message : "Error desconocido",
       });
     }
   }
@@ -125,8 +129,8 @@ export async function batchReviewMatterDocuments(input: {
       skipped: skipped.length,
       errors: errors.length,
       totalReviewable: reviewable.length,
-      limit: MAX_DOCS_PER_BATCH
-    }
+      limit: MAX_DOCS_PER_BATCH,
+    },
   });
 
   await revalidateMatter(input.matterId);
@@ -135,6 +139,6 @@ export async function batchReviewMatterDocuments(input: {
     matterId: input.matterId,
     reviewed,
     skipped,
-    errors
+    errors,
   };
 }

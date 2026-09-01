@@ -5,7 +5,7 @@ import {
   matterCategoryLabel,
   matterCategoryColor,
   matterCategoryShort,
-  intakeStatusLabel
+  intakeStatusLabel,
 } from "@/lib/enums";
 import { CaseListCard, CaseListHeader } from "./matters-table";
 
@@ -17,7 +17,11 @@ export type IntakeRow = {
   receivedAt: Date;
   client: { id: string; name: string } | null;
   cause: { id: string; name: string } | null;
-  conflictChecks: { id: string; conclusion: string; hits: { severity: ConflictSeverity }[] }[];
+  conflictChecks: {
+    id: string;
+    conclusion: string;
+    hits: { severity: ConflictSeverity }[];
+  }[];
   parties: { name: string }[];
   matter: { id: string; internalCode: string } | null;
   claimAmount?: number | null;
@@ -29,7 +33,7 @@ export type IntakeRow = {
  */
 export function IntakesTable({
   items,
-  kind = "intake"
+  kind = "intake",
 }: {
   items: IntakeRow[];
   kind?: "intake" | "revision";
@@ -38,16 +42,20 @@ export function IntakesTable({
     return (
       <div className="flex flex-col items-center gap-2 rounded-md border border-border bg-card py-20 text-center">
         <div className="text-base text-muted-foreground">
-          {kind === "revision" ? "暂无待补正收案" : "暂无待Aprobación收案"}
+          {kind === "revision"
+            ? "No hay ingresos pendientes de corrección"
+            : "No hay ingresos pendientes de aprobación"}
         </div>
         <div className="text-xs text-muted-foreground/70">
-          {kind === "revision"
-            ? "在 待Aprobación 中拒绝的收案，可补正材料后重新Enviar，会出现在这里"
-            : (
-              <>
-                点击右上角 <span className="text-foreground/80">新建收案</span> 开始
-              </>
-            )}
+          {kind === "revision" ? (
+            "Los ingresos rechazados en Pendiente de aprobación pueden corregir su documentación y volver a Enviar; aparecerán aquí"
+          ) : (
+            <>
+              Haz clic en la esquina superior derecha{" "}
+              <span className="text-foreground/80">Nuevo ingreso</span> para
+              comenzar
+            </>
+          )}
         </div>
       </div>
     );
@@ -59,7 +67,9 @@ export function IntakesTable({
       <ul>
         {items.map((it) => {
           const statusLabel =
-            kind === "revision" ? "待补正" : intakeStatusLabel[it.status] ?? it.status;
+            kind === "revision"
+              ? "待补正"
+              : (intakeStatusLabel[it.status] ?? it.status);
           const dot =
             kind === "revision"
               ? "#B45309" // orange

@@ -11,14 +11,14 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogFooter
+  DialogFooter,
 } from "@/components/ui/dialog";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
-  SelectValue
+  SelectValue,
 } from "@/components/ui/select";
 import { saveMatterCustomValues } from "@/server/custom-fields/actions";
 
@@ -31,7 +31,7 @@ export function CustomFieldsPanel({
   matterId,
   defs,
   values,
-  canEdit
+  canEdit,
 }: {
   matterId: string;
   defs: FieldDef[];
@@ -46,10 +46,15 @@ export function CustomFieldsPanel({
       <header className="flex items-center justify-between border-b border-border px-4 py-2">
         <span className="flex items-center gap-1.5 text-[13px] font-medium">
           <ListChecks className="h-3.5 w-3.5 text-primary" />
-          自定义信息
+          Información personalizada
         </span>
         {canEdit && (
-          <Button variant="ghost" size="sm" className="h-7 gap-1" onClick={() => setEditOpen(true)}>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-7 gap-1"
+            onClick={() => setEditOpen(true)}
+          >
             <Pencil className="h-3 w-3" />
             Editar
           </Button>
@@ -61,7 +66,11 @@ export function CustomFieldsPanel({
           <div key={d.id} className="flex items-baseline gap-2">
             <dt className="shrink-0 text-muted-foreground">{d.label}</dt>
             <dd className="min-w-0 flex-1 truncate text-foreground/90">
-              {values[d.key]?.trim() ? values[d.key] : <span className="text-muted-foreground/50">—</span>}
+              {values[d.key]?.trim() ? (
+                values[d.key]
+              ) : (
+                <span className="text-muted-foreground/50">—</span>
+              )}
             </dd>
           </div>
         ))}
@@ -86,7 +95,7 @@ function EditDialog({
   onClose,
   matterId,
   defs,
-  values
+  values,
 }: {
   open: boolean;
   onClose: () => void;
@@ -108,7 +117,9 @@ function EditDialog({
         toast.success("已Guardar");
         onClose();
       } catch (err) {
-        toast.error("Guardar失败", { description: err instanceof Error ? err.message : "" });
+        toast.error("Guardar失败", {
+          description: err instanceof Error ? err.message : "",
+        });
       }
     });
   }
@@ -125,10 +136,15 @@ function EditDialog({
             <div key={d.id} className="space-y-1">
               <label className="text-xs font-medium text-muted-foreground">
                 {d.label}
-                {d.required && <span className="ml-0.5 text-destructive">*</span>}
+                {d.required && (
+                  <span className="ml-0.5 text-destructive">*</span>
+                )}
               </label>
               {d.fieldType === "SELECT" ? (
-                <Select value={draft[d.key] ?? ""} onValueChange={(v) => set(d.key, v)}>
+                <Select
+                  value={draft[d.key] ?? ""}
+                  onValueChange={(v) => set(d.key, v)}
+                >
                   <SelectTrigger>
                     <SelectValue placeholder="请选择" />
                   </SelectTrigger>
@@ -142,7 +158,13 @@ function EditDialog({
                 </Select>
               ) : (
                 <Input
-                  type={d.fieldType === "NUMBER" ? "number" : d.fieldType === "DATE" ? "date" : "text"}
+                  type={
+                    d.fieldType === "NUMBER"
+                      ? "number"
+                      : d.fieldType === "DATE"
+                        ? "date"
+                        : "text"
+                  }
                   value={draft[d.key] ?? ""}
                   onChange={(e) => set(d.key, e.target.value)}
                 />

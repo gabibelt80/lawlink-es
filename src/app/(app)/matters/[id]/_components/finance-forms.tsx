@@ -363,7 +363,7 @@ export function AddFeeEntrySheet({
                     <SelectItem value="none">不关联</SelectItem>
                     {invoiceRequests.map((r) => (
                       <SelectItem key={r.id} value={r.id}>
-                        ¥{Number(r.amount).toLocaleString()} ·{" "}
+                        ${Number(r.amount).toLocaleString()} ·{" "}
                         {r.title ?? "未命名"} ·{" "}
                         {r.invoiceNo ? `已开具 ${r.invoiceNo}` : r.status}
                       </SelectItem>
@@ -687,7 +687,7 @@ function InvoiceOcrBlock({
           {preview.totalWithTax != null && (
             <div>
               价税合计：
-              <span className="font-mono text-foreground/85">¥{preview.totalWithTax}</span>
+              <span className="font-mono text-foreground/85">${preview.totalWithTax}</span>
             </div>
           )}
         </div>

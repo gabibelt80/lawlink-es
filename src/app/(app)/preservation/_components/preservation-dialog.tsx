@@ -96,7 +96,7 @@ export function PreservationCaseDialog({
           firstDuration: target ? dur : undefined,
           firstExpiryDate: target ? ed : undefined,
         });
-        toast.success(isEdit ? "已Actualizar" : "Preservación已Crear");
+        toast.success(isEdit ? "Actualizado" : "Preservación creada");
         reset();
         onOpenChange(false);
       } catch (err) {
@@ -109,20 +109,20 @@ export function PreservationCaseDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-lg">
         <DialogHeader>
-          <DialogTitle>{isEdit ? "EditarPreservación" : "新建Preservación"}</DialogTitle>
+          <DialogTitle>{isEdit ? "Editar preservación" : "Nueva preservación"}</DialogTitle>
         </DialogHeader>
         <div className="space-y-3">
           <div className="grid grid-cols-2 gap-3">
-            <Field label="关联Caso">
+            <Field label="Caso relacionado">
               <Select value={matterId} onValueChange={setMatterId}>
-                <SelectTrigger className="h-9 text-xs"><SelectValue placeholder="选择Caso（诉前可空）" /></SelectTrigger>
+                <SelectTrigger className="h-9 text-xs"><SelectValue placeholder="Seleccione caso (opcional antes del juicio)" /></SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="__none__">不关联</SelectItem>
+                  <SelectItem value="__none__">Sin relación</SelectItem>
                   {matters.map((m) => <SelectItem key={m.id} value={m.id}>{m.internalCode} {m.title}</SelectItem>)}
                 </SelectContent>
               </Select>
             </Field>
-            <Field label="Preservación类型 *">
+            <Field label="Tipo de preservación *">
               <Select value={type} onValueChange={(v) => setType(v as PreservationType)}>
                 <SelectTrigger className="h-9 text-xs"><SelectValue /></SelectTrigger>
                 <SelectContent>
@@ -130,13 +130,13 @@ export function PreservationCaseDialog({
                 </SelectContent>
               </Select>
             </Field>
-            <Field label="Preservación法院"><Input value={court} onChange={(e) => setCourt(e.target.value)} className="h-9 text-xs" /></Field>
-            <Field label="裁定书编号"><Input value={rulingNumber} onChange={(e) => setRulingNumber(e.target.value)} className="h-9 text-xs font-mono" /></Field>
-            <Field label="跟进负责人">
+            <Field label="Tribunal de preservación"><Input value={court} onChange={(e) => setCourt(e.target.value)} className="h-9 text-xs" /></Field>
+            <Field label="Número de la resolución"><Input value={rulingNumber} onChange={(e) => setRulingNumber(e.target.value)} className="h-9 text-xs font-mono" /></Field>
+            <Field label="Responsable de seguimiento">
               <Select value={ownerId} onValueChange={setOwnerId}>
-                <SelectTrigger className="h-9 text-xs"><SelectValue placeholder="选择" /></SelectTrigger>
+                <SelectTrigger className="h-9 text-xs"><SelectValue placeholder="Seleccione" /></SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="__none__">不指定</SelectItem>
+                  <SelectItem value="__none__">Sin asignar</SelectItem>
                   {users.map((u) => <SelectItem key={u.id} value={u.id}>{u.name}</SelectItem>)}
                 </SelectContent>
               </Select>
@@ -147,11 +147,11 @@ export function PreservationCaseDialog({
           {/* First target + property (create only) */}
           {!isEdit && (
             <div className="rounded-lg border border-dashed border-border p-3 space-y-3">
-              <p className="text-xs font-medium text-muted-foreground">首个被Preservación人及财产（可后续Agregar更多）</p>
-              <Field label="被Preservación人"><Input value={target} onChange={(e) => setTarget(e.target.value)} placeholder="被Preservación人Nombre" className="h-9 text-xs" /></Field>
+              <p className="text-xs font-medium text-muted-foreground">Primera persona afectada y bien (puede agregarse más después)</p>
+              <Field label="Persona afectada"><Input value={target} onChange={(e) => setTarget(e.target.value)} placeholder="Nombre de la persona afectada" className="h-9 text-xs" /></Field>
               {target && (
                 <div className="grid grid-cols-2 gap-3">
-                  <Field label="财产类型 *">
+                  <Field label="Tipo de bien *">
                     <Select value={propertyType} onValueChange={(v) => { setPropertyType(v as PropertyType); setDuration(String(defaultDurationDays(startDate ? new Date(startDate) : new Date(), v as PropertyType))); }}>
                       <SelectTrigger className="h-9 text-xs"><SelectValue /></SelectTrigger>
                       <SelectContent>
@@ -159,10 +159,10 @@ export function PreservationCaseDialog({
                       </SelectContent>
                     </Select>
                   </Field>
-                  <Field label="Preservación金额"><Input type="number" value={amount} onChange={(e) => setAmount(e.target.value)} placeholder="0.00" className="h-9 text-xs font-mono" /></Field>
-                  <Field label="财产详情"><Input value={propertyDetail} onChange={(e) => setPropertyDetail(e.target.value)} placeholder="如：账号/地址/车牌" className="h-9 text-xs" /></Field>
-                  <Field label="生效Fecha"><Input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} className="h-9 text-xs" /></Field>
-                  <Field label="Preservación期限（天）"><Input type="number" value={duration || String(defaultDurationDays(startDate ? new Date(startDate) : new Date(), propertyType))} onChange={(e) => setDuration(e.target.value)} className="h-9 text-xs font-mono" /></Field>
+                  <Field label="Monto de la medida"><Input type="number" value={amount} onChange={(e) => setAmount(e.target.value)} placeholder="0.00" className="h-9 text-xs font-mono" /></Field>
+                  <Field label="Detalle del bien"><Input value={propertyDetail} onChange={(e) => setPropertyDetail(e.target.value)} placeholder="Ej.: cuenta / dirección / placa" className="h-9 text-xs" /></Field>
+                  <Field label="Fecha de vigencia"><Input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} className="h-9 text-xs" /></Field>
+                  <Field label="Plazo de preservación (días)"><Input type="number" value={duration || String(defaultDurationDays(startDate ? new Date(startDate) : new Date(), propertyType))} onChange={(e) => setDuration(e.target.value)} className="h-9 text-xs font-mono" /></Field>
                 </div>
               )}
             </div>
@@ -190,11 +190,11 @@ export function AddTargetDialog({ open, onOpenChange, caseId }: { open: boolean;
     startTransition(async () => {
       try {
         await addTarget({ caseId, name });
-        toast.success("被Preservación人已Agregar");
+        toast.success("Persona afectada agregada");
         setName("");
         onOpenChange(false);
       } catch (err) {
-        toast.error("Agregar失败", { description: err instanceof Error ? err.message : "" });
+        toast.error("Error al agregar", { description: err instanceof Error ? err.message : "" });
       }
     });
   }
@@ -202,8 +202,8 @@ export function AddTargetDialog({ open, onOpenChange, caseId }: { open: boolean;
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-sm">
-        <DialogHeader><DialogTitle>Agregar被Preservación人</DialogTitle></DialogHeader>
-        <Field label="被Preservación人Nombre *"><Input value={name} onChange={(e) => setName(e.target.value)} placeholder="Nombre" className="h-9 text-xs" /></Field>
+        <DialogHeader><DialogTitle>Agregar persona afectada</DialogTitle></DialogHeader>
+        <Field label="Nombre de la persona afectada *"><Input value={name} onChange={(e) => setName(e.target.value)} placeholder="Nombre" className="h-9 text-xs" /></Field>
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)}>Cancelar</Button>
           <Button onClick={handleSubmit} disabled={isPending || !name.trim()} className="gap-1.5">{isPending && <Loader2 className="h-3.5 w-3.5 animate-spin" />}Agregar</Button>
@@ -247,10 +247,10 @@ export function AddPropertyDialog({ open, onOpenChange, targetId }: { open: bool
           duration: dur,
           expiryDate: ed,
         });
-        toast.success("财产已Agregar");
+        toast.success("Bien agregado");
         onOpenChange(false);
       } catch (err) {
-        toast.error("Agregar失败", { description: err instanceof Error ? err.message : "" });
+        toast.error("Error al agregar", { description: err instanceof Error ? err.message : "" });
       }
     });
   }
@@ -258,19 +258,19 @@ export function AddPropertyDialog({ open, onOpenChange, targetId }: { open: bool
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-md">
-        <DialogHeader><DialogTitle>AgregarPreservación财产</DialogTitle></DialogHeader>
+        <DialogHeader><DialogTitle>Agregar bien de preservación</DialogTitle></DialogHeader>
         <div className="space-y-3">
           <div className="grid grid-cols-2 gap-3">
-            <Field label="财产类型 *">
+            <Field label="Tipo de bien *">
               <Select value={propertyType} onValueChange={(v) => { setPropertyType(v as PropertyType); setDuration(String(defaultDurationDays(startDate ? new Date(startDate) : new Date(), v as PropertyType))); }}>
                 <SelectTrigger className="h-9 text-xs"><SelectValue /></SelectTrigger>
                 <SelectContent>{Object.entries(PROPERTY_TYPE_CN).map(([k, v]) => <SelectItem key={k} value={k}>{v}</SelectItem>)}</SelectContent>
               </Select>
             </Field>
-            <Field label="Preservación金额"><Input type="number" value={amount} onChange={(e) => setAmount(e.target.value)} className="h-9 text-xs font-mono" /></Field>
-            <Field label="财产详情"><Input value={propertyDetail} onChange={(e) => setPropertyDetail(e.target.value)} placeholder="如：账号/地址" className="h-9 text-xs" /></Field>
-            <Field label="生效Fecha"><Input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} className="h-9 text-xs" /></Field>
-            <Field label="Preservación期限（天）"><Input type="number" value={duration || String(defaultDurationDays(startDate ? new Date(startDate) : new Date(), propertyType))} onChange={(e) => setDuration(e.target.value)} className="h-9 text-xs font-mono" /></Field>
+            <Field label="Monto de la medida"><Input type="number" value={amount} onChange={(e) => setAmount(e.target.value)} className="h-9 text-xs font-mono" /></Field>
+            <Field label="Detalle del bien"><Input value={propertyDetail} onChange={(e) => setPropertyDetail(e.target.value)} placeholder="Ej.: cuenta / dirección" className="h-9 text-xs" /></Field>
+            <Field label="Fecha de vigencia"><Input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} className="h-9 text-xs" /></Field>
+            <Field label="Plazo de preservación (días)"><Input type="number" value={duration || String(defaultDurationDays(startDate ? new Date(startDate) : new Date(), propertyType))} onChange={(e) => setDuration(e.target.value)} className="h-9 text-xs font-mono" /></Field>
           </div>
         </div>
         <DialogFooter>
@@ -295,10 +295,10 @@ export function RenewPropertyDialog({ open, onOpenChange, property }: { open: bo
     startTransition(async () => {
       try {
         await renewProperty({ propertyId: property.id, newExpiryDate: newExpiry, renewalDuration: d, note });
-        toast.success("续保成功");
+        toast.success("Renovación exitosa");
         onOpenChange(false);
       } catch (err) {
-        toast.error("续保失败", { description: err instanceof Error ? err.message : "" });
+        toast.error("Error al renovar", { description: err instanceof Error ? err.message : "" });
       }
     });
   }
@@ -306,15 +306,15 @@ export function RenewPropertyDialog({ open, onOpenChange, property }: { open: bo
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-sm">
-        <DialogHeader><DialogTitle>续保</DialogTitle></DialogHeader>
+        <DialogHeader><DialogTitle>Renovar</DialogTitle></DialogHeader>
         <div className="space-y-3">
-          <p className="text-xs text-muted-foreground">当前到期日：{property.expiryDate.toLocaleDateString("zh-CN")}</p>
-          <Field label="续保天数"><Input type="number" value={days} onChange={(e) => setDays(e.target.value)} className="h-9 text-xs font-mono" /></Field>
+          <p className="text-xs text-muted-foreground">Fecha de vencimiento actual: {property.expiryDate.toLocaleDateString("es-AR")}</p>
+          <Field label="Días de renovación"><Input type="number" value={days} onChange={(e) => setDays(e.target.value)} className="h-9 text-xs font-mono" /></Field>
           <Field label="Observaciones"><Input value={note} onChange={(e) => setNote(e.target.value)} className="h-9 text-xs" /></Field>
         </div>
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)}>Cancelar</Button>
-          <Button onClick={handleSubmit} disabled={isPending} className="gap-1.5">{isPending && <Loader2 className="h-3.5 w-3.5 animate-spin" />}确认续保</Button>
+          <Button onClick={handleSubmit} disabled={isPending} className="gap-1.5">{isPending && <Loader2 className="h-3.5 w-3.5 animate-spin" />}Confirmar renovación</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
