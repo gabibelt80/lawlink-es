@@ -8,7 +8,7 @@ import {
   DialogContent,
   DialogFooter,
   DialogHeader,
-  DialogTitle
+  DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -16,20 +16,26 @@ import {
   approveSealRequest,
   rejectSealRequest,
   stampSealRequest,
-  cancelSealRequest
+  cancelSealRequest,
 } from "@/server/seals/actions";
 import { normalizeUploadedFilename } from "@/lib/filename";
-import { type SealRequestRow, SEAL_STATUS_CN, SEAL_TYPE_CN } from "./seal-types";
+import {
+  type SealRequestRow,
+  SEAL_STATUS_CN,
+  SEAL_TYPE_CN,
+} from "./seal-types";
 
 type Action = "detail" | "approve" | "reject" | "stamp" | "cancel";
 
 function isPdfFile(file: File) {
-  return file.type === "application/pdf" || file.name.toLowerCase().endsWith(".pdf");
+  return (
+    file.type === "application/pdf" || file.name.toLowerCase().endsWith(".pdf")
+  );
 }
 
 export function SealActionsDialogs({
   target,
-  onClose
+  onClose,
 }: {
   target: { row: SealRequestRow; action: Action };
   onClose: () => void;
@@ -48,48 +54,105 @@ export function SealActionsDialogs({
   return <CancelDialog row={row} onClose={onClose} />;
 }
 
-function SealDetailDialog({ row, onClose }: { row: SealRequestRow; onClose: () => void }) {
-  const draftDocName = row.draftDoc ? normalizeUploadedFilename(row.draftDoc.name) : "";
-  const stampedDocName = row.stampedDoc ? normalizeUploadedFilename(row.stampedDoc.name) : "";
+function SealDetailDialog({
+  row,
+  onClose,
+}: {
+  row: SealRequestRow;
+  onClose: () => void;
+}) {
+  const draftDocName = row.draftDoc
+    ? normalizeUploadedFilename(row.draftDoc.name)
+    : "";
+  const stampedDocName = row.stampedDoc
+    ? normalizeUploadedFilename(row.stampedDoc.name)
+    : "";
 
   return (
     <Dialog open onOpenChange={(o) => !o && onClose()}>
       <DialogContent className="max-h-[88vh] w-[92vw] max-w-2xl overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>用章申请详情</DialogTitle>
+          <DialogTitle>Detalles de la solicitud de uso de sello</DialogTitle>
         </DialogHeader>
         <div className="min-w-0 space-y-2 rounded border border-border bg-muted/20 p-3 text-[12px]">
-          <Field k="流水号" v={row.code} mono />
-          <Field k="状态" v={SEAL_STATUS_CN[row.status] ?? row.status} />
-          <Field k="章种类" v={SEAL_TYPE_CN[row.sealType] ?? row.sealType} />
-          <Field k="申请人" v={row.requestedBy.name} />
+          <Field k="Número de serie" v={row.code} mono />
+          <Field k="Estado" v={SEAL_STATUS_CN[row.status] ?? row.status} />
+          <Field
+            k="Tipo de sello"
+            v={SEAL_TYPE_CN[row.sealType] ?? row.sealType}
+          />
+          <Field k="Solicitante" v={row.requestedBy.name} />
           {row.matter && (
-            <Field k="关联案件" v={`${row.matter.internalCode} ${row.matter.title}`} />
+            <Field
+              k="Caso relacionado"
+              v={`${row.matter.internalCode} ${row.matter.title}`}
+            />
           )}
-          <Field k="文件标题" v={row.documentTitle} />
-          <Field k="事由" v={row.purpose} />
-          <Field k="页数 / 份数" v={`${row.pageCount} 页 × ${row.copies} 份`} />
-          <Field k="骑缝章" v={row.requireCrossPageSeal ? "是" : "否"} />
-          <Field k="紧急程度" v={row.urgency === "URGENT" ? "紧急" : "普通"} />
-          <Field k="提交时间" v={new Date(row.requestedAt).toLocaleString("zh-CN")} />
-          {row.approvedBy && <Field k="审批人" v={row.approvedBy.name} />}
-          {row.approvedAt && <Field k="审批时间" v={new Date(row.approvedAt).toLocaleString("zh-CN")} />}
-          {row.stampedByUser && <Field k="盖章人" v={row.stampedByUser.name} />}
-          {row.stampedAt && <Field k="盖章时间" v={new Date(row.stampedAt).toLocaleString("zh-CN")} />}
-          {row.requestNote && <Field k="申请备注" v={row.requestNote} />}
+          <Field k="Título del documento" v={row.documentTitle} />
+          <Field k="Motivo" v={row.purpose} />
+          <Field
+            k="Páginas / copias"
+            v={`${row.pageCount} páginas × ${row.copies} copias`}
+          />
+          <Field
+            k="Sello transversal"
+            v={row.requireCrossPageSeal ? "Sí" : "No"}
+          />
+          <Field
+            k="Nivel de urgencia"
+            v={row.urgency === "URGENT" ? "Urgente" : "Normal"}
+          />
+          <Field
+            k="Fecha de envío"
+            v={new Date(row.requestedAt).toLocaleString("es-AR")}
+          />
+          {row.approvedBy && <Field k="Aprobador" v={row.approvedBy.name} />}
+          {row.approvedAt && (
+            <Field
+              k="Fecha de aprobación"
+              v={new Date(row.approvedAt).toLocaleString("es-AR")}
+            />
+          )}
+          {row.stampedByUser && (
+            <Field k="Persona que estampó" v={row.stampedByUser.name} />
+          )}
+          {row.stampedAt && (
+            <Field
+              k="Fecha de estampado"
+              v={new Date(row.stampedAt).toLocaleString("es-AR")}
+            />
+          )}
+          {row.requestNote && (
+            <Field k="Nota de solicitud" v={row.requestNote} />
+          )}
           {row.approveNote && (
-            <Field k={row.status === "REJECTED" ? "驳回原因" : "审批意见"} v={row.approveNote} />
+            <Field
+              k={
+                row.status === "REJECTED"
+                  ? "Motivo de rechazo"
+                  : "Comentario de aprobación"
+              }
+              v={row.approveNote}
+            />
           )}
           {row.draftDoc && (
-            <DocumentLink label="待盖章稿" docId={row.draftDoc.id} name={draftDocName} />
+            <DocumentLink
+              label="Borrador para estampado"
+              docId={row.draftDoc.id}
+              name={draftDocName}
+            />
           )}
           {row.stampedDoc && (
-            <DocumentLink label="盖章后文件" docId={row.stampedDoc.id} name={stampedDocName} />
+            <DocumentLink
+              label="Archivo después del estampado"
+              docId={row.stampedDoc.id}
+              name={stampedDocName}
+            />
           )}
         </div>
         <DialogFooter>
           <Button variant="outline" onClick={onClose}>
-            关闭
+            Cerrar
           </Button>
         </DialogFooter>
       </DialogContent>
@@ -100,7 +163,7 @@ function SealDetailDialog({ row, onClose }: { row: SealRequestRow; onClose: () =
 function ApprovalDialog({
   row,
   action,
-  onClose
+  onClose,
 }: {
   row: SealRequestRow;
   action: "approve" | "reject";
@@ -109,7 +172,9 @@ function ApprovalDialog({
   const [note, setNote] = useState("");
   const [mode, setMode] = useState<"approve" | "reject">(action);
   const [pending, startTransition] = useTransition();
-  const draftDocName = row.draftDoc ? normalizeUploadedFilename(row.draftDoc.name) : "";
+  const draftDocName = row.draftDoc
+    ? normalizeUploadedFilename(row.draftDoc.name)
+    : "";
 
   const submit = () => {
     if (mode === "reject" && !note.trim()) {
@@ -143,7 +208,10 @@ function ApprovalDialog({
           <Field k="章种类" v={SEAL_TYPE_CN[row.sealType] ?? row.sealType} />
           <Field k="申请人" v={row.requestedBy.name} />
           {row.matter && (
-            <Field k="关联案件" v={`${row.matter.internalCode} ${row.matter.title}`} />
+            <Field
+              k="关联案件"
+              v={`${row.matter.internalCode} ${row.matter.title}`}
+            />
           )}
           <Field k="文件标题" v={row.documentTitle} />
           <Field k="事由" v={row.purpose} />
@@ -166,7 +234,9 @@ function ApprovalDialog({
               <FileText className="mt-0.5 h-3 w-3 shrink-0" />
               <span className="min-w-0">
                 <span>下载待盖章稿</span>
-                <span className="block truncate text-[11px]">({draftDocName})</span>
+                <span className="block truncate text-[11px]">
+                  ({draftDocName})
+                </span>
               </span>
             </a>
           )}
@@ -194,7 +264,9 @@ function ApprovalDialog({
         <Textarea
           value={note}
           onChange={(e) => setNote(e.target.value)}
-          placeholder={mode === "approve" ? "审批意见 (可选)" : "驳回原因 (必填)"}
+          placeholder={
+            mode === "approve" ? "审批意见 (可选)" : "驳回原因 (必填)"
+          }
           rows={2}
           className="mt-2 text-[12px]"
         />
@@ -213,7 +285,13 @@ function ApprovalDialog({
   );
 }
 
-function StampDialog({ row, onClose }: { row: SealRequestRow; onClose: () => void }) {
+function StampDialog({
+  row,
+  onClose,
+}: {
+  row: SealRequestRow;
+  onClose: () => void;
+}) {
   const [file, setFile] = useState<File | null>(null);
   const [pending, startTransition] = useTransition();
 
@@ -289,7 +367,13 @@ function StampDialog({ row, onClose }: { row: SealRequestRow; onClose: () => voi
   );
 }
 
-function CancelDialog({ row, onClose }: { row: SealRequestRow; onClose: () => void }) {
+function CancelDialog({
+  row,
+  onClose,
+}: {
+  row: SealRequestRow;
+  onClose: () => void;
+}) {
   const [pending, startTransition] = useTransition();
   const submit = () => {
     startTransition(async () => {
@@ -308,7 +392,9 @@ function CancelDialog({ row, onClose }: { row: SealRequestRow; onClose: () => vo
         <DialogHeader>
           <DialogTitle>撤销用章申请</DialogTitle>
         </DialogHeader>
-        <p className="text-[12px] text-muted-foreground">确定撤销 {row.code} ？</p>
+        <p className="text-[12px] text-muted-foreground">
+          确定撤销 {row.code} ？
+        </p>
         <DialogFooter>
           <Button variant="outline" onClick={onClose}>
             取消
@@ -327,14 +413,28 @@ function Field({ k, v, mono }: { k: string; v: string; mono?: boolean }) {
   return (
     <p className="flex min-w-0 items-baseline gap-2 text-[11px]">
       <span className="w-16 shrink-0 text-muted-foreground">{k}</span>
-      <span className={mono ? "min-w-0 break-words font-mono text-foreground" : "min-w-0 break-words text-foreground"}>
+      <span
+        className={
+          mono
+            ? "min-w-0 break-words font-mono text-foreground"
+            : "min-w-0 break-words text-foreground"
+        }
+      >
         {v}
       </span>
     </p>
   );
 }
 
-function DocumentLink({ label, docId, name }: { label: string; docId: string; name: string }) {
+function DocumentLink({
+  label,
+  docId,
+  name,
+}: {
+  label: string;
+  docId: string;
+  name: string;
+}) {
   return (
     <a
       href={`/api/documents/${docId}/download`}

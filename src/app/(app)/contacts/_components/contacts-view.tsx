@@ -3,7 +3,10 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { BookUser, Plus, Pencil, Archive, Check, XCircle } from "lucide-react";
-import type { ExternalContactCategory, ExternalContactStatus } from "@prisma/client";
+import type {
+  ExternalContactCategory,
+  ExternalContactStatus,
+} from "@prisma/client";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
@@ -12,7 +15,7 @@ import { ExternalContactDialog } from "./external-contact-dialog";
 import {
   approveExternalContact,
   archiveExternalContact,
-  rejectExternalContact
+  rejectExternalContact,
 } from "@/server/external-contacts/actions";
 import { toast } from "sonner";
 
@@ -46,21 +49,21 @@ type ExternalContactItem = {
 };
 
 const EXT_CATEGORY_LABEL: Record<ExternalContactCategory, string> = {
-  COURT: "法院",
-  PROSECUTOR: "检察院",
-  POLICE: "公安",
-  NOTARY: "公证处",
-  ARBITRATION: "仲裁",
-  OTHER_FIRM: "他所律师",
-  EXPERT: "鉴定专家",
-  OTHER: "其他"
+  COURT: "Tribunal",
+  PROSECUTOR: "Fiscalía",
+  POLICE: "Policía",
+  NOTARY: "Notaría",
+  ARBITRATION: "Arbitraje",
+  OTHER_FIRM: "Otra firma",
+  EXPERT: "Perito",
+  OTHER: "Otro",
 };
 
 export function ContactsView({
   colleagues,
   externalContacts,
   currentUserId,
-  currentUserRole
+  currentUserRole,
 }: {
   colleagues: ColleagueItem[];
   externalContacts: ExternalContactItem[];
@@ -74,7 +77,9 @@ export function ContactsView({
   const router = useRouter();
   const canReviewContacts =
     currentUserRole === "ADMIN" || currentUserRole === "PRINCIPAL_LAWYER";
-  const pendingCount = externalContacts.filter((c) => c.status === "PENDING_REVIEW").length;
+  const pendingCount = externalContacts.filter(
+    (c) => c.status === "PENDING_REVIEW",
+  ).length;
 
   const filteredExternal = externalContacts.filter((c) => {
     if (filter !== "ALL" && c.category !== filter) return false;
@@ -90,36 +95,43 @@ export function ContactsView({
   });
 
   async function handleArchive(c: ExternalContactItem) {
-    if (!confirm(`归档联系人"${c.name}"？`)) return;
+    if (!confirm(`¿Archivar contacto "${c.name}"?`)) return;
     try {
       await archiveExternalContact(c.id);
-      toast.success("已归档");
+      toast.success("Archivado");
       router.refresh();
     } catch (err) {
-      toast.error("归档失败", { description: err instanceof Error ? err.message : "" });
+      toast.error("Error al archivar", {
+        description: err instanceof Error ? err.message : "",
+      });
     }
   }
 
   async function handleApprove(c: ExternalContactItem) {
-    if (!confirm(`通过联系人"${c.name}"？通过后将对全所展示。`)) return;
+    if (!confirm(`¿Aprobar contacto "${c.name}"? Se mostrará a toda la firma.`))
+      return;
     try {
       await approveExternalContact({ id: c.id });
-      toast.success("已通过");
+      toast.success("Aprobado");
       router.refresh();
     } catch (err) {
-      toast.error("审核失败", { description: err instanceof Error ? err.message : "" });
+      toast.error("Error al revisar", {
+        description: err instanceof Error ? err.message : "",
+      });
     }
   }
 
   async function handleReject(c: ExternalContactItem) {
-    const note = prompt(`驳回联系人"${c.name}"的原因（可选）`);
+    const note = prompt(`Motivo para rechazar "${c.name}" (opcional)`);
     if (note === null) return;
     try {
       await rejectExternalContact({ id: c.id, note });
-      toast.success("已驳回");
+      toast.success("Rechazado");
       router.refresh();
     } catch (err) {
-      toast.error("审核失败", { description: err instanceof Error ? err.message : "" });
+      toast.error("Error al revisar", {
+        description: err instanceof Error ? err.message : "",
+      });
     }
   }
 
@@ -128,19 +140,26 @@ export function ContactsView({
       <header>
         <h1 className="flex items-center gap-2 text-xl">
           <BookUser className="h-5 w-5 text-primary" strokeWidth={1.8} />
-          通讯录
+          Directorio
         </h1>
-        <p className="mt-0.5 text-[12px] text-muted-foreground">本所同事与外部联系人</p>
+        <p className="mt-0.5 text-[12px] text-muted-foreground">
+          Colegas de la firma y contactos externos
+        </p>
       </header>
 
-      {/* 同事 */}
+      {/* Colegas */}
       <div className="space-y-3">
         <header className="flex items-center justify-between">
-          <h2 className="text-sm font-medium">本所同事 ({colleagues.length})</h2>
+          <h2 className="text-sm font-medium">
+            Colegas de la firma ({colleagues.length})
+          </h2>
         </header>
         <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3">
           {colleagues.map((u) => (
-            <div key={u.id} className="flex items-start gap-3 rounded-md border border-border bg-card p-3">
+            <div
+              key={u.id}
+              className="flex items-start gap-3 rounded-md border border-border bg-card p-3"
+            >
               <Avatar className="h-10 w-10 border border-border bg-primary/10">
                 {u.avatar ? <AvatarImage src={u.avatar} alt={u.name} /> : null}
                 <AvatarFallback className="bg-primary/10 text-sm font-semibold text-primary">
@@ -150,7 +169,8 @@ export function ContactsView({
               <div className="min-w-0 flex-1">
                 <div className="truncate text-sm font-medium">{u.name}</div>
                 <div className="text-[11px] text-muted-foreground">
-                  {userRoleLabel[u.role as keyof typeof userRoleLabel] ?? u.role}
+                  {userRoleLabel[u.role as keyof typeof userRoleLabel] ??
+                    u.role}
                 </div>
                 <div className="mt-1 space-y-0.5 text-[11px] text-foreground/80">
                   <div className="truncate font-mono">{u.email}</div>
@@ -162,14 +182,14 @@ export function ContactsView({
         </div>
       </div>
 
-      {/* 外部联系人 */}
+      {/* Contactos externos */}
       <div className="space-y-3">
         <header className="flex items-center justify-between gap-3">
           <h2 className="flex items-center gap-2 text-sm font-medium">
-            外部联系人 ({externalContacts.length})
+            Contactos externos ({externalContacts.length})
             {canReviewContacts && pendingCount > 0 && (
               <span className="rounded-full border border-amber-300/70 bg-amber-100 px-2 py-0.5 text-[10px] font-medium text-amber-700">
-                待审核 {pendingCount}
+                Pendiente de revisión {pendingCount}
               </span>
             )}
           </h2>
@@ -182,7 +202,7 @@ export function ContactsView({
             className="gap-1.5"
           >
             <Plus className="h-3.5 w-3.5" />
-            新增
+            Agregar
           </Button>
         </header>
 
@@ -194,38 +214,40 @@ export function ContactsView({
               "rounded-full border px-3 py-0.5 text-[11px] transition-colors",
               filter === "ALL"
                 ? "border-primary bg-primary/15 text-primary"
-                : "border-border bg-background text-muted-foreground hover:border-input hover:bg-muted hover:text-foreground"
+                : "border-border bg-background text-muted-foreground hover:border-input hover:bg-muted hover:text-foreground",
             )}
           >
-            全部
+            Todos
           </button>
-          {(Object.keys(EXT_CATEGORY_LABEL) as ExternalContactCategory[]).map((c) => (
-            <button
-              key={c}
-              type="button"
-              onClick={() => setFilter(c)}
-              className={cn(
-                "rounded-full border px-3 py-0.5 text-[11px] transition-colors",
-                filter === c
-                  ? "border-primary bg-primary/15 text-primary"
-                  : "border-border bg-background text-muted-foreground hover:border-input hover:bg-muted hover:text-foreground"
-              )}
-            >
-              {EXT_CATEGORY_LABEL[c]}
-            </button>
-          ))}
+          {(Object.keys(EXT_CATEGORY_LABEL) as ExternalContactCategory[]).map(
+            (c) => (
+              <button
+                key={c}
+                type="button"
+                onClick={() => setFilter(c)}
+                className={cn(
+                  "rounded-full border px-3 py-0.5 text-[11px] transition-colors",
+                  filter === c
+                    ? "border-primary bg-primary/15 text-primary"
+                    : "border-border bg-background text-muted-foreground hover:border-input hover:bg-muted hover:text-foreground",
+                )}
+              >
+                {EXT_CATEGORY_LABEL[c]}
+              </button>
+            ),
+          )}
           <input
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="搜索姓名 / 单位 / 电话"
+            placeholder="Buscar nombre / institución / teléfono"
             className="ml-auto h-8 w-48 rounded-md border border-border bg-background px-3 text-xs"
           />
         </div>
 
         {filteredExternal.length === 0 ? (
           <p className="rounded-md border border-dashed border-border bg-background py-8 text-center text-xs text-muted-foreground">
-            暂无匹配联系人
+            No hay contactos coincidentes
           </p>
         ) : (
           <ul className="space-y-1.5">
@@ -247,34 +269,43 @@ export function ContactsView({
                       </span>
                       {c.status === "PENDING_REVIEW" && (
                         <span className="rounded-full border border-amber-300/70 bg-amber-100 px-2 py-0.5 text-[10px] font-medium text-amber-700">
-                          待审核
+                          Pendiente de revisión
                         </span>
                       )}
                       {c.title && (
-                        <span className="text-[11px] text-muted-foreground">{c.title}</span>
+                        <span className="text-[11px] text-muted-foreground">
+                          {c.title}
+                        </span>
                       )}
                     </div>
                     {c.organization && (
-                      <div className="text-[11px] text-foreground/80">{c.organization}</div>
+                      <div className="text-[11px] text-foreground/80">
+                        {c.organization}
+                      </div>
                     )}
                     <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-0.5 text-[11px] text-foreground/80">
                       {c.phone && <span className="font-mono">{c.phone}</span>}
                       {c.email && <span className="font-mono">{c.email}</span>}
-                      {c.wechat && <span>微信 {c.wechat}</span>}
+                      {c.wechat && <span>WeChat {c.wechat}</span>}
                     </div>
                     {c.address && (
-                      <div className="mt-0.5 text-[11px] text-muted-foreground">{c.address}</div>
+                      <div className="mt-0.5 text-[11px] text-muted-foreground">
+                        {c.address}
+                      </div>
                     )}
                     {c.notes && (
-                      <div className="mt-1 text-[11px] italic text-muted-foreground">{c.notes}</div>
+                      <div className="mt-1 text-[11px] italic text-muted-foreground">
+                        {c.notes}
+                      </div>
                     )}
                     {c.status === "PENDING_REVIEW" && (
                       <div className="mt-1 text-[11px] text-muted-foreground">
-                        提交人：{c.createdBy.name}
+                        Enviado por: {c.createdBy.name}
                       </div>
                     )}
                   </div>
-                  {(canEdit || (canReviewContacts && c.status === "PENDING_REVIEW")) && (
+                  {(canEdit ||
+                    (canReviewContacts && c.status === "PENDING_REVIEW")) && (
                     <div className="flex flex-col items-end gap-1">
                       {canReviewContacts && c.status === "PENDING_REVIEW" && (
                         <div className="flex gap-1">
@@ -286,7 +317,7 @@ export function ContactsView({
                             className="h-7 gap-1 px-2 text-[11px] text-emerald-600 hover:text-emerald-700"
                           >
                             <Check className="h-3 w-3" />
-                            通过
+                            Aprobar
                           </Button>
                           <Button
                             type="button"
@@ -296,7 +327,7 @@ export function ContactsView({
                             className="h-7 gap-1 px-2 text-[11px] text-destructive"
                           >
                             <XCircle className="h-3 w-3" />
-                            驳回
+                            Rechazar
                           </Button>
                         </div>
                       )}
@@ -334,7 +365,11 @@ export function ContactsView({
         )}
       </div>
 
-      <ExternalContactDialog open={dialogOpen} onOpenChange={setDialogOpen} editing={editing} />
+      <ExternalContactDialog
+        open={dialogOpen}
+        onOpenChange={setDialogOpen}
+        editing={editing}
+      />
     </div>
   );
 }

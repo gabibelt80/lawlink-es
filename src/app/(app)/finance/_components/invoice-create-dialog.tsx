@@ -3,7 +3,15 @@
 import { useEffect, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { Loader2, Paperclip, FileText, X, Receipt, Search, Building2 } from "lucide-react";
+import {
+  Loader2,
+  Paperclip,
+  FileText,
+  X,
+  Receipt,
+  Search,
+  Building2,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -14,20 +22,20 @@ import {
   DialogDescription,
   DialogFooter,
   DialogHeader,
-  DialogTitle
+  DialogTitle,
 } from "@/components/ui/dialog";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
-  SelectValue
+  SelectValue,
 } from "@/components/ui/select";
 import { RadioChips } from "@/components/ui/radio-chips";
 import {
   createInvoiceRequest,
   getMatterInvoiceContext,
-  searchMattersForInvoice
+  searchMattersForInvoice,
 } from "@/server/finance/actions";
 import { uploadDocument } from "@/server/documents/actions";
 import { cn } from "@/lib/utils";
@@ -35,19 +43,24 @@ import { cn } from "@/lib/utils";
 type InvoiceType = "PLAIN" | "SPECIAL";
 type InvoiceItem = "LAWYER_FEE" | "CONSULTING_FEE" | "AGENCY_FEE" | "OTHER";
 type MatterRef = { id: string; internalCode: string; title: string };
-type ClientOption = { id: string; name: string; taxNo: string | null; isPrimary: boolean };
+type ClientOption = {
+  id: string;
+  name: string;
+  taxNo: string | null;
+  isPrimary: boolean;
+};
 
 const INVOICE_ITEM_OPTIONS: { value: InvoiceItem; label: string }[] = [
-  { value: "LAWYER_FEE", label: "律师服务费" },
-  { value: "CONSULTING_FEE", label: "法律咨询费" },
-  { value: "AGENCY_FEE", label: "代理费" },
-  { value: "OTHER", label: "其他法律服务" }
+  { value: "LAWYER_FEE", label: "Honorarios de abogados" },
+  { value: "CONSULTING_FEE", label: "Honorarios de asesoría legal" },
+  { value: "AGENCY_FEE", label: "Honorarios de representación" },
+  { value: "OTHER", label: "Otros servicios legales" },
 ];
 
 export function InvoiceCreateDialog({
   open,
   onOpenChange,
-  canCreateUnlinkedInvoice = false
+  canCreateUnlinkedInvoice = false,
 }: {
   open: boolean;
   onOpenChange: (o: boolean) => void;
@@ -160,27 +173,48 @@ export function InvoiceCreateDialog({
   function handleFiles(list: FileList | null) {
     if (!list) return;
     const arr = Array.from(list).filter((f) => f.size <= 20 * 1024 * 1024);
-    if (arr.length < list.length) toast.warning("跳过了超过 20MB 的文件");
+    if (arr.length < list.length)
+      toast.warning("Se omitieron archivos mayores a 20 MB");
     setEvidenceFiles((prev) => [...prev, ...arr]);
     if (fileRef.current) fileRef.current.value = "";
   }
 
   function submit() {
     const amt = Number(amount);
-    if (!amt || amt <= 0) return toast.warning("请填写金额");
-    if (!noMatter && !selectedMatter) return toast.warning("请选择关联案件，或勾选「无关联案件」");
-    if (noMatter && !noMatterReason.trim()) return toast.warning("无关联案件时请说明原因");
-    if (!invoiceType) return toast.warning("请选择开票类型");
-    if (!buyerName.trim()) return toast.warning("请填写开票抬头");
+    if (!amt || amt <= 0) return toast.warning("Ingrese el monto");
+    if (!noMatter && !selectedMatter)
+      return toast.warning(
+        "Seleccione un caso relacionado o marque «Sin caso relacionado»",
+      );
+    if (noMatter && !noMatterReason.trim())
+      return toast.warning("Indique el motivo si no hay caso relacionado");
+    if (!invoiceType) return toast.warning("Seleccione el tipo de factura");
+    if (!buyerName.trim())
+      return toast.warning("Ingrese el nombre del titular de la factura");
     if (invoiceType === "SPECIAL") {
-      if (!buyerTaxNo.trim()) return toast.warning("专票必须填写纳税人识别号");
-      if (!buyerAddress.trim()) return toast.warning("专票必须填写购方地址");
-      if (!buyerPhone.trim()) return toast.warning("专票必须填写购方电话");
-      if (!buyerBank.trim()) return toast.warning("专票必须填写开户银行");
-      if (!buyerBankAccount.trim()) return toast.warning("专票必须填写银行账号");
+      if (!buyerTaxNo.trim())
+        return toast.warning(
+          "La factura especial debe incluir el número de identificación fiscal",
+        );
+      if (!buyerAddress.trim())
+        return toast.warning(
+          "La factura especial debe incluir la dirección del comprador",
+        );
+      if (!buyerPhone.trim())
+        return toast.warning(
+          "La factura especial debe incluir el teléfono del comprador",
+        );
+      if (!buyerBank.trim())
+        return toast.warning("La factura especial debe incluir el banco");
+      if (!buyerBankAccount.trim())
+        return toast.warning(
+          "La factura especial debe incluir la cuenta bancaria",
+        );
     }
     if (!noMatter && evidenceFiles.length === 0) {
-      return toast.warning("请上传开票依据（扫描版委托合同等）");
+      return toast.warning(
+        "Adjunte la base de la factura (contrato de mandato escaneado, etc.)",
+      );
     }
 
     startTransition(async () => {
@@ -195,7 +229,7 @@ export function InvoiceCreateDialog({
             fd.set("name", file.name);
             fd.set("category", "OTHER");
             fd.set("encrypted", "true");
-            fd.set("tags", "开票依据");
+            fd.set("tags", "Base de la factura");
             fd.set("file", file);
             const doc = await uploadDocument(fd);
             docIds.push(doc.id);
@@ -214,13 +248,15 @@ export function InvoiceCreateDialog({
           buyerBank: isSpecial ? buyerBank : null,
           buyerBankAccount: isSpecial ? buyerBankAccount : null,
           evidenceDocIds: docIds,
-          requestNote
+          requestNote,
         });
-        toast.success("开票申请已提交");
+        toast.success("La solicitud de factura fue enviada");
         onOpenChange(false);
         router.refresh();
       } catch (err) {
-        toast.error("提交失败", { description: err instanceof Error ? err.message : "" });
+        toast.error("Error al enviar", {
+          description: err instanceof Error ? err.message : "",
+        });
       }
     });
   }
@@ -231,18 +267,18 @@ export function InvoiceCreateDialog({
         <DialogHeader className="border-b border-border px-5 py-3">
           <DialogTitle className="flex items-center gap-2">
             <Receipt className="h-4 w-4 text-primary" />
-            申请开具发票
+            Solicitar emisión de factura
           </DialogTitle>
           <DialogDescription className="text-xs">
             {canCreateUnlinkedInvoice
-              ? "选择本人可关联的案件，或对无关联案件开票（须说明原因）"
-              : "选择本人可关联的案件后提交开票申请"}
+              ? "Seleccione un caso relacionado con usted o emita una factura sin caso relacionado (debe indicar el motivo)"
+              : "Seleccione un caso relacionado con usted para enviar la solicitud de factura"}
           </DialogDescription>
         </DialogHeader>
 
         <div className="flex-1 space-y-4 overflow-y-auto px-5 py-4">
           {/* 关联案件 */}
-          <Field label="关联案件" required>
+          <Field label="Caso relacionado" required>
             <div className="space-y-2">
               {canCreateUnlinkedInvoice && (
                 <label className="flex items-center gap-1.5 text-[12px] text-muted-foreground">
@@ -258,14 +294,15 @@ export function InvoiceCreateDialog({
                       }
                     }}
                   />
-                  无关联案件（如所务、咨询等非案件收入）
+                  Sin caso relacionado (por ejemplo, ingresos de gestión
+                  interna, consultoría y otros ingresos no vinculados a un caso)
                 </label>
               )}
 
               {canCreateUnlinkedInvoice && noMatter ? (
                 <Textarea
                   rows={2}
-                  placeholder="请说明无关联案件的具体原因（必填）"
+                  placeholder="Describa el motivo específico para no tener un caso relacionado (obligatorio)"
                   value={noMatterReason}
                   onChange={(e) => setNoMatterReason(e.target.value)}
                 />
@@ -273,7 +310,9 @@ export function InvoiceCreateDialog({
                 <div className="flex items-center justify-between rounded-md border border-border bg-muted/30 px-3 py-2 text-xs">
                   <span className="inline-flex items-center gap-1.5">
                     <Building2 className="h-3.5 w-3.5 text-primary" />
-                    <span className="font-mono text-muted-foreground">{selectedMatter.internalCode}</span>
+                    <span className="font-mono text-muted-foreground">
+                      {selectedMatter.internalCode}
+                    </span>
                     <span className="truncate">{selectedMatter.title}</span>
                   </span>
                   <button
@@ -291,7 +330,7 @@ export function InvoiceCreateDialog({
                     <Input
                       value={matterQuery}
                       onChange={(e) => runSearch(e.target.value)}
-                      placeholder="搜索案件名称 / 系统编号 / 所内案号"
+                      placeholder="Buscar nombre del caso / código del sistema / número interno del caso"
                       className="h-8 pl-7 text-xs"
                     />
                   </div>
@@ -302,7 +341,9 @@ export function InvoiceCreateDialog({
                       </div>
                     ) : matterResults.length === 0 ? (
                       <p className="rounded-md border border-dashed border-border bg-background py-4 text-center text-xs text-muted-foreground">
-                        {matterQuery.trim() ? "无匹配案件" : "暂无可关联案件"}
+                        {matterQuery.trim()
+                          ? "No hay casos coincidentes"
+                          : "No hay casos relacionados disponibles"}
                       </p>
                     ) : (
                       matterResults.map((m) => (
@@ -312,7 +353,9 @@ export function InvoiceCreateDialog({
                           onClick={() => pickMatter(m)}
                           className="flex w-full flex-col rounded-sm border border-border bg-background px-2 py-1.5 text-left text-xs transition-colors hover:border-input hover:bg-muted hover:text-foreground"
                         >
-                          <span className="font-mono text-[10.5px] text-muted-foreground">{m.internalCode}</span>
+                          <span className="font-mono text-[10.5px] text-muted-foreground">
+                            {m.internalCode}
+                          </span>
                           <span className="truncate">{m.title}</span>
                         </button>
                       ))
@@ -325,7 +368,7 @@ export function InvoiceCreateDialog({
 
           {/* 金额 + 类型 */}
           <div className="grid grid-cols-2 gap-3">
-            <Field label="开票金额（元）" required>
+            <Field label="Monto de la factura (¥)" required>
               <Input
                 type="number"
                 step="0.01"
@@ -336,42 +379,59 @@ export function InvoiceCreateDialog({
                 onChange={(e) => setAmount(e.target.value)}
               />
             </Field>
-            <Field label="开票类型" required>
-              <Select value={invoiceType ?? undefined} onValueChange={(v) => setInvoiceType(v as InvoiceType)}>
+            <Field label="Tipo de factura" required>
+              <Select
+                value={invoiceType ?? undefined}
+                onValueChange={(v) => setInvoiceType(v as InvoiceType)}
+              >
                 <SelectTrigger>
-                  <SelectValue placeholder="请选择" />
+                  <SelectValue placeholder="Seleccione" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="PLAIN">普通发票</SelectItem>
-                  <SelectItem value="SPECIAL">增值税专用发票</SelectItem>
+                  <SelectItem value="PLAIN">Factura ordinaria</SelectItem>
+                  <SelectItem value="SPECIAL">
+                    Factura especial de IVA
+                  </SelectItem>
                 </SelectContent>
               </Select>
             </Field>
           </div>
 
-          <Field label="开票名目" required>
-            <RadioChips items={INVOICE_ITEM_OPTIONS} value={invoiceItem} onChange={(v) => setInvoiceItem(v as InvoiceItem)} />
+          <Field label="Concepto de la factura" required>
+            <RadioChips
+              items={INVOICE_ITEM_OPTIONS}
+              value={invoiceItem}
+              onChange={(v) => setInvoiceItem(v as InvoiceItem)}
+            />
           </Field>
 
           {/* 抬头 */}
-          <Field label="开票抬头（客户）" required hint={clientOptions.length > 0 ? "选项为所选案件的关联客户" : undefined}>
+          <Field
+            label="Titular de la factura (cliente)"
+            required
+            hint={
+              clientOptions.length > 0
+                ? "Las opciones corresponden a los clientes asociados al caso seleccionado"
+                : undefined
+            }
+          >
             {!noMatter && clientOptions.length > 0 ? (
               <Select onValueChange={pickClient}>
                 <SelectTrigger>
-                  <SelectValue placeholder="请选择开票抬头" />
+                  <SelectValue placeholder="Seleccione el titular de la factura" />
                 </SelectTrigger>
                 <SelectContent>
                   {clientOptions.map((c) => (
                     <SelectItem key={c.id} value={c.id}>
                       {c.name}
-                      {c.isPrimary ? "（主要客户）" : ""}
+                      {c.isPrimary ? " (cliente principal)" : ""}
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
             ) : (
               <Input
-                placeholder="如：上海某某科技有限公司 / 张三"
+                placeholder="Ej.: Shanghai X Tech Co., Ltd. / Juan Pérez"
                 value={buyerName}
                 onChange={(e) => setBuyerName(e.target.value)}
               />
@@ -381,23 +441,41 @@ export function InvoiceCreateDialog({
           {/* 专票六要素 */}
           {invoiceType === "SPECIAL" && (
             <div className="space-y-3 rounded-md border border-primary/30 bg-primary/5 p-3">
-              <Field label="纳税人识别号" required>
-                <Input className="font-mono" value={buyerTaxNo} onChange={(e) => setBuyerTaxNo(e.target.value)} />
+              <Field label="Número de identificación fiscal" required>
+                <Input
+                  className="font-mono"
+                  value={buyerTaxNo}
+                  onChange={(e) => setBuyerTaxNo(e.target.value)}
+                />
               </Field>
               <div className="grid grid-cols-2 gap-3">
-                <Field label="开户银行" required>
-                  <Input value={buyerBank} onChange={(e) => setBuyerBank(e.target.value)} />
+                <Field label="Banco" required>
+                  <Input
+                    value={buyerBank}
+                    onChange={(e) => setBuyerBank(e.target.value)}
+                  />
                 </Field>
-                <Field label="银行账号" required>
-                  <Input className="font-mono" value={buyerBankAccount} onChange={(e) => setBuyerBankAccount(e.target.value)} />
+                <Field label="Cuenta bancaria" required>
+                  <Input
+                    className="font-mono"
+                    value={buyerBankAccount}
+                    onChange={(e) => setBuyerBankAccount(e.target.value)}
+                  />
                 </Field>
               </div>
               <div className="grid grid-cols-2 gap-3">
-                <Field label="购方地址" required>
-                  <Input value={buyerAddress} onChange={(e) => setBuyerAddress(e.target.value)} />
+                <Field label="Dirección del comprador" required>
+                  <Input
+                    value={buyerAddress}
+                    onChange={(e) => setBuyerAddress(e.target.value)}
+                  />
                 </Field>
-                <Field label="购方电话" required>
-                  <Input className="font-mono" value={buyerPhone} onChange={(e) => setBuyerPhone(e.target.value)} />
+                <Field label="Teléfono del comprador" required>
+                  <Input
+                    className="font-mono"
+                    value={buyerPhone}
+                    onChange={(e) => setBuyerPhone(e.target.value)}
+                  />
                 </Field>
               </div>
             </div>
@@ -406,27 +484,51 @@ export function InvoiceCreateDialog({
           {/* 依据：仅关联案件时必传 */}
           {!noMatter && (
             <Field
-              label="开票依据"
+              label="Base de la factura"
               required
-              hint="扫描版委托合同等，单文件 ≤ 20MB"
+              hint="Contrato de mandato escaneado, etc.; cada archivo ≤ 20 MB"
               action={
-                <Button type="button" variant="outline" size="sm" onClick={() => fileRef.current?.click()} className="h-7 gap-1.5 px-2 text-[11px]">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => fileRef.current?.click()}
+                  className="h-7 gap-1.5 px-2 text-[11px]"
+                >
                   <Paperclip className="h-3.5 w-3.5" />
-                  添加文件
+                  Agregar archivo
                 </Button>
               }
             >
               <div className="space-y-2">
-                <input ref={fileRef} type="file" multiple accept="image/*,application/pdf" className="hidden" onChange={(e) => handleFiles(e.target.files)} />
+                <input
+                  ref={fileRef}
+                  type="file"
+                  multiple
+                  accept="image/*,application/pdf"
+                  className="hidden"
+                  onChange={(e) => handleFiles(e.target.files)}
+                />
                 {evidenceFiles.length === 0 ? (
-                  <p className="rounded-md border border-dashed border-border bg-background py-3 text-center text-xs text-muted-foreground">未选择任何文件</p>
+                  <p className="rounded-md border border-dashed border-border bg-background py-3 text-center text-xs text-muted-foreground">
+                    No se seleccionó ningún archivo
+                  </p>
                 ) : (
                   <ul className="space-y-1.5">
                     {evidenceFiles.map((f, i) => (
-                      <li key={i} className="flex items-center gap-2 rounded-md border border-border bg-background px-3 py-2 text-xs">
+                      <li
+                        key={i}
+                        className="flex items-center gap-2 rounded-md border border-border bg-background px-3 py-2 text-xs"
+                      >
                         <FileText className="h-3.5 w-3.5 text-primary" />
                         <span className="flex-1 truncate">{f.name}</span>
-                        <button type="button" onClick={() => setEvidenceFiles((c) => c.filter((_, j) => j !== i))} className="text-muted-foreground hover:text-destructive">
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setEvidenceFiles((c) => c.filter((_, j) => j !== i))
+                          }
+                          className="text-muted-foreground hover:text-destructive"
+                        >
                           <X className="h-3 w-3" />
                         </button>
                       </li>
@@ -437,18 +539,27 @@ export function InvoiceCreateDialog({
             </Field>
           )}
 
-          <Field label="申请备注（可选）">
-            <Textarea rows={2} value={requestNote} onChange={(e) => setRequestNote(e.target.value)} />
+          <Field label="Nota de la solicitud (opcional)">
+            <Textarea
+              rows={2}
+              value={requestNote}
+              onChange={(e) => setRequestNote(e.target.value)}
+            />
           </Field>
         </div>
 
         <DialogFooter className="border-t border-border px-5 py-3">
-          <Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={isPending}>
-            取消
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => onOpenChange(false)}
+            disabled={isPending}
+          >
+            Cancelar
           </Button>
           <Button onClick={submit} disabled={isPending} className="gap-1.5">
             {isPending && <Loader2 className="h-4 w-4 animate-spin" />}
-            提交申请
+            Enviar solicitud
           </Button>
         </DialogFooter>
       </DialogContent>
@@ -461,7 +572,7 @@ function Field({
   required,
   hint,
   action,
-  children
+  children,
 }: {
   label: string;
   required?: boolean;

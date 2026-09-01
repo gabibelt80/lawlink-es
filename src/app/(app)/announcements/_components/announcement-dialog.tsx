@@ -15,11 +15,11 @@ import {
   DialogDescription,
   DialogFooter,
   DialogHeader,
-  DialogTitle
+  DialogTitle,
 } from "@/components/ui/dialog";
 import {
   createAnnouncement,
-  updateAnnouncement
+  updateAnnouncement,
 } from "@/server/announcements/actions";
 
 type Editing = {
@@ -42,7 +42,7 @@ function toDateInput(d: Date | null): string {
 export function AnnouncementDialog({
   open,
   onOpenChange,
-  editing
+  editing,
 }: {
   open: boolean;
   onOpenChange: (o: boolean) => void;
@@ -73,7 +73,7 @@ export function AnnouncementDialog({
 
   function handleSave() {
     if (!title.trim() || !content.trim()) {
-      toast.error("标题和内容必填");
+      toast.error("Título y contenido son obligatorios");
       return;
     }
     startTransition(async () => {
@@ -82,20 +82,20 @@ export function AnnouncementDialog({
           title,
           content,
           pinned,
-          expiresAt: expiresAt ? new Date(expiresAt) : null
+          expiresAt: expiresAt ? new Date(expiresAt) : null,
         };
         if (editing) {
           await updateAnnouncement({ ...payload, id: editing.id });
-          toast.success("已更新");
+          toast.success("Actualizado");
         } else {
           await createAnnouncement(payload);
-          toast.success("已发布");
+          toast.success("Publicado");
         }
         onOpenChange(false);
         router.refresh();
       } catch (err) {
-        toast.error("保存失败", {
-          description: err instanceof Error ? err.message : ""
+        toast.error("Error al guardar", {
+          description: err instanceof Error ? err.message : "",
         });
       }
     });
@@ -107,14 +107,19 @@ export function AnnouncementDialog({
         <DialogHeader>
           <DialogTitle>{editing ? "编辑公告" : "发布公告"}</DialogTitle>
           <DialogDescription className="text-xs">
-            置顶公告会显示在全站顶部 banner，设置过期日期后 banner 自动消失（列表仍保留）。
+            置顶公告会显示在全站顶部 banner，设置过期日期后 banner
+            自动消失（列表仍保留）。
           </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-3 py-2">
           <div className="space-y-1.5">
             <Label className="text-xs">标题 *</Label>
-            <Input value={title} onChange={(e) => setTitle(e.target.value)} maxLength={120} />
+            <Input
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              maxLength={120}
+            />
           </div>
 
           <div className="space-y-1.5">
@@ -147,7 +152,11 @@ export function AnnouncementDialog({
         </div>
 
         <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)} disabled={isPending}>
+          <Button
+            variant="outline"
+            onClick={() => onOpenChange(false)}
+            disabled={isPending}
+          >
             取消
           </Button>
           <Button onClick={handleSave} disabled={isPending}>

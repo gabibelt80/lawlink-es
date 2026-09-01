@@ -12,14 +12,14 @@ export function ArchiveTabs({ active, pendingCount }: Props) {
   return (
     <div className="border-b border-border/60 flex items-end gap-1 text-sm">
       <Tab href="/archive?tab=pending" active={active === "pending"}>
-        待审批
+        Pendientes
         {pendingCount > 0 && (
           <span
             className={cn(
               "ml-1.5 inline-flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-[10px]",
               active === "pending"
                 ? "bg-[#9B7BF7] text-white"
-                : "bg-amber-500/20 text-amber-700"
+                : "bg-amber-500/20 text-amber-700",
             )}
           >
             {pendingCount}
@@ -27,7 +27,7 @@ export function ArchiveTabs({ active, pendingCount }: Props) {
         )}
       </Tab>
       <Tab href="/archive" active={active === "approved"}>
-        已归档
+        Archivados
       </Tab>
     </div>
   );
@@ -36,7 +36,7 @@ export function ArchiveTabs({ active, pendingCount }: Props) {
 function Tab({
   href,
   active,
-  children
+  children,
 }: {
   href: string;
   active: boolean;
@@ -49,7 +49,7 @@ function Tab({
         "px-3 py-2 -mb-px border-b-2 transition-colors",
         active
           ? "border-[#9B7BF7] text-foreground font-medium"
-          : "border-transparent text-muted-foreground hover:text-foreground"
+          : "border-transparent text-muted-foreground hover:text-foreground",
       )}
     >
       {children}

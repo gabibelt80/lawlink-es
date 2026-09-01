@@ -11,14 +11,14 @@ import {
   AlertTriangle,
   CheckCircle2,
   ExternalLink,
-  Briefcase
+  Briefcase,
 } from "lucide-react";
 import type {
   ConflictSeverity,
   LitigationStanding,
   MatterCategory,
   MatterStatus,
-  PartyRole
+  PartyRole,
 } from "@prisma/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -28,12 +28,16 @@ import {
   SelectContent,
   SelectItem,
   SelectTrigger,
-  SelectValue
+  SelectValue,
 } from "@/components/ui/select";
 import { toast } from "sonner";
 import { runCheckAndSave } from "@/server/conflicts/actions";
 import { cn } from "@/lib/utils";
-import { litigationStandingLabel, matterCategoryLabel, matterStatusLabel } from "@/lib/enums";
+import {
+  litigationStandingLabel,
+  matterCategoryLabel,
+  matterStatusLabel,
+} from "@/lib/enums";
 import { matterHref } from "@/lib/matters/route";
 
 type QueryRole = "CLIENT_PARTY" | "OPPOSING_PARTY" | "THIRD_PARTY";
@@ -70,17 +74,20 @@ type HitResult = {
   } | null;
 };
 
-const severityStyle: Record<ConflictSeverity, { color: string; bg: string; label: string }> = {
-  BLOCKING: { color: "#B91C1C", bg: "#FBE9E9", label: "阻塞" },
-  HIGH: { color: "#B45309", bg: "#FBEDD8", label: "高" },
-  MEDIUM: { color: "#9A6700", bg: "#FBF1DC", label: "中" },
-  LOW: { color: "#15803D", bg: "#E6F2EC", label: "低" }
+const severityStyle: Record<
+  ConflictSeverity,
+  { color: string; bg: string; label: string }
+> = {
+  BLOCKING: { color: "#B91C1C", bg: "#FBE9E9", label: "Bloqueante" },
+  HIGH: { color: "#B45309", bg: "#FBEDD8", label: "Alto" },
+  MEDIUM: { color: "#9A6700", bg: "#FBF1DC", label: "Medio" },
+  LOW: { color: "#15803D", bg: "#E6F2EC", label: "Bajo" },
 };
 
 const queryRoleOptions: { value: QueryRole; label: string }[] = [
   { value: "CLIENT_PARTY", label: "拟委托方" },
   { value: "OPPOSING_PARTY", label: "相对方" },
-  { value: "THIRD_PARTY", label: "第三人" }
+  { value: "THIRD_PARTY", label: "第三人" },
 ];
 
 const partyRoleLabel: Record<PartyRole, string> = {
@@ -90,7 +97,7 @@ const partyRoleLabel: Record<PartyRole, string> = {
   CO_LITIGANT: "共同诉讼人",
   AGENT: "代理人",
   WITNESS: "证人",
-  OTHER: "其他"
+  OTHER: "其他",
 };
 
 function emptyQuery(): QueryRow {
@@ -113,12 +120,18 @@ export function ConflictsView() {
   }
 
   function updateQuery(idx: number, patch: Partial<QueryRow>) {
-    setQueries((q) => q.map((row, i) => (i === idx ? { ...row, ...patch } : row)));
+    setQueries((q) =>
+      q.map((row, i) => (i === idx ? { ...row, ...patch } : row)),
+    );
   }
 
   function handleRun() {
     const cleaned = queries
-      .map((q) => ({ role: q.role, name: q.name.trim(), idNumber: q.idNumber.trim() }))
+      .map((q) => ({
+        role: q.role,
+        name: q.name.trim(),
+        idNumber: q.idNumber.trim(),
+      }))
       .filter((q) => q.name || q.idNumber);
     if (cleaned.length === 0) {
       toast.warning("请至少填写一个姓名或证件号");
@@ -133,7 +146,7 @@ export function ConflictsView() {
         toast.success(`检索完成，命中 ${res.hits.length} 条`);
       } catch (err) {
         toast.error("检索失败", {
-          description: err instanceof Error ? err.message : ""
+          description: err instanceof Error ? err.message : "",
         });
       }
     });
@@ -154,7 +167,12 @@ export function ConflictsView() {
       <section className="ll-surface p-4">
         <div className="mb-3 flex items-center justify-between">
           <h2 className="ll-panel-title">检索项</h2>
-          <Button variant="outline" size="sm" onClick={addQuery} className="h-7 gap-1">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={addQuery}
+            className="h-7 gap-1"
+          >
             <Plus className="h-3.5 w-3.5" />
             添加检索项
           </Button>
@@ -172,7 +190,9 @@ export function ConflictsView() {
                 </Label>
                 <Select
                   value={q.role}
-                  onValueChange={(value) => updateQuery(idx, { role: value as QueryRole })}
+                  onValueChange={(value) =>
+                    updateQuery(idx, { role: value as QueryRole })
+                  }
                 >
                   <SelectTrigger className="mt-1 h-[34px] bg-card">
                     <SelectValue />
@@ -203,7 +223,9 @@ export function ConflictsView() {
                 </Label>
                 <Input
                   value={q.idNumber}
-                  onChange={(e) => updateQuery(idx, { idNumber: e.target.value })}
+                  onChange={(e) =>
+                    updateQuery(idx, { idNumber: e.target.value })
+                  }
                   placeholder="与姓名至少填一项"
                   className="mt-1 h-[34px] bg-card font-mono"
                 />
@@ -226,11 +248,7 @@ export function ConflictsView() {
         </div>
 
         <div className="mt-4 flex justify-end">
-          <Button
-            onClick={handleRun}
-            disabled={isPending}
-            className="gap-1.5"
-          >
+          <Button onClick={handleRun} disabled={isPending} className="gap-1.5">
             {isPending ? (
               <Loader2 className="h-4 w-4 animate-spin" />
             ) : (
@@ -264,7 +282,10 @@ export function ConflictsView() {
                 const style = severityStyle[h.severity];
                 const targetHref =
                   h.matterInfo?.canViewMatter && h.matterInfo.matterId
-                    ? matterHref({ id: h.matterInfo.matterId, internalCode: h.matterInfo.internalCode })
+                    ? matterHref({
+                        id: h.matterInfo.matterId,
+                        internalCode: h.matterInfo.internalCode,
+                      })
                     : h.targetType === "Client"
                       ? `/clients/${h.targetId}`
                       : null;
@@ -272,25 +293,37 @@ export function ConflictsView() {
                   <li
                     key={h.id}
                     className="rounded-md border p-3"
-                    style={{ borderColor: `${style.color}40`, backgroundColor: style.bg }}
+                    style={{
+                      borderColor: `${style.color}40`,
+                      backgroundColor: style.bg,
+                    }}
                   >
                     <div className="flex items-start justify-between gap-3">
                       <div className="flex-1 overflow-hidden">
                         <div className="flex items-center gap-2">
-                          <AlertTriangle className="h-3.5 w-3.5" style={{ color: style.color }} />
+                          <AlertTriangle
+                            className="h-3.5 w-3.5"
+                            style={{ color: style.color }}
+                          />
                           <span
                             className="text-xs font-semibold uppercase tracking-wider"
                             style={{ color: style.color }}
                           >
                             {style.label}
                           </span>
-                          <span className={cn("text-xs text-muted-foreground")}>·</span>
+                          <span className={cn("text-xs text-muted-foreground")}>
+                            ·
+                          </span>
                           <span className="text-xs text-muted-foreground">
-                            {h.hitType === "HISTORICAL_CLIENT" ? "历史客户" : "历史案件"}
+                            {h.hitType === "HISTORICAL_CLIENT"
+                              ? "历史客户"
+                              : "历史案件"}
                           </span>
                         </div>
                         <p className="mt-1.5 text-sm">{h.reason}</p>
-                        {h.matterInfo && <MatterContext info={h.matterInfo} hit={h} />}
+                        {h.matterInfo && (
+                          <MatterContext info={h.matterInfo} hit={h} />
+                        )}
                         <div className="mt-1 font-mono text-[11px] text-muted-foreground">
                           匹配字段：{h.matchedField} = {h.matchedValue}
                           {h.matchedRatio !== null && h.matchedRatio < 1 && (
@@ -326,7 +359,7 @@ function summarizeResults(results: HitResult[] | null) {
     BLOCKING: 0,
     HIGH: 0,
     MEDIUM: 0,
-    LOW: 0
+    LOW: 0,
   };
   for (const hit of results ?? []) {
     counts[hit.severity] += 1;
@@ -334,7 +367,11 @@ function summarizeResults(results: HitResult[] | null) {
   return counts;
 }
 
-function ConflictSummaryBar({ counts }: { counts: Record<ConflictSeverity, number> }) {
+function ConflictSummaryBar({
+  counts,
+}: {
+  counts: Record<ConflictSeverity, number>;
+}) {
   const hasBlocking = counts.BLOCKING > 0;
   const total = counts.BLOCKING + counts.HIGH + counts.MEDIUM + counts.LOW;
 
@@ -359,7 +396,7 @@ function ConflictSummaryBar({ counts }: { counts: Record<ConflictSeverity, numbe
 function RiskCount({
   severity,
   label,
-  count
+  count,
 }: {
   severity: ConflictSeverity;
   label: string;
@@ -382,14 +419,24 @@ function RiskCount({
   );
 }
 
-function MatterContext({ info, hit }: { info: NonNullable<HitResult["matterInfo"]>; hit: HitResult }) {
+function MatterContext({
+  info,
+  hit,
+}: {
+  info: NonNullable<HitResult["matterInfo"]>;
+  hit: HitResult;
+}) {
   const causeOrCategory = info.causeText ?? matterCategoryLabel[info.category];
   return (
     <div className="mt-2 rounded border border-border/80 bg-background/70 p-2.5 text-[12px]">
       <div className="mb-2 flex items-center gap-1.5">
         <Briefcase className="h-3.5 w-3.5 text-muted-foreground" />
-        <span className="font-mono text-[11px] text-muted-foreground">{info.internalCode}</span>
-        <span className="min-w-0 truncate font-medium text-foreground">{info.title}</span>
+        <span className="font-mono text-[11px] text-muted-foreground">
+          {info.internalCode}
+        </span>
+        <span className="min-w-0 truncate font-medium text-foreground">
+          {info.title}
+        </span>
       </div>
       <div className="grid grid-cols-2 gap-x-4 gap-y-1.5 text-muted-foreground md:grid-cols-3">
         <Field label="系统收案">{formatDate(info.intakeDate)}</Field>
@@ -398,7 +445,9 @@ function MatterContext({ info, hit }: { info: NonNullable<HitResult["matterInfo"
         <Field label="主办律师">{info.ownerName ?? "—"}</Field>
         <Field label="命中角色">
           {partyRoleLabel[info.partyRole]}
-          {info.partyStanding ? ` · ${litigationStandingLabel[info.partyStanding]}` : ""}
+          {info.partyStanding
+            ? ` · ${litigationStandingLabel[info.partyStanding]}`
+            : ""}
         </Field>
         <Field label="命中主体">{hit.matchedName}</Field>
       </div>
@@ -406,7 +455,13 @@ function MatterContext({ info, hit }: { info: NonNullable<HitResult["matterInfo"
   );
 }
 
-function Field({ label, children }: { label: string; children: React.ReactNode }) {
+function Field({
+  label,
+  children,
+}: {
+  label: string;
+  children: React.ReactNode;
+}) {
   return (
     <div className="flex min-w-0 gap-1.5">
       <span className="shrink-0 text-muted-foreground/70">{label}：</span>

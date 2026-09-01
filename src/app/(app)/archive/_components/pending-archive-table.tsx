@@ -11,13 +11,13 @@ import {
   Check,
   X,
   Loader2,
-  AlertTriangle
+  AlertTriangle,
 } from "lucide-react";
 import {
   approveArchiveRecord,
   rejectArchiveRecord,
   batchApproveArchiveRecords,
-  batchRejectArchiveRecords
+  batchRejectArchiveRecords,
 } from "@/server/archive/actions";
 import { CLOSED_REASON_CN } from "@/server/archive/schemas";
 import {
@@ -26,7 +26,7 @@ import {
   DialogDescription,
   DialogFooter,
   DialogHeader,
-  DialogTitle
+  DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -42,7 +42,7 @@ const CATEGORY_CN: Record<string, string> = {
   ADMINISTRATIVE: "行政",
   NON_LITIGATION: "非诉",
   LEGAL_COUNSEL: "顾问",
-  SPECIAL_PROJECT: "专项"
+  SPECIAL_PROJECT: "专项",
 };
 
 interface PendingRecord {
@@ -72,12 +72,15 @@ export function PendingArchiveTable({ records }: { records: PendingRecord[] }) {
     record: PendingRecord;
   } | null>(null);
   const [selected, setSelected] = useState<Set<string>>(new Set());
-  const [batchAction, setBatchAction] = useState<"approve" | "reject" | null>(null);
+  const [batchAction, setBatchAction] = useState<"approve" | "reject" | null>(
+    null,
+  );
 
   if (records.length === 0) {
     return (
       <div className="rounded-lg border border-dashed border-border/60 py-16 text-center text-sm text-muted-foreground">
-        当前没有待审批归档申请。律师提交归档后会出现在这里。
+        No hay solicitudes de archivo pendientes por aprobar. Las solicitudes
+        enviadas por los abogados aparecerán aquí.
       </div>
     );
   }
@@ -101,12 +104,15 @@ export function PendingArchiveTable({ records }: { records: PendingRecord[] }) {
 
   return (
     <>
-      {/* 批量操作 toolbar */}
+      {/* Operaciones en lote */}
       {selected.size > 0 && (
         <div className="mb-2 flex items-center justify-between rounded-md border border-primary/40 bg-primary/5 px-3 py-2 text-sm">
           <span>
-            已选 <span className="font-mono font-medium">{selected.size}</span> /{" "}
-            <span className="font-mono text-muted-foreground">{records.length}</span>
+            Seleccionadas{" "}
+            <span className="font-mono font-medium">{selected.size}</span> /{" "}
+            <span className="font-mono text-muted-foreground">
+              {records.length}
+            </span>
           </span>
           <div className="flex items-center gap-2">
             <Button
@@ -114,7 +120,7 @@ export function PendingArchiveTable({ records }: { records: PendingRecord[] }) {
               variant="outline"
               onClick={() => setSelected(new Set())}
             >
-              取消选择
+              Cancelar selección
             </Button>
             <Button
               size="sm"
@@ -122,7 +128,7 @@ export function PendingArchiveTable({ records }: { records: PendingRecord[] }) {
               className="bg-emerald-600 text-white hover:bg-emerald-700"
             >
               <Check className="mr-1 h-3.5 w-3.5" />
-              批量通过
+              Aprobar en lote
             </Button>
             <Button
               size="sm"
@@ -130,7 +136,7 @@ export function PendingArchiveTable({ records }: { records: PendingRecord[] }) {
               onClick={() => setBatchAction("reject")}
             >
               <X className="mr-1 h-3.5 w-3.5" />
-              批量驳回
+              Rechazar en lote
             </Button>
           </div>
         </div>
@@ -142,20 +148,36 @@ export function PendingArchiveTable({ records }: { records: PendingRecord[] }) {
             <tr>
               <th className="px-3 py-2 w-8">
                 <Checkbox
-                  checked={allChecked ? true : indeterminate ? "indeterminate" : false}
+                  checked={
+                    allChecked ? true : indeterminate ? "indeterminate" : false
+                  }
                   onCheckedChange={toggleAll}
-                  aria-label="全选"
+                  aria-label="Seleccionar todo"
                 />
               </th>
-              <th className="px-3 py-2 text-left font-normal w-32">所内案号</th>
-              <th className="px-3 py-2 text-left font-normal">案件</th>
-              <th className="px-3 py-2 text-left font-normal w-20">类别</th>
-              <th className="px-3 py-2 text-left font-normal w-24">委托方</th>
-              <th className="px-3 py-2 text-left font-normal w-20">结案方式</th>
-              <th className="px-3 py-2 text-left font-normal w-28">提交时间</th>
-              <th className="px-3 py-2 text-left font-normal w-20">申请人</th>
-              <th className="px-3 py-2 text-left font-normal w-16">缺项</th>
-              <th className="px-3 py-2 text-right font-normal w-44">操作</th>
+              <th className="px-3 py-2 text-left font-normal w-32">
+                N° de causa interna
+              </th>
+              <th className="px-3 py-2 text-left font-normal">Caso</th>
+              <th className="px-3 py-2 text-left font-normal w-20">
+                Categoría
+              </th>
+              <th className="px-3 py-2 text-left font-normal w-24">Cliente</th>
+              <th className="px-3 py-2 text-left font-normal w-20">
+                Forma de cierre
+              </th>
+              <th className="px-3 py-2 text-left font-normal w-28">
+                Fecha de envío
+              </th>
+              <th className="px-3 py-2 text-left font-normal w-20">
+                Solicitante
+              </th>
+              <th className="px-3 py-2 text-left font-normal w-16">
+                Faltantes
+              </th>
+              <th className="px-3 py-2 text-right font-normal w-44">
+                Acciones
+              </th>
             </tr>
           </thead>
           <tbody className="divide-y divide-border/60">
@@ -165,7 +187,7 @@ export function PendingArchiveTable({ records }: { records: PendingRecord[] }) {
                   <Checkbox
                     checked={selected.has(rec.id)}
                     onCheckedChange={() => toggleOne(rec.id)}
-                    aria-label={`选择 ${rec.archiveNo}`}
+                    aria-label={`Seleccionar ${rec.archiveNo}`}
                   />
                 </td>
                 <td className="px-3 py-2.5 font-mono text-xs text-[#9B7BF7]">
@@ -205,10 +227,12 @@ export function PendingArchiveTable({ records }: { records: PendingRecord[] }) {
                       variant="outline"
                       className="border-amber-500/40 text-amber-500 text-[10px]"
                     >
-                      {rec.missingItems.length} 项
+                      {rec.missingItems.length} items
                     </Badge>
                   ) : (
-                    <span className="text-xs text-muted-foreground">齐</span>
+                    <span className="text-xs text-muted-foreground">
+                      Completo
+                    </span>
                   )}
                 </td>
                 <td className="px-3 py-2.5 text-right">
@@ -218,16 +242,18 @@ export function PendingArchiveTable({ records }: { records: PendingRecord[] }) {
                       onClick={() => setDialog({ type: "detail", record: rec })}
                       className="text-xs text-muted-foreground hover:text-foreground"
                     >
-                      查看
+                      Ver
                     </button>
                     <span className="text-muted-foreground/40">·</span>
                     <button
                       type="button"
-                      onClick={() => setDialog({ type: "approve", record: rec })}
+                      onClick={() =>
+                        setDialog({ type: "approve", record: rec })
+                      }
                       className="inline-flex items-center gap-0.5 text-xs text-emerald-600 hover:text-emerald-500"
                     >
                       <Check className="h-3 w-3" />
-                      通过
+                      Aprobar
                     </button>
                     <span className="text-muted-foreground/40">·</span>
                     <button
@@ -236,7 +262,7 @@ export function PendingArchiveTable({ records }: { records: PendingRecord[] }) {
                       className="inline-flex items-center gap-0.5 text-xs text-destructive hover:text-destructive/80"
                     >
                       <X className="h-3 w-3" />
-                      驳回
+                      Rechazar
                     </button>
                   </div>
                 </td>
@@ -247,10 +273,7 @@ export function PendingArchiveTable({ records }: { records: PendingRecord[] }) {
       </div>
 
       {dialog?.type === "approve" && (
-        <ApproveDialog
-          record={dialog.record}
-          onClose={() => setDialog(null)}
-        />
+        <ApproveDialog record={dialog.record} onClose={() => setDialog(null)} />
       )}
       {dialog?.type === "reject" && (
         <RejectDialog record={dialog.record} onClose={() => setDialog(null)} />
@@ -287,7 +310,7 @@ type BatchResult = {
 
 function BatchApproveDialog({
   records,
-  onClose
+  onClose,
 }: {
   records: PendingRecord[];
   onClose: (succeeded: boolean) => void;
@@ -305,20 +328,22 @@ function BatchApproveDialog({
       try {
         const res = await batchApproveArchiveRecords({
           archiveIds: targetIds,
-          note: note.trim() || undefined
+          note: note.trim() || undefined,
         });
         setResult({ succeeded: res.succeeded, failed: res.failed });
         if (res.failed.length === 0) {
-          toast.success(`已批量通过 ${res.succeeded.length} 条`);
+          toast.success(
+            `Se aprobaron ${res.succeeded.length} registros en lote`,
+          );
         } else {
           toast.warning(
-            `部分成功：${res.succeeded.length} 成功，${res.failed.length} 失败`
+            `Parcialmente exitoso: ${res.succeeded.length} exitosas, ${res.failed.length} fallidas`,
           );
         }
         router.refresh();
       } catch (err) {
-        toast.error("批量通过失败", {
-          description: err instanceof Error ? err.message : ""
+        toast.error("Error al aprobar en lote", {
+          description: err instanceof Error ? err.message : "",
         });
       }
     });
@@ -330,10 +355,11 @@ function BatchApproveDialog({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Check className="h-5 w-5 text-emerald-500" />
-            批量通过 {records.length} 条归档申请
+            Aprobar {records.length} solicitudes de archivo en lote
           </DialogTitle>
           <DialogDescription>
-            通过后涉案件全部进入「已归档」只读状态，且通知申请人。
+            Tras aprobar, todos los casos involucrados pasan al estado de solo
+            lectura «Archivado» y se notifica al solicitante.
           </DialogDescription>
         </DialogHeader>
         <div className="space-y-3">
@@ -341,22 +367,25 @@ function BatchApproveDialog({
             <div className="flex items-start gap-2 rounded-md border border-amber-500/40 bg-amber-500/10 px-3 py-2 text-xs text-amber-700">
               <AlertTriangle className="h-3.5 w-3.5 mt-0.5 shrink-0" />
               <span>
-                有 {withMissing.length} 条申请存在材料缺项（
+                Hay {withMissing.length} solicitudes con materiales faltantes (
                 {withMissing
                   .slice(0, 3)
                   .map((r) => r.archiveNo)
                   .join("、")}
-                {withMissing.length > 3 ? "…" : ""}）。确认知悉后再通过。
+                {withMissing.length > 3 ? "…" : ""}). Confirme que conoce este
+                detalle antes de aprobar.
               </span>
             </div>
           )}
           {result === null && (
             <div className="space-y-1.5">
-              <Label className="text-xs">统一审批备注（可选）</Label>
+              <Label className="text-xs">
+                Nota de aprobación unificada (opcional)
+              </Label>
               <Textarea
                 value={note}
                 onChange={(e) => setNote(e.target.value)}
-                placeholder="备注会写入每条归档记录"
+                placeholder="La nota se agregará a cada registro de archivo"
                 rows={2}
               />
             </div>
@@ -368,22 +397,28 @@ function BatchApproveDialog({
         <DialogFooter>
           {result === null ? (
             <>
-              <Button variant="outline" onClick={() => onClose(false)} disabled={isPending}>
-                取消
+              <Button
+                variant="outline"
+                onClick={() => onClose(false)}
+                disabled={isPending}
+              >
+                Cancelar
               </Button>
               <Button
                 onClick={() => submit()}
                 disabled={isPending}
                 className="bg-emerald-600 text-white hover:bg-emerald-700"
               >
-                {isPending && <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />}
-                确认通过 {records.length} 条
+                {isPending && (
+                  <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
+                )}
+                Confirmar aprobación de {records.length} registros
               </Button>
             </>
           ) : (
             <>
               <Button variant="outline" onClick={() => onClose(true)}>
-                完成
+                Listo
               </Button>
               {result.failed.length > 0 && (
                 <Button
@@ -391,8 +426,10 @@ function BatchApproveDialog({
                   disabled={isPending}
                   className="bg-emerald-600 text-white hover:bg-emerald-700"
                 >
-                  {isPending && <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />}
-                  重试失败的 {result.failed.length} 条
+                  {isPending && (
+                    <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
+                  )}
+                  Reintentar {result.failed.length} registros fallidos
                 </Button>
               )}
             </>
@@ -405,7 +442,7 @@ function BatchApproveDialog({
 
 function BatchResultPanel({
   result,
-  recordById
+  recordById,
 }: {
   result: BatchResult;
   recordById: Map<string, PendingRecord>;
@@ -414,22 +451,35 @@ function BatchResultPanel({
     <div className="space-y-3 text-xs">
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
         <div className="rounded border border-emerald-500/40 bg-emerald-500/10 px-3 py-2">
-          <div className="text-[10px] text-emerald-700">成功</div>
-          <div className="mt-0.5 font-mono text-lg text-emerald-700">{result.succeeded.length}</div>
+          <div className="text-[10px] text-emerald-700">Exitosas</div>
+          <div className="mt-0.5 font-mono text-lg text-emerald-700">
+            {result.succeeded.length}
+          </div>
         </div>
         <div
           className={cn(
             "rounded border px-3 py-2",
             result.failed.length > 0
               ? "border-destructive/40 bg-destructive/10"
-              : "border-border bg-muted/30"
+              : "border-border bg-muted/30",
           )}
         >
-          <div className={cn("text-[10px]", result.failed.length > 0 ? "text-destructive" : "text-muted-foreground")}>失败</div>
+          <div
+            className={cn(
+              "text-[10px]",
+              result.failed.length > 0
+                ? "text-destructive"
+                : "text-muted-foreground",
+            )}
+          >
+            Fallidas
+          </div>
           <div
             className={cn(
               "mt-0.5 font-mono text-lg",
-              result.failed.length > 0 ? "text-destructive" : "text-muted-foreground"
+              result.failed.length > 0
+                ? "text-destructive"
+                : "text-muted-foreground",
             )}
           >
             {result.failed.length}
@@ -439,14 +489,16 @@ function BatchResultPanel({
       {result.failed.length > 0 && (
         <div className="rounded border border-border bg-card">
           <div className="border-b border-border px-2 py-1.5 text-[10px] text-muted-foreground">
-            失败条目
+            Registros fallidos
           </div>
           <ul className="max-h-40 divide-y divide-border overflow-y-auto">
             {result.failed.map((f) => {
               const rec = recordById.get(f.id);
               return (
                 <li key={f.id} className="px-2 py-1.5">
-                  <div className="font-mono text-[#9B7BF7]">{rec?.archiveNo ?? f.id}</div>
+                  <div className="font-mono text-[#9B7BF7]">
+                    {rec?.archiveNo ?? f.id}
+                  </div>
                   <div className="mt-0.5 text-destructive">{f.error}</div>
                 </li>
               );
@@ -460,7 +512,7 @@ function BatchResultPanel({
 
 function BatchRejectDialog({
   records,
-  onClose
+  onClose,
 }: {
   records: PendingRecord[];
   onClose: (succeeded: boolean) => void;
@@ -473,7 +525,9 @@ function BatchRejectDialog({
 
   function submit(ids?: string[]) {
     if (!note.trim()) {
-      toast.warning("请填写驳回原因（将统一应用到所选记录）");
+      toast.warning(
+        "Ingrese el motivo de rechazo (se aplicará uniformemente a los registros seleccionados)",
+      );
       return;
     }
     const targetIds = ids ?? records.map((r) => r.id);
@@ -481,20 +535,22 @@ function BatchRejectDialog({
       try {
         const res = await batchRejectArchiveRecords({
           archiveIds: targetIds,
-          note: note.trim()
+          note: note.trim(),
         });
         setResult({ succeeded: res.succeeded, failed: res.failed });
         if (res.failed.length === 0) {
-          toast.success(`已批量驳回 ${res.succeeded.length} 条`);
+          toast.success(
+            `Se rechazaron ${res.succeeded.length} registros en lote`,
+          );
         } else {
           toast.warning(
-            `部分成功：${res.succeeded.length} 成功，${res.failed.length} 失败`
+            `Parcialmente exitoso: ${res.succeeded.length} exitosas, ${res.failed.length} fallidas`,
           );
         }
         router.refresh();
       } catch (err) {
-        toast.error("批量驳回失败", {
-          description: err instanceof Error ? err.message : ""
+        toast.error("Error al rechazar en lote", {
+          description: err instanceof Error ? err.message : "",
         });
       }
     });
@@ -506,34 +562,38 @@ function BatchRejectDialog({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <X className="h-5 w-5 text-destructive" />
-            批量驳回 {records.length} 条归档申请
+            Rechazar {records.length} solicitudes de archivo en lote
           </DialogTitle>
           <DialogDescription>
-            驳回原因将统一发送给每条申请的提交律师。
+            El motivo del rechazo se enviará de manera uniforme a cada abogado
+            solicitante.
           </DialogDescription>
         </DialogHeader>
         <div className="space-y-3">
           {result === null && (
             <>
               <div className="rounded-md border border-border/60 bg-muted/30 px-3 py-2 text-xs">
-                <div className="text-muted-foreground mb-1">本次驳回：</div>
+                <div className="text-muted-foreground mb-1">Este rechazo:</div>
                 <div className="space-y-0.5 max-h-32 overflow-y-auto">
                   {records.map((r) => (
                     <div key={r.id} className="font-mono text-[#9B7BF7]">
                       {r.archiveNo}
-                      <span className="ml-2 text-muted-foreground">{r.matter.title}</span>
+                      <span className="ml-2 text-muted-foreground">
+                        {r.matter.title}
+                      </span>
                     </div>
                   ))}
                 </div>
               </div>
               <div className="space-y-1.5">
                 <Label className="text-xs">
-                  统一驳回原因 <span className="text-destructive">*</span>
+                  Motivo unificado de rechazo{" "}
+                  <span className="text-destructive">*</span>
                 </Label>
                 <Textarea
                   value={note}
                   onChange={(e) => setNote(e.target.value)}
-                  placeholder="如：本批结案小结普遍过于简略，请补充裁判要旨与办案心得后重新提交"
+                  placeholder="Ej.: este resumen del cierre es demasiado breve en general; por favor, complete el propósito del fallo y los comentarios del caso antes de reenviar"
                   rows={4}
                 />
               </div>
@@ -546,18 +606,28 @@ function BatchRejectDialog({
         <DialogFooter>
           {result === null ? (
             <>
-              <Button variant="outline" onClick={() => onClose(false)} disabled={isPending}>
-                取消
+              <Button
+                variant="outline"
+                onClick={() => onClose(false)}
+                disabled={isPending}
+              >
+                Cancelar
               </Button>
-              <Button variant="destructive" onClick={() => submit()} disabled={isPending}>
-                {isPending && <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />}
-                确认驳回 {records.length} 条
+              <Button
+                variant="destructive"
+                onClick={() => submit()}
+                disabled={isPending}
+              >
+                {isPending && (
+                  <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
+                )}
+                Confirmar rechazo de {records.length} registros
               </Button>
             </>
           ) : (
             <>
               <Button variant="outline" onClick={() => onClose(true)}>
-                完成
+                Listo
               </Button>
               {result.failed.length > 0 && (
                 <Button
@@ -565,8 +635,10 @@ function BatchRejectDialog({
                   onClick={() => submit(result.failed.map((f) => f.id))}
                   disabled={isPending}
                 >
-                  {isPending && <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />}
-                  重试失败的 {result.failed.length} 条
+                  {isPending && (
+                    <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
+                  )}
+                  Reintentar {result.failed.length} registros fallidos
                 </Button>
               )}
             </>
@@ -579,7 +651,7 @@ function BatchRejectDialog({
 
 function ApproveDialog({
   record,
-  onClose
+  onClose,
 }: {
   record: PendingRecord;
   onClose: () => void;
@@ -593,14 +665,14 @@ function ApproveDialog({
       try {
         await approveArchiveRecord({
           archiveId: record.id,
-          note: note.trim() || undefined
+          note: note.trim() || undefined,
         });
-        toast.success(`已通过归档申请（${record.archiveNo}）`);
+        toast.success(`Solicitud de archivo aprobada (${record.archiveNo})`);
         onClose();
         router.refresh();
       } catch (err) {
-        toast.error("审批失败", {
-          description: err instanceof Error ? err.message : ""
+        toast.error("Error al aprobar", {
+          description: err instanceof Error ? err.message : "",
         });
       }
     });
@@ -612,10 +684,11 @@ function ApproveDialog({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Check className="h-5 w-5 text-emerald-500" />
-            通过归档申请
+            Aprobar solicitud de archivo
           </DialogTitle>
           <DialogDescription>
-            通过后案件状态变为「已归档」，全部 server action 进入只读门禁。
+            Tras aprobar, el estado del caso pasa a «Archivado» y todas las
+            acciones del servidor quedan restringidas a solo lectura.
           </DialogDescription>
         </DialogHeader>
         <div className="space-y-3">
@@ -629,31 +702,34 @@ function ApproveDialog({
             <div className="flex items-start gap-2 rounded-md border border-amber-500/40 bg-amber-500/10 px-3 py-2 text-xs text-amber-700">
               <AlertTriangle className="h-3.5 w-3.5 mt-0.5 shrink-0" />
               <span>
-                此申请有 {record.missingItems.length} 项材料缺失，请确认知悉后再通过。
+                Esta solicitud tiene {record.missingItems.length} materiales
+                faltantes; confirme que lo conoce antes de aprobarla.
               </span>
             </div>
           )}
           <div className="space-y-1.5">
-            <Label className="text-xs">审批备注（可选）</Label>
+            <Label className="text-xs">Nota de aprobación (opcional)</Label>
             <Textarea
               value={note}
               onChange={(e) => setNote(e.target.value)}
-              placeholder="备注会写入归档记录与时间线，律师可见"
+              placeholder="La nota se incluirá en el registro de archivo y la línea de tiempo, y será visible para los abogados"
               rows={3}
             />
           </div>
         </div>
         <DialogFooter>
           <Button variant="outline" onClick={onClose} disabled={isPending}>
-            取消
+            Cancelar
           </Button>
           <Button
             onClick={submit}
             disabled={isPending}
             className="bg-emerald-600 text-white hover:bg-emerald-700"
           >
-            {isPending && <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />}
-            确认通过
+            {isPending && (
+              <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
+            )}
+            Confirmar aprobación
           </Button>
         </DialogFooter>
       </DialogContent>
@@ -663,7 +739,7 @@ function ApproveDialog({
 
 function RejectDialog({
   record,
-  onClose
+  onClose,
 }: {
   record: PendingRecord;
   onClose: () => void;
@@ -674,21 +750,21 @@ function RejectDialog({
 
   function submit() {
     if (!note.trim()) {
-      toast.warning("请填写驳回原因");
+      toast.warning("Ingrese el motivo del rechazo");
       return;
     }
     startTransition(async () => {
       try {
         await rejectArchiveRecord({
           archiveId: record.id,
-          note: note.trim()
+          note: note.trim(),
         });
-        toast.success(`已驳回（${record.archiveNo}）`);
+        toast.success(`Rechazada (${record.archiveNo})`);
         onClose();
         router.refresh();
       } catch (err) {
-        toast.error("驳回失败", {
-          description: err instanceof Error ? err.message : ""
+        toast.error("Error al rechazar", {
+          description: err instanceof Error ? err.message : "",
         });
       }
     });
@@ -700,10 +776,11 @@ function RejectDialog({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <X className="h-5 w-5 text-destructive" />
-            驳回归档申请
+            Rechazar solicitud de archivo
           </DialogTitle>
           <DialogDescription>
-            驳回后该归档申请失效，律师需根据原因调整后重新提交。
+            Tras rechazar, la solicitud de archivo queda inválida y el abogado
+            deberá ajustarla según el motivo y enviarla nuevamente.
           </DialogDescription>
         </DialogHeader>
         <div className="space-y-3">
@@ -715,27 +792,25 @@ function RejectDialog({
           </div>
           <div className="space-y-1.5">
             <Label className="text-xs">
-              驳回原因 <span className="text-destructive">*</span>
+              Motivo del rechazo <span className="text-destructive">*</span>
             </Label>
             <Textarea
               value={note}
               onChange={(e) => setNote(e.target.value)}
-              placeholder="如：缺关键证据材料；办案小结过于简略；裁判文书未上传等"
+              placeholder="Ej.: falta material clave de evidencia; el resumen del caso es demasiado breve; no se cargó el documento de sentencia, etc."
               rows={4}
             />
           </div>
         </div>
         <DialogFooter>
           <Button variant="outline" onClick={onClose} disabled={isPending}>
-            取消
+            Cancelar
           </Button>
-          <Button
-            variant="destructive"
-            onClick={submit}
-            disabled={isPending}
-          >
-            {isPending && <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />}
-            确认驳回
+          <Button variant="destructive" onClick={submit} disabled={isPending}>
+            {isPending && (
+              <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
+            )}
+            Confirmar rechazo
           </Button>
         </DialogFooter>
       </DialogContent>
@@ -745,7 +820,7 @@ function RejectDialog({
 
 function DetailDialog({
   record,
-  onClose
+  onClose,
 }: {
   record: PendingRecord;
   onClose: () => void;
@@ -756,25 +831,28 @@ function DetailDialog({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <FileText className="h-5 w-5 text-[#9B7BF7]" />
-            归档申请详情
+            Detalle de la solicitud de archivo
           </DialogTitle>
           <DialogDescription>
             <span className="font-mono text-[#9B7BF7]">{record.archiveNo}</span>
-            <span className="text-muted-foreground"> · 申请人 {record.archivedBy}</span>
+            <span className="text-muted-foreground">
+              {" "}
+              · Solicitante {record.archivedBy}
+            </span>
           </DialogDescription>
         </DialogHeader>
         <div className="space-y-3 text-sm">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
             <Field
-              label="案件"
+              label="Caso"
               value={`${record.matter.internalCode} · ${record.matter.title}`}
             />
             <Field
-              label="委托方"
+              label="Cliente"
               value={record.matter.primaryClient?.name ?? "—"}
             />
             <Field
-              label="结案方式"
+              label="Forma de cierre"
               value={
                 record.closedReason
                   ? CLOSED_REASON_CN[
@@ -784,7 +862,7 @@ function DetailDialog({
               }
             />
             <Field
-              label="结案日期"
+              label="Fecha de cierre"
               value={
                 record.completedAt
                   ? record.completedAt.toISOString().slice(0, 10)
@@ -793,13 +871,15 @@ function DetailDialog({
             />
           </div>
           {record.judgmentSummary && (
-            <Section title="裁判结果摘要">{record.judgmentSummary}</Section>
+            <Section title="Resumen del fallo">
+              {record.judgmentSummary}
+            </Section>
           )}
-          <Section title="结案小结">{record.summary}</Section>
+          <Section title="Resumen del cierre">{record.summary}</Section>
           {record.missingItems.length > 0 && (
             <div className="rounded-md border border-amber-500/40 bg-amber-500/10 px-3 py-2">
               <div className="text-xs font-medium text-amber-700 mb-1">
-                缺项材料（{record.missingItems.length}）
+                Materiales faltantes ({record.missingItems.length})
               </div>
               <div className="text-xs text-amber-700/80 break-all">
                 {record.missingItems.join("、")}
@@ -812,13 +892,14 @@ function DetailDialog({
               target="_blank"
               className="text-xs text-[#5B8DEF] hover:underline"
             >
-              → 打开案件详情查看完整材料与卷宗
+              → Abrir detalle del caso para ver todos los materiales y el
+              expediente completo
             </Link>
           </div>
         </div>
         <DialogFooter>
           <Button variant="outline" onClick={onClose}>
-            关闭
+            Cerrar
           </Button>
         </DialogFooter>
       </DialogContent>
@@ -837,7 +918,7 @@ function Field({ label, value }: { label: string; value: string }) {
 
 function Section({
   title,
-  children
+  children,
 }: {
   title: string;
   children: React.ReactNode;

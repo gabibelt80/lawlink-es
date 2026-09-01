@@ -9,7 +9,7 @@ import {
   DialogContent,
   DialogFooter,
   DialogHeader,
-  DialogTitle
+  DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -21,15 +21,32 @@ import { createSealRequest } from "@/server/seals/actions";
 import {
   type SealTypeConfigRow,
   type MatterOption,
-  SEAL_TYPE_CN
+  SEAL_TYPE_CN,
 } from "./seal-types";
 import { MatterCombobox } from "./matter-combobox";
 
-const PURPOSE_PRESETS = ["委托合同", "法律意见书", "所函", "证明", "其他"] as const;
-type PurposePreset = typeof PURPOSE_PRESETS[number];
+const PURPOSE_PRESETS = [
+  "委托合同",
+  "法律意见书",
+  "所函",
+  "证明",
+  "其他",
+] as const;
+
+const PURPOSE_PRESET_LABELS: Record<PurposePreset, string> = {
+  委托合同: "Contrato de mandato",
+  法律意见书: "Dictamen legal",
+  所函: "Carta / oficio",
+  证明: "Constancia / comprobante",
+  其他: "Otro",
+};
+
+type PurposePreset = (typeof PURPOSE_PRESETS)[number];
 
 function isPdfFile(file: File) {
-  return file.type === "application/pdf" || file.name.toLowerCase().endsWith(".pdf");
+  return (
+    file.type === "application/pdf" || file.name.toLowerCase().endsWith(".pdf")
+  );
 }
 
 export function SealRequestSheet({
@@ -37,7 +54,7 @@ export function SealRequestSheet({
   onOpenChange,
   configs,
   matters,
-  preset
+  preset,
 }: {
   open: boolean;
   onOpenChange: (o: boolean) => void;
@@ -98,27 +115,27 @@ export function SealRequestSheet({
 
   const submit = () => {
     if (!sealType) {
-      toast.error("请选择章种类");
+      toast.error("Seleccione el tipo de sello");
       return;
     }
     if (!purposePreset) {
-      toast.error("请选择用印事由");
+      toast.error("Seleccione el motivo del sello");
       return;
     }
     if (purposePreset === "其他" && !purposeOther.trim()) {
-      toast.error("请填写「其他」用印事由的具体说明");
+      toast.error("Complete la descripción específica del motivo 'Otro'");
       return;
     }
     if (!documentTitle.trim()) {
-      toast.error("请填写文件标题");
+      toast.error("Complete el título del documento");
       return;
     }
     if (!hasExisting && !file) {
-      toast.error("请上传待盖章稿");
+      toast.error("Suba el borrador para sellar");
       return;
     }
     if (!hasExisting && file && !isPdfFile(file)) {
-      toast.error("需上传 pdf 格式文件");
+      toast.error("Debe cargar un archivo en formato PDF");
       return;
     }
 
@@ -144,12 +161,14 @@ export function SealRequestSheet({
     startTransition(async () => {
       try {
         const res = await createSealRequest(fd);
-        toast.success(`已提交 ${res.code}${alsoLegalRep && sealType !== "LEGAL_REP_SEAL" ? "（含法人章配套申请）" : ""}`);
+        toast.success(
+          `Solicitud enviada ${res.code}${alsoLegalRep && sealType !== "LEGAL_REP_SEAL" ? " (incluye solicitud complementaria del sello del representante legal)" : ""}`,
+        );
         reset();
         onOpenChange(false);
         router.refresh();
       } catch (e) {
-        toast.error(e instanceof Error ? e.message : "提交失败");
+        toast.error(e instanceof Error ? e.message : "Error al enviar");
       }
     });
   };
@@ -158,7 +177,7 @@ export function SealRequestSheet({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-h-[88vh] w-[92vw] max-w-3xl overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>新建用章申请</DialogTitle>
+          <DialogTitle>Nueva solicitud de sellado</DialogTitle>
         </DialogHeader>
 
         <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-2">
@@ -170,7 +189,10 @@ export function SealRequestSheet({
             >
               <Link2 className="mt-0.5 h-3.5 w-3.5 text-primary" />
               <div>
-                <p className="text-foreground">已关联卷宗文档作为待盖章稿</p>
+                <p className="text-foreground">
+                  Se ha relacionado el documento del expediente como borrador
+                  para sellar
+                </p>
                 <p className="mt-0.5 text-[11px] text-muted-foreground">
                   {preset?.documentTitle}
                 </p>
@@ -179,13 +201,13 @@ export function SealRequestSheet({
           )}
 
           <div className="md:col-span-2">
-            <Label className="text-[11px]">章种类 *</Label>
+            <Label className="text-[11px]">Tipo de sello *</Label>
             <RadioChips
               className="mt-2"
               items={enabledConfigs.map((c) => ({
                 value: c.type as string,
                 label: SEAL_TYPE_CN[c.type] ?? c.type,
-                description: c.description ?? undefined
+                description: c.description ?? undefined,
               }))}
               value={sealType}
               onChange={setSealType}
@@ -201,23 +223,32 @@ export function SealRequestSheet({
                   checked={alsoLegalRep}
                   onCheckedChange={(v) => setAlsoLegalRep(v === true)}
                 />
-                <span>同时加盖 <strong className="text-foreground">法定代表人章</strong></span>
+                <span>
+                  También sellar con{" "}
+                  <strong className="text-foreground">
+                    sello del representante legal
+                  </strong>
+                </span>
                 <span className="text-[10px] text-muted-foreground">
-                  会自动建一条配套的法人章审批，与本章并行
+                  Se creará automáticamente una solicitud complementaria del
+                  sello de la persona jurídica, en paralelo con este
                 </span>
               </label>
             )}
           </div>
 
           <div>
-            <Label className="text-[11px]">关联案件 (可选)</Label>
+            <Label className="text-[11px]">Caso relacionado (opcional)</Label>
             <div className="mt-1">
               {preset?.matterId ? (
                 // 从案件详情页发起时，case 已锁定，不展示可切换的下拉
                 <div className="flex h-9 items-center gap-2 rounded-md border border-border bg-muted/40 px-2.5 text-[12px]">
-                  <span className="text-[10px] text-muted-foreground">已关联</span>
+                  <span className="text-[10px] text-muted-foreground">
+                    Relacionado
+                  </span>
                   <span className="truncate">
-                    {matters.find((m) => m.id === preset.matterId)?.title ?? "当前案件"}
+                    {matters.find((m) => m.id === preset.matterId)?.title ??
+                      "Caso actual"}
                   </span>
                 </div>
               ) : (
@@ -225,14 +256,14 @@ export function SealRequestSheet({
                   matters={matters}
                   value={matterId}
                   onChange={setMatterId}
-                  placeholder="不关联案件"
+                  placeholder="Sin caso relacionado"
                 />
               )}
             </div>
           </div>
 
           <div className="md:col-span-2">
-            <Label className="text-[11px]">用印事由 *</Label>
+            <Label className="text-[11px]">Motivo del sello *</Label>
             <RadioChips
               className="mt-2"
               items={PURPOSE_PRESETS.map((p) => ({ value: p, label: p }))}
@@ -243,7 +274,7 @@ export function SealRequestSheet({
               <Textarea
                 value={purposeOther}
                 onChange={(e) => setPurposeOther(e.target.value)}
-                placeholder="请说明具体事由"
+                placeholder="Describa el motivo específico"
                 rows={2}
                 className="mt-2 text-[12px]"
               />
@@ -251,7 +282,7 @@ export function SealRequestSheet({
           </div>
 
           <div className="md:col-span-2">
-            <Label className="text-[11px]">文件标题 *</Label>
+            <Label className="text-[11px]">Título del documento *</Label>
             <Input
               value={documentTitle}
               onChange={(e) => setDocumentTitle(e.target.value)}
@@ -261,22 +292,26 @@ export function SealRequestSheet({
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
-              <Label className="text-[11px]">页数</Label>
+              <Label className="text-[11px]">Páginas</Label>
               <Input
                 type="number"
                 min={1}
                 value={pageCount}
-                onChange={(e) => setPageCount(Math.max(1, parseInt(e.target.value) || 1))}
+                onChange={(e) =>
+                  setPageCount(Math.max(1, parseInt(e.target.value) || 1))
+                }
                 className="mt-1"
               />
             </div>
             <div>
-              <Label className="text-[11px]">份数</Label>
+              <Label className="text-[11px]">Copias</Label>
               <Input
                 type="number"
                 min={1}
                 value={copies}
-                onChange={(e) => setCopies(Math.max(1, parseInt(e.target.value) || 1))}
+                onChange={(e) =>
+                  setCopies(Math.max(1, parseInt(e.target.value) || 1))
+                }
                 className="mt-1"
               />
             </div>
@@ -288,13 +323,13 @@ export function SealRequestSheet({
                 checked={crossPage}
                 onCheckedChange={(v) => setCrossPage(v === true)}
               />
-              需要骑缝章
+              Requiere sello transversal
             </label>
             <RadioChips
               size="sm"
               items={[
-                { value: "NORMAL", label: "普通" },
-                { value: "URGENT", label: "紧急", accent: "#DC2626" }
+                { value: "NORMAL", label: "Normal" },
+                { value: "URGENT", label: "Urgente", accent: "#DC2626" },
               ]}
               value={urgency}
               onChange={(v) => setUrgency(v as "NORMAL" | "URGENT")}
@@ -302,7 +337,7 @@ export function SealRequestSheet({
           </div>
 
           <div className="md:col-span-2">
-            <Label className="text-[11px]">备注</Label>
+            <Label className="text-[11px]">Observaciones</Label>
             <Textarea
               value={requestNote}
               onChange={(e) => setRequestNote(e.target.value)}
@@ -313,7 +348,7 @@ export function SealRequestSheet({
 
           {!hasExisting && (
             <div className="md:col-span-2">
-              <Label className="text-[11px]">待盖章稿 *</Label>
+              <Label className="text-[11px]">Borrador para sellar *</Label>
               <div className="mt-1">
                 <label className="flex cursor-pointer items-center gap-2 rounded border border-dashed border-border px-3 py-3 text-[12px] text-muted-foreground hover:bg-muted/30">
                   <Paperclip className="h-3.5 w-3.5" />
@@ -323,7 +358,7 @@ export function SealRequestSheet({
                       {file.name}
                     </span>
                   ) : (
-                    "选择 PDF 文件"
+                    "Seleccionar archivo PDF"
                   )}
                   <input
                     type="file"
@@ -332,7 +367,7 @@ export function SealRequestSheet({
                     onChange={(e) => {
                       const picked = e.target.files?.[0] ?? null;
                       if (picked && !isPdfFile(picked)) {
-                        toast.error("需上传 pdf 格式文件");
+                        toast.error("Debe cargar un archivo en formato PDF");
                         e.target.value = "";
                         setFile(null);
                         return;
@@ -348,11 +383,11 @@ export function SealRequestSheet({
 
         <DialogFooter className="mt-6">
           <Button variant="outline" onClick={() => onOpenChange(false)}>
-            取消
+            Cancelar
           </Button>
           <Button onClick={submit} disabled={pending}>
             {pending && <Loader2 className="mr-1 h-3.5 w-3.5 animate-spin" />}
-            提交申请
+            Enviar solicitud
           </Button>
         </DialogFooter>
       </DialogContent>

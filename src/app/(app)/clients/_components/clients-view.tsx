@@ -11,7 +11,7 @@ import {
   SelectContent,
   SelectItem,
   SelectTrigger,
-  SelectValue
+  SelectValue,
 } from "@/components/ui/select";
 import { ClientSheet } from "./client-sheet";
 import { ClientsTable } from "./clients-table";
@@ -51,10 +51,12 @@ export function ClientsView({ initialData, initialFilters }: Props) {
       if (s) params.set("search", s);
       if (t && t !== "ALL") params.set("type", t);
       startTransition(() => {
-        router.replace(`/clients${params.toString() ? `?${params.toString()}` : ""}`);
+        router.replace(
+          `/clients${params.toString() ? `?${params.toString()}` : ""}`,
+        );
       });
     },
-    [router, search, type]
+    [router, search, type],
   );
 
   function handleSearchSubmit(e: React.FormEvent) {
@@ -82,19 +84,26 @@ export function ClientsView({ initialData, initialFilters }: Props) {
     <div className="space-y-4">
       <header className="ll-page-head">
         <div>
-          <h1 className="ll-page-title">客户</h1>
+          <h1 className="ll-page-title">Clientes</h1>
           <p className="ll-page-sub">
-              共 <span className="font-mono tabular text-foreground">{initialData.total}</span> 位客户
-            </p>
+            Total de{" "}
+            <span className="font-mono tabular text-foreground">
+              {initialData.total}
+            </span>{" "}
+            clientes
+          </p>
         </div>
-          <Button onClick={handleNew} className="gap-1.5 px-4">
-            <Plus className="h-4 w-4" strokeWidth={2} />
-            新建客户
-          </Button>
+        <Button onClick={handleNew} className="gap-1.5 px-4">
+          <Plus className="h-4 w-4" strokeWidth={2} />
+          Nuevo cliente
+        </Button>
       </header>
 
       <div className="ll-surface flex flex-wrap items-center gap-2 px-3 py-2">
-        <form onSubmit={handleSearchSubmit} className="relative min-w-0 sm:min-w-64 flex-1">
+        <form
+          onSubmit={handleSearchSubmit}
+          className="relative min-w-0 sm:min-w-64 flex-1"
+        >
           <Search
             className="pointer-events-none absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground"
             strokeWidth={1.8}
@@ -103,7 +112,7 @@ export function ClientsView({ initialData, initialFilters }: Props) {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             onBlur={() => updateUrl({ search })}
-            placeholder="搜索客户名称 / 身份证号 / 电话 / 邮箱"
+            placeholder="Buscar nombre del cliente / DNI / teléfono / correo electrónico"
             className="h-[34px] border-input bg-background pl-9 shadow-[var(--shadow-inset-deep)]"
           />
         </form>
@@ -116,23 +125,26 @@ export function ClientsView({ initialData, initialFilters }: Props) {
             updateUrl({ type: next });
           }}
         >
-          <SelectTrigger
-            className="h-[34px] w-36 rounded-full border-input bg-card"
-          >
-            <SelectValue placeholder="客户类型" />
+          <SelectTrigger className="h-[34px] w-36 rounded-full border-input bg-card">
+            <SelectValue placeholder="Tipo de cliente" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="ALL">全部类型</SelectItem>
-            <SelectItem value="INDIVIDUAL">自然人</SelectItem>
-            <SelectItem value="COMPANY">公司</SelectItem>
-            <SelectItem value="ORGANIZATION">其他组织</SelectItem>
+            <SelectItem value="ALL">Todos los tipos</SelectItem>
+            <SelectItem value="INDIVIDUAL">Persona natural</SelectItem>
+            <SelectItem value="COMPANY">Empresa</SelectItem>
+            <SelectItem value="ORGANIZATION">Otra organización</SelectItem>
           </SelectContent>
         </Select>
 
         {(search || type !== "ALL") && (
-          <Button variant="ghost" size="sm" onClick={clearFilters} className="gap-1">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={clearFilters}
+            className="gap-1"
+          >
             <X className="h-3.5 w-3.5" />
-            清除筛选
+            Limpiar filtros
           </Button>
         )}
       </div>

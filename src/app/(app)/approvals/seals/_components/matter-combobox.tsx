@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import {
   Popover,
   PopoverContent,
-  PopoverTrigger
+  PopoverTrigger,
 } from "@/components/ui/popover";
 import {
   Command,
@@ -14,7 +14,7 @@ import {
   CommandGroup,
   CommandInput,
   CommandItem,
-  CommandList
+  CommandList,
 } from "@/components/ui/command";
 import { cn } from "@/lib/utils";
 
@@ -28,7 +28,7 @@ export function MatterCombobox({
   matters,
   value,
   onChange,
-  placeholder = "搜索案件编号 / 名称"
+  placeholder = "Buscar código o nombre del caso",
 }: {
   matters: MatterOption[];
   value: string;
@@ -63,7 +63,7 @@ export function MatterCombobox({
               <span
                 role="button"
                 tabIndex={0}
-                aria-label="清空"
+                aria-label="Vaciar"
                 onClick={(e) => {
                   e.preventDefault();
                   e.stopPropagation();
@@ -91,9 +91,9 @@ export function MatterCombobox({
         className="w-[--radix-popover-trigger-width] p-0"
       >
         <Command>
-          <CommandInput placeholder="输入编号或案件名片段..." />
+          <CommandInput placeholder="Ingrese el código o fragmento del nombre del caso..." />
           <CommandList>
-            <CommandEmpty>未找到匹配案件</CommandEmpty>
+            <CommandEmpty>No se encontró ningún caso coincidente</CommandEmpty>
             <CommandGroup>
               {matters.map((m) => (
                 <CommandItem
@@ -107,7 +107,7 @@ export function MatterCombobox({
                   <Check
                     className={cn(
                       "mr-2 h-3.5 w-3.5",
-                      value === m.id ? "opacity-100" : "opacity-0"
+                      value === m.id ? "opacity-100" : "opacity-0",
                     )}
                   />
                   <span className="font-mono text-[11px] text-muted-foreground">

@@ -8,7 +8,7 @@ import {
   ChevronRight,
   X,
   Trash2,
-  Loader2
+  Loader2,
 } from "lucide-react";
 import { toast } from "sonner";
 import { Input } from "@/components/ui/input";
@@ -19,7 +19,7 @@ import {
   SelectContent,
   SelectItem,
   SelectTrigger,
-  SelectValue
+  SelectValue,
 } from "@/components/ui/select";
 import type { AuditListResult, AuditFilter } from "@/server/audit-list";
 import { cn } from "@/lib/utils";
@@ -35,7 +35,7 @@ const ALL_VALUE = "__all__";
 export function AuditView({
   result,
   options,
-  currentFilter
+  currentFilter,
 }: {
   result: AuditListResult;
   options: Options;
@@ -49,7 +49,7 @@ export function AuditView({
   function handleCleanup() {
     if (
       !confirm(
-        "立刻清理超过保留期（默认 365 天，AUDIT_RETENTION_DAYS 环境变量可改）的审计记录？此操作不可撤销。"
+        "¿Limpiar inmediatamente los registros de auditoría que exceden el período de retención (por defecto 365 días, configurable con la variable de entorno AUDIT_RETENTION_DAYS)? Esta acción no se puede deshacer.",
       )
     )
       return;
@@ -57,12 +57,12 @@ export function AuditView({
       try {
         const r = await triggerAuditCleanupNow();
         toast.success(
-          `清理完成：保留 ${r.retentionDays} 天，删除 ${r.deleted} 条`
+          `Limpieza completada: se conservan ${r.retentionDays} días y se eliminan ${r.deleted} registros`,
         );
         router.refresh();
       } catch (err) {
-        toast.error("清理失败", {
-          description: err instanceof Error ? err.message : ""
+        toast.error("Error al limpiar", {
+          description: err instanceof Error ? err.message : "",
         });
       }
     });
@@ -70,7 +70,7 @@ export function AuditView({
 
   function navigate(patch: Record<string, string | undefined>) {
     const next = new URLSearchParams(sp.toString());
-    next.delete("cursor"); // 任何筛选改变都重置分页
+    next.delete("cursor"); // cualquier cambio de filtro reinicia la paginación
     for (const [k, v] of Object.entries(patch)) {
       if (v === undefined || v === "" || v === ALL_VALUE) next.delete(k);
       else next.set(k, v);
@@ -136,7 +136,9 @@ export function AuditView({
           <FilterCol label="操作人">
             <Select
               value={currentFilter.userId || ALL_VALUE}
-              onValueChange={(v) => navigate({ userId: v === ALL_VALUE ? undefined : v })}
+              onValueChange={(v) =>
+                navigate({ userId: v === ALL_VALUE ? undefined : v })
+              }
             >
               <SelectTrigger className="h-8 w-36 text-xs">
                 <SelectValue placeholder="全部" />
@@ -155,7 +157,9 @@ export function AuditView({
           <FilterCol label="动作">
             <Select
               value={currentFilter.action || ALL_VALUE}
-              onValueChange={(v) => navigate({ action: v === ALL_VALUE ? undefined : v })}
+              onValueChange={(v) =>
+                navigate({ action: v === ALL_VALUE ? undefined : v })
+              }
             >
               <SelectTrigger className="h-8 w-48 text-xs">
                 <SelectValue placeholder="全部" />
@@ -174,7 +178,9 @@ export function AuditView({
           <FilterCol label="对象类型">
             <Select
               value={currentFilter.targetType || ALL_VALUE}
-              onValueChange={(v) => navigate({ targetType: v === ALL_VALUE ? undefined : v })}
+              onValueChange={(v) =>
+                navigate({ targetType: v === ALL_VALUE ? undefined : v })
+              }
             >
               <SelectTrigger className="h-8 w-36 text-xs">
                 <SelectValue placeholder="全部" />
@@ -218,7 +224,7 @@ export function AuditView({
                   action: undefined,
                   targetType: undefined,
                   start: undefined,
-                  end: undefined
+                  end: undefined,
                 })
               }
               className="ml-auto h-8 gap-1"
@@ -239,15 +245,22 @@ export function AuditView({
               <th className="w-40 px-2 py-1.5 text-left font-normal">时间</th>
               <th className="w-20 px-2 py-1.5 text-left font-normal">操作人</th>
               <th className="px-2 py-1.5 text-left font-normal">动作</th>
-              <th className="w-32 px-2 py-1.5 text-left font-normal">对象类型</th>
-              <th className="w-40 px-2 py-1.5 text-left font-normal">对象 ID</th>
+              <th className="w-32 px-2 py-1.5 text-left font-normal">
+                对象类型
+              </th>
+              <th className="w-40 px-2 py-1.5 text-left font-normal">
+                对象 ID
+              </th>
               <th className="w-24 px-2 py-1.5 text-left font-normal">IP</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-border">
             {result.items.length === 0 ? (
               <tr>
-                <td colSpan={7} className="px-2 py-10 text-center text-muted-foreground">
+                <td
+                  colSpan={7}
+                  className="px-2 py-10 text-center text-muted-foreground"
+                >
                   没有匹配的审计记录
                 </td>
               </tr>
@@ -279,8 +292,12 @@ export function AuditView({
                       {e.createdAt.toLocaleString("zh-CN")}
                     </td>
                     <td className="px-2 py-1.5">{e.user?.name ?? "—"}</td>
-                    <td className="px-2 py-1.5 font-mono text-foreground">{e.action}</td>
-                    <td className="px-2 py-1.5 text-muted-foreground">{e.targetType ?? "—"}</td>
+                    <td className="px-2 py-1.5 font-mono text-foreground">
+                      {e.action}
+                    </td>
+                    <td className="px-2 py-1.5 text-muted-foreground">
+                      {e.targetType ?? "—"}
+                    </td>
                     <td className="px-2 py-1.5 font-mono text-[10px] text-muted-foreground">
                       {e.targetId
                         ? e.targetId.length > 18
@@ -291,7 +308,7 @@ export function AuditView({
                     <td className="px-2 py-1.5 font-mono text-[10px] text-muted-foreground">
                       {e.ip ?? "—"}
                     </td>
-                  </tr>
+                  </tr>,
                 ];
                 if (isOpen && hasDetail) {
                   rows.push(
@@ -302,7 +319,7 @@ export function AuditView({
                           {JSON.stringify(e.detail, null, 2)}
                         </pre>
                       </td>
-                    </tr>
+                    </tr>,
                   );
                 }
                 return rows;
@@ -324,7 +341,13 @@ export function AuditView({
   );
 }
 
-function FilterCol({ label, children }: { label: string; children: React.ReactNode }) {
+function FilterCol({
+  label,
+  children,
+}: {
+  label: string;
+  children: React.ReactNode;
+}) {
   return (
     <div>
       <label className="text-[10px] text-muted-foreground">{label}</label>

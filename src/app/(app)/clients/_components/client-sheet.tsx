@@ -16,7 +16,7 @@ import {
   SelectContent,
   SelectItem,
   SelectTrigger,
-  SelectValue
+  SelectValue,
 } from "@/components/ui/select";
 import {
   Sheet,
@@ -24,20 +24,23 @@ import {
   SheetHeader,
   SheetTitle,
   SheetDescription,
-  SheetFooter
+  SheetFooter,
 } from "@/components/ui/sheet";
-import { clientCreateSchema, type ClientCreateInput } from "@/server/clients/schemas";
+import {
+  clientCreateSchema,
+  type ClientCreateInput,
+} from "@/server/clients/schemas";
 import { createClient, updateClient } from "@/server/clients/actions";
 import {
   cooperationStatusLabel,
   COOPERATION_STATUS_OPTIONS,
   genderLabel,
-  GENDER_OPTIONS
+  GENDER_OPTIONS,
 } from "@/lib/enums";
 import {
   searchEnterpriseCandidates,
   getEnterpriseDetail,
-  type EnterpriseSearchItem
+  type EnterpriseSearchItem,
 } from "@/server/yuandian/enterprise";
 import { cn } from "@/lib/utils";
 import { readFormPath } from "@/lib/form-path";
@@ -63,7 +66,17 @@ const emptyDefaults: ClientCreateInput = {
   ethnicity: "",
   tags: [],
   notes: "",
-  contacts: [{ name: "", title: "", phone: "", email: "", wechat: "", isPrimary: true, notes: "" }]
+  contacts: [
+    {
+      name: "",
+      title: "",
+      phone: "",
+      email: "",
+      wechat: "",
+      isPrimary: true,
+      notes: "",
+    },
+  ],
 };
 
 export function ClientSheet({ open, onOpenChange, editingClient }: Props) {
@@ -77,19 +90,23 @@ export function ClientSheet({ open, onOpenChange, editingClient }: Props) {
     getValues,
     setValue,
     reset,
-    formState: { errors }
+    formState: { errors },
   } = useForm<ClientCreateInput>({
     resolver: zodResolver(clientCreateSchema),
-    defaultValues: emptyDefaults
+    defaultValues: emptyDefaults,
   });
 
-  const { fields, append, remove } = useFieldArray({ control, name: "contacts" });
+  const { fields, append, remove } = useFieldArray({
+    control,
+    name: "contacts",
+  });
   const watchedValues = useWatch({ control });
-  const watch = <T = any,>(path: string) => readFormPath<T>(watchedValues, path);
+  const watch = <T = any,>(path: string) =>
+    readFormPath<T>(watchedValues, path);
   const watchedType = watch<ClientCreateInput["type"]>("type");
   const watchedTags = watch<string[]>("tags");
 
-  // 当 editing 切换时重置表单
+  // Cuando cambia editing, se restablece el formulario
   useEffect(() => {
     if (!open) return;
     if (editingClient) {
@@ -117,9 +134,9 @@ export function ClientSheet({ open, onOpenChange, editingClient }: Props) {
                 email: c.email ?? "",
                 wechat: c.wechat ?? "",
                 isPrimary: c.isPrimary,
-                notes: c.notes ?? ""
+                notes: c.notes ?? "",
               }))
-            : emptyDefaults.contacts
+            : emptyDefaults.contacts,
       });
     } else {
       reset(emptyDefaults);
@@ -131,15 +148,16 @@ export function ClientSheet({ open, onOpenChange, editingClient }: Props) {
       try {
         if (isEdit && editingClient) {
           await updateClient({ id: editingClient.id, ...values });
-          toast.success("客户已更新");
+          toast.success("Cliente actualizado");
         } else {
           await createClient(values);
-          toast.success("客户已创建");
+          toast.success("Cliente creado");
         }
         onOpenChange(false);
       } catch (err) {
-        toast.error("保存失败", {
-          description: err instanceof Error ? err.message : "请稍后重试"
+        toast.error("No se pudo guardar", {
+          description:
+            err instanceof Error ? err.message : "Inténtelo más tarde",
         });
       }
     });
@@ -154,37 +172,48 @@ export function ClientSheet({ open, onOpenChange, editingClient }: Props) {
   }
 
   function removeTag(tag: string) {
-    setValue("tags", (watchedTags || []).filter((t) => t !== tag), { shouldDirty: true });
+    setValue(
+      "tags",
+      (watchedTags || []).filter((t) => t !== tag),
+      { shouldDirty: true },
+    );
   }
 
-  // v0.27: AI 自动填信用代码（公司 / 组织路径）
-  const [candidates, setCandidates] = useState<EnterpriseSearchItem[] | null>(null);
+  // v0.27: IA para completar automáticamente el código de crédito (ruta empresa / organización)
+  const [candidates, setCandidates] = useState<EnterpriseSearchItem[] | null>(
+    null,
+  );
   const [aiSearching, startAiSearch] = useTransition();
   const [aiFilling, startAiFill] = useTransition();
 
   function handleAILookup() {
     const name = (getValues("name") || "").trim();
     if (!name) {
-      toast.warning("请先填写客户名称再点击 AI 查找");
+      toast.warning(
+        "Primero complete el nombre del cliente antes de usar la búsqueda con IA",
+      );
       return;
     }
     startAiSearch(async () => {
       try {
         const r = await searchEnterpriseCandidates(name);
         if (!r.configured) {
-          toast.error("元典 API 未配置", {
-            description: "请在 设置 → AI 与元典 中配置 API Key"
+          toast.error("La API de Yuandian no está configurada", {
+            description:
+              "Configure la API Key en Configuración → IA y Yuandian",
           });
           return;
         }
         if (r.items.length === 0) {
-          toast.info("未找到候选企业", { description: "试试更完整的名称或简称" });
+          toast.info("No se encontraron empresas candidatas", {
+            description: "Pruebe con un nombre más completo o un apodo",
+          });
           return;
         }
         setCandidates(r.items);
       } catch (err) {
-        toast.error("查找失败", {
-          description: err instanceof Error ? err.message : ""
+        toast.error("La búsqueda falló", {
+          description: err instanceof Error ? err.message : "",
         });
       }
     });
@@ -192,20 +221,28 @@ export function ClientSheet({ open, onOpenChange, editingClient }: Props) {
 
   function handlePickCandidate(item: EnterpriseSearchItem) {
     startAiFill(async () => {
-      setValue("idNumber", item.creditCode, { shouldDirty: true, shouldValidate: true });
+      setValue("idNumber", item.creditCode, {
+        shouldDirty: true,
+        shouldValidate: true,
+      });
       setValue("name", item.name, { shouldDirty: true });
       setCandidates(null);
       try {
         const r = await getEnterpriseDetail(item.id);
         if (r.configured && r.info) {
-          if (r.info.legalRep) setValue("legalRep", r.info.legalRep, { shouldDirty: true });
-          if (r.info.address) setValue("address", r.info.address, { shouldDirty: true });
-          toast.success(`已回填：${item.name}`);
+          if (r.info.legalRep)
+            setValue("legalRep", r.info.legalRep, { shouldDirty: true });
+          if (r.info.address)
+            setValue("address", r.info.address, { shouldDirty: true });
+          toast.success(`Se completó automáticamente: ${item.name}`);
         }
       } catch (err) {
-        toast.warning("法代 / 地址自动填充失败，可手动补充", {
-          description: err instanceof Error ? err.message : ""
-        });
+        toast.warning(
+          "Error al autocompletar representante legal / dirección; puede completarlo manualmente",
+          {
+            description: err instanceof Error ? err.message : "",
+          },
+        );
       }
     });
   }
@@ -218,10 +255,11 @@ export function ClientSheet({ open, onOpenChange, editingClient }: Props) {
       >
         <SheetHeader className="border-b border-border bg-background px-6 py-4">
           <SheetTitle className="text-lg">
-            {isEdit ? "编辑客户" : "新建客户"}
+            {isEdit ? "Editar cliente" : "Nuevo cliente"}
           </SheetTitle>
           <SheetDescription className="text-xs">
-            客户主体信息 + 联系人，联系方式细节走联系人单独维护
+            Información principal del cliente + contactos; los detalles de
+            contacto se mantienen por separado en contactos
           </SheetDescription>
         </SheetHeader>
 
@@ -230,42 +268,56 @@ export function ClientSheet({ open, onOpenChange, editingClient }: Props) {
           className="flex flex-1 flex-col overflow-hidden"
         >
           <div className="flex-1 overflow-y-auto px-6 py-5">
-            {/* 基本信息 */}
-            <Section title="基本信息">
-              <Field label="客户名称" required error={errors.name?.message}>
+            {/* Información básica */}
+            <Section title="Información básica">
+              <Field
+                label="Nombre del cliente"
+                required
+                error={errors.name?.message}
+              >
                 <Input
                   placeholder={
-                    watchedType === "INDIVIDUAL" ? "张三" : "上海某某有限公司"
+                    watchedType === "INDIVIDUAL"
+                      ? "Juan Pérez"
+                      : "Compañía XYZ S.A."
                   }
                   {...register("name")}
                 />
               </Field>
 
-              <Field label="类型" required>
+              <Field label="Tipo" required>
                 <Select
                   value={watchedType}
                   onValueChange={(v) =>
-                    setValue("type", v as ClientCreateInput["type"], { shouldDirty: true })
+                    setValue("type", v as ClientCreateInput["type"], {
+                      shouldDirty: true,
+                    })
                   }
                 >
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="INDIVIDUAL">自然人</SelectItem>
-                    <SelectItem value="COMPANY">公司</SelectItem>
-                    <SelectItem value="ORGANIZATION">其他组织</SelectItem>
+                    <SelectItem value="INDIVIDUAL">Persona natural</SelectItem>
+                    <SelectItem value="COMPANY">Empresa</SelectItem>
+                    <SelectItem value="ORGANIZATION">
+                      Otra organización
+                    </SelectItem>
                   </SelectContent>
                 </Select>
               </Field>
 
               <Field
-                label={watchedType === "INDIVIDUAL" ? "身份证号" : "统一社会信用代码"}
+                label={
+                  watchedType === "INDIVIDUAL"
+                    ? "Número de documento"
+                    : "Código único de crédito"
+                }
               >
                 {watchedType === "INDIVIDUAL" ? (
                   <Input
                     className="font-mono"
-                    placeholder="18 位身份证号"
+                    placeholder="Número de documento con 18 dígitos"
                     {...register("idNumber")}
                   />
                 ) : (
@@ -273,7 +325,7 @@ export function ClientSheet({ open, onOpenChange, editingClient }: Props) {
                     <div className="flex gap-1">
                       <Input
                         className="flex-1 font-mono"
-                        placeholder="18 位信用代码"
+                        placeholder="Código de crédito con 18 dígitos"
                         {...register("idNumber")}
                       />
                       <Button
@@ -283,20 +335,22 @@ export function ClientSheet({ open, onOpenChange, editingClient }: Props) {
                         onClick={handleAILookup}
                         disabled={aiSearching || aiFilling}
                         className="h-9 shrink-0 gap-1"
-                        title="按客户名称在元典搜索，自动回填信用代码 / 法代 / 注册地址"
+                        title="Busca por nombre del cliente en Yuandian y rellena automáticamente el código de crédito / representante legal / dirección registrada"
                       >
                         {aiSearching ? (
                           <Loader2 className="h-3 w-3 animate-spin" />
                         ) : (
                           <Sparkles className="h-3 w-3" />
                         )}
-                        AI 查找
+                        Buscar con IA
                       </Button>
                     </div>
                     {candidates && candidates.length > 0 && (
                       <div className="rounded-md border border-border bg-muted/30 p-1.5">
                         <div className="mb-1 flex items-center gap-1 text-[10px] text-muted-foreground">
-                          <Search className="h-3 w-3" />共 {candidates.length} 条候选，点击回填
+                          <Search className="h-3 w-3" />
+                          Hay {candidates.length} opciones; haga clic para
+                          completar
                         </div>
                         <ul className="space-y-1">
                           {candidates.map((c) => (
@@ -320,7 +374,7 @@ export function ClientSheet({ open, onOpenChange, editingClient }: Props) {
                           onClick={() => setCandidates(null)}
                           className="mt-1 w-full text-[10px] text-muted-foreground hover:text-foreground"
                         >
-                          关闭
+                          Cerrar
                         </button>
                       </div>
                     )}
@@ -328,35 +382,56 @@ export function ClientSheet({ open, onOpenChange, editingClient }: Props) {
                 )}
               </Field>
 
-              <Field label="主要联系电话">
-                <Input className="font-mono" placeholder="11 位手机号" {...register("phone")} />
+              <Field label="Teléfono principal">
+                <Input
+                  className="font-mono"
+                  placeholder="Número de celular de 11 dígitos"
+                  {...register("phone")}
+                />
               </Field>
 
-              <Field label="邮箱" error={errors.email?.message}>
-                <Input type="email" placeholder="contact@example.com" {...register("email")} />
+              <Field label="Correo electrónico" error={errors.email?.message}>
+                <Input
+                  type="email"
+                  placeholder="contacto@ejemplo.com"
+                  {...register("email")}
+                />
               </Field>
 
-              <Field label="地址">
-                <Input placeholder="详细地址" {...register("address")} />
+              <Field label="Dirección">
+                <Input
+                  placeholder="Dirección detallada"
+                  {...register("address")}
+                />
               </Field>
 
               {watchedType !== "INDIVIDUAL" && (
-                <Field label="法定代表人">
-                  <Input placeholder="法定代表人姓名" {...register("legalRep")} />
+                <Field label="Representante legal">
+                  <Input
+                    placeholder="Nombre del representante legal"
+                    {...register("legalRep")}
+                  />
                 </Field>
               )}
 
-              <Field label="案源">
-                <Input placeholder="介绍人 / 公开来源 / 老客户复购" {...register("source")} />
+              <Field label="Fuente del caso">
+                <Input
+                  placeholder="Persona de referencia / fuente pública / recompra de cliente"
+                  {...register("source")}
+                />
               </Field>
 
-              <Field label="合作状态">
+              <Field label="Estado de colaboración">
                 <Select
                   value={watch("cooperationStatus")}
                   onValueChange={(v) =>
-                    setValue("cooperationStatus", v as ClientCreateInput["cooperationStatus"], {
-                      shouldDirty: true
-                    })
+                    setValue(
+                      "cooperationStatus",
+                      v as ClientCreateInput["cooperationStatus"],
+                      {
+                        shouldDirty: true,
+                      },
+                    )
                   }
                 >
                   <SelectTrigger>
@@ -372,28 +447,31 @@ export function ClientSheet({ open, onOpenChange, editingClient }: Props) {
                 </Select>
               </Field>
 
-              <Field label="所属行业">
-                <Input placeholder="如 制造业 / 互联网 / 房地产" {...register("industry")} />
+              <Field label="Industria">
+                <Input
+                  placeholder="Ej. manufactura / tecnología / inmobiliario"
+                  {...register("industry")}
+                />
               </Field>
 
               {watchedType === "INDIVIDUAL" && (
                 <>
-                  <Field label="性别">
+                  <Field label="Género">
                     <Select
                       value={watch("gender") || "UNSET"}
                       onValueChange={(v) =>
                         setValue(
                           "gender",
                           v === "UNSET" ? "" : (v as "MALE" | "FEMALE"),
-                          { shouldDirty: true }
+                          { shouldDirty: true },
                         )
                       }
                     >
                       <SelectTrigger>
-                        <SelectValue placeholder="未填" />
+                        <SelectValue placeholder="Sin completar" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="UNSET">未填</SelectItem>
+                        <SelectItem value="UNSET">Sin completar</SelectItem>
                         {GENDER_OPTIONS.map((g) => (
                           <SelectItem key={g} value={g}>
                             {genderLabel[g]}
@@ -403,13 +481,13 @@ export function ClientSheet({ open, onOpenChange, editingClient }: Props) {
                     </Select>
                   </Field>
 
-                  <Field label="民族">
-                    <Input placeholder="如 汉族" {...register("ethnicity")} />
+                  <Field label="Etnia">
+                    <Input placeholder="Ej. Han" {...register("ethnicity")} />
                   </Field>
                 </>
               )}
 
-              <Field label="标签">
+              <Field label="Etiquetas">
                 <TagInput
                   tags={watchedTags || []}
                   onAdd={addTag}
@@ -417,14 +495,18 @@ export function ClientSheet({ open, onOpenChange, editingClient }: Props) {
                 />
               </Field>
 
-              <Field label="备注" full>
-                <Textarea rows={3} placeholder="可选" {...register("notes")} />
+              <Field label="Notas" full>
+                <Textarea
+                  rows={3}
+                  placeholder="Opcional"
+                  {...register("notes")}
+                />
               </Field>
             </Section>
 
-            {/* 联系人 */}
+            {/* Contactos */}
             <Section
-              title="联系人"
+              title="Contactos"
               action={
                 <Button
                   type="button"
@@ -438,13 +520,13 @@ export function ClientSheet({ open, onOpenChange, editingClient }: Props) {
                       email: "",
                       wechat: "",
                       isPrimary: false,
-                      notes: ""
+                      notes: "",
                     })
                   }
                   className="h-7 gap-1"
                 >
                   <Plus className="h-3.5 w-3.5" />
-                  添加联系人
+                  Agregar contacto
                 </Button>
               }
             >
@@ -456,7 +538,7 @@ export function ClientSheet({ open, onOpenChange, editingClient }: Props) {
                   >
                     <div className="mb-2 flex items-center justify-between">
                       <span className="text-xs font-medium text-muted-foreground">
-                        联系人 {idx + 1}
+                        Contacto {idx + 1}
                       </span>
                       <div className="flex items-center gap-2">
                         <label className="flex cursor-pointer items-center gap-1 text-xs text-muted-foreground">
@@ -464,16 +546,19 @@ export function ClientSheet({ open, onOpenChange, editingClient }: Props) {
                             checked={watch(`contacts.${idx}.isPrimary`)}
                             onCheckedChange={(c) => {
                               if (c) {
-                                // 单选：取消其他主联系人
+                                // Opción única: cancelar otros contactos principales
                                 fields.forEach((_, i) => {
-                                  setValue(`contacts.${i}.isPrimary`, i === idx);
+                                  setValue(
+                                    `contacts.${i}.isPrimary`,
+                                    i === idx,
+                                  );
                                 });
                               } else {
                                 setValue(`contacts.${idx}.isPrimary`, false);
                               }
                             }}
                           />
-                          <Star className="h-3 w-3" /> 主要联系人
+                          <Star className="h-3 w-3" /> Contacto principal
                         </label>
                         {fields.length > 1 && (
                           <Button
@@ -491,29 +576,29 @@ export function ClientSheet({ open, onOpenChange, editingClient }: Props) {
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                       <Field
-                        label="姓名"
+                        label="Nombre"
                         required
                         error={errors.contacts?.[idx]?.name?.message}
                       >
                         <Input
-                          placeholder="姓名"
+                          placeholder="Nombre"
                           {...register(`contacts.${idx}.name`)}
                         />
                       </Field>
-                      <Field label="职务">
+                      <Field label="Cargo">
                         <Input
-                          placeholder="法定代表人 / 总经理 / 法务"
+                          placeholder="Representante legal / Gerente general / Asesor legal"
                           {...register(`contacts.${idx}.title`)}
                         />
                       </Field>
-                      <Field label="电话">
+                      <Field label="Teléfono">
                         <Input
                           className="font-mono"
                           {...register(`contacts.${idx}.phone`)}
                         />
                       </Field>
                       <Field
-                        label="邮箱"
+                        label="Correo electrónico"
                         error={errors.contacts?.[idx]?.email?.message}
                       >
                         <Input
@@ -521,10 +606,10 @@ export function ClientSheet({ open, onOpenChange, editingClient }: Props) {
                           {...register(`contacts.${idx}.email`)}
                         />
                       </Field>
-                      <Field label="微信">
+                      <Field label="WeChat">
                         <Input {...register(`contacts.${idx}.wechat`)} />
                       </Field>
-                      <Field label="备注">
+                      <Field label="Notas">
                         <Input {...register(`contacts.${idx}.notes`)} />
                       </Field>
                     </div>
@@ -534,7 +619,7 @@ export function ClientSheet({ open, onOpenChange, editingClient }: Props) {
             </Section>
           </div>
 
-          {/* 底栏 */}
+          {/* Barra inferior */}
           <SheetFooter className="border-t border-border bg-background px-6 py-4">
             <Button
               type="button"
@@ -542,15 +627,11 @@ export function ClientSheet({ open, onOpenChange, editingClient }: Props) {
               onClick={() => onOpenChange(false)}
               disabled={isPending}
             >
-              取消
+              Cancelar
             </Button>
-            <Button
-              type="submit"
-              disabled={isPending}
-              className="gap-1.5 "
-            >
+            <Button type="submit" disabled={isPending} className="gap-1.5 ">
               {isPending && <Loader2 className="h-4 w-4 animate-spin" />}
-              {isEdit ? "保存" : "创建客户"}
+              {isEdit ? "Guardar" : "Crear cliente"}
             </Button>
           </SheetFooter>
         </form>
@@ -562,7 +643,7 @@ export function ClientSheet({ open, onOpenChange, editingClient }: Props) {
 function Section({
   title,
   action,
-  children
+  children,
 }: {
   title: string;
   action?: React.ReactNode;
@@ -589,7 +670,7 @@ function Field({
   required,
   full,
   error,
-  children
+  children,
 }: {
   label: string;
   required?: boolean;
@@ -612,7 +693,7 @@ function Field({
 function TagInput({
   tags,
   onAdd,
-  onRemove
+  onRemove,
 }: {
   tags: string[];
   onAdd: (t: string) => void;
@@ -630,7 +711,7 @@ function TagInput({
             type="button"
             onClick={() => onRemove(t)}
             className="hover:text-foreground"
-            aria-label={`移除 ${t}`}
+            aria-label={`Eliminar ${t}`}
           >
             <X className="h-3 w-3" />
           </button>
@@ -638,7 +719,11 @@ function TagInput({
       ))}
       <input
         type="text"
-        placeholder={tags.length === 0 ? "输入后回车添加标签" : ""}
+        placeholder={
+          tags.length === 0
+            ? "Escriba y presione Enter para agregar una etiqueta"
+            : ""
+        }
         onKeyDown={(e) => {
           if (e.key === "Enter") {
             e.preventDefault();

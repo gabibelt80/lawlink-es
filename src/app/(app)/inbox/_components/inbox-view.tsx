@@ -21,14 +21,14 @@ import {
   FileCheck2,
   FileDigit,
   FileDown,
-  KeyRound
+  KeyRound,
 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import {
   Popover,
   PopoverContent,
-  PopoverTrigger
+  PopoverTrigger,
 } from "@/components/ui/popover";
 import {
   Command,
@@ -36,27 +36,27 @@ import {
   CommandGroup,
   CommandInput,
   CommandItem,
-  CommandList
+  CommandList,
 } from "@/components/ui/command";
 import { cn } from "@/lib/utils";
 import {
   extractSmsAttachments,
   matchSmsToMatter,
   markSmsProcessed,
-  deleteSms
+  deleteSms,
 } from "@/server/sms/actions";
 import {
   SMS_TYPE_CN,
   SMS_TYPE_ACCENT,
   type SmsRow,
   type MatterOption,
-  type ParsedJson
+  type ParsedJson,
 } from "./sms-types";
 import { SmsPasteDialog } from "./sms-paste-dialog";
 import {
   BackfillCaseNumberDialog,
   GenerateHearingDialog,
-  GenerateDeadlineDialog
+  GenerateDeadlineDialog,
 } from "./sms-actions-dialogs";
 import { matterHref } from "@/lib/matters/route";
 
@@ -66,7 +66,7 @@ export function InboxView({
   unprocessed,
   processed,
   needsManual,
-  matters
+  matters,
 }: {
   unprocessed: SmsRow[];
   processed: SmsRow[];
@@ -74,7 +74,9 @@ export function InboxView({
   needsManual: SmsRow[];
   matters: MatterOption[];
 }) {
-  const [tab, setTab] = useState<Tab>(unprocessed.length > 0 ? "unprocessed" : "processed");
+  const [tab, setTab] = useState<Tab>(
+    unprocessed.length > 0 ? "unprocessed" : "processed",
+  );
   const [pasteOpen, setPasteOpen] = useState(false);
   const [hearingTarget, setHearingTarget] = useState<{
     sms: SmsRow;
@@ -89,36 +91,51 @@ export function InboxView({
     matter: NonNullable<SmsRow["matchedMatter"]>;
   } | null>(null);
 
-  const rows = tab === "unprocessed" ? unprocessed : tab === "needsManual" ? needsManual : processed;
+  const rows =
+    tab === "unprocessed"
+      ? unprocessed
+      : tab === "needsManual"
+        ? needsManual
+        : processed;
 
   return (
     <div className="space-y-5">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl">收件箱</h1>
+          <h1 className="text-2xl">Bandeja de entrada</h1>
           <p className="mt-0.5 text-[11px] text-muted-foreground">
-            粘贴 12368 / 法院短信 → 自动解析 → 一键生成开庭 / 期限
+            Pega mensajes de 12368 / tribunales → análisis automático → genera
+            audiencias / plazos con un clic
           </p>
         </div>
         <Button onClick={() => setPasteOpen(true)} className="gap-1.5">
           <Plus className="h-3.5 w-3.5" />
-          粘贴短信
+          Pegar SMS
         </Button>
       </div>
 
       {/* Tab */}
       <div className="border-b border-border">
         <div className="flex gap-5">
-          <TabBtn active={tab === "unprocessed"} onClick={() => setTab("unprocessed")}>
-            待处理
+          <TabBtn
+            active={tab === "unprocessed"}
+            onClick={() => setTab("unprocessed")}
+          >
+            Pendientes
             <Count n={unprocessed.length} hot={unprocessed.length > 0} />
           </TabBtn>
-          <TabBtn active={tab === "needsManual"} onClick={() => setTab("needsManual")}>
-            待人工
+          <TabBtn
+            active={tab === "needsManual"}
+            onClick={() => setTab("needsManual")}
+          >
+            Requiere intervención
             <Count n={needsManual.length} hot={needsManual.length > 0} />
           </TabBtn>
-          <TabBtn active={tab === "processed"} onClick={() => setTab("processed")}>
-            已处理
+          <TabBtn
+            active={tab === "processed"}
+            onClick={() => setTab("processed")}
+          >
+            Procesados
             <Count n={processed.length} />
           </TabBtn>
         </div>
@@ -129,10 +146,10 @@ export function InboxView({
           <div className="ll-surface rounded-lg border border-border p-12 text-center text-sm text-muted-foreground">
             <Inbox className="mx-auto mb-2 h-6 w-6 opacity-40" />
             {tab === "unprocessed"
-              ? "无待处理短信"
+              ? "No hay SMS pendientes"
               : tab === "needsManual"
-                ? "没有需要人工处理的电子送达"
-                : "暂无已处理记录"}
+                ? "No hay notificaciones electrónicas que requieran intervención manual"
+                : "Todavía no hay registros procesados"}
           </div>
         ) : (
           rows.map((sms) => (
@@ -141,13 +158,16 @@ export function InboxView({
               sms={sms}
               matters={matters}
               onGenerateHearing={() => {
-                if (sms.matchedMatter) setHearingTarget({ sms, matter: sms.matchedMatter });
+                if (sms.matchedMatter)
+                  setHearingTarget({ sms, matter: sms.matchedMatter });
               }}
               onGenerateDeadline={() => {
-                if (sms.matchedMatter) setDeadlineTarget({ sms, matter: sms.matchedMatter });
+                if (sms.matchedMatter)
+                  setDeadlineTarget({ sms, matter: sms.matchedMatter });
               }}
               onBackfillCaseNumber={() => {
-                if (sms.matchedMatter) setBackfillTarget({ sms, matter: sms.matchedMatter });
+                if (sms.matchedMatter)
+                  setBackfillTarget({ sms, matter: sms.matchedMatter });
               }}
             />
           ))
@@ -187,7 +207,7 @@ export function InboxView({
 function TabBtn({
   active,
   onClick,
-  children
+  children,
 }: {
   active: boolean;
   onClick: () => void;
@@ -199,11 +219,15 @@ function TabBtn({
       onClick={onClick}
       className={cn(
         "relative inline-flex items-center gap-1.5 pb-2.5 pt-1 text-[13px] transition-colors",
-        active ? "text-foreground" : "text-muted-foreground hover:text-foreground"
+        active
+          ? "text-foreground"
+          : "text-muted-foreground hover:text-foreground",
       )}
     >
       {children}
-      {active && <span className="absolute -bottom-px left-0 right-0 h-[2px] bg-primary" />}
+      {active && (
+        <span className="absolute -bottom-px left-0 right-0 h-[2px] bg-primary" />
+      )}
     </button>
   );
 }
@@ -214,7 +238,9 @@ function Count({ n, hot }: { n: number; hot?: boolean }) {
     <span
       className={cn(
         "ml-1 inline-flex items-center justify-center rounded-full px-1.5 font-mono text-[10px]",
-        hot ? "bg-amber-500/15 text-amber-700" : "bg-muted/60 text-muted-foreground"
+        hot
+          ? "bg-amber-500/15 text-amber-700"
+          : "bg-muted/60 text-muted-foreground",
       )}
     >
       {n}
@@ -229,7 +255,7 @@ function SmsCard({
   matters,
   onGenerateHearing,
   onGenerateDeadline,
-  onBackfillCaseNumber
+  onBackfillCaseNumber,
 }: {
   sms: SmsRow;
   matters: MatterOption[];
@@ -266,26 +292,32 @@ function SmsCard({
 
   // v0.51: 解析出新案号 + 案件里有缺案号的程序 → 可回填
   const usedCaseNumbers = new Set(
-    (sms.matchedMatter?.procedures ?? []).map((p) => p.caseNumber).filter(Boolean) as string[]
+    (sms.matchedMatter?.procedures ?? [])
+      .map((p) => p.caseNumber)
+      .filter(Boolean) as string[],
   );
   const canBackfillCaseNumber = Boolean(
     sms.matchedMatter &&
-      parsed.caseNumbers.some((n) => !usedCaseNumbers.has(n)) &&
-      sms.matchedMatter.procedures.some((p) => !p.caseNumber)
+    parsed.caseNumbers.some((n) => !usedCaseNumbers.has(n)) &&
+    sms.matchedMatter.procedures.some((p) => !p.caseNumber),
   );
 
   const onExtractAttachments = () =>
     startTransition(async () => {
       try {
         const res = await extractSmsAttachments({ id: sms.id });
-        const downloaded = res.attachmentResults.filter((r) => r.status === "DOWNLOADED").length;
-        const needsManual = res.attachmentResults.filter((r) => r.status === "LOGIN_REQUIRED").length;
+        const downloaded = res.attachmentResults.filter(
+          (r) => r.status === "DOWNLOADED",
+        ).length;
+        const needsManual = res.attachmentResults.filter(
+          (r) => r.status === "LOGIN_REQUIRED",
+        ).length;
         toast.success(
           downloaded > 0
             ? `已提取 ${downloaded} 个附件`
             : needsManual > 0
               ? "送达入口需要人工处理"
-              : "附件提取已完成"
+              : "附件提取已完成",
         );
       } catch (e) {
         toast.error(e instanceof Error ? e.message : "提取失败");
@@ -302,7 +334,9 @@ function SmsCard({
         >
           {SMS_TYPE_CN[sms.smsType]}
         </span>
-        {parsed.court && <span className="text-foreground/80">{parsed.court}</span>}
+        {parsed.court && (
+          <span className="text-foreground/80">{parsed.court}</span>
+        )}
         {parsed.caseNumbers.length > 0 && (
           <span className="font-mono text-[10px] text-muted-foreground">
             {parsed.caseNumbers.join("、")}
@@ -325,7 +359,9 @@ function SmsCard({
               AI
             </span>
           )}
-          <p className="line-clamp-2 text-[13px] text-foreground/85">{parsed.summary}</p>
+          <p className="line-clamp-2 text-[13px] text-foreground/85">
+            {parsed.summary}
+          </p>
         </div>
         {parsed.action && (
           <div className="flex items-baseline gap-1.5 text-[12px]">
@@ -340,7 +376,9 @@ function SmsCard({
       {/* 字段栏 */}
       <div className="mt-2 flex flex-wrap gap-x-3 gap-y-1 text-[11px] text-muted-foreground">
         {parsed.hearingDate && (
-          <Field icon={<Gavel className="h-3 w-3" />}>开庭：{parsed.hearingDate}</Field>
+          <Field icon={<Gavel className="h-3 w-3" />}>
+            开庭：{parsed.hearingDate}
+          </Field>
         )}
         {parsed.courtRoom && <Field>{parsed.courtRoom}</Field>}
         {parsed.judge && <Field>法官：{parsed.judge}</Field>}
@@ -352,7 +390,9 @@ function SmsCard({
             </a>
           </Field>
         ))}
-        {parsed.appealDeadline && <Field>上诉期：{parsed.appealDeadline}</Field>}
+        {parsed.appealDeadline && (
+          <Field>上诉期：{parsed.appealDeadline}</Field>
+        )}
         {parsed.judgmentDate && <Field>判决日：{parsed.judgmentDate}</Field>}
         {parsed.urls.length > 0 &&
           parsed.urls.map((u, i) => (
@@ -382,9 +422,13 @@ function SmsCard({
                 className="rounded-md border border-border/70 bg-muted/20 px-2.5 py-2"
               >
                 <div className="flex items-center gap-2 text-[11px]">
-                  <span className="font-medium text-foreground/85">{item.title}</span>
+                  <span className="font-medium text-foreground/85">
+                    {item.title}
+                  </span>
                   {item.dateText && (
-                    <span className="font-mono text-[10px] text-primary">{item.dateText}</span>
+                    <span className="font-mono text-[10px] text-primary">
+                      {item.dateText}
+                    </span>
                   )}
                 </div>
                 <p className="mt-0.5 line-clamp-1 text-[10px] text-muted-foreground">
@@ -396,7 +440,9 @@ function SmsCard({
         </div>
       )}
 
-      {(parsed.documentLinks.length > 0 || parsed.credentials.length > 0 || parsed.attachmentResults.length > 0) && (
+      {(parsed.documentLinks.length > 0 ||
+        parsed.credentials.length > 0 ||
+        parsed.attachmentResults.length > 0) && (
         <div className="mt-3 space-y-2 border-t border-border pt-3">
           {parsed.documentLinks.length > 0 && (
             <div className="space-y-1.5">
@@ -448,7 +494,10 @@ function SmsCard({
           {parsed.attachmentResults.length > 0 && (
             <div className="space-y-1">
               {parsed.attachmentResults.map((result, i) => (
-                <AttachmentResultRow key={`${result.url}-${i}`} result={result} />
+                <AttachmentResultRow
+                  key={`${result.url}-${i}`}
+                  result={result}
+                />
               ))}
             </div>
           )}
@@ -466,7 +515,9 @@ function SmsCard({
             <span className="font-mono text-[10px] text-muted-foreground">
               {sms.matchedMatter.internalCode}
             </span>
-            <span className="truncate font-medium">{sms.matchedMatter.title}</span>
+            <span className="truncate font-medium">
+              {sms.matchedMatter.title}
+            </span>
             {sms.matchedBy === "AUTO_CASE_NUMBER" && (
               <span className="ml-0.5 rounded bg-muted/60 px-1 text-[9px] text-muted-foreground">
                 自动
@@ -529,9 +580,17 @@ function SmsCard({
               onClick={onExtractAttachments}
               disabled={pending || !sms.matchedMatter}
               className="h-7 gap-1 text-[11px]"
-              title={sms.matchedMatter ? "提取短信中的送达附件" : "先关联案件后再提取附件"}
+              title={
+                sms.matchedMatter
+                  ? "提取短信中的送达附件"
+                  : "先关联案件后再提取附件"
+              }
             >
-              {pending ? <Loader2 className="h-3 w-3 animate-spin" /> : <FileDown className="h-3 w-3" />}
+              {pending ? (
+                <Loader2 className="h-3 w-3 animate-spin" />
+              ) : (
+                <FileDown className="h-3 w-3" />
+              )}
               提取附件
             </Button>
           )}
@@ -568,7 +627,13 @@ function SmsCard({
   );
 }
 
-function Field({ icon, children }: { icon?: React.ReactNode; children: React.ReactNode }) {
+function Field({
+  icon,
+  children,
+}: {
+  icon?: React.ReactNode;
+  children: React.ReactNode;
+}) {
   return (
     <span className="inline-flex items-center gap-1">
       {icon && <span className="text-muted-foreground/70">{icon}</span>}
@@ -598,30 +663,74 @@ function normalizeParsedJson(sms: SmsRow): ParsedJson {
     importantItems: Array.isArray(raw.importantItems) ? raw.importantItems : [],
     credentials: Array.isArray(raw.credentials) ? raw.credentials : [],
     documentLinks: Array.isArray(raw.documentLinks) ? raw.documentLinks : [],
-    attachmentResults: Array.isArray(raw.attachmentResults) ? raw.attachmentResults : [],
+    attachmentResults: Array.isArray(raw.attachmentResults)
+      ? raw.attachmentResults
+      : [],
     summary: raw.summary ?? sms.rawText.slice(0, 80),
     aiEnriched: raw.aiEnriched,
     action: raw.action ?? null,
-    urgency: raw.urgency ?? null
+    urgency: raw.urgency ?? null,
   };
 }
 
-function AttachmentResultRow({ result }: { result: ParsedJson["attachmentResults"][number] }) {
+function AttachmentResultRow({
+  result,
+}: {
+  result: ParsedJson["attachmentResults"][number];
+}) {
   const meta = {
-    DOWNLOADED: { label: "已保存", color: "text-emerald-700", bg: "bg-emerald-500/10" },
-    ALREADY_DOWNLOADED: { label: "已存在", color: "text-emerald-700", bg: "bg-emerald-500/10" },
-    LOGIN_REQUIRED: { label: "待人工", color: "text-amber-700", bg: "bg-amber-500/10" },
-    SKIPPED_NO_MATTER: { label: "未关联", color: "text-amber-700", bg: "bg-amber-500/10" },
-    NO_FILE_FOUND: { label: "未发现", color: "text-muted-foreground", bg: "bg-muted/50" },
-    UNSUPPORTED_TYPE: { label: "不支持", color: "text-muted-foreground", bg: "bg-muted/50" },
-    FAILED: { label: "失败", color: "text-destructive", bg: "bg-destructive/10" },
-    PENDING: { label: "待提取", color: "text-muted-foreground", bg: "bg-muted/50" }
+    DOWNLOADED: {
+      label: "已保存",
+      color: "text-emerald-700",
+      bg: "bg-emerald-500/10",
+    },
+    ALREADY_DOWNLOADED: {
+      label: "已存在",
+      color: "text-emerald-700",
+      bg: "bg-emerald-500/10",
+    },
+    LOGIN_REQUIRED: {
+      label: "待人工",
+      color: "text-amber-700",
+      bg: "bg-amber-500/10",
+    },
+    SKIPPED_NO_MATTER: {
+      label: "未关联",
+      color: "text-amber-700",
+      bg: "bg-amber-500/10",
+    },
+    NO_FILE_FOUND: {
+      label: "未发现",
+      color: "text-muted-foreground",
+      bg: "bg-muted/50",
+    },
+    UNSUPPORTED_TYPE: {
+      label: "不支持",
+      color: "text-muted-foreground",
+      bg: "bg-muted/50",
+    },
+    FAILED: {
+      label: "失败",
+      color: "text-destructive",
+      bg: "bg-destructive/10",
+    },
+    PENDING: {
+      label: "待提取",
+      color: "text-muted-foreground",
+      bg: "bg-muted/50",
+    },
     // parsedJson 来自 DB JSON，status 可能是历史版本写入的未知值，需兜底
-  }[result.status] ?? { label: "未知", color: "text-muted-foreground", bg: "bg-muted/50" };
+  }[result.status] ?? {
+    label: "未知",
+    color: "text-muted-foreground",
+    bg: "bg-muted/50",
+  };
 
   return (
     <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-[11px] text-muted-foreground">
-      <span className={cn("rounded px-1.5 py-0.5 text-[10px]", meta.bg, meta.color)}>
+      <span
+        className={cn("rounded px-1.5 py-0.5 text-[10px]", meta.bg, meta.color)}
+      >
         {meta.label}
       </span>
       {result.documentId ? (
@@ -635,7 +744,9 @@ function AttachmentResultRow({ result }: { result: ParsedJson["attachmentResults
       ) : (
         <span className="line-clamp-1">{result.message}</span>
       )}
-      {result.documentId && <span className="line-clamp-1">{result.message}</span>}
+      {result.documentId && (
+        <span className="line-clamp-1">{result.message}</span>
+      )}
     </div>
   );
 }
@@ -644,7 +755,7 @@ function UrgencyBadge({ level }: { level: "HIGH" | "MEDIUM" | "LOW" }) {
   const meta = {
     HIGH: { label: "紧急", color: "#DC2626", bg: "rgb(248 113 113 / 0.12)" },
     MEDIUM: { label: "本周", color: "#D97706", bg: "rgb(252 211 77 / 0.15)" },
-    LOW: { label: "知悉", color: "#737373", bg: "rgb(229 229 229 / 0.5)" }
+    LOW: { label: "知悉", color: "#737373", bg: "rgb(229 229 229 / 0.5)" },
   }[level];
   return (
     <span
@@ -658,7 +769,13 @@ function UrgencyBadge({ level }: { level: "HIGH" | "MEDIUM" | "LOW" }) {
 }
 
 // 行内小 Combobox：手动指派 Matter
-function MatterPicker({ sms, matters }: { sms: SmsRow; matters: MatterOption[] }) {
+function MatterPicker({
+  sms,
+  matters,
+}: {
+  sms: SmsRow;
+  matters: MatterOption[];
+}) {
   const [open, setOpen] = useState(false);
   const [pending, startTransition] = useTransition();
 
@@ -682,7 +799,11 @@ function MatterPicker({ sms, matters }: { sms: SmsRow; matters: MatterOption[] }
           disabled={pending}
           className="inline-flex items-center gap-1 rounded border border-dashed border-border px-2 py-1 text-[11px] text-muted-foreground hover:border-primary/40 hover:text-foreground"
         >
-          {pending ? <Loader2 className="h-3 w-3 animate-spin" /> : <LinkIcon className="h-3 w-3" />}
+          {pending ? (
+            <Loader2 className="h-3 w-3 animate-spin" />
+          ) : (
+            <LinkIcon className="h-3 w-3" />
+          )}
           指派案件
         </button>
       </PopoverTrigger>

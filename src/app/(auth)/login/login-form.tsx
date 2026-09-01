@@ -14,8 +14,8 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { cn } from "@/lib/utils";
 
 const schema = z.object({
-  email: z.string().email("请填写有效邮箱"),
-  password: z.string().min(1, "请填写密码")
+  email: z.string().email("Ingresá un email válido"),
+  password: z.string().min(1, "Ingresá tu contraseña")
 });
 
 type FormValues = z.infer<typeof schema>;
@@ -46,7 +46,7 @@ export function LoginForm() {
       router.replace(callbackUrl);
       router.refresh();
     } else {
-      setAuthError("邮箱或密码错误");
+      setAuthError("Email o contraseña incorrectos");
     }
   }
 
@@ -60,12 +60,12 @@ export function LoginForm() {
       ) : null}
 
       <div className="space-y-1.5">
-        <Label htmlFor="email">邮箱</Label>
+        <Label htmlFor="email">Email</Label>
         <Input
           id="email"
           type="email"
           autoComplete="email"
-          placeholder="you@example.com"
+          placeholder="tu@email.com"
           aria-invalid={!!errors.email}
           className={cn(errors.email && "border-destructive focus-visible:ring-destructive")}
           {...register("email")}
@@ -76,7 +76,7 @@ export function LoginForm() {
       </div>
 
       <div className="space-y-1.5">
-        <Label htmlFor="password">密码</Label>
+        <Label htmlFor="password">Contraseña</Label>
         <div className="relative">
           <Input
             id="password"
@@ -93,7 +93,7 @@ export function LoginForm() {
             type="button"
             onClick={() => setShowPassword((v) => !v)}
             tabIndex={-1}
-            aria-label={showPassword ? "隐藏密码" : "显示密码"}
+            aria-label={showPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
             className="absolute inset-y-0 right-0 flex w-10 items-center justify-center text-muted-foreground transition-colors hover:text-foreground"
           >
             {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
@@ -110,11 +110,11 @@ export function LoginForm() {
         disabled={isSubmitting}
       >
         {isSubmitting && <Loader2 className="h-4 w-4 animate-spin" />}
-        {isSubmitting ? "登录中..." : "登录"}
+        {isSubmitting ? "Iniciando sesión..." : "Iniciar Sesión"}
       </Button>
 
       <p className="text-center text-xs text-muted-foreground">
-        忘记密码？联系系统管理员重置
+        ¿Olvidaste tu contraseña? Contactá al administrador
       </p>
     </form>
   );

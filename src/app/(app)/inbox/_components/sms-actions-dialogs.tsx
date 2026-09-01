@@ -8,7 +8,7 @@ import {
   DialogContent,
   DialogFooter,
   DialogHeader,
-  DialogTitle
+  DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -18,7 +18,7 @@ import { RadioChips } from "@/components/ui/radio-chips";
 import {
   backfillCaseNumberFromSms,
   generateHearingFromSms,
-  generateDeadlineFromSms
+  generateDeadlineFromSms,
 } from "@/server/sms/actions";
 import type { SmsRow, MatterOption, ParsedJson } from "./sms-types";
 import { toDate } from "@/lib/sms-parser";
@@ -27,10 +27,10 @@ import { procedureTypeLabel } from "@/lib/enums";
 // v0.51: 程序默认选中——优先取案号与短信解析案号一致的程序
 function preferredProcedureId(
   procedures: NonNullable<SmsRow["matchedMatter"]>["procedures"],
-  parsed: ParsedJson
+  parsed: ParsedJson,
 ) {
   const hit = procedures.find(
-    (p) => p.caseNumber && parsed.caseNumbers.includes(p.caseNumber)
+    (p) => p.caseNumber && parsed.caseNumbers.includes(p.caseNumber),
   );
   return hit?.id ?? procedures[0]?.id ?? "";
 }
@@ -43,7 +43,7 @@ export function GenerateHearingDialog({
   open,
   onOpenChange,
   sms,
-  matter
+  matter,
 }: {
   open: boolean;
   onOpenChange: (o: boolean) => void;
@@ -51,12 +51,14 @@ export function GenerateHearingDialog({
   matter: NonNullable<SmsRow["matchedMatter"]>;
 }) {
   const parsed = sms.parsedJson as unknown as ParsedJson;
-  const [procedureId, setProcedureId] = useState(preferredProcedureId(matter.procedures, parsed));
-  const [title, setTitle] = useState(parsed.smsType === "HEARING_NOTICE" ? "开庭" : "庭审");
-  const initDate = parsed.hearingDate ? toDate(parsed.hearingDate) : null;
-  const [dateStr, setDateStr] = useState(
-    initDate ? formatLocal(initDate) : ""
+  const [procedureId, setProcedureId] = useState(
+    preferredProcedureId(matter.procedures, parsed),
   );
+  const [title, setTitle] = useState(
+    parsed.smsType === "HEARING_NOTICE" ? "Audiencia" : "Audiencia",
+  );
+  const initDate = parsed.hearingDate ? toDate(parsed.hearingDate) : null;
+  const [dateStr, setDateStr] = useState(initDate ? formatLocal(initDate) : "");
   const [room, setRoom] = useState(parsed.courtRoom ?? "");
   const [judge, setJudge] = useState(parsed.judge ?? "");
   const [notes, setNotes] = useState(parsed.summary);
@@ -64,12 +66,12 @@ export function GenerateHearingDialog({
 
   const submit = () => {
     if (!procedureId) {
-      toast.error("请选择程序");
+      toast.error("Selecciona un procedimiento");
       return;
     }
     const d = dateStr ? new Date(dateStr) : null;
     if (!d || isNaN(d.getTime())) {
-      toast.error("请填写有效的开庭时间");
+      toast.error("Ingresa una hora de audiencia válida");
       return;
     }
     startTransition(async () => {
@@ -81,7 +83,7 @@ export function GenerateHearingDialog({
           startsAt: d,
           room: room.trim(),
           judge: judge.trim(),
-          notes: notes.trim()
+          notes: notes.trim(),
         });
         toast.success("已生成开庭并标记此短信处理完成");
         onOpenChange(false);
@@ -109,7 +111,7 @@ export function GenerateHearingDialog({
               className="mt-2"
               items={matter.procedures.map((p) => ({
                 value: p.id,
-                label: `${p.customLabel ?? procedureTypeLabel[p.type]}${p.caseNumber ? ` · ${p.caseNumber}` : ""}`
+                label: `${p.customLabel ?? procedureTypeLabel[p.type]}${p.caseNumber ? ` · ${p.caseNumber}` : ""}`,
               }))}
               value={procedureId}
               onChange={setProcedureId}
@@ -138,12 +140,20 @@ export function GenerateHearingDialog({
 
           <div>
             <Label className="text-[11px]">法庭</Label>
-            <Input value={room} onChange={(e) => setRoom(e.target.value)} className="mt-1" />
+            <Input
+              value={room}
+              onChange={(e) => setRoom(e.target.value)}
+              className="mt-1"
+            />
           </div>
 
           <div>
             <Label className="text-[11px]">承办法官</Label>
-            <Input value={judge} onChange={(e) => setJudge(e.target.value)} className="mt-1" />
+            <Input
+              value={judge}
+              onChange={(e) => setJudge(e.target.value)}
+              className="mt-1"
+            />
           </div>
 
           <div className="md:col-span-2">
@@ -158,7 +168,11 @@ export function GenerateHearingDialog({
         </div>
 
         <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)} disabled={pending}>
+          <Button
+            variant="outline"
+            onClick={() => onOpenChange(false)}
+            disabled={pending}
+          >
             取消
           </Button>
           <Button onClick={submit} disabled={pending}>
@@ -183,7 +197,7 @@ const DEADLINE_CATEGORIES = [
   { value: "ENFORCEMENT", label: "执行期" },
   { value: "LIMITATION", label: "诉讼时效" },
   { value: "ARBITRATION_SET_ASIDE", label: "撤裁期" },
-  { value: "CUSTOM", label: "其他" }
+  { value: "CUSTOM", label: "其他" },
 ] as const;
 type DeadlineCategory = (typeof DEADLINE_CATEGORIES)[number]["value"];
 
@@ -193,24 +207,34 @@ const ITEM_KIND_TO_CATEGORY: Partial<Record<string, DeadlineCategory>> = {
   FEE_DEADLINE: "PERFORMANCE",
   APPEAL: "APPEAL",
   PERFORMANCE: "PERFORMANCE",
-  ENFORCEMENT: "ENFORCEMENT"
+  ENFORCEMENT: "ENFORCEMENT",
 };
 
 function firstDeadlineItem(parsed: ParsedJson) {
   return parsed.importantItems.find(
-    (item) => item.category === "DEADLINE" && ITEM_KIND_TO_CATEGORY[item.kind]
+    (item) => item.category === "DEADLINE" && ITEM_KIND_TO_CATEGORY[item.kind],
   );
 }
 
-function pickDefaultDeadlineTitle(parsed: ParsedJson): { title: string; category: DeadlineCategory } {
+function pickDefaultDeadlineTitle(parsed: ParsedJson): {
+  title: string;
+  category: DeadlineCategory;
+} {
   const item = firstDeadlineItem(parsed);
   if (item) {
-    return { title: item.title, category: ITEM_KIND_TO_CATEGORY[item.kind] ?? "CUSTOM" };
+    return {
+      title: item.title,
+      category: ITEM_KIND_TO_CATEGORY[item.kind] ?? "CUSTOM",
+    };
   }
-  if (parsed.appealDeadline) return { title: `上诉期 ${parsed.appealDeadline}`, category: "APPEAL" };
-  if (parsed.smsType === "EVIDENCE_SUBMIT") return { title: "举证期限", category: "EVIDENCE" };
-  if (parsed.smsType === "FEE_NOTICE") return { title: "诉讼费缴纳", category: "PERFORMANCE" };
-  if (parsed.smsType === "JUDGMENT_NOTICE") return { title: "判决书生效 / 履行期", category: "PERFORMANCE" };
+  if (parsed.appealDeadline)
+    return { title: `上诉期 ${parsed.appealDeadline}`, category: "APPEAL" };
+  if (parsed.smsType === "EVIDENCE_SUBMIT")
+    return { title: "举证期限", category: "EVIDENCE" };
+  if (parsed.smsType === "FEE_NOTICE")
+    return { title: "诉讼费缴纳", category: "PERFORMANCE" };
+  if (parsed.smsType === "JUDGMENT_NOTICE")
+    return { title: "判决书生效 / 履行期", category: "PERFORMANCE" };
   return { title: parsed.summary.slice(0, 30) || "期限", category: "CUSTOM" };
 }
 
@@ -243,7 +267,7 @@ export function GenerateDeadlineDialog({
   open,
   onOpenChange,
   sms,
-  matter
+  matter,
 }: {
   open: boolean;
   onOpenChange: (o: boolean) => void;
@@ -254,10 +278,14 @@ export function GenerateDeadlineDialog({
   const defaults = pickDefaultDeadlineTitle(parsed);
   const initDue = pickDefaultDueDate(parsed);
 
-  const [procedureId, setProcedureId] = useState(preferredProcedureId(matter.procedures, parsed));
+  const [procedureId, setProcedureId] = useState(
+    preferredProcedureId(matter.procedures, parsed),
+  );
   const [title, setTitle] = useState(defaults.title);
   const [category, setCategory] = useState<DeadlineCategory>(defaults.category);
-  const [dateStr, setDateStr] = useState(initDue ? formatLocalDateOnly(initDue) : "");
+  const [dateStr, setDateStr] = useState(
+    initDue ? formatLocalDateOnly(initDue) : "",
+  );
   const [basis, setBasis] = useState(parsed.summary.slice(0, 100));
   const [remindDays, setRemindDays] = useState(3);
   const [pending, startTransition] = useTransition();
@@ -281,7 +309,7 @@ export function GenerateDeadlineDialog({
           category,
           dueAt: d,
           basis: basis.trim(),
-          remindDays
+          remindDays,
         });
         toast.success("已生成期限并标记此短信处理完成");
         onOpenChange(false);
@@ -309,7 +337,7 @@ export function GenerateDeadlineDialog({
               className="mt-2"
               items={matter.procedures.map((p) => ({
                 value: p.id,
-                label: `${p.customLabel ?? procedureTypeLabel[p.type]}${p.caseNumber ? ` · ${p.caseNumber}` : ""}`
+                label: `${p.customLabel ?? procedureTypeLabel[p.type]}${p.caseNumber ? ` · ${p.caseNumber}` : ""}`,
               }))}
               value={procedureId}
               onChange={setProcedureId}
@@ -321,7 +349,10 @@ export function GenerateDeadlineDialog({
             <RadioChips
               size="sm"
               className="mt-2"
-              items={DEADLINE_CATEGORIES.map((c) => ({ value: c.value, label: c.label }))}
+              items={DEADLINE_CATEGORIES.map((c) => ({
+                value: c.value,
+                label: c.label,
+              }))}
               value={category}
               onChange={(v) => setCategory(v as DeadlineCategory)}
             />
@@ -354,7 +385,9 @@ export function GenerateDeadlineDialog({
               min={1}
               max={30}
               value={remindDays}
-              onChange={(e) => setRemindDays(Math.max(1, parseInt(e.target.value) || 3))}
+              onChange={(e) =>
+                setRemindDays(Math.max(1, parseInt(e.target.value) || 3))
+              }
               className="mt-1"
             />
           </div>
@@ -371,7 +404,11 @@ export function GenerateDeadlineDialog({
         </div>
 
         <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)} disabled={pending}>
+          <Button
+            variant="outline"
+            onClick={() => onOpenChange(false)}
+            disabled={pending}
+          >
             取消
           </Button>
           <Button onClick={submit} disabled={pending}>
@@ -392,7 +429,7 @@ export function BackfillCaseNumberDialog({
   open,
   onOpenChange,
   sms,
-  matter
+  matter,
 }: {
   open: boolean;
   onOpenChange: (o: boolean) => void;
@@ -401,9 +438,11 @@ export function BackfillCaseNumberDialog({
 }) {
   const parsed = sms.parsedJson as unknown as ParsedJson;
   const usedNumbers = new Set(
-    matter.procedures.map((p) => p.caseNumber).filter(Boolean) as string[]
+    matter.procedures.map((p) => p.caseNumber).filter(Boolean) as string[],
   );
-  const candidateNumbers = parsed.caseNumbers.filter((n) => !usedNumbers.has(n));
+  const candidateNumbers = parsed.caseNumbers.filter(
+    (n) => !usedNumbers.has(n),
+  );
   const emptyProcedures = matter.procedures.filter((p) => !p.caseNumber);
 
   const [caseNumber, setCaseNumber] = useState(candidateNumbers[0] ?? "");
@@ -417,7 +456,11 @@ export function BackfillCaseNumberDialog({
     }
     startTransition(async () => {
       try {
-        await backfillCaseNumberFromSms({ smsId: sms.id, procedureId, caseNumber });
+        await backfillCaseNumberFromSms({
+          smsId: sms.id,
+          procedureId,
+          caseNumber,
+        });
         toast.success(`案号已回填：${caseNumber}`);
         onOpenChange(false);
       } catch (e) {
@@ -448,13 +491,15 @@ export function BackfillCaseNumberDialog({
             />
           </div>
           <div>
-            <Label className="text-[11px]">回填到程序（仅列出尚无案号的程序） *</Label>
+            <Label className="text-[11px]">
+              回填到程序（仅列出尚无案号的程序） *
+            </Label>
             <RadioChips
               size="sm"
               className="mt-2"
               items={emptyProcedures.map((p) => ({
                 value: p.id,
-                label: p.customLabel ?? procedureTypeLabel[p.type]
+                label: p.customLabel ?? procedureTypeLabel[p.type],
               }))}
               value={procedureId}
               onChange={setProcedureId}
@@ -466,10 +511,17 @@ export function BackfillCaseNumberDialog({
         </div>
 
         <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)} disabled={pending}>
+          <Button
+            variant="outline"
+            onClick={() => onOpenChange(false)}
+            disabled={pending}
+          >
             取消
           </Button>
-          <Button onClick={submit} disabled={pending || !caseNumber || !procedureId}>
+          <Button
+            onClick={submit}
+            disabled={pending || !caseNumber || !procedureId}
+          >
             {pending && <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />}
             回填案号
           </Button>

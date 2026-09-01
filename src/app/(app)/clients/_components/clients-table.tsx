@@ -21,7 +21,7 @@ const TypeIcon = ({ type }: { type: ClientType }) => {
 
 export function ClientsTable({
   items,
-  onEdit
+  onEdit,
 }: {
   items: ClientRow[];
   onEdit: (c: ClientRow) => void;
@@ -29,9 +29,11 @@ export function ClientsTable({
   if (items.length === 0) {
     return (
       <div className="ll-surface flex flex-col items-center gap-2 py-20 text-center">
-        <div className="text-sm text-muted-foreground">还没有客户</div>
+        <div className="text-sm text-muted-foreground">Aún no hay clientes</div>
         <div className="text-xs text-muted-foreground">
-          点击右上角 <span className="text-foreground/80">新建客户</span> 开始
+          Hacé clic en la esquina superior derecha{" "}
+          <span className="text-foreground/80">Nuevo cliente</span> para
+          comenzar
         </div>
       </div>
     );
@@ -39,18 +41,18 @@ export function ClientsTable({
 
   return (
     <>
-      {/* 桌面端表格 */}
+      {/* Tabla de escritorio */}
       <div className="ll-surface hidden overflow-x-auto md:block">
         <table className="w-full text-[13px]">
           <thead>
             <tr className="border-b border-border bg-muted text-left text-[10px] font-semibold uppercase text-muted-foreground">
-              <th className="px-5 py-2.5">客户</th>
-              <th className="px-4 py-2.5">类型</th>
-              <th className="px-4 py-2.5">联系方式</th>
-              <th className="px-4 py-2.5">主要联系人</th>
-              <th className="px-4 py-2.5">案件</th>
-              <th className="px-4 py-2.5">标签</th>
-              <th className="w-20 px-5 py-2.5 text-right">操作</th>
+              <th className="px-5 py-2.5">Cliente</th>
+              <th className="px-4 py-2.5">Tipo</th>
+              <th className="px-4 py-2.5">Contacto</th>
+              <th className="px-4 py-2.5">Contacto principal</th>
+              <th className="px-4 py-2.5">Casos</th>
+              <th className="px-4 py-2.5">Etiquetas</th>
+              <th className="w-20 px-5 py-2.5 text-right">Acciones</th>
             </tr>
           </thead>
           <tbody>
@@ -98,7 +100,9 @@ export function ClientsTable({
                   <td className="px-4 py-2.5">
                     {primary ? (
                       <div>
-                        <div className="text-[0.875rem] text-foreground/90">{primary.name}</div>
+                        <div className="text-[0.875rem] text-foreground/90">
+                          {primary.name}
+                        </div>
                         {primary.phone && (
                           <div className="font-mono text-[10.5px] text-muted-foreground">
                             {primary.phone}
@@ -110,7 +114,9 @@ export function ClientsTable({
                     )}
                   </td>
                   <td className="px-4 py-2.5">
-                    <span className="ll-stat text-base">{c._count.matters}</span>
+                    <span className="ll-stat text-base">
+                      {c._count.matters}
+                    </span>
                     {c._count.intakes > 0 && (
                       <span className="ml-2 font-mono text-[10.5px] text-muted-foreground tabular">
                         +{c._count.intakes} 收案
@@ -157,7 +163,9 @@ export function ClientsTable({
               <div className="flex items-start justify-between gap-2">
                 <Link href={`/clients/${c.id}`} className="min-w-0 flex-1">
                   <div className="flex items-center gap-2">
-                    <span className="text-sm font-medium text-foreground">{c.name}</span>
+                    <span className="text-sm font-medium text-foreground">
+                      {c.name}
+                    </span>
                     <span className="inline-flex items-center gap-1 rounded-sm border border-border px-1.5 py-0.5 text-[10px]">
                       <TypeIcon type={c.type} />
                       {clientTypeLabel[c.type]}
@@ -192,7 +200,11 @@ export function ClientsTable({
               {c.tags.length > 0 && (
                 <div className="mt-1.5 flex flex-wrap gap-1">
                   {c.tags.slice(0, 3).map((t) => (
-                    <Badge key={t} variant="secondary" className="text-[10px] font-normal">
+                    <Badge
+                      key={t}
+                      variant="secondary"
+                      className="text-[10px] font-normal"
+                    >
                       {t}
                     </Badge>
                   ))}

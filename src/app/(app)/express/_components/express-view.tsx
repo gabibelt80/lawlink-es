@@ -12,7 +12,7 @@ import {
   ArrowDownToLine,
   ArrowUpFromLine,
   ExternalLink,
-  AlertTriangle
+  AlertTriangle,
 } from "lucide-react";
 import type { Prisma, ExpressDirection } from "@prisma/client";
 import { toast } from "sonner";
@@ -26,12 +26,16 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogDescription
+  DialogDescription,
 } from "@/components/ui/dialog";
 import { RadioChips } from "@/components/ui/radio-chips";
 import { MatterCombobox } from "@/app/(app)/approvals/seals/_components/matter-combobox";
 import { cn } from "@/lib/utils";
-import { createExpress, refreshExpress, deleteExpress } from "@/server/express/actions";
+import {
+  createExpress,
+  refreshExpress,
+  deleteExpress,
+} from "@/server/express/actions";
 import { SUPPORTED_COMPANIES, detectCompany } from "@/lib/express/companies";
 import { matterHref } from "@/lib/matters/route";
 
@@ -57,14 +61,14 @@ const STATE_TONE: Record<string, "danger" | "ok" | "warn" | "muted"> = {
   退签: "danger",
   退回: "danger",
   暂无信息: "warn",
-  未知: "warn"
+  未知: "warn",
 };
 
 export function ExpressView({
   items,
   matters,
   configured,
-  hideHeader
+  hideHeader,
 }: {
   items: Row[];
   matters: MatterOption[];
@@ -99,16 +103,18 @@ export function ExpressView({
           <div>
             <h1 className="flex items-center gap-2 text-2xl">
               <Package className="h-5 w-5 text-primary" />
-              快递追踪
+              Seguimiento de paquetes
             </h1>
             <p className="mt-0.5 text-[11px] text-muted-foreground">
-              寄出 / 收到的法院文书、当事人材料统一登记 + 自动刷新物流
+              Registro unificado de documentos judiciales y materiales de las
+              partes enviados / recibidos + actualización automática de la
+              logística
             </p>
           </div>
         )}
         <Button onClick={() => setNewOpen(true)} className="gap-1.5">
           <Plus className="h-3.5 w-3.5" />
-          新建追踪
+          Nuevo seguimiento
         </Button>
       </div>
 
@@ -116,9 +122,13 @@ export function ExpressView({
         <div className="flex items-start gap-2 rounded-md border border-amber-500/30 bg-amber-500/10 p-3 text-[12px] text-amber-800">
           <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0" />
           <div>
-            未配置任何快递接入。记录可创建但物流状态拉不到。
-            <Link href="/settings/express" className="ml-1 font-medium underline">
-              去配置 快递鸟 / 快递100 →
+            No hay ninguna integración de paquetería configurada. Se pueden
+            crear registros, pero no se puede obtener el estado logístico.
+            <Link
+              href="/settings/express"
+              className="ml-1 font-medium underline"
+            >
+              Ir a configurar Kuaidi Bird / Kuaidi100 →
             </Link>
           </div>
         </div>
@@ -133,16 +143,16 @@ export function ExpressView({
           <Input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="搜索单号 / 用途 / 收件人 / 案件"
+            placeholder="Buscar número / propósito / destinatario / caso"
             className="h-9 border-border bg-card pl-9"
           />
         </div>
         <RadioChips
           size="sm"
           items={[
-            { value: "ALL", label: "全部" },
-            { value: "OUTBOUND", label: "寄出" },
-            { value: "INBOUND", label: "收到" }
+            { value: "ALL", label: "Todos" },
+            { value: "OUTBOUND", label: "Envío" },
+            { value: "INBOUND", label: "Recepción" },
           ]}
           value={direction}
           onChange={(v) => setDirection(v as DirectionFilter)}
@@ -154,8 +164,8 @@ export function ExpressView({
           <div className="ll-surface rounded-lg border border-border p-12 text-center text-sm text-muted-foreground">
             <Package className="mx-auto mb-2 h-6 w-6 opacity-40" />
             {items.length === 0
-              ? "暂无快递追踪记录，点上方「新建追踪」开始"
-              : "没有匹配的记录"}
+              ? "No hay registros de seguimiento de paquetes todavía; haga clic en «Nuevo seguimiento» arriba para comenzar"
+              : "No hay registros que coincidan"}
           </div>
         ) : (
           <div className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3">
@@ -179,44 +189,45 @@ export function ExpressView({
 function Card({ e }: { e: Row }) {
   const [pending, startTransition] = useTransition();
   const [tracesOpen, setTracesOpen] = useState(false);
-  const traces = (e.tracesJson as { time?: string; desc?: string }[] | null) ?? [];
-  const tone = e.lastState ? STATE_TONE[e.lastState] ?? "muted" : "muted";
+  const traces =
+    (e.tracesJson as { time?: string; desc?: string }[] | null) ?? [];
+  const tone = e.lastState ? (STATE_TONE[e.lastState] ?? "muted") : "muted";
 
   const onRefresh = () =>
     startTransition(async () => {
       try {
         const r = await refreshExpress({ id: e.id });
-        toast.success(`已更新：${r.state}（${r.provider}）`);
+        toast.success(`Se actualizó: ${r.state} (${r.provider})`);
       } catch (err) {
-        toast.error(err instanceof Error ? err.message : "刷新失败");
+        toast.error(err instanceof Error ? err.message : "Error al actualizar");
       }
     });
 
   const onDelete = () => {
-    if (!confirm(`确认删除单号 ${e.trackingNo}？`)) return;
+    if (!confirm(`¿Confirma eliminar la guía ${e.trackingNo}?`)) return;
     startTransition(async () => {
       try {
         await deleteExpress({ id: e.id });
-        toast.success("已删除");
+        toast.success("Se eliminó");
       } catch (err) {
-        toast.error(err instanceof Error ? err.message : "失败");
+        toast.error(err instanceof Error ? err.message : "Error");
       }
     });
   };
 
   return (
     <div className="ll-surface flex flex-col gap-2 rounded-lg border border-border p-4">
-      {/* 行 1：方向 + 公司 + 状态 */}
+      {/* Línea 1: dirección + empresa + estado */}
       <div className="flex flex-wrap items-center gap-2 text-[11px]">
         {e.direction === "OUTBOUND" ? (
           <span className="inline-flex items-center gap-1 rounded-full bg-sky-500/10 px-2 py-0.5 text-sky-700">
             <ArrowUpFromLine className="h-3 w-3" />
-            寄出
+            Envío
           </span>
         ) : (
           <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/10 px-2 py-0.5 text-emerald-700">
             <ArrowDownToLine className="h-3 w-3" />
-            收到
+            Recepción
           </span>
         )}
         {e.companyCode && (
@@ -227,10 +238,14 @@ function Card({ e }: { e: Row }) {
             variant="outline"
             className={cn(
               "px-1.5 py-0 text-[10px] font-normal",
-              tone === "danger" && "border-red-500/40 bg-red-500/10 text-red-700",
-              tone === "ok" && "border-emerald-500/40 bg-emerald-500/10 text-emerald-700",
-              tone === "warn" && "border-amber-500/40 bg-amber-500/10 text-amber-700",
-              tone === "muted" && "border-border bg-muted/40 text-muted-foreground"
+              tone === "danger" &&
+                "border-red-500/40 bg-red-500/10 text-red-700",
+              tone === "ok" &&
+                "border-emerald-500/40 bg-emerald-500/10 text-emerald-700",
+              tone === "warn" &&
+                "border-amber-500/40 bg-amber-500/10 text-amber-700",
+              tone === "muted" &&
+                "border-border bg-muted/40 text-muted-foreground",
             )}
           >
             {e.lastState}
@@ -238,21 +253,25 @@ function Card({ e }: { e: Row }) {
         )}
       </div>
 
-      {/* 行 2：单号 + 用途 */}
+      {/* Línea 2: número + propósito */}
       <div>
         <div className="font-mono text-[13px] font-medium text-foreground">
           {e.trackingNo}
         </div>
-        <p className="mt-1 line-clamp-2 text-[12px] text-foreground/85">{e.purpose}</p>
+        <p className="mt-1 line-clamp-2 text-[12px] text-foreground/85">
+          {e.purpose}
+        </p>
       </div>
 
-      {/* 行 3：收件人 + 案件 */}
+      {/* Línea 3: destinatario + caso */}
       <div className="space-y-1 text-[11px] text-muted-foreground">
         {(e.recipient || e.recipientPhone) && (
           <div>
-            收件人：{e.recipient ?? "—"}
+            Destinatario: {e.recipient ?? "—"}
             {e.recipientPhone && (
-              <span className="ml-1 font-mono text-[10px]">{e.recipientPhone}</span>
+              <span className="ml-1 font-mono text-[10px]">
+                {e.recipientPhone}
+              </span>
             )}
           </div>
         )}
@@ -262,13 +281,16 @@ function Card({ e }: { e: Row }) {
             className="inline-flex items-center gap-1 hover:text-primary"
           >
             <Briefcase className="h-3 w-3" />
-            <span className="font-mono text-[10px]">{e.matter.internalCode}</span>
+            <span className="font-mono text-[10px]">
+              {e.matter.internalCode}
+            </span>
             <span className="truncate">{e.matter.title}</span>
           </Link>
         )}
         {e.lastUpdateAt && (
           <div className="font-mono text-[10px]">
-            上次刷新：{new Date(e.lastUpdateAt).toLocaleString("zh-CN")}
+            Última actualización:{" "}
+            {new Date(e.lastUpdateAt).toLocaleString("es-AR")}
           </div>
         )}
       </div>
@@ -282,7 +304,7 @@ function Card({ e }: { e: Row }) {
             className="h-7 gap-1 px-2 text-[11px]"
           >
             <ExternalLink className="h-3 w-3" />
-            轨迹 {traces.length}
+            Seguimiento {traces.length}
           </Button>
         )}
         <Button
@@ -293,14 +315,14 @@ function Card({ e }: { e: Row }) {
           className="h-7 gap-1 px-2 text-[11px] text-primary"
         >
           <RefreshCw className={cn("h-3 w-3", pending && "animate-spin")} />
-          刷新
+          Actualizar
         </Button>
         <button
           type="button"
           onClick={onDelete}
           disabled={pending}
           className="rounded p-1 text-muted-foreground hover:text-destructive"
-          title="删除"
+          title="Eliminar"
         >
           <Trash2 className="h-3.5 w-3.5" />
         </button>
@@ -310,10 +332,11 @@ function Card({ e }: { e: Row }) {
         <DialogContent className="max-h-[80vh] w-[92vw] max-w-2xl overflow-y-auto">
           <DialogHeader>
             <DialogTitle>
-              <span className="font-mono">{e.trackingNo}</span> · 物流轨迹
+              <span className="font-mono">{e.trackingNo}</span> · Seguimiento
+              logístico
             </DialogTitle>
             <DialogDescription className="text-xs">
-              {e.companyCode} · {traces.length} 条
+              {e.companyCode} · {traces.length} elementos
             </DialogDescription>
           </DialogHeader>
           <ol className="space-y-2 border-l border-border pl-4">
@@ -322,7 +345,7 @@ function Card({ e }: { e: Row }) {
                 <span
                   className={cn(
                     "absolute -left-[19px] top-1 h-2 w-2 rounded-full",
-                    i === 0 ? "bg-primary" : "bg-muted-foreground/40"
+                    i === 0 ? "bg-primary" : "bg-muted-foreground/40",
                   )}
                 />
                 <div className="text-[12px] text-foreground/85">{t.desc}</div>
@@ -344,7 +367,7 @@ function NewExpressDialog({
   open,
   onOpenChange,
   matters,
-  configured
+  configured,
 }: {
   open: boolean;
   onOpenChange: (o: boolean) => void;
@@ -360,7 +383,7 @@ function NewExpressDialog({
   const [recipientPhone, setRecipientPhone] = useState("");
   const [pending, startTransition] = useTransition();
 
-  // 单号变化时自动识别公司
+  // Al cambiar el número, reconoce la empresa automáticamente
   const onTrackingChange = (v: string) => {
     setTrackingNo(v);
     if (v && !companyCode) {
@@ -381,11 +404,11 @@ function NewExpressDialog({
 
   const submit = () => {
     if (!trackingNo.trim()) {
-      toast.error("快递单号必填");
+      toast.error("El número de guía es obligatorio");
       return;
     }
     if (!purpose.trim()) {
-      toast.error("用途必填");
+      toast.error("El propósito es obligatorio");
       return;
     }
     startTransition(async () => {
@@ -397,17 +420,21 @@ function NewExpressDialog({
           matterId: matterId || null,
           purpose: purpose.trim(),
           recipient: recipient.trim(),
-          recipientPhone: recipientPhone.trim()
+          recipientPhone: recipientPhone.trim(),
         });
         if (res.firstState) {
-          toast.success(`已创建并查询：${res.firstState}`);
+          toast.success(`Se creó y consultó: ${res.firstState}`);
         } else {
-          toast.success(configured ? "已创建（首次查询失败，可稍后刷新）" : "已创建（未配置 API，状态稍后手动查）");
+          toast.success(
+            configured
+              ? "Se creó (la consulta inicial falló; puede actualizarse más tarde)"
+              : "Se creó (sin API configurada; el estado se consultará manualmente más adelante)",
+          );
         }
         reset();
         onOpenChange(false);
       } catch (e) {
-        toast.error(e instanceof Error ? e.message : "失败");
+        toast.error(e instanceof Error ? e.message : "Error");
       }
     });
   };
@@ -422,21 +449,22 @@ function NewExpressDialog({
     >
       <DialogContent className="max-h-[88vh] w-[92vw] max-w-2xl overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>新建快递追踪</DialogTitle>
+          <DialogTitle>Nuevo seguimiento de paquete</DialogTitle>
           <DialogDescription className="text-xs">
-            支持自动识别 顺丰 / 中通 / 圆通 / 韵达 / 申通 / EMS / 京东 / 极兔 等
+            Compatible con reconocimiento automático de SF / Zhongtong / YTO /
+            Yunda / STO / EMS / JD / Jitu, etc.
           </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-3">
           <div>
-            <Label className="text-[11px]">方向 *</Label>
+            <Label className="text-[11px]">Dirección *</Label>
             <RadioChips
               size="sm"
               className="mt-2"
               items={[
-                { value: "OUTBOUND", label: "寄出" },
-                { value: "INBOUND", label: "收到" }
+                { value: "OUTBOUND", label: "Envío" },
+                { value: "INBOUND", label: "Recepción" },
               ]}
               value={direction}
               onChange={(v) => setDirection(v as ExpressDirection)}
@@ -445,22 +473,24 @@ function NewExpressDialog({
 
           <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
             <div>
-              <Label className="text-[11px]">快递单号 *</Label>
+              <Label className="text-[11px]">Número de guía *</Label>
               <Input
                 value={trackingNo}
                 onChange={(e) => onTrackingChange(e.target.value)}
-                placeholder="如 SF1234567890123"
+                placeholder="Ej.: SF1234567890123"
                 className="mt-1 font-mono"
               />
             </div>
             <div>
-              <Label className="text-[11px]">快递公司</Label>
+              <Label className="text-[11px]">Empresa de paquetería</Label>
               <select
                 value={companyCode}
                 onChange={(e) => setCompanyCode(e.target.value)}
                 className="mt-1 h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
               >
-                <option value="">自动识别 / 未知</option>
+                <option value="">
+                  Reconocimiento automático / desconocido
+                </option>
                 {SUPPORTED_COMPANIES.map((c) => (
                   <option key={c} value={c}>
                     {c}
@@ -471,43 +501,45 @@ function NewExpressDialog({
           </div>
 
           <div>
-            <Label className="text-[11px]">用途 *</Label>
+            <Label className="text-[11px]">Propósito *</Label>
             <Input
               value={purpose}
               onChange={(e) => setPurpose(e.target.value)}
               placeholder={
                 direction === "OUTBOUND"
-                  ? "如：起诉状寄朝阳区法院立案庭"
-                  : "如：法院送达判决书"
+                  ? "Ej.: demanda enviada a la Sala de Presentación del Tribunal del distrito Chaoyang"
+                  : "Ej.: notificación judicial de la sentencia"
               }
               className="mt-1"
             />
           </div>
 
           <div>
-            <Label className="text-[11px]">关联案件（可选）</Label>
+            <Label className="text-[11px]">Caso relacionado (opcional)</Label>
             <div className="mt-1">
               <MatterCombobox
                 matters={matters}
                 value={matterId}
                 onChange={setMatterId}
-                placeholder="搜索案件编号 / 名称"
+                placeholder="Buscar número / nombre del caso"
               />
             </div>
           </div>
 
           <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
             <div>
-              <Label className="text-[11px]">{direction === "OUTBOUND" ? "收件人" : "寄件人"}</Label>
+              <Label className="text-[11px]">
+                {direction === "OUTBOUND" ? "Destinatario" : "Remitente"}
+              </Label>
               <Input
                 value={recipient}
                 onChange={(e) => setRecipient(e.target.value)}
-                placeholder="姓名或单位"
+                placeholder="Nombre o institución"
                 className="mt-1"
               />
             </div>
             <div>
-              <Label className="text-[11px]">联系电话</Label>
+              <Label className="text-[11px]">Teléfono de contacto</Label>
               <Input
                 value={recipientPhone}
                 onChange={(e) => setRecipientPhone(e.target.value)}
@@ -518,11 +550,15 @@ function NewExpressDialog({
         </div>
 
         <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)} disabled={pending}>
-            取消
+          <Button
+            variant="outline"
+            onClick={() => onOpenChange(false)}
+            disabled={pending}
+          >
+            Cancelar
           </Button>
           <Button onClick={submit} disabled={pending}>
-            {pending ? "创建中..." : "创建并查询"}
+            {pending ? "Creando..." : "Crear y consultar"}
           </Button>
         </DialogFooter>
       </DialogContent>

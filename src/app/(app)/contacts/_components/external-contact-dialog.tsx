@@ -14,18 +14,18 @@ import {
   DialogContent,
   DialogFooter,
   DialogHeader,
-  DialogTitle
+  DialogTitle,
 } from "@/components/ui/dialog";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
-  SelectValue
+  SelectValue,
 } from "@/components/ui/select";
 import {
   createExternalContact,
-  updateExternalContact
+  updateExternalContact,
 } from "@/server/external-contacts/actions";
 
 const CATEGORY_OPTIONS: { value: ExternalContactCategory; label: string }[] = [
@@ -36,7 +36,7 @@ const CATEGORY_OPTIONS: { value: ExternalContactCategory; label: string }[] = [
   { value: "ARBITRATION", label: "仲裁" },
   { value: "OTHER_FIRM", label: "他所律师" },
   { value: "EXPERT", label: "鉴定专家" },
-  { value: "OTHER", label: "其他" }
+  { value: "OTHER", label: "其他" },
 ];
 
 type Editing = {
@@ -56,7 +56,7 @@ type Editing = {
 export function ExternalContactDialog({
   open,
   onOpenChange,
-  editing
+  editing,
 }: {
   open: boolean;
   onOpenChange: (o: boolean) => void;
@@ -72,7 +72,7 @@ export function ExternalContactDialog({
     email: "",
     wechat: "",
     address: "",
-    notes: ""
+    notes: "",
   });
   const [isPending, startTransition] = useTransition();
 
@@ -88,7 +88,7 @@ export function ExternalContactDialog({
           email: editing.email ?? "",
           wechat: editing.wechat ?? "",
           address: editing.address ?? "",
-          notes: editing.notes ?? ""
+          notes: editing.notes ?? "",
         });
       } else {
         setForm({
@@ -100,7 +100,7 @@ export function ExternalContactDialog({
           email: "",
           wechat: "",
           address: "",
-          notes: ""
+          notes: "",
         });
       }
     }
@@ -108,7 +108,7 @@ export function ExternalContactDialog({
 
   function handleSave() {
     if (!form.name.trim()) {
-      toast.error("姓名必填");
+      toast.error("El nombre es obligatorio");
       return;
     }
     startTransition(async () => {
@@ -116,20 +116,20 @@ export function ExternalContactDialog({
         const payload = { ...form, tags: editing?.tags ?? [] };
         if (editing) {
           await updateExternalContact({ ...payload, id: editing.id });
-          toast.success("已更新");
+          toast.success("Se actualizó");
         } else {
           const created = await createExternalContact(payload);
           toast.success(
             created.status === "PENDING_REVIEW"
-              ? "已提交审核，管理员通过后展示"
-              : "已添加"
+              ? "Se envió para revisión; se mostrará después de que el administrador lo apruebe"
+              : "Se agregó",
           );
         }
         onOpenChange(false);
         router.refresh();
       } catch (err) {
-        toast.error("保存失败", {
-          description: err instanceof Error ? err.message : ""
+        toast.error("No se pudo guardar", {
+          description: err instanceof Error ? err.message : "",
         });
       }
     });
@@ -178,7 +178,9 @@ export function ExternalContactDialog({
               <Label className="text-xs">单位 / 机构</Label>
               <Input
                 value={form.organization}
-                onChange={(e) => setForm({ ...form, organization: e.target.value })}
+                onChange={(e) =>
+                  setForm({ ...form, organization: e.target.value })
+                }
                 placeholder="如：上海市浦东新区人民法院"
               />
             </div>
@@ -239,7 +241,11 @@ export function ExternalContactDialog({
         </div>
 
         <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)} disabled={isPending}>
+          <Button
+            variant="outline"
+            onClick={() => onOpenChange(false)}
+            disabled={isPending}
+          >
             取消
           </Button>
           <Button onClick={handleSave} disabled={isPending}>

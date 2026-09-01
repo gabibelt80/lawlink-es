@@ -1,5 +1,5 @@
 /**
- * /seals 页面共享类型（v0.8）
+ * Tipos compartidos de página /seals (v0.8)
  */
 import type { Prisma } from "@prisma/client";
 
@@ -27,7 +27,7 @@ export const SEAL_TYPE_CN: Record<string, string> = {
   CONTRACT_SEAL: "合同专用章",
   FINANCE_SEAL: "财务专用章",
   LEGAL_REP_SEAL: "法定代表人章",
-  CONTRACT_REVIEW_SEAL: "合同审核章"
+  CONTRACT_REVIEW_SEAL: "合同审核章",
 };
 
 export const SEAL_STATUS_CN: Record<string, string> = {
@@ -35,7 +35,7 @@ export const SEAL_STATUS_CN: Record<string, string> = {
   APPROVED: "待盖章",
   STAMPED: "已完成",
   REJECTED: "已驳回",
-  CANCELLED: "已撤销"
+  CANCELLED: "已撤销",
 };
 
 export const SEAL_STATUS_COLOR: Record<
@@ -45,26 +45,26 @@ export const SEAL_STATUS_COLOR: Record<
   PENDING: {
     bg: "rgb(252 211 77 / 0.12)",
     text: "rgb(180 130 0)",
-    border: "rgb(252 211 77 / 0.5)"
+    border: "rgb(252 211 77 / 0.5)",
   },
   APPROVED: {
     bg: "rgb(96 165 250 / 0.12)",
     text: "rgb(37 99 235)",
-    border: "rgb(96 165 250 / 0.5)"
+    border: "rgb(96 165 250 / 0.5)",
   },
   STAMPED: {
     bg: "rgb(74 222 128 / 0.12)",
     text: "rgb(22 163 74)",
-    border: "rgb(74 222 128 / 0.5)"
+    border: "rgb(74 222 128 / 0.5)",
   },
   REJECTED: {
     bg: "rgb(248 113 113 / 0.12)",
     text: "rgb(220 38 38)",
-    border: "rgb(248 113 113 / 0.5)"
+    border: "rgb(248 113 113 / 0.5)",
   },
   CANCELLED: {
     bg: "rgb(156 163 175 / 0.12)",
     text: "rgb(107 114 128)",
-    border: "rgb(156 163 175 / 0.5)"
-  }
+    border: "rgb(156 163 175 / 0.5)",
+  },
 };
