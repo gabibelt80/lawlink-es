@@ -30,15 +30,15 @@ const typeIcons: Record<string, string> = {
 };
 
 const typeLabels: Record<string, string> = {
-  PRESERVATION_EXPIRY: "保全到期",
-  HEARING_REMINDER: "庭审",
-  DEADLINE_REMINDER: "期限",
-  SEAL_STATUS_CHANGE: "用章",
-  SMS_ARRIVAL: "短信",
-  TASK_ASSIGNED: "系统",
-  SYSTEM: "系统",
-  ARCHIVE_APPROVED: "归档",
-  ARCHIVE_REJECTED: "归档",
+  PRESERVATION_EXPIRY: "Vencimiento de medida cautelar",
+  HEARING_REMINDER: "Audiencia",
+  DEADLINE_REMINDER: "Plazo",
+  SEAL_STATUS_CHANGE: "Uso de sello",
+  SMS_ARRIVAL: "SMS",
+  TASK_ASSIGNED: "Sistema",
+  SYSTEM: "Sistema",
+  ARCHIVE_APPROVED: "Archivo",
+  ARCHIVE_REJECTED: "Archivo",
 };
 
 const priorityColors: Record<string, string> = {
@@ -50,7 +50,9 @@ const priorityColors: Record<string, string> = {
 
 export function NotificationPopover() {
   const [unread, setUnread] = useState(0);
-  const [notifications, setNotifications] = useState<Awaited<ReturnType<typeof getNotifications>>>([]);
+  const [notifications, setNotifications] = useState<
+    Awaited<ReturnType<typeof getNotifications>>
+  >([]);
   const [open, setOpen] = useState(false);
   const [typeFilter, setTypeFilter] = useState<string | null>(null);
   const router = useRouter();
@@ -64,7 +66,7 @@ export function NotificationPopover() {
     try {
       const [count, list] = await Promise.all([
         getUnreadCount(),
-        getNotifications({ limit: 20 })
+        getNotifications({ limit: 20 }),
       ]);
       setUnread(count);
       setNotifications(list);
@@ -87,7 +89,7 @@ export function NotificationPopover() {
           const notif = new Notification(n.title, {
             body: n.content ?? undefined,
             tag: n.id,
-            icon: "/favicon.ico"
+            icon: "/favicon.ico",
           });
           if (n.href) {
             notif.onclick = () => {
@@ -103,7 +105,11 @@ export function NotificationPopover() {
 
   useEffect(() => {
     // 请求桌面通知授权（用户可拒绝；拒绝后仅站内铃铛生效）
-    if (typeof window !== "undefined" && "Notification" in window && Notification.permission === "default") {
+    if (
+      typeof window !== "undefined" &&
+      "Notification" in window &&
+      Notification.permission === "default"
+    ) {
       Notification.requestPermission().catch(() => {});
     }
     poll();
@@ -122,7 +128,11 @@ export function NotificationPopover() {
   const handleMarkRead = async (id: string, href?: string | null) => {
     await markNotificationRead(id);
     setUnread((prev) => Math.max(0, prev - 1));
-    setNotifications((prev) => prev.map((n) => n.id === id ? { ...n, read: true, readAt: new Date() } : n));
+    setNotifications((prev) =>
+      prev.map((n) =>
+        n.id === id ? { ...n, read: true, readAt: new Date() } : n,
+      ),
+    );
     if (href) {
       setOpen(false);
       router.push(href);
@@ -132,7 +142,9 @@ export function NotificationPopover() {
   const handleMarkAllRead = async () => {
     await markAllNotificationsRead();
     setUnread(0);
-    setNotifications((prev) => prev.map((n) => ({ ...n, read: true, readAt: new Date() })));
+    setNotifications((prev) =>
+      prev.map((n) => ({ ...n, read: true, readAt: new Date() })),
+    );
   };
 
   return (
@@ -141,7 +153,7 @@ export function NotificationPopover() {
         <button
           className={cn(
             "relative flex h-8 w-8 items-center justify-center rounded-md border border-border",
-            "text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+            "text-muted-foreground transition-colors hover:bg-muted hover:text-foreground",
           )}
           aria-label="通知"
         >
@@ -166,7 +178,9 @@ export function NotificationPopover() {
           )}
         </div>
         {(() => {
-          const presentTypes = Array.from(new Set(notifications.map((n) => n.type)));
+          const presentTypes = Array.from(
+            new Set(notifications.map((n) => n.type)),
+          );
           if (presentTypes.length <= 1) return null;
           return (
             <div className="flex flex-wrap gap-1 border-b px-3 py-1.5">
@@ -176,7 +190,7 @@ export function NotificationPopover() {
                   "rounded-full border px-2 py-0.5 text-[10px] transition-colors",
                   typeFilter === null
                     ? "border-primary bg-primary/15 text-primary"
-                    : "border-border text-muted-foreground hover:border-input hover:bg-muted hover:text-foreground"
+                    : "border-border text-muted-foreground hover:border-input hover:bg-muted hover:text-foreground",
                 )}
               >
                 全部
@@ -189,7 +203,7 @@ export function NotificationPopover() {
                     "rounded-full border px-2 py-0.5 text-[10px] transition-colors",
                     typeFilter === t
                       ? "border-primary bg-primary/15 text-primary"
-                      : "border-border text-muted-foreground hover:border-input hover:bg-muted hover:text-foreground"
+                      : "border-border text-muted-foreground hover:border-input hover:bg-muted hover:text-foreground",
                   )}
                 >
                   {typeIcons[t] ?? "🔔"} {typeLabels[t] ?? t}
@@ -206,7 +220,9 @@ export function NotificationPopover() {
             if (list.length === 0) {
               return (
                 <div className="px-3 py-8 text-center text-sm text-muted-foreground">
-                  {typeFilter ? `没有「${typeLabels[typeFilter] ?? typeFilter}」类通知` : "暂无通知"}
+                  {typeFilter
+                    ? `没有「${typeLabels[typeFilter] ?? typeFilter}」类通知`
+                    : "暂无通知"}
                 </div>
               );
             }
@@ -216,12 +232,20 @@ export function NotificationPopover() {
                 onClick={() => handleMarkRead(n.id, n.href)}
                 className={cn(
                   "flex w-full gap-2.5 border-b px-3 py-2.5 text-left transition-colors hover:bg-muted",
-                  !n.read && "bg-primary/5"
+                  !n.read && "bg-primary/5",
                 )}
               >
-                <span className="mt-0.5 text-sm">{typeIcons[n.type] ?? "🔔"}</span>
+                <span className="mt-0.5 text-sm">
+                  {typeIcons[n.type] ?? "🔔"}
+                </span>
                 <div className="min-w-0 flex-1">
-                  <div className={cn("text-[13px] leading-snug", !n.read && "font-medium", priorityColors[n.priority])}>
+                  <div
+                    className={cn(
+                      "text-[13px] leading-snug",
+                      !n.read && "font-medium",
+                      priorityColors[n.priority],
+                    )}
+                  >
                     {n.title}
                   </div>
                   {n.content && (
@@ -233,14 +257,20 @@ export function NotificationPopover() {
                     {formatTime(n.createdAt)}
                   </div>
                 </div>
-                {!n.read && <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-primary" />}
+                {!n.read && (
+                  <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-primary" />
+                )}
               </button>
             ));
           })()}
         </div>
         {notifications.length > 0 && (
           <div className="border-t px-3 py-2">
-            <Link href="/notifications" className="text-xs text-muted-foreground hover:text-foreground" onClick={() => setOpen(false)}>
+            <Link
+              href="/notifications"
+              className="text-xs text-muted-foreground hover:text-foreground"
+              onClick={() => setOpen(false)}
+            >
               查看全部通知
             </Link>
           </div>

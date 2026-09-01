@@ -11,11 +11,11 @@ import type { HeroData } from "@/server/dashboard/actions";
 import { ConflictDialog } from "@/components/conflict-dialog";
 
 function getGreeting(hour: number) {
-  if (hour < 6) return "夜深了";
-  if (hour < 11) return "早安";
-  if (hour < 13) return "中午好";
-  if (hour < 18) return "下午好";
-  return "晚上好";
+  if (hour < 6) return "Buenas noches";
+  if (hour < 11) return "Buenos días";
+  if (hour < 13) return "Buenas tardes";
+  if (hour < 18) return "Buenas tardes";
+  return "Buenas noches";
 }
 
 export function HeroBlock({ data }: { data: HeroData }) {
@@ -47,10 +47,10 @@ export function HeroBlock({ data }: { data: HeroData }) {
             </h1>
 
             <div className="mt-2 max-w-xl text-[0.875rem] leading-relaxed text-muted-foreground">
-              您今天有{" "}
-              <SummaryNum>{data.todayDeadlineCount}</SummaryNum> 件事需处理；本周开庭{" "}
-              <SummaryNum>{data.weekHearingCount}</SummaryNum> 场；近期期限{" "}
-              <SummaryNum>{data.nearTermCount}</SummaryNum> 项。
+              Hoy tiene <SummaryNum>{data.todayDeadlineCount}</SummaryNum>{" "}
+              asuntos por atender; esta semana hay{" "}
+              <SummaryNum>{data.weekHearingCount}</SummaryNum> audiencias; los
+              plazos próximos son <SummaryNum>{data.nearTermCount}</SummaryNum>.
             </div>
           </div>
 
@@ -61,7 +61,7 @@ export function HeroBlock({ data }: { data: HeroData }) {
               className="h-9 gap-1.5 px-4 shadow-sm"
             >
               <Plus className="h-4 w-4" strokeWidth={2} />
-              新建收案
+              Nuevo caso
             </Button>
             <button
               type="button"
@@ -69,11 +69,14 @@ export function HeroBlock({ data }: { data: HeroData }) {
               className={cn(
                 "inline-flex h-9 items-center gap-1.5 rounded-md px-4 text-sm font-medium",
                 "border border-border bg-background text-foreground/90",
-                "transition-colors hover:bg-muted/60"
+                "transition-colors hover:bg-muted/60",
               )}
             >
-              <ShieldCheck className="h-3.5 w-3.5 text-primary" strokeWidth={1.8} />
-              利益冲突预检
+              <ShieldCheck
+                className="h-3.5 w-3.5 text-primary"
+                strokeWidth={1.8}
+              />
+              Prechequeo de conflicto de intereses
             </button>
           </div>
         </div>
@@ -85,12 +88,12 @@ export function HeroBlock({ data }: { data: HeroData }) {
           href={data.focus.href}
           className={cn(
             "group relative flex flex-col justify-between overflow-hidden p-4 lg:col-span-4",
-            "ll-surface transition-colors hover:bg-muted/40"
+            "ll-surface transition-colors hover:bg-muted/40",
           )}
         >
           <div className="flex items-center justify-between">
             <span className="text-[0.65rem] font-medium uppercase tracking-widest text-primary/85">
-              今日焦点
+              Enfoque del día
             </span>
             <ArrowUpRight
               className="h-3.5 w-3.5 text-primary/60 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
@@ -100,13 +103,16 @@ export function HeroBlock({ data }: { data: HeroData }) {
 
           <div className="my-2">
             <div className="text-[0.65rem] font-medium uppercase tracking-widest text-muted-foreground">
-              距 {data.focus.title}
+              Faltan para {data.focus.title}
             </div>
             <div className="mt-1 flex items-baseline gap-2">
-              <span className="font-mono text-[2.75rem] leading-none font-medium tabular text-foreground/95" style={{ letterSpacing: "-0.02em" }}>
+              <span
+                className="font-mono text-[2.75rem] leading-none font-medium tabular text-foreground/95"
+                style={{ letterSpacing: "-0.02em" }}
+              >
                 {data.focus.daysLeft}
               </span>
-              <span className="text-[11px] text-muted-foreground">天</span>
+              <span className="text-[11px] text-muted-foreground">días</span>
             </div>
           </div>
 
@@ -123,17 +129,19 @@ export function HeroBlock({ data }: { data: HeroData }) {
         <div
           className={cn(
             "group relative flex flex-col justify-between overflow-hidden p-4 lg:col-span-4",
-            "ll-surface"
+            "ll-surface",
           )}
         >
           <div className="flex items-center justify-between">
             <span className="text-[0.65rem] font-medium uppercase tracking-widest text-primary/85">
-              今日焦点
+              Enfoque del día
             </span>
           </div>
 
           <div className="my-2 flex flex-1 items-center justify-center">
-            <span className="text-sm text-muted-foreground">暂无近期期限</span>
+            <span className="text-sm text-muted-foreground">
+              No hay plazos próximos
+            </span>
           </div>
         </div>
       )}
@@ -145,7 +153,10 @@ export function HeroBlock({ data }: { data: HeroData }) {
 
 function SummaryNum({ children }: { children: React.ReactNode }) {
   return (
-    <span className="font-mono text-[1.15rem] font-medium tabular text-foreground" style={{ letterSpacing: "-0.02em" }}>
+    <span
+      className="font-mono text-[1.15rem] font-medium tabular text-foreground"
+      style={{ letterSpacing: "-0.02em" }}
+    >
       {children}
     </span>
   );

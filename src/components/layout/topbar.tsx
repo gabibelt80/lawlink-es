@@ -17,7 +17,7 @@ import {
   Contact,
   Compass,
   Megaphone,
-  BookText
+  BookText,
 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -29,7 +29,7 @@ import {
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
-  DropdownMenuTrigger
+  DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { NotificationPopover } from "@/components/layout/notification-popover";
 import { SearchDialog } from "@/components/layout/search-dialog";
@@ -41,7 +41,7 @@ const roleLabels: Record<string, string> = {
   PRINCIPAL_LAWYER: "主办律师",
   LAWYER: "经办律师",
   ASSISTANT: "助理",
-  FINANCE: "财务"
+  FINANCE: "财务",
 };
 
 // 应用菜单聚合入口（v0.38：各分类拆回独立页；实务工具=全局弹窗；法律导航=外链）
@@ -49,14 +49,30 @@ const roleLabels: Record<string, string> = {
 const APP_ITEMS = [
   { label: "实务工具", icon: Calculator, kind: "tools" },
   { label: "快递跟踪", href: "/express", icon: Package, kind: "link" },
-  { label: "律所文书", href: "/firm-resources", icon: FolderArchive, kind: "link" },
-  { label: "法律导航", href: "https://yesen.cn", icon: Compass, kind: "external" },
+  {
+    label: "律所文书",
+    href: "/firm-resources",
+    icon: FolderArchive,
+    kind: "link",
+  },
+  {
+    label: "法律导航",
+    href: "https://yesen.cn",
+    icon: Compass,
+    kind: "external",
+  },
   { label: "公告指引", href: "/announcements", icon: Megaphone, kind: "link" },
   { label: "制度规范", href: "/policy", icon: BookText, kind: "link" },
-  { label: "通讯录", href: "/contacts", icon: Contact, kind: "link" }
+  { label: "通讯录", href: "/contacts", icon: Contact, kind: "link" },
 ] as const;
 
-export function Topbar({ onMobileMenuToggle, userAvatar }: { onMobileMenuToggle?: () => void; userAvatar?: string | null }) {
+export function Topbar({
+  onMobileMenuToggle,
+  userAvatar,
+}: {
+  onMobileMenuToggle?: () => void;
+  userAvatar?: string | null;
+}) {
   const { data: session } = useSession();
   const router = useRouter();
   const [searchOpen, setSearchOpen] = useState(false);
@@ -73,23 +89,25 @@ export function Topbar({ onMobileMenuToggle, userAvatar }: { onMobileMenuToggle?
         <button
           onClick={onMobileMenuToggle}
           className="flex h-8 w-8 items-center justify-center rounded-md border border-border bg-card text-muted-foreground transition-colors hover:bg-muted hover:text-foreground md:hidden"
-          aria-label="打开菜单"
+          aria-label="Abrir menú"
         >
           <Menu className="h-4 w-4" />
         </button>
       )}
-      {/* 搜索 */}
+      {/* Búsqueda */}
       <button
         onClick={() => setSearchOpen(true)}
         className={cn(
           "flex h-8 min-w-0 flex-1 items-center gap-2 rounded-md border border-border/70 bg-card/80 px-2.5 text-left sm:w-[300px] sm:flex-initial",
           "text-[13px] text-muted-foreground transition-colors hover:border-border hover:bg-muted hover:text-foreground",
-          "focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary/35"
+          "focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary/35",
         )}
-        aria-label="全局搜索 (Cmd+K)"
+        aria-label="Búsqueda global (Cmd+K)"
       >
         <Search className="h-3.5 w-3.5 shrink-0" strokeWidth={1.8} />
-        <span className="flex-1 truncate">搜索案件、客户、材料...</span>
+        <span className="flex-1 truncate">
+          Buscar casos, clientes, materiales...
+        </span>
         <kbd className="hidden h-4 items-center gap-0.5 rounded bg-muted/80 px-1.5 font-mono text-[10px] font-medium text-muted-foreground sm:inline-flex">
           ⌘K
         </kbd>
@@ -106,11 +124,14 @@ export function Topbar({ onMobileMenuToggle, userAvatar }: { onMobileMenuToggle?
               type="button"
               className={cn(
                 "inline-flex h-8 items-center gap-1.5 rounded-full border border-input bg-card px-2.5 text-[13px] shadow-[var(--shadow-low)]",
-                "text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                "text-muted-foreground transition-colors hover:bg-muted hover:text-foreground",
               )}
               title="应用"
             >
-              <LayoutGrid className="h-3.5 w-3.5 shrink-0 text-primary" strokeWidth={1.8} />
+              <LayoutGrid
+                className="h-3.5 w-3.5 shrink-0 text-primary"
+                strokeWidth={1.8}
+              />
               <span className="hidden sm:inline">应用</span>
             </button>
           </DropdownMenuTrigger>
@@ -127,7 +148,10 @@ export function Topbar({ onMobileMenuToggle, userAvatar }: { onMobileMenuToggle?
                     }}
                     className="cursor-pointer"
                   >
-                    <it.icon className="mr-2 h-4 w-4 text-muted-foreground" strokeWidth={1.8} />
+                    <it.icon
+                      className="mr-2 h-4 w-4 text-muted-foreground"
+                      strokeWidth={1.8}
+                    />
                     {it.label}
                   </DropdownMenuItem>
                 );
@@ -135,13 +159,24 @@ export function Topbar({ onMobileMenuToggle, userAvatar }: { onMobileMenuToggle?
               return (
                 <DropdownMenuItem key={it.label} asChild>
                   {it.kind === "external" ? (
-                    <a href={it.href} target="_blank" rel="noreferrer" className="cursor-pointer">
-                      <it.icon className="mr-2 h-4 w-4 text-muted-foreground" strokeWidth={1.8} />
+                    <a
+                      href={it.href}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="cursor-pointer"
+                    >
+                      <it.icon
+                        className="mr-2 h-4 w-4 text-muted-foreground"
+                        strokeWidth={1.8}
+                      />
                       {it.label}
                     </a>
                   ) : (
                     <Link href={it.href} className="cursor-pointer">
-                      <it.icon className="mr-2 h-4 w-4 text-muted-foreground" strokeWidth={1.8} />
+                      <it.icon
+                        className="mr-2 h-4 w-4 text-muted-foreground"
+                        strokeWidth={1.8}
+                      />
                       {it.label}
                     </Link>
                   )}
@@ -171,17 +206,24 @@ export function Topbar({ onMobileMenuToggle, userAvatar }: { onMobileMenuToggle?
           <button
             className={cn(
               "flex h-[34px] items-center gap-2 rounded-full border border-input bg-card pl-1 pr-2.5 shadow-[var(--shadow-low)]",
-              "transition-colors hover:bg-muted"
+              "transition-colors hover:bg-muted",
             )}
           >
             <Avatar className="h-6 w-6">
-              {userAvatar ? <AvatarImage src={userAvatar} alt={displayName} /> : null}
+              {userAvatar ? (
+                <AvatarImage src={userAvatar} alt={displayName} />
+              ) : null}
               <AvatarFallback className="bg-primary/10 text-[11px] font-semibold text-primary">
                 {initial}
               </AvatarFallback>
             </Avatar>
-            <span className="hidden text-[13px] font-medium sm:inline">{displayName || "..."}</span>
-            <ChevronDown className="h-3 w-3 text-muted-foreground" strokeWidth={2} />
+            <span className="hidden text-[13px] font-medium sm:inline">
+              {displayName || "..."}
+            </span>
+            <ChevronDown
+              className="h-3 w-3 text-muted-foreground"
+              strokeWidth={2}
+            />
           </button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-52">

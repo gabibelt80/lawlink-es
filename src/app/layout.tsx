@@ -3,8 +3,8 @@ import "./globals.css";
 import { Providers } from "@/components/providers";
 
 export const metadata: Metadata = {
-  title: "LawLink — 律师案件管理系统",
-  description: "面向独立律师、小团队和小型律所的开源案件管理系统",
+  title: "LawLink — Sistema de Gestión de Casos Legales",
+  description: "Sistema de gestión de casos para abogados y pequeños estudios jurídicos",
   icons: {
     icon: "/favicon.svg",
     shortcut: "/favicon.ico"
@@ -13,7 +13,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="zh-CN">
+    <html lang="es-AR">
       <body className="min-h-screen bg-background font-sans text-foreground antialiased">
         <Providers>{children}</Providers>
       </body>

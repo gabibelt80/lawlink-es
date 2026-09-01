@@ -8,7 +8,7 @@ import { matterHref } from "@/lib/matters/route";
 
 const typeMeta = {
   deadline: { icon: AlertTriangle, color: "text-amber-600", label: "期限" },
-  hearing: { icon: Calendar, color: "text-primary", label: "开庭" }
+  hearing: { icon: Calendar, color: "text-primary", label: "开庭" },
 };
 
 export function ScheduleList({ data }: { data: ScheduleItem[] }) {
@@ -23,16 +23,18 @@ export function ScheduleList({ data }: { data: ScheduleItem[] }) {
     <section className="ll-surface flex h-full flex-col">
       <header className="flex items-center justify-between px-5 pb-3 pt-4">
         <div>
-          <h2 className="text-lg font-medium tracking-tight">近期日程</h2>
+          <h2 className="text-lg font-medium tracking-tight">
+            Próximos eventos
+          </h2>
           <p className="mt-0.5 text-[10.5px] text-muted-foreground">
-            未来 30 天 · 开庭 / 期限 · 按时间排序
+            Próximos 30 días · Audiencias / Plazos · Ordenados por fecha y hora
           </p>
         </div>
         <Link
           href="/schedule"
           className="group inline-flex items-center gap-1.5 text-xs text-muted-foreground transition-colors hover:text-foreground"
         >
-          完整日历
+          Calendario completo
           <ArrowRight
             className="h-3 w-3 transition-transform group-hover:translate-x-0.5"
             strokeWidth={1.8}
@@ -70,7 +72,11 @@ function ScheduleRow({ item }: { item: ScheduleItem }) {
   const Icon = meta.icon;
   const subject = item.clientName ?? item.matter;
   const countdown =
-    item.daysUntil <= 0 ? "今天" : item.daysUntil === 1 ? "明天" : `${item.daysUntil}天后`;
+    item.daysUntil <= 0
+      ? "今天"
+      : item.daysUntil === 1
+        ? "明天"
+        : `${item.daysUntil}天后`;
   const urgent = item.daysUntil <= 3;
 
   const inner = (
@@ -83,13 +89,17 @@ function ScheduleRow({ item }: { item: ScheduleItem }) {
         <div className="truncate text-[13px] font-medium">{item.title}</div>
         <div className="mt-0.5 truncate text-[11px] text-muted-foreground">
           {subject}
-          {item.procedure ? <span className="text-muted-subtle"> · {item.procedure}</span> : null}
+          {item.procedure ? (
+            <span className="text-muted-subtle"> · {item.procedure}</span>
+          ) : null}
         </div>
       </div>
       <span
         className={cn(
           "shrink-0 rounded-sm px-1.5 py-0.5 text-[10px] font-medium tabular",
-          urgent ? "bg-red-500/12 text-red-600" : "bg-muted text-muted-foreground"
+          urgent
+            ? "bg-red-500/12 text-red-600"
+            : "bg-muted text-muted-foreground",
         )}
       >
         {countdown}
@@ -97,9 +107,13 @@ function ScheduleRow({ item }: { item: ScheduleItem }) {
     </>
   );
 
-  const cls = "ll-row flex w-full items-center gap-3 rounded-md px-2 py-1.5 text-left";
+  const cls =
+    "ll-row flex w-full items-center gap-3 rounded-md px-2 py-1.5 text-left";
   return item.matterId ? (
-    <Link href={matterHref({ id: item.matterId, internalCode: item.matterCode })} className={cls}>
+    <Link
+      href={matterHref({ id: item.matterId, internalCode: item.matterCode })}
+      className={cls}
+    >
       {inner}
     </Link>
   ) : (

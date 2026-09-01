@@ -50,9 +50,11 @@ export function AnnouncementBanner({ banners }: { banners: Banner[] }) {
           <div className="flex items-center gap-0.5 text-xs">
             <button
               type="button"
-              onClick={() => setIdx((i) => (i - 1 + visible.length) % visible.length)}
+              onClick={() =>
+                setIdx((i) => (i - 1 + visible.length) % visible.length)
+              }
               className="rounded p-1 hover:bg-amber-100"
-              aria-label="上一条"
+              aria-label="Anterior"
             >
               <ChevronLeft className="h-3 w-3" />
             </button>
@@ -63,7 +65,7 @@ export function AnnouncementBanner({ banners }: { banners: Banner[] }) {
               type="button"
               onClick={() => setIdx((i) => (i + 1) % visible.length)}
               className="rounded p-1 hover:bg-amber-100"
-              aria-label="下一条"
+              aria-label="Siguiente"
             >
               <ChevronRight className="h-3 w-3" />
             </button>
@@ -73,7 +75,7 @@ export function AnnouncementBanner({ banners }: { banners: Banner[] }) {
           type="button"
           onClick={() => setDismissed((prev) => [...prev, current.id])}
           className="rounded p-1 hover:bg-amber-100"
-          aria-label="关闭"
+          aria-label="Cerrar"
         >
           <X className="h-3 w-3" />
         </button>

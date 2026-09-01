@@ -31,7 +31,7 @@ export function NavContent({ firm }: { firm: FirmBrand }) {
       <Link
         href="/"
         className="flex h-12 items-center gap-2.5 px-3.5 transition-colors hover:bg-muted/50"
-        aria-label="返回工作台"
+        aria-label="Volver al panel de control"
       >
         {firm.logoDataUrl ? (
           // eslint-disable-next-line @next/next/no-img-element
@@ -46,9 +46,13 @@ export function NavContent({ firm }: { firm: FirmBrand }) {
           </div>
         )}
         <div className="flex min-w-0 flex-col leading-tight">
-          <span className="truncate text-[12.5px] font-semibold">{firm.name}</span>
+          <span className="truncate text-[12.5px] font-semibold">
+            {firm.name}
+          </span>
           {firm.subtitle ? (
-            <span className="truncate text-[10px] text-muted-foreground">{firm.subtitle}</span>
+            <span className="truncate text-[10px] text-muted-foreground">
+              {firm.subtitle}
+            </span>
           ) : null}
         </div>
       </Link>
@@ -59,7 +63,11 @@ export function NavContent({ firm }: { firm: FirmBrand }) {
         </div>
         <div className="space-y-0.5">
           {primaryNav.map((item) => (
-            <NavLink key={item.href} item={item} active={isActive(pathname, item.href)} />
+            <NavLink
+              key={item.href}
+              item={item}
+              active={isActive(pathname, item.href)}
+            />
           ))}
         </div>
       </nav>
@@ -67,7 +75,11 @@ export function NavContent({ firm }: { firm: FirmBrand }) {
       <div className="border-t border-border px-2 py-2">
         <div className="space-y-0.5">
           {secondaryNav.map((item) => (
-            <NavLink key={item.href} item={item} active={isActive(pathname, item.href)} />
+            <NavLink
+              key={item.href}
+              item={item}
+              active={isActive(pathname, item.href)}
+            />
           ))}
         </div>
       </div>
@@ -78,7 +90,7 @@ export function NavContent({ firm }: { firm: FirmBrand }) {
 function NavLink({
   item,
   active,
-  onClick
+  onClick,
 }: {
   item: NavItem;
   active: boolean;
@@ -98,7 +110,7 @@ function NavLink({
             : "text-sky-700/90 hover:bg-sky-500/10 hover:text-sky-800"
           : active
             ? "bg-accent text-primary font-medium"
-            : "text-muted-foreground hover:bg-muted hover:text-foreground"
+            : "text-muted-foreground hover:bg-muted hover:text-foreground",
       )}
     >
       <Icon
@@ -110,7 +122,7 @@ function NavLink({
               : "text-sky-700/80 group-hover:text-sky-800"
             : active
               ? "text-primary"
-              : "text-muted-foreground/70 group-hover:text-foreground"
+              : "text-muted-foreground/70 group-hover:text-foreground",
         )}
         strokeWidth={active ? 2 : 1.6}
       />
@@ -121,7 +133,7 @@ function NavLink({
             "rounded-sm px-1.5 py-px text-[10px] font-medium tabular",
             active
               ? "bg-accent text-primary"
-              : "bg-muted text-muted-foreground"
+              : "bg-muted text-muted-foreground",
           )}
         >
           {item.badge}

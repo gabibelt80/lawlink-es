@@ -11,12 +11,7 @@ import {
   CommandItem,
 } from "@/components/ui/command";
 import { globalSearch, type GlobalSearchResult } from "@/server/search/actions";
-import {
-  FolderOpen,
-  Users,
-  FileText,
-  Inbox,
-} from "lucide-react";
+import { FolderOpen, Users, FileText, Inbox } from "lucide-react";
 
 const groupConfig = [
   { key: "matters" as const, label: "案件", icon: FolderOpen },
@@ -25,13 +20,19 @@ const groupConfig = [
   { key: "documents" as const, label: "材料", icon: FileText },
 ];
 
-export function SearchDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (v: boolean) => void }) {
+export function SearchDialog({
+  open,
+  onOpenChange,
+}: {
+  open: boolean;
+  onOpenChange: (v: boolean) => void;
+}) {
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<GlobalSearchResult | null>(null);
   const [loading, setLoading] = useState(false);
   const router = useRouter();
 
-  // Cmd+K / Ctrl+K 全局快捷键
+  // Cmd+K / Ctrl+K atajo global
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key === "k") {
@@ -43,7 +44,7 @@ export function SearchDialog({ open, onOpenChange }: { open: boolean; onOpenChan
     return () => document.removeEventListener("keydown", handler);
   }, [onOpenChange]);
 
-  // 防抖搜索
+  // Búsqueda con debounce
   useEffect(() => {
     if (!query.trim()) {
       setResults(null);
@@ -63,16 +64,23 @@ export function SearchDialog({ open, onOpenChange }: { open: boolean; onOpenChan
     return () => clearTimeout(timer);
   }, [query]);
 
-  const handleSelect = useCallback((href: string) => {
-    if (!href) return;
-    onOpenChange(false);
-    setQuery("");
-    router.push(href);
-  }, [router, onOpenChange]);
-
-  const hasResults = results && (
-    results.matters.length + results.clients.length + results.intakes.length + results.documents.length > 0
+  const handleSelect = useCallback(
+    (href: string) => {
+      if (!href) return;
+      onOpenChange(false);
+      setQuery("");
+      router.push(href);
+    },
+    [router, onOpenChange],
   );
+
+  const hasResults =
+    results &&
+    results.matters.length +
+      results.clients.length +
+      results.intakes.length +
+      results.documents.length >
+      0;
 
   return (
     <CommandDialog open={open} onOpenChange={onOpenChange}>
@@ -86,29 +94,32 @@ export function SearchDialog({ open, onOpenChange }: { open: boolean; onOpenChan
         {query && !loading && !hasResults && (
           <CommandEmpty>未找到相关结果</CommandEmpty>
         )}
-        {results && groupConfig.map(({ key, label, icon: Icon }) => {
-          const items = results[key];
-          if (!items.length) return null;
-          return (
-            <CommandGroup key={key} heading={label}>
-              {items.map((item) => (
-                <CommandItem
-                  key={item.id}
-                  value={`${item.title} ${item.subtitle ?? ""}`}
-                  onSelect={() => handleSelect(item.href)}
-                >
-                  <Icon className="mr-2 h-4 w-4 shrink-0 text-muted-foreground" />
-                  <div className="min-w-0 flex-1">
-                    <div className="truncate text-sm">{item.title}</div>
-                    {item.subtitle && (
-                      <div className="truncate text-xs text-muted-foreground">{item.subtitle}</div>
-                    )}
-                  </div>
-                </CommandItem>
-              ))}
-            </CommandGroup>
-          );
-        })}
+        {results &&
+          groupConfig.map(({ key, label, icon: Icon }) => {
+            const items = results[key];
+            if (!items.length) return null;
+            return (
+              <CommandGroup key={key} heading={label}>
+                {items.map((item) => (
+                  <CommandItem
+                    key={item.id}
+                    value={`${item.title} ${item.subtitle ?? ""}`}
+                    onSelect={() => handleSelect(item.href)}
+                  >
+                    <Icon className="mr-2 h-4 w-4 shrink-0 text-muted-foreground" />
+                    <div className="min-w-0 flex-1">
+                      <div className="truncate text-sm">{item.title}</div>
+                      {item.subtitle && (
+                        <div className="truncate text-xs text-muted-foreground">
+                          {item.subtitle}
+                        </div>
+                      )}
+                    </div>
+                  </CommandItem>
+                ))}
+              </CommandGroup>
+            );
+          })}
       </CommandList>
     </CommandDialog>
   );

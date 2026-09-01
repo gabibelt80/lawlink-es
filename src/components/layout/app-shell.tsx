@@ -9,14 +9,14 @@ export function AppShell({
   children,
   banner,
   firm,
-  userAvatar
+  userAvatar,
 }: {
   children: React.ReactNode;
-  /** v0.27: 顶部公告 banner（服务端渲染好后注入） */
+  /** v0.27: banner de aviso superior (se inyecta una vez renderizado en el servidor) */
   banner?: React.ReactNode;
-  /** v0.42 项1: 侧栏品牌（律所名 / 副标题 / Logo） */
+  /** v0.42 ítem 1: marca de la barra lateral (nombre del bufete / subtítulo / logo) */
   firm: FirmBrand;
-  /** v0.43: 当前用户头像（服务端读最新，供顶栏显示） */
+  /** v0.43: avatar del usuario actual (se lee lo más reciente del servidor para mostrarlo en la barra superior) */
   userAvatar?: string | null;
 }) {
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
@@ -24,11 +24,20 @@ export function AppShell({
   return (
     <div className="min-h-screen bg-background">
       <Sidebar firm={firm} />
-      <MobileNav open={mobileNavOpen} onOpenChange={setMobileNavOpen} firm={firm} />
+      <MobileNav
+        open={mobileNavOpen}
+        onOpenChange={setMobileNavOpen}
+        firm={firm}
+      />
       <div className="md:pl-[208px]">
-        <Topbar onMobileMenuToggle={() => setMobileNavOpen(true)} userAvatar={userAvatar ?? null} />
+        <Topbar
+          onMobileMenuToggle={() => setMobileNavOpen(true)}
+          userAvatar={userAvatar ?? null}
+        />
         {banner}
-        <main className="mx-auto w-full max-w-[1440px] px-4 py-4 sm:px-5">{children}</main>
+        <main className="mx-auto w-full max-w-[1440px] px-4 py-4 sm:px-5">
+          {children}
+        </main>
       </div>
     </div>
   );

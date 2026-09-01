@@ -6,7 +6,7 @@ import {
   Dialog,
   DialogContent,
   DialogHeader,
-  DialogTitle
+  DialogTitle,
 } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
 import { CourtFeeCalc } from "@/app/(app)/tools/calc/_components/court-fee-calc";
@@ -16,14 +16,14 @@ import { DaysCalc } from "@/app/(app)/tools/calc/_components/days-calc";
 type Tab = "courtFee" | "lateInterest" | "days";
 
 const TABS: { key: Tab; label: string; icon: typeof Scale }[] = [
-  { key: "courtFee", label: "诉讼费", icon: Scale },
-  { key: "lateInterest", label: "迟延履行金", icon: Coins },
-  { key: "days", label: "天数计算", icon: CalendarDays }
+  { key: "courtFee", label: "Cuotas judiciales", icon: Scale },
+  { key: "lateInterest", label: "Interés por incumplimiento", icon: Coins },
+  { key: "days", label: "Cálculo de días", icon: CalendarDays },
 ];
 
 export function ToolsDialog({
   open,
-  onOpenChange
+  onOpenChange,
 }: {
   open: boolean;
   onOpenChange: (o: boolean) => void;
@@ -50,7 +50,9 @@ export function ToolsDialog({
                 onClick={() => setTab(t.key)}
                 className={cn(
                   "relative flex items-center gap-1.5 px-3 py-2 text-[13px] transition-colors",
-                  active ? "text-foreground" : "text-muted-foreground hover:text-foreground"
+                  active
+                    ? "text-foreground"
+                    : "text-muted-foreground hover:text-foreground",
                 )}
               >
                 <Icon className="h-3.5 w-3.5" strokeWidth={1.8} />

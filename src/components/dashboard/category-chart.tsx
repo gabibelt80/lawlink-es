@@ -10,7 +10,7 @@ export function CategoryChart({ data }: { data: CategoryItem[] }) {
   return (
     <section className="ll-surface flex h-full min-h-[280px] flex-col">
       <header className="ll-panel-head">
-        <h2 className="ll-panel-title">案件类型分布</h2>
+        <h2 className="ll-panel-title">Distribución de tipos de casos</h2>
       </header>
 
       <div className="grid flex-1 grid-cols-5 items-center gap-3 p-4">
@@ -38,7 +38,7 @@ export function CategoryChart({ data }: { data: CategoryItem[] }) {
             <span className="ll-stat text-[2rem] leading-none text-foreground">
               {total}
             </span>
-            <span className="mt-1 text-[10px] text-muted-foreground">总数</span>
+            <span className="mt-1 text-[10px] text-muted-foreground">Total</span>
           </div>
         </div>
 

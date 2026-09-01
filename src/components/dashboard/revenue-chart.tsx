@@ -7,33 +7,61 @@ import {
   XAxis,
   YAxis,
   Tooltip,
-  CartesianGrid
+  CartesianGrid,
 } from "recharts";
 
-export function RevenueChart({ data }: { data: { month: string; received: number; receivable: number }[] }) {
+export function RevenueChart({
+  data,
+}: {
+  data: { month: string; received: number; receivable: number }[];
+}) {
   return (
     <section className="ll-surface flex h-full min-h-[280px] flex-col">
       <header className="ll-panel-head">
         <div>
-          <h2 className="ll-panel-title">近 6 个月实收趋势</h2>
+          <h2 className="ll-panel-title">
+            Tendencia de ingresos reales de los últimos 6 meses
+          </h2>
         </div>
         <div className="flex items-center gap-3 text-[11px] text-muted-foreground">
-          <Legend color="hsl(var(--primary))" label="实收" thick />
-          <Legend color="hsl(var(--muted-foreground))" label="应收" />
+          <Legend color="hsl(var(--primary))" label="Ingresos reales" thick />
+          <Legend
+            color="hsl(var(--muted-foreground))"
+            label="Cuentas por cobrar"
+          />
         </div>
       </header>
 
       <div className="flex-1 p-2 pt-3">
         <ResponsiveContainer width="100%" height="100%" minHeight={240}>
-          <AreaChart data={data} margin={{ top: 10, right: 16, bottom: 0, left: -8 }}>
+          <AreaChart
+            data={data}
+            margin={{ top: 10, right: 16, bottom: 0, left: -8 }}
+          >
             <defs>
               <linearGradient id="received-fill" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity={0.28} />
-                <stop offset="100%" stopColor="hsl(var(--primary))" stopOpacity={0} />
+                <stop
+                  offset="0%"
+                  stopColor="hsl(var(--primary))"
+                  stopOpacity={0.28}
+                />
+                <stop
+                  offset="100%"
+                  stopColor="hsl(var(--primary))"
+                  stopOpacity={0}
+                />
               </linearGradient>
               <linearGradient id="receivable-fill" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="hsl(var(--muted-foreground))" stopOpacity={0.12} />
-                <stop offset="100%" stopColor="hsl(var(--muted-foreground))" stopOpacity={0} />
+                <stop
+                  offset="0%"
+                  stopColor="hsl(var(--muted-foreground))"
+                  stopOpacity={0.12}
+                />
+                <stop
+                  offset="100%"
+                  stopColor="hsl(var(--muted-foreground))"
+                  stopOpacity={0}
+                />
               </linearGradient>
             </defs>
             <CartesianGrid
@@ -46,7 +74,7 @@ export function RevenueChart({ data }: { data: { month: string; received: number
               tick={{
                 fill: "hsl(var(--muted-foreground))",
                 fontSize: 11,
-                fontFamily: "system-ui, sans-serif"
+                fontFamily: "system-ui, sans-serif",
               }}
               axisLine={false}
               tickLine={false}
@@ -56,7 +84,7 @@ export function RevenueChart({ data }: { data: { month: string; received: number
               tick={{
                 fill: "hsl(var(--muted-foreground))",
                 fontSize: 11,
-                fontFamily: "system-ui, sans-serif"
+                fontFamily: "system-ui, sans-serif",
               }}
               axisLine={false}
               tickLine={false}
@@ -68,7 +96,7 @@ export function RevenueChart({ data }: { data: { month: string; received: number
                 border: "1px solid hsl(var(--border))",
                 borderRadius: "8px",
                 fontSize: 12,
-                boxShadow: "var(--shadow-medium)"
+                boxShadow: "var(--shadow-medium)",
               }}
               labelStyle={{ color: "hsl(var(--foreground))", fontWeight: 500 }}
               itemStyle={{ color: "hsl(var(--foreground))" }}
@@ -100,7 +128,7 @@ export function RevenueChart({ data }: { data: { month: string; received: number
 function Legend({
   color,
   label,
-  thick
+  thick,
 }: {
   color: string;
   label: string;
@@ -113,7 +141,7 @@ function Legend({
         style={{
           width: thick ? "14px" : "12px",
           height: thick ? "2px" : "1px",
-          background: color
+          background: color,
         }}
       />
       {label}

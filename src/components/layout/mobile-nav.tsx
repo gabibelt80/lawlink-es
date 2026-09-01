@@ -11,7 +11,7 @@ import { NavContent, type FirmBrand } from "./sidebar";
 export function MobileNav({
   open,
   onOpenChange,
-  firm
+  firm,
 }: {
   open: boolean;
   onOpenChange: (v: boolean) => void;
@@ -21,7 +21,7 @@ export function MobileNav({
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent side="left" className="w-60 p-0">
         <SheetHeader className="sr-only">
-          <SheetTitle>导航菜单</SheetTitle>
+          <SheetTitle>Menú de navegación</SheetTitle>
         </SheetHeader>
         <div className="h-full" onClick={() => onOpenChange(false)}>
           <NavContent firm={firm} />

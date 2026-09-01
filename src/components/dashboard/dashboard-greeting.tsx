@@ -9,26 +9,30 @@ import type { ScheduleItem } from "@/server/dashboard/actions";
 import { matterHref } from "@/lib/matters/route";
 
 function getGreeting(hour: number) {
-  if (hour < 6) return "夜深了";
-  if (hour < 11) return "早安";
-  if (hour < 13) return "中午好";
-  if (hour < 18) return "下午好";
-  return "晚上好";
+  if (hour < 6) return "Buenas noches";
+  if (hour < 11) return "Buenos días";
+  if (hour < 13) return "Buenas tardes";
+  if (hour < 18) return "Buenas tardes";
+  return "Buenas noches";
 }
 
 const typeMeta = {
-  deadline: { icon: AlertTriangle, color: "text-amber-600", label: "期限" },
-  hearing: { icon: Calendar, color: "text-primary", label: "开庭" }
+  deadline: { icon: AlertTriangle, color: "text-amber-600", label: "Plazo" },
+  hearing: { icon: Calendar, color: "text-primary", label: "Audiencia" },
 };
 
 /** v0.47：工作台顶部问候区 + 右侧近期日程 */
 export function DashboardGreeting({
   name,
   summary,
-  scheduleItems
+  scheduleItems,
 }: {
   name: string;
-  summary: { todayDeadlineCount: number; weekHearingCount: number; nearTermCount: number };
+  summary: {
+    todayDeadlineCount: number;
+    weekHearingCount: number;
+    nearTermCount: number;
+  };
   scheduleItems: ScheduleItem[];
 }) {
   const router = useRouter();
@@ -38,7 +42,7 @@ export function DashboardGreeting({
     year: "numeric",
     month: "2-digit",
     day: "2-digit",
-    weekday: "short"
+    weekday: "short",
   });
   const focusItem = scheduleItems[0] ?? null;
 
@@ -57,7 +61,8 @@ export function DashboardGreeting({
           </h1>
           <p className="mt-1.5 max-w-xl text-[13px] leading-relaxed text-muted-foreground">
             今天有 <Num>{summary.todayDeadlineCount}</Num> 件事需处理；本周开庭{" "}
-            <Num>{summary.weekHearingCount}</Num> 场；近期期限 <Num>{summary.nearTermCount}</Num> 项。
+            <Num>{summary.weekHearingCount}</Num> 场；近期期限{" "}
+            <Num>{summary.nearTermCount}</Num> 项。
           </p>
         </div>
 
@@ -74,9 +79,14 @@ export function DashboardGreeting({
       </div>
 
       <Link
-        href={focusItem?.matterId
-          ? matterHref({ id: focusItem.matterId, internalCode: focusItem.matterCode })
-          : "/schedule"}
+        href={
+          focusItem?.matterId
+            ? matterHref({
+                id: focusItem.matterId,
+                internalCode: focusItem.matterCode,
+              })
+            : "/schedule"
+        }
         className="ll-surface group relative flex min-h-[150px] min-w-0 flex-col justify-between overflow-hidden p-4 transition-colors hover:border-input hover:bg-muted/35"
       >
         <div className="pointer-events-none absolute -right-8 -top-8 h-32 w-32 rounded-full bg-red-500/10 blur-sm" />
@@ -98,7 +108,9 @@ export function DashboardGreeting({
               </div>
             </>
           ) : (
-            <div className="mt-8 text-sm text-muted-foreground">暂无近期期限</div>
+            <div className="mt-8 text-sm text-muted-foreground">
+              暂无近期期限
+            </div>
           )}
         </div>
         <div className="relative z-[1] min-w-0">
@@ -106,7 +118,9 @@ export function DashboardGreeting({
             {focusItem?.matter ?? "日程看板"}
           </div>
           <div className="mt-1 flex items-center gap-1 text-[10.5px] text-muted-foreground">
-            <span className="font-mono tabular">{focusItem?.date ?? "未来 30 天"}</span>
+            <span className="font-mono tabular">
+              {focusItem?.date ?? "未来 30 天"}
+            </span>
             <ArrowRight className="h-3 w-3 transition-transform group-hover:translate-x-0.5" />
           </div>
         </div>
@@ -115,7 +129,9 @@ export function DashboardGreeting({
       <div className="ll-surface min-w-0 p-3 lg:col-span-2 lg:hidden">
         <div className="mb-2 flex items-start justify-between gap-2">
           <div>
-            <h3 className="text-[12px] font-medium text-foreground">近期日程</h3>
+            <h3 className="text-[12px] font-medium text-foreground">
+              近期日程
+            </h3>
           </div>
           <Link
             href="/schedule"
@@ -148,7 +164,11 @@ function ScheduleBriefItem({ item }: { item: ScheduleItem }) {
   const subject = item.clientName ?? item.matter;
   const content = (
     <div className="flex min-w-0 items-center gap-1.5">
-      <Icon className={meta.color} style={{ width: 12, height: 12 }} strokeWidth={1.8} />
+      <Icon
+        className={meta.color}
+        style={{ width: 12, height: 12 }}
+        strokeWidth={1.8}
+      />
       <span className="shrink-0 rounded-sm bg-muted px-1 py-0.5 text-[9px] text-muted-foreground">
         {meta.label}
       </span>
@@ -161,12 +181,19 @@ function ScheduleBriefItem({ item }: { item: ScheduleItem }) {
       </span>
     </div>
   );
-  const className = "block rounded-md px-1.5 py-1 transition-colors hover:bg-muted/70";
+  const className =
+    "block rounded-md px-1.5 py-1 transition-colors hover:bg-muted/70";
 
   return (
     <li>
       {item.matterId ? (
-        <Link href={matterHref({ id: item.matterId, internalCode: item.matterCode })} className={className}>
+        <Link
+          href={matterHref({
+            id: item.matterId,
+            internalCode: item.matterCode,
+          })}
+          className={className}
+        >
           {content}
         </Link>
       ) : (

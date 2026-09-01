@@ -9,7 +9,7 @@ import {
   Inbox,
   Archive,
   Settings,
-  BarChart3
+  BarChart3,
 } from "lucide-react";
 
 export type NavItem = {
@@ -27,18 +27,23 @@ export type NavItem = {
 // v0.45: 暂时隐藏"保全"一级入口，代码与路由保留以便恢复
 // v0.47: 恢复"法院短信"到左下角辅助导航，放在归档上方并用独立强调色
 export const primaryNav: NavItem[] = [
-  { label: "工作台", href: "/", icon: LayoutDashboard },
-  { label: "案件", href: "/matters", icon: FolderOpen },
-  { label: "客户", href: "/clients", icon: Users },
-  { label: "财务", href: "/finance", icon: Wallet },
-  { label: "日程", href: "/schedule", icon: Calendar },
-  { label: "审批", href: "/approvals/seals", icon: ClipboardCheck }
+  { label: "Panel", href: "/", icon: LayoutDashboard },
+  { label: "Casos", href: "/matters", icon: FolderOpen },
+  { label: "Clientes", href: "/clients", icon: Users },
+  { label: "Finanzas", href: "/finance", icon: Wallet },
+  { label: "Agenda", href: "/schedule", icon: Calendar },
+  { label: "Aprobaciones", href: "/approvals/seals", icon: ClipboardCheck },
 ];
 
 export const secondaryNav: NavItem[] = [
-  { label: "法院短信", href: "/inbox", icon: Inbox, tone: "courtSms" },
-  { label: "归档", href: "/archive", icon: Archive },
-  { label: "报表", href: "/reports", icon: BarChart3 },
+  {
+    label: "Mensajes de la corte",
+    href: "/inbox",
+    icon: Inbox,
+    tone: "courtSms",
+  },
+  { label: "Archivo", href: "/archive", icon: Archive },
+  { label: "Informes", href: "/reports", icon: BarChart3 },
   // v0.43: 「审计」入口移除（审计日志在 设置 → 审计日志）
-  { label: "设置", href: "/settings", icon: Settings }
+  { label: "Configuración", href: "/settings", icon: Settings },
 ];
