@@ -77,7 +77,6 @@ async function loadAlerts(userId: string | null, role: string | null): Promise<A
           }
         })
       : Promise.resolve([]),
-    // 待审批用章申请（仅管理员 / 主任律师可见，作为审批人提醒）
     isManager
       ? prisma.sealRequest.findMany({
           where: { status: "PENDING" },
@@ -98,7 +97,7 @@ async function loadAlerts(userId: string | null, role: string | null): Promise<A
 
   for (const p of preservationProperties) {
     const days = Math.ceil((p.expiryDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
-    const label = days < 0 ? `La medida cautelar venció hace ${-days} días` : days === 0 ? "La medida cautelar vence hoy" : `La medida cautelar vence en ${days} días`;
+    const label = days < 0 ? `Preservación vencida hace ${-days} días` : days === 0 ? "Preservación vence hoy" : `Preservación vence en ${days} días`;
     const matter = p.target.case.matter;
     items.push({
       id: `pres-${p.id}`,
@@ -106,7 +105,7 @@ async function loadAlerts(userId: string | null, role: string | null): Promise<A
       title: `${label} · ${p.target.name}`,
       detail: matter
         ? `${matter.internalCode} ${matter.title}`
-        : "Sin caso asociado (medida cautelar previa al juicio)",
+        : "No vinculado a un caso (preservación preventiva)",
       href: matter ? matterHref(matter) : "/preservation",
       date: p.expiryDate,
       tone: classifyByDays(days)
@@ -118,7 +117,7 @@ async function loadAlerts(userId: string | null, role: string | null): Promise<A
     items.push({
       id: `sms-${m.id}`,
       source: "sms",
-      title: parsed.summary || "Mensaje del tribunal sin procesar",
+      title: parsed.summary || "SMS judicial sin procesar",
       detail: parsed.court ?? "—",
       href: "/inbox",
       date: m.receivedAt,
@@ -130,7 +129,7 @@ async function loadAlerts(userId: string | null, role: string | null): Promise<A
     items.push({
       id: `seal-${s.id}`,
       source: "approval",
-      title: `Aprobación pendiente de sello · ${s.documentTitle}`,
+      title: `Sello pendiente de aprobación · ${s.documentTitle}`,
       detail: s.matter ? `${s.matter.internalCode} ${s.matter.title}` : s.purpose,
       href: "/approvals/seals",
       date: s.requestedAt,
@@ -138,7 +137,6 @@ async function loadAlerts(userId: string | null, role: string | null): Promise<A
     });
   }
 
-  // 按 tone 优先（danger > warn > muted > ok），相同 tone 按时间近的优先
   const toneOrder = { danger: 0, warn: 1, muted: 2, ok: 3 };
   items.sort((a, b) => {
     if (toneOrder[a.tone] !== toneOrder[b.tone]) return toneOrder[a.tone] - toneOrder[b.tone];
@@ -150,7 +148,7 @@ async function loadAlerts(userId: string | null, role: string | null): Promise<A
 }
 
 const SOURCE_META: Record<AlertItem["source"], { icon: typeof Shield; label: string }> = {
-  preservation: { icon: Shield, label: "Cautelares" },
+  preservation: { icon: Shield, label: "Preservación" },
   sms: { icon: Inbox, label: "SMS" },
   approval: { icon: Stamp, label: "Aprobación" }
 };
@@ -163,16 +161,16 @@ export async function AlertsList() {
     <section className="ll-surface flex h-full flex-col">
       <header className="flex items-center justify-between px-5 pb-3 pt-4">
         <div>
-          <h2 className="text-lg font-medium tracking-tight">Pendientes para mí</h2>
+          <h2 className="text-lg font-medium tracking-tight">Pendientes</h2>
           <p className="mt-0.5 text-[10.5px] text-muted-foreground">
-            Vencimientos de medidas cautelares / SMS del tribunal sin leer / solicitudes de sello pendientes de aprobación
+            Vencimiento de preservaciones / SMS judiciales no leídos / Sellos pendientes
           </p>
         </div>
         <Link
           href="/schedule"
           className="group inline-flex items-center gap-1.5 text-xs text-muted-foreground transition-colors hover:text-foreground"
         >
-          Todo
+          Ver todos
           <ArrowRight
             className="h-3 w-3 transition-transform group-hover:translate-x-0.5"
             strokeWidth={1.8}

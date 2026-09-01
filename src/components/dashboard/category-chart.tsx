@@ -2,7 +2,12 @@
 
 import { PieChart, Pie, Cell, ResponsiveContainer } from "recharts";
 
-type CategoryItem = { name: string; value: number; code: string; color: string };
+type CategoryItem = {
+  name: string;
+  value: number;
+  code: string;
+  color: string;
+};
 
 export function CategoryChart({ data }: { data: CategoryItem[] }) {
   const total = data.reduce((sum, item) => sum + item.value, 0);
@@ -38,7 +43,9 @@ export function CategoryChart({ data }: { data: CategoryItem[] }) {
             <span className="ll-stat text-[2rem] leading-none text-foreground">
               {total}
             </span>
-            <span className="mt-1 text-[10px] text-muted-foreground">Total</span>
+            <span className="mt-1 text-[10px] text-muted-foreground">
+              Total
+            </span>
           </div>
         </div>
 
@@ -54,7 +61,9 @@ export function CategoryChart({ data }: { data: CategoryItem[] }) {
                   className="h-1.5 w-1.5 shrink-0 rounded-full"
                   style={{ backgroundColor: cat.color }}
                 />
-                <span className="flex-1 truncate text-[0.82rem]">{cat.name}</span>
+                <span className="flex-1 truncate text-[0.82rem]">
+                  {cat.name}
+                </span>
                 <span className="font-mono text-xs tabular text-muted-foreground">
                   {cat.value}
                 </span>
