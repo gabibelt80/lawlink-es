@@ -70,7 +70,7 @@ export function InboxView({
 }: {
   unprocessed: SmsRow[];
   processed: SmsRow[];
-  /** v0.48: 电子送达待人工处理（需登录/验证码/未关联案件） */
+  /** v0.48: 电子送达待人工处理（需Iniciar sesión/验证码/未关联Caso） */
   needsManual: SmsRow[];
   matters: MatterOption[];
 }) {
@@ -279,18 +279,18 @@ function SmsCard({
     });
 
   const onDelete = () => {
-    if (!confirm("确认删除这条短信记录？")) return;
+    if (!confirm("确认Eliminar这条SMS记录？")) return;
     startTransition(async () => {
       try {
         await deleteSms({ id: sms.id });
-        toast.success("已删除");
+        toast.success("已Eliminar");
       } catch (e) {
         toast.error(e instanceof Error ? e.message : "失败");
       }
     });
   };
 
-  // v0.51: 解析出新案号 + 案件里有缺案号的程序 → 可回填
+  // v0.51: 解析出新案号 + Caso里有缺案号的程序 → 可回填
   const usedCaseNumbers = new Set(
     (sms.matchedMatter?.procedures ?? [])
       .map((p) => p.caseNumber)
@@ -466,7 +466,7 @@ function SmsCard({
                   </a>
                   {link.requiresLogin && (
                     <span className="rounded bg-amber-500/10 px-1.5 py-0.5 text-[10px] text-amber-700">
-                      需登录/校验
+                      需Iniciar sesión/校验
                     </span>
                   )}
                 </div>
@@ -504,7 +504,7 @@ function SmsCard({
         </div>
       )}
 
-      {/* 关联案件 + 操作行 */}
+      {/* 关联Caso + Acciones行 */}
       <div className="mt-3 flex flex-wrap items-center gap-2 border-t border-border pt-3">
         {sms.matchedMatter ? (
           <Link
@@ -533,7 +533,7 @@ function SmsCard({
           onClick={() => setShowRaw((v) => !v)}
           className="text-[11px] text-muted-foreground hover:text-foreground"
         >
-          {showRaw ? "收起原文" : "查看原文"}
+          {showRaw ? "收起原文" : "Ver原文"}
         </button>
 
         <div className="ml-auto flex items-center gap-2">
@@ -565,7 +565,7 @@ function SmsCard({
                   variant="outline"
                   onClick={onBackfillCaseNumber}
                   className="h-7 gap-1 text-[11px]"
-                  title="把短信解析出的案号回填到缺案号的程序"
+                  title="把SMS解析出的案号回填到缺案号的程序"
                 >
                   <FileDigit className="h-3 w-3" />
                   回填案号
@@ -582,8 +582,8 @@ function SmsCard({
               className="h-7 gap-1 text-[11px]"
               title={
                 sms.matchedMatter
-                  ? "提取短信中的送达附件"
-                  : "先关联案件后再提取附件"
+                  ? "提取SMS中的送达附件"
+                  : "先关联Caso后再提取附件"
               }
             >
               {pending ? (
@@ -611,7 +611,7 @@ function SmsCard({
             onClick={onDelete}
             disabled={pending}
             className="text-muted-foreground hover:text-destructive"
-            title="删除"
+            title="Eliminar"
           >
             <Trash2 className="h-3.5 w-3.5" />
           </button>
@@ -680,7 +680,7 @@ function AttachmentResultRow({
 }) {
   const meta = {
     DOWNLOADED: {
-      label: "已保存",
+      label: "已Guardar",
       color: "text-emerald-700",
       bg: "bg-emerald-500/10",
     },
@@ -739,7 +739,7 @@ function AttachmentResultRow({
           className="inline-flex items-center gap-1 text-primary hover:underline"
         >
           <FileCheck2 className="h-3 w-3" />
-          {result.documentName ?? "已保存附件"}
+          {result.documentName ?? "已Guardar附件"}
         </a>
       ) : (
         <span className="line-clamp-1">{result.message}</span>
@@ -783,7 +783,7 @@ function MatterPicker({
     startTransition(async () => {
       try {
         await matchSmsToMatter({ smsId: sms.id, matterId });
-        toast.success("已关联案件");
+        toast.success("已关联Caso");
         setOpen(false);
       } catch (e) {
         toast.error(e instanceof Error ? e.message : "失败");
@@ -804,12 +804,12 @@ function MatterPicker({
           ) : (
             <LinkIcon className="h-3 w-3" />
           )}
-          指派案件
+          指派Caso
         </button>
       </PopoverTrigger>
       <PopoverContent className="w-80 p-0" align="start">
         <Command>
-          <CommandInput placeholder="搜索编号或案件名..." />
+          <CommandInput placeholder="Buscar编号或Caso名..." />
           <CommandList>
             <CommandEmpty>未找到</CommandEmpty>
             <CommandGroup>

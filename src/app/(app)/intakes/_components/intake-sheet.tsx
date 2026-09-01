@@ -265,10 +265,10 @@ export function IntakeSheet({
     [jurisdiction, firstProcedureType]
   );
 
-  // v0.31: 案件类别决定表单结构（诉讼/仲裁 vs 非诉/专项 vs 顾问）
+  // v0.31: Caso类别决定表单结构（诉讼/仲裁 vs 非诉/专项 vs 顾问）
   const kind: CategoryKind = matterCategoryKind(category);
   const nameLabel =
-    kind === "counsel" ? "顾问事项名称" : kind === "project" ? "项目名称" : "案件名称";
+    kind === "counsel" ? "顾问事项Nombre" : kind === "project" ? "项目Nombre" : "CasoNombre";
 
   // 标题自动生成：填完当事人 + 案由后按「委托方 与 对方 案由」生成，用户手改后不再覆盖
   const [titleTouched, setTitleTouched] = useState(false);
@@ -283,7 +283,7 @@ export function IntakeSheet({
     const oppNm = list.find((p) => p.role === "OPPOSING_PARTY")?.name?.trim();
     const causeNm = (causeName || watchedCauseFree || "").trim();
     if (!clientNm && !oppNm) return;
-    // 案件名称不含空格（产品要求）
+    // CasoNombre不含空格（产品要求）
     const suggested = `${clientNm ?? ""}${oppNm ? `与${oppNm}` : ""}${causeNm}`.replace(/\s+/g, "");
     if (suggested && suggested !== (watchedTitle ?? "")) {
       setValue("title", suggested, { shouldDirty: true });
@@ -316,7 +316,7 @@ export function IntakeSheet({
   }, [category, firstProcedureType, procedureOptions, setValue]);
 
   // v0.31: 切类别时同步当事人行
-  // 顾问 / 非诉 / 专项：默认只留委托方一行（相对方按需添加）
+  // 顾问 / 非诉 / 专项：默认只留委托方一行（相对方按需Agregar）
   // 诉讼/仲裁：确保至少有一个相对方行
   useEffect(() => {
     const cur = (watch("parties") ?? []) as { role?: string }[];
@@ -401,8 +401,8 @@ export function IntakeSheet({
       }
       toast.success(
         contracts.length > 0
-          ? `收案已提交审批，上传 ${contracts.length} 份合同`
-          : "收案已提交审批"
+          ? `收案已EnviarAprobación，上传 ${contracts.length} 份合同`
+          : "收案已EnviarAprobación"
       );
       reset({ ...defaults, ownerUserId: session?.user?.id ?? "" });
       setTitleTouched(false);
@@ -411,7 +411,7 @@ export function IntakeSheet({
       onOpenChange(false);
       if (res.id) router.push(`/intakes/${res.id}`);
     } catch (err) {
-      toast.error("创建失败", {
+      toast.error("Crear失败", {
         description: err instanceof Error ? err.message : ""
       });
     }
@@ -419,11 +419,11 @@ export function IntakeSheet({
 
   function onSubmit(values: IntakeCreateInput) {
     // 委托方恒为 parties[0]（role=CLIENT_PARTY）：拆回顶层 client* 字段，其余进 parties。
-    // 名称 + 证件号必填由 zodResolver(partyInputSchema) 对每行统一校验。
+    // Nombre + 证件号必填由 zodResolver(partyInputSchema) 对每行统一校验。
     const all = values.parties ?? [];
     const client = all.find((p) => p.role === "CLIENT_PARTY");
     if (!client || !client.name?.trim()) {
-      toast.warning("请填写客户", { description: "客户名称为必填" });
+      toast.warning("请填写Cliente", { description: "ClienteNombre为必填" });
       return;
     }
     const isOrg = client.partyType === "ORGANIZATION";
@@ -623,13 +623,13 @@ export function IntakeSheet({
   // 主办 / 协办 / 律协备案 / 反诉 字段（多处复用）
   function leadField() {
     return (
-      <Field label="主办律师" required>
+      <Field label="主办Abogado" required>
         <Select
           value={ownerUserId ?? ""}
           onValueChange={(v) => setValue("ownerUserId", v, { shouldDirty: true })}
         >
           <SelectTrigger className="h-[34px] bg-white text-[12.5px]">
-            <SelectValue placeholder="选择主办律师" />
+            <SelectValue placeholder="选择主办Abogado" />
           </SelectTrigger>
           <SelectContent>
             {colleagues.map((u) => (
@@ -746,7 +746,7 @@ export function IntakeSheet({
     const showStanding = mode === "litigation";
     const grid = showStanding ? PARTY_GRID : PARTY_GRID_NO_STANDING;
     const clientLabel =
-      mode === "counsel" ? "顾问单位" : mode === "project" ? "委托方" : "客户";
+      mode === "counsel" ? "顾问单位" : mode === "project" ? "委托方" : "Cliente";
     return (
       <div className="overflow-x-auto rounded-md border border-[#cbd5e2] bg-[#e9eef5] p-2 shadow-[var(--shadow-inset)]">
         <div className={cn("space-y-2", showStanding ? "min-w-[880px]" : "min-w-[760px]")}>
@@ -759,7 +759,7 @@ export function IntakeSheet({
           >
             <span>角色</span>
             <span>主体类型</span>
-            <span>姓名 / 名称</span>
+            <span>姓名 / Nombre</span>
             <span>证件号 / 信用代码</span>
             {showStanding && (
               <span>
@@ -768,7 +768,7 @@ export function IntakeSheet({
             )}
             <span>联系人</span>
             <span>联系电话</span>
-            <span className="text-right">操作</span>
+            <span className="text-right">Acciones</span>
           </div>
 
           {parties.map((p, idx) => {
@@ -963,11 +963,11 @@ export function IntakeSheet({
                   新建收案登记
                 </DialogTitle>
                 <DialogDescription className="mt-0.5 text-[12px] leading-5 text-muted-foreground">
-                  案件从这里开始它的生命周期
+                  Caso从这里开始它的生命周期
                 </DialogDescription>
               </div>
               <span className="rounded-full border border-primary/20 bg-primary/10 px-2.5 py-0.5 text-[11px] font-medium text-primary">
-                待审批
+                待Aprobación
               </span>
             </div>
           </div>
@@ -993,11 +993,11 @@ export function IntakeSheet({
                 </div>
               </div>
             )}
-            {/* ① 基本信息（共用：类别 / 名称 / 收案 / 经办）*/}
+            {/* ① 基本信息（共用：类别 / Nombre / 收案 / 经办）*/}
             <Section title="① 基本信息" required>
-              {/* 案件类别 | 收案时间（与类别等宽）| 案件名称（剩余）*/}
+              {/* Caso类别 | 收案时间（与类别等宽）| CasoNombre（剩余）*/}
               <div className="grid grid-cols-1 gap-3 lg:grid-cols-[160px_160px_minmax(0,1fr)]">
-                <Field label="案件类别" required>
+                <Field label="Caso类别" required>
                   <Select
                     value={category}
                     onValueChange={(v) => setValue("category", v as MatterCategory)}
@@ -1110,7 +1110,7 @@ export function IntakeSheet({
                   </Field>
                 </div>
 
-                {/* 标的额（1/4）| 标的描述（3/4）*/}
+                {/* 标的额（1/4）| 标的Descripción（3/4）*/}
                 <div className="grid grid-cols-1 gap-3 lg:grid-cols-4">
                   <Field label="标的额（元）" error={errors.claimAmount?.message}>
                     <Input
@@ -1124,7 +1124,7 @@ export function IntakeSheet({
                       })}
                     />
                   </Field>
-                  <Field label="标的描述（非金钱标的或其他诉求）" className="sm:col-span-3">
+                  <Field label="标的Descripción（非金钱标的或其他诉求）" className="sm:col-span-3">
                     <Input
                       placeholder="如：请求确认合同有效 / 请求停止侵害"
                       {...register("claimDescription")}
@@ -1218,7 +1218,7 @@ export function IntakeSheet({
                     />
                   </Field>
                   <Field label="交付成果">
-                    <Input placeholder="如：法律意见书 / 尽调报告" {...register("deliverables")} />
+                    <Input placeholder="如：法律意见书 / 尽调Informe" {...register("deliverables")} />
                   </Field>
                 </div>
                 {/* 主办 | 协办（各 1/2）*/}
@@ -1306,9 +1306,9 @@ export function IntakeSheet({
             {/* ③ 当事人 / 相关方（按类别）*/}
             {kind === "litigation" && (
             <Section
-              title="② 案件当事人"
+              title="② Caso当事人"
               required
-              headerAction={addPartyBtn("添加当事人")}
+              headerAction={addPartyBtn("Agregar当事人")}
             >
               {watch("ourStanding") && RECEIVING_STANDINGS.has(watch("ourStanding")!) && (
                 <div className="rounded-md border border-primary/20 bg-accent p-3">
@@ -1357,7 +1357,7 @@ export function IntakeSheet({
 
             {/* ③ 非诉/专项：委托方与相对方（无诉讼地位）*/}
             {kind === "project" && (
-              <Section title="② 委托方与相对方" headerAction={addPartyBtn("添加相对方")}>
+              <Section title="② 委托方与相对方" headerAction={addPartyBtn("Agregar相对方")}>
                 {renderParties("project")}
               </Section>
             )}
@@ -1369,8 +1369,8 @@ export function IntakeSheet({
               </Section>
             )}
 
-            {/* 3. 律师费 */}
-            <Section title={kind === "counsel" ? "③ 顾问费" : "③ 律师费"}>
+            {/* 3. Abogado费 */}
+            <Section title={kind === "counsel" ? "③ 顾问费" : "③ Abogado费"}>
               <div
                 className={cn(
                   "grid grid-cols-1 gap-3",
@@ -1412,7 +1412,7 @@ export function IntakeSheet({
                         ? "小时费率（元/时）"
                         : feeType === "CONTINGENCY"
                           ? "基础办案费（元）"
-                          : "总金额（元）"
+                          : "Total金额（元）"
                     }
                     required
                     error={errors.feeAmount?.message}
@@ -1446,7 +1446,7 @@ export function IntakeSheet({
                 )}
 
                 {feeType && feeType !== "CONTINGENCY" && (
-                  <Field label="费用备注（可选）">
+                  <Field label="费用Observaciones（可选）">
                     <Input placeholder="如：含差旅 / 含诉讼费垫付" {...register("feeNote")} />
                   </Field>
                 )}
@@ -1457,12 +1457,12 @@ export function IntakeSheet({
                   <Field label="风险代理收费方式" required hint="例：到账后按 15%；或按胜诉金额阶梯计提">
                     <Textarea
                       rows={2}
-                      placeholder="详细描述风险代理收费方式 / 触发条件 / 计提比例"
+                      placeholder="详细Descripción风险代理收费方式 / 触发条件 / 计提比例"
                       className="min-h-[68px]"
                       {...register("contingencyTerms")}
                     />
                   </Field>
-                  <Field label="费用备注（可选）">
+                  <Field label="费用Observaciones（可选）">
                     <Textarea
                       rows={2}
                       placeholder="如：含差旅 / 含诉讼费垫付"
@@ -1494,7 +1494,7 @@ export function IntakeSheet({
                     className="h-7 gap-1"
                   >
                     <Paperclip className="h-3 w-3" />
-                    添加
+                    Agregar
                   </Button>
                 </>
               }
@@ -1534,7 +1534,7 @@ export function IntakeSheet({
 
           <DialogFooter className="border-t border-border bg-card px-8 py-4">
             <div className="mr-auto hidden text-[12px] text-muted-foreground sm:block">
-              完整登记 · 提交后进入审批
+              完整登记 · Enviar后进入Aprobación
             </div>
             <Button
               type="button"
@@ -1543,11 +1543,11 @@ export function IntakeSheet({
               disabled={isPending}
               className="h-8 rounded-full px-4 text-[12.5px]"
             >
-              取消
+              Cancelar
             </Button>
             <Button type="submit" disabled={isPending} className="h-8 rounded-full gap-2 px-5 text-[12.5px]">
               {isPending && <Loader2 className="h-4 w-4 animate-spin" />}
-              提交审批
+              EnviarAprobación
               <ChevronRight className="h-4 w-4" strokeWidth={2} />
             </Button>
           </DialogFooter>

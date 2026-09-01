@@ -13,13 +13,13 @@ import {
 } from "@/lib/imports/matter-import";
 
 describe("批量导入 — 文本映射", () => {
-  it("案件类型反查", () => {
+  it("Caso类型反查", () => {
     expect(parseCategoryLabel("民商诉讼")).toBe("CIVIL_COMMERCIAL");
     expect(parseCategoryLabel("劳动仲裁")).toBe("LABOR_ARBITRATION");
     expect(parseCategoryLabel("不存在")).toBeNull();
   });
 
-  it("案件状态反查（兼容「结案」）", () => {
+  it("CasoEstado反查（兼容「结案」）", () => {
     expect(parseStatusLabel("办理中")).toBe("IN_PROGRESS");
     expect(parseStatusLabel("已结案")).toBe("CLOSED");
     expect(parseStatusLabel("结案")).toBe("CLOSED");
@@ -35,7 +35,7 @@ describe("批量导入 — 文本映射", () => {
     expect(parseClientType(undefined)).toBe("INDIVIDUAL");
   });
 
-  it("日期 / 金额解析", () => {
+  it("Fecha / 金额解析", () => {
     expect(parseImportDate("2026-05-30")?.getFullYear()).toBe(2026);
     expect(parseImportDate("2026/5/3")?.getMonth()).toBe(4);
     expect(parseImportDate("无效")).toBeNull();
@@ -82,12 +82,12 @@ describe("批量导入 — 单行校验", () => {
   it("缺必填项报错且 normalized 为 null", () => {
     const { errors, normalized } = validateRow({ ...okRow, clientName: "", category: "瞎填" });
     expect(normalized).toBeNull();
-    expect(errors.some((e) => e.includes("客户名称"))).toBe(true);
-    expect(errors.some((e) => e.includes("案件类型"))).toBe(true);
+    expect(errors.some((e) => e.includes("ClienteNombre"))).toBe(true);
+    expect(errors.some((e) => e.includes("Caso类型"))).toBe(true);
   });
 
-  it("收案日期格式错误报错", () => {
+  it("收案Fecha格式错误报错", () => {
     const { errors } = validateRow({ ...okRow, intakeDate: "2026年5月" });
-    expect(errors.some((e) => e.includes("收案日期"))).toBe(true);
+    expect(errors.some((e) => e.includes("收案Fecha"))).toBe(true);
   });
 });

@@ -13,7 +13,7 @@ export const dynamic = "force-dynamic";
 export async function GET(req: Request) {
   const session = await getServerSession(authOptions);
   if (!session?.user) {
-    return NextResponse.json({ error: "未登录" }, { status: 401 });
+    return NextResponse.json({ error: "未Iniciar sesión" }, { status: 401 });
   }
 
   const url = new URL(req.url);

@@ -16,7 +16,7 @@ export default async function SettingsLayout({
       <header>
         <h1 className="flex items-center gap-2 text-2xl font-semibold tracking-tight">
           <Settings className="h-5 w-5 text-primary" />
-          设置
+          Configuración
         </h1>
       </header>
 
@@ -27,7 +27,7 @@ export default async function SettingsLayout({
               href="/settings/profile"
               icon={<KeyRound className="h-3.5 w-3.5" />}
             >
-              个人 / 改密码
+              个人 / 改Contraseña
             </SettingsNavLink>
             {isManager && (
               <>
@@ -35,7 +35,7 @@ export default async function SettingsLayout({
                   href="/settings/reminders"
                   icon={<BellRing className="h-3.5 w-3.5" />}
                 >
-                  提醒维护
+                  Recordatorios维护
                 </SettingsNavLink>
                 <SettingsNavLink
                   href="/settings/import"
@@ -57,7 +57,7 @@ export default async function SettingsLayout({
                   href="/settings/users"
                   icon={<Users className="h-3.5 w-3.5" />}
                 >
-                  用户管理
+                  用户Administrar
                 </SettingsNavLink>
                 <SettingsNavLink
                   href="/settings/templates"

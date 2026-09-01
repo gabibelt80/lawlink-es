@@ -84,8 +84,8 @@ export function RelatedMattersField({
           type="button"
           variant="outline"
           size="sm"
-          aria-label="关联案件"
-          title="关联案件"
+          aria-label="关联Caso"
+          title="关联Caso"
           className="h-5 w-5 rounded-sm p-0 text-muted-foreground"
         >
           <Plus className="h-2.5 w-2.5" />
@@ -98,7 +98,7 @@ export function RelatedMattersField({
             autoFocus
             value={query}
             onChange={(e) => runSearch(e.target.value)}
-            placeholder="搜索案件名称 / 所内案号"
+            placeholder="BuscarCasoNombre / 所内案号"
             className="h-8 pl-7 text-xs"
           />
         </div>
@@ -108,7 +108,7 @@ export function RelatedMattersField({
               <Loader2 className="h-3.5 w-3.5 animate-spin" />
             </div>
           ) : results.length === 0 ? (
-            <p className="py-6 text-center text-xs text-muted-foreground">无可关联的案件</p>
+            <p className="py-6 text-center text-xs text-muted-foreground">无可关联的Caso</p>
           ) : (
             results.map((m) => (
               <button

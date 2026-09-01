@@ -241,7 +241,7 @@ export function SealRequestSheet({
             <Label className="text-[11px]">Caso relacionado (opcional)</Label>
             <div className="mt-1">
               {preset?.matterId ? (
-                // 从案件详情页发起时，case 已锁定，不展示可切换的下拉
+                // 从Caso详情页发起时，case 已锁定，不展示可切换的下拉
                 <div className="flex h-9 items-center gap-2 rounded-md border border-border bg-muted/40 px-2.5 text-[12px]">
                   <span className="text-[10px] text-muted-foreground">
                     Relacionado

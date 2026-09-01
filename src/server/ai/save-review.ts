@@ -1,7 +1,7 @@
 "use server";
 
 /**
- * v0.20: 文书 AI 审查结果保存为案件 Document（与 A3 类案存档对称的模式）
+ * v0.20: 文书 AI 审查结果Guardar为Caso Document（与 A3 类案存档对称的模式）
  */
 import { prisma } from "@/lib/prisma";
 import { requireSession } from "@/lib/auth/session";
@@ -79,9 +79,9 @@ export async function saveReviewToMatter(input: {
     where: { id: input.matterId, deletedAt: null },
     select: { id: true, status: true }
   });
-  if (!matter) throw new Error("案件不存在");
+  if (!matter) throw new Error("Caso不存在");
   if (matter.status === "ARCHIVED") {
-    throw new Error("案件已归档（只读），不能再保存审查结果");
+    throw new Error("Caso已归档（只读），不能再Guardar审查结果");
   }
 
   const md = buildMarkdown(input.reviewedDocName, input.items);

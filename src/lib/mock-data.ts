@@ -16,7 +16,7 @@ export type KpiItem = {
 export const dashboardKpis: KpiItem[] = [
   {
     key: "in_progress",
-    label: "办理中案件",
+    label: "办理中Caso",
     value: 18,
     trend: { direction: "up", text: "+3 本周" },
     sparkline: [12, 14, 13, 15, 16, 16, 17, 17, 18, 18, 17, 18, 18, 18]
@@ -137,7 +137,7 @@ export const todoItems: TodoItem[] = [
   {
     id: "t4",
     severity: "normal",
-    title: "电话回访客户",
+    title: "电话回访Cliente",
     detail: "LL-2026-CC-0006",
     href: "/matters/m-0006"
   }
@@ -153,10 +153,10 @@ export const revenueTrend = [
 ];
 
 export const categoryDistribution = [
-  { name: "民商事", value: 18, code: "CC", color: "#5B8DEF" },
+  { name: "Civil/Comercial", value: 18, code: "CC", color: "#5B8DEF" },
   { name: "非诉", value: 12, code: "NL", color: "#4FD1C5" },
   { name: "顾问", value: 8, code: "GC", color: "#9B7BF7" },
-  { name: "刑事", value: 2, code: "CR", color: "#FB923C" },
-  { name: "行政", value: 1, code: "AD", color: "#FBBF24" },
+  { name: "Penal", value: 2, code: "CR", color: "#FB923C" },
+  { name: "Administrativo", value: 1, code: "AD", color: "#FBBF24" },
   { name: "专项", value: 1, code: "SP", color: "#60A5FA" }
 ];

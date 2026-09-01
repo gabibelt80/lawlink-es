@@ -1,6 +1,6 @@
 // 内部 helper：仅供 server action 调用，调用方负责 session 与权限校验。
 // 不能标 "use server"：这里接受 userId/matterId 参数且不做鉴权，
-// 一旦成为 server action 端点会被客户端直接伪造调用。
+// 一旦成为 server action 端点会被Cliente端直接伪造调用。
 import { lookup } from "node:dns/promises";
 import net from "node:net";
 import type { DocumentCategory, SmsType } from "@prisma/client";
@@ -123,8 +123,8 @@ async function downloadFromDocumentLink(
         url: link.url,
         status: "LOGIN_REQUIRED",
         message: link.extractionCodes.length > 0
-          ? "该送达入口可能需要登录或输入提取码，已识别到短信内的验证码/提取码"
-          : "该送达入口可能需要网页登录、验证码或专有流程，需人工打开处理",
+          ? "该送达入口可能需要Iniciar sesión或输入提取码，已识别到SMS内的验证码/提取码"
+          : "该送达入口可能需要网页Iniciar sesión、验证码或专有流程，需人工打开处理",
         checkedAt: new Date().toISOString()
       };
     }
@@ -187,7 +187,7 @@ async function downloadFromUrl(
       url,
       status: htmlLooksLikeLogin(html) ? "LOGIN_REQUIRED" : "NO_FILE_FOUND",
       message: htmlLooksLikeLogin(html)
-        ? "页面需要登录、验证码或确认签收，未自动下载"
+        ? "页面需要Iniciar sesión、验证码或确认签收，未自动下载"
         : "页面内未发现可直接下载的文书附件",
       checkedAt: new Date().toISOString()
     };
@@ -262,7 +262,7 @@ async function downloadFromUrl(
   return {
     url,
     status: "DOWNLOADED",
-    message: "已保存为案件材料",
+    message: "已Guardar为Caso材料",
     documentId: document.id,
     documentName: document.name,
     mimeType: document.mimeType,
@@ -362,7 +362,7 @@ function extractFileLinksFromHtml(html: string, baseUrl: string): string[] {
 }
 
 function htmlLooksLikeLogin(html: string): boolean {
-  return /登录|账号|密码|验证码|签收|确认送达|提取码|取件码|人机|captcha/i.test(html);
+  return /Iniciar sesión|账号|Contraseña|验证码|签收|确认送达|提取码|取件码|人机|captcha/i.test(html);
 }
 
 function baseMime(mime: string | null): string | null {
@@ -380,7 +380,7 @@ function buildAttachmentName(response: Response, finalUrl: string): string {
   const dispositionName = filenameFromDisposition(response.headers.get("content-disposition"));
   const urlName = filenameFromUrl(finalUrl);
   const mimeType = baseMime(response.headers.get("content-type"));
-  const base = sanitizeFilename(normalizeUploadedFilename(dispositionName || urlName || "法院短信送达文书"));
+  const base = sanitizeFilename(normalizeUploadedFilename(dispositionName || urlName || "法院SMS送达文书"));
   const withExt = ensureExt(base, mimeType);
   if (/\.[A-Za-z0-9]{1,5}$/.test(withExt)) return withExt;
   const ext = mimeType ? MIME_EXT[mimeType] : null;
@@ -416,7 +416,7 @@ function sanitizeFilename(name: string): string {
     .replace(/[\\/:*?"<>|]/g, "_")
     .replace(/\s+/g, " ")
     .trim();
-  return (cleaned || "法院短信送达文书").slice(0, 120);
+  return (cleaned || "法院SMS送达文书").slice(0, 120);
 }
 
 async function saveAttachmentDocument({
@@ -460,7 +460,7 @@ async function saveAttachmentDocument({
       algorithm,
       iv,
       authTag,
-      tags: ["法院短信", "电子送达", "自动提取"],
+      tags: ["法院SMS", "电子送达", "自动提取"],
       uploadedById: ctx.userId
     },
     select: { id: true, name: true, mimeType: true, size: true }
@@ -470,7 +470,7 @@ async function saveAttachmentDocument({
     data: {
       matterId: ctx.matterId,
       eventType: "DOCUMENT_UPLOADED",
-      title: `提取法院短信附件：${filename}`,
+      title: `提取法院SMS附件：${filename}`,
       occurredAt: new Date(),
       refType: "Document",
       refId: doc.id

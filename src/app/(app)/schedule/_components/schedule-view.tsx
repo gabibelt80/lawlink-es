@@ -88,14 +88,14 @@ export function ScheduleView({
     <div className="space-y-4">
       <header className="ll-page-head">
         <div>
-          <h1 className="ll-page-title">日程</h1>
+          <h1 className="ll-page-title">Calendario</h1>
           <p className="ll-page-sub">未来 90 天的开庭、期限与待办事项</p>
         </div>
 
           <div className="flex flex-wrap items-center justify-end gap-2">
             <Button size="sm" onClick={() => openAddDialog()} className="h-8 gap-1.5">
               <Plus className="h-3.5 w-3.5" strokeWidth={1.8} />
-              添加日程
+              AgregarCalendario
             </Button>
             <div
               className="ll-segmented"
@@ -170,7 +170,7 @@ function ListView({
   if (items.length === 0) {
     return (
       <div className="ll-surface border-dashed py-16 text-center">
-        <p className="text-sm text-muted-foreground">未来 90 天没有日程</p>
+        <p className="text-sm text-muted-foreground">未来 90 天没有Calendario</p>
       </div>
     );
   }
@@ -200,10 +200,10 @@ function ListView({
                   {d.toLocaleDateString("zh-CN", { weekday: "long" })}
                 </span>
                 {isToday ? (
-                  <Badge className="bg-primary text-primary-foreground text-[10px]">今天</Badge>
+                  <Badge className="bg-primary text-primary-foreground text-[10px]">Hoy</Badge>
                 ) : (
                   <span className="text-xs text-muted-foreground">
-                    {days === 1 ? "明天" : days > 0 ? `${days} 天后` : `${-days} 天前`}
+                    {days === 1 ? "Mañana" : days > 0 ? `${days} 天后` : `${-days} 天前`}
                   </span>
                 )}
               </div>
@@ -436,8 +436,8 @@ function CalendarView({
                     onAddDay(cell.date!);
                   }}
                   className="h-5 w-5 rounded-sm p-0 text-muted-foreground opacity-0 transition-opacity hover:bg-muted hover:text-primary group-hover:opacity-100 group-focus-within:opacity-100"
-                  aria-label={`添加 ${month + 1} 月 ${cell.date.getDate()} 日的日程`}
-                  title="添加日程"
+                  aria-label={`Agregar ${month + 1} 月 ${cell.date.getDate()} 日的Calendario`}
+                  title="AgregarCalendario"
                 >
                   <Plus className="mx-auto h-3 w-3" />
                 </button>
@@ -481,14 +481,14 @@ function ScheduleSideRail({
         <header className="ll-panel-head">
           <h3 className="ll-panel-title">
             <span className="h-2 w-2 rounded-full bg-primary" />
-            今天
+            Hoy
           </h3>
           <span className="font-mono text-xs text-muted-foreground tabular">
             {todayItems.length} 项
           </span>
         </header>
         {todayItems.length === 0 ? (
-          <p className="px-4 py-8 text-center text-xs text-muted-foreground">今天没有日程</p>
+          <p className="px-4 py-8 text-center text-xs text-muted-foreground">Hoy没有Calendario</p>
         ) : (
           <ul className="divide-y divide-border px-4">
             {todayItems.map((item) => (
@@ -607,9 +607,9 @@ function ScheduleItemDialog({
 
             <div className="space-y-2 rounded-lg border border-border bg-muted/20 p-3">
               <DetailLine label="时间" value={`${formatFullDate(item.occurredAt)} ${formatTime(item.occurredAt)}`} />
-              <DetailLine label="客户" value={item.clientName ?? "未填写客户"} />
+              <DetailLine label="Cliente" value={item.clientName ?? "未填写Cliente"} />
               <DetailLine
-                label="关联案件"
+                label="关联Caso"
                 value={
                   <Link
                     href={matterHref(item.matter)}
@@ -626,7 +626,7 @@ function ScheduleItemDialog({
                 <DetailLine label="期限类型" value={item.category} />
               )}
               {item.type === "deadline" && item.remindDays !== undefined && (
-                <DetailLine label="提醒" value={`提前 ${item.remindDays} 天`} />
+                <DetailLine label="Recordatorios" value={`提前 ${item.remindDays} 天`} />
               )}
               {item.type === "task" && item.priority !== undefined && (
                 <DetailLine label="优先级" value={priorityLabel(item.priority)} />
@@ -641,10 +641,10 @@ function ScheduleItemDialog({
 
             <DialogFooter>
               <Button variant="outline" onClick={() => onOpenChange(false)}>
-                关闭
+                Cerrar
               </Button>
               <Button asChild>
-                <Link href={matterHref(item.matter)}>查看案件</Link>
+                <Link href={matterHref(item.matter)}>VerCaso</Link>
               </Button>
             </DialogFooter>
           </>

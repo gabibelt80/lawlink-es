@@ -1,14 +1,14 @@
 import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 
-/** ADMIN 或 PRINCIPAL_LAWYER — 管理层，看所有数据 */
+/** ADMIN 或 PRINCIPAL_LAWYER — Administrar层，看所有数据 */
 export function isManager(role: string): boolean {
   return role === "ADMIN" || role === "PRINCIPAL_LAWYER";
 }
 
-// ============ 案件可见性 ============
+// ============ Caso可见性 ============
 
-/** 列表查询用：返回 Prisma where 片段，AND 到现有 where */
+/** 列表查询用：Volver Prisma where 片段，AND 到现有 where */
 export function matterVisibilityFilter(
   userId: string,
   role: string
@@ -26,7 +26,7 @@ export function matterVisibilityFilter(
   return { members: { some: { userId } } };
 }
 
-/** 操作/关联案件用：不因 ADMIN / PRINCIPAL_LAWYER / FINANCE 角色放大全所范围 */
+/** Acciones/关联Caso用：不因 ADMIN / PRINCIPAL_LAWYER / FINANCE 角色放大全所范围 */
 export function matterAssociationFilter(userId: string): Prisma.MatterWhereInput {
   return {
     OR: [
@@ -36,7 +36,7 @@ export function matterAssociationFilter(userId: string): Prisma.MatterWhereInput
   };
 }
 
-/** 单条访问断言：查不到或无权限一律 throw "案件不存在"（避免泄露 ID） */
+/** 单条访问断言：查不到或无权限一律 throw "Caso不存在"（避免泄露 ID） */
 export async function assertCanAccessMatter(
   userId: string,
   role: string,
@@ -47,7 +47,7 @@ export async function assertCanAccessMatter(
       where: { id: matterId, deletedAt: null },
       select: { id: true }
     });
-    if (!exists) throw new Error("案件不存在");
+    if (!exists) throw new Error("Caso不存在");
     return;
   }
   const row = await prisma.matter.findFirst({
@@ -58,10 +58,10 @@ export async function assertCanAccessMatter(
     },
     select: { id: true }
   });
-  if (!row) throw new Error("案件不存在");
+  if (!row) throw new Error("Caso不存在");
 }
 
-/** 操作/关联断言：只允许主办或案件成员，不因管理角色放开 */
+/** Acciones/关联断言：只允许主办或Caso成员，不因Administrar角色放开 */
 export async function assertCanAssociateMatter(
   userId: string,
   matterId: string
@@ -74,10 +74,10 @@ export async function assertCanAssociateMatter(
     },
     select: { id: true }
   });
-  if (!row) throw new Error("案件不存在或无权关联");
+  if (!row) throw new Error("Caso不存在或无权关联");
 }
 
-/** 案件处理断言：只允许主办或案件成员，不因管理角色放开 */
+/** Caso处理断言：只允许主办或Caso成员，不因Administrar角色放开 */
 export async function assertCanHandleMatter(
   userId: string,
   matterId: string
@@ -90,14 +90,14 @@ export async function assertCanHandleMatter(
     },
     select: { id: true }
   });
-  if (!row) throw new Error("案件不存在或无权处理");
+  if (!row) throw new Error("Caso不存在或无权处理");
 }
 
 /** 主办/协办断言：用于归档、团队、核心信息、文书生成等较敏感处理 */
 export async function assertCanLeadMatter(
   userId: string,
   matterId: string,
-  message = "仅案件主办/协办可操作"
+  message = "仅Caso主办/协办可Acciones"
 ): Promise<void> {
   const row = await prisma.matter.findFirst({
     where: {
@@ -113,11 +113,11 @@ export async function assertCanLeadMatter(
   if (!row) throw new Error(message);
 }
 
-/** 当前主办律师断言：用于变更承办团队、删除案件等所有权级操作 */
+/** 当前主办Abogado断言：用于变更承办团队、EliminarCaso等所有权级Acciones */
 export async function assertCanOwnMatter(
   userId: string,
   matterId: string,
-  message = "仅案件主办律师可操作"
+  message = "仅Caso主办Abogado可Acciones"
 ): Promise<void> {
   const row = await prisma.matter.findFirst({
     where: {
@@ -130,7 +130,7 @@ export async function assertCanOwnMatter(
   if (!row) throw new Error(message);
 }
 
-/** 修改断言：只允许主办或案件成员，不因管理角色放开 */
+/** 修改断言：只允许主办或Caso成员，不因Administrar角色放开 */
 export async function assertCanModifyMatter(
   userId: string,
   _role: string,
@@ -144,7 +144,7 @@ export async function assertCanModifyMatter(
     },
     select: { id: true }
   });
-  if (!matter) throw new Error("案件不存在");
+  if (!matter) throw new Error("Caso不存在");
 }
 
 // ============ 收案可见性 ============
@@ -163,9 +163,9 @@ export function intakeVisibilityFilter(
   };
 }
 
-// ============ 客户可见性 ============
+// ============ Cliente可见性 ============
 
-/** 客户通过关联的案件判断可见性；manager/finance 看全部 */
+/** Cliente通过关联的Caso判断可见性；manager/finance 看Ver todos */
 export function clientVisibilityFilter(
   userId: string,
   role: string

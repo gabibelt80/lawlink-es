@@ -1,13 +1,13 @@
 /**
- * 案件详情页的 URL 规则（v1.2）。
+ * Caso详情页的 URL 规则（v1.2）。
  *
  * 路由键从 cuid 换成 `internalCode`（形如 `LL-2026-CC-0001`）：
- * 编号必填、`@unique`、且只在案件创建时生成一次，全仓库没有更新它的写入路径，
+ * 编号必填、`@unique`、且只在CasoCrear时生成一次，全仓库没有Actualizar它的写入路径，
  * 因此可以安全地当作 URL 的稳定标识。
  *
- * 不用 `firmCaseNo`（所内案号）：它含中文和括号，进 URL 要百分号编码；
- * 且按「设置 → 律所信息」的模板渲染，模板可配置 = 可变，会让旧链接失效。
- * 也不把案件标题做成 slug：标题含当事人姓名，属 PII，不进 URL（见 AGENTS.md §八）。
+ * 不用 `firmCaseNo`（所内案号）：它含中文和括号，进 URL 要百分号Código；
+ * 且按「Configuración → 律所信息」的模板渲染，模板可配置 = 可变，会让旧链接失效。
+ * 也不把Caso标题做成 slug：标题含当事人姓名，属 PII，不进 URL（见 AGENTS.md §八）。
  */
 
 /**
@@ -19,7 +19,7 @@ type MatterRouteKey = {
   internalCode: string | null;
 };
 
-/** 案件详情页地址。没有 internalCode 时回退到 id，保证链接始终可用。 */
+/** Caso详情页地址。没有 internalCode 时回退到 id，保证链接始终可用。 */
 export function matterHref(matter: MatterRouteKey, suffix = ""): string {
   const key = matter.internalCode?.trim() || matter.id;
   return `/matters/${encodeURIComponent(key)}${suffix}`;

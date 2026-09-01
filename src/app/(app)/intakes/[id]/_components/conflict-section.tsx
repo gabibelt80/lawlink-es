@@ -139,7 +139,7 @@ export function ConflictSection({
       queries.push({ role: "THIRD_PARTY", name: p.name, idNumber: p.idNumber });
     }
     if (queries.length === 0) {
-      toast.warning("没有可检索的当事人", { description: "请先在收案中添加委托方或对方" });
+      toast.warning("没有可检索的当事人", { description: "请先在收案中Agregar委托方或对方" });
       return;
     }
 
@@ -147,7 +147,7 @@ export function ConflictSection({
       try {
         const res = await runCheckAndSave({ intakeId, queries });
         toast.success("冲突检索完成", {
-          description: `命中 ${res.hits.length} 条 · 客户库同名 ${res.sameNameClients.length} 个`
+          description: `命中 ${res.hits.length} 条 · Cliente库同名 ${res.sameNameClients.length} 个`
         });
       } catch (err) {
         toast.error("检索失败", {
@@ -172,9 +172,9 @@ export function ConflictSection({
           conclusion,
           note: conclusionNote
         });
-        toast.success("结论已保存");
+        toast.success("结论已Guardar");
       } catch (err) {
-        toast.error("保存失败", {
+        toast.error("Guardar失败", {
           description: err instanceof Error ? err.message : ""
         });
       }
@@ -190,7 +190,7 @@ export function ConflictSection({
             利益冲突检索
           </h2>
           <p className="mt-0.5 text-[11px] text-muted-foreground">
-            匹配历史案件当事人；客户库同名仅作提示，不计为冲突
+            匹配历史Caso当事人；Cliente库同名仅作提示，不计为冲突
           </p>
         </div>
 
@@ -247,12 +247,12 @@ export function ConflictSection({
             )}
           </div>
 
-          {/* 客户库同名提示（非冲突） */}
+          {/* Cliente库同名提示（非冲突） */}
           {latestCheck.sameNameClients.length > 0 && (
             <InfoBar
               icon={<Info className="h-3.5 w-3.5" />}
               tone="info"
-              text={`客户库已有 ${latestCheck.sameNameClients.length} 个同名记录（仅提示，非冲突）`}
+              text={`Cliente库已有 ${latestCheck.sameNameClients.length} 个同名记录（仅提示，非冲突）`}
             >
               <div className="mt-1.5 flex flex-wrap gap-1.5">
                 {latestCheck.sameNameClients.map((c) => (
@@ -269,12 +269,12 @@ export function ConflictSection({
             </InfoBar>
           )}
 
-          {/* 身份证号一致客户提示（强提示） */}
+          {/* 身份证号一致Cliente提示（强提示） */}
           {latestCheck.idMatchedClients.length > 0 && (
             <InfoBar
               icon={<AlertTriangle className="h-3.5 w-3.5" />}
               tone="warn"
-              text={`身份证 / 信用代码与客户库 ${latestCheck.idMatchedClients.length} 条记录精确匹配，请人工核对是否为同一主体`}
+              text={`身份证 / 信用代码与Cliente库 ${latestCheck.idMatchedClients.length} 条记录精确匹配，请人工核对是否为同一主体`}
             >
               <div className="mt-1.5 flex flex-wrap gap-1.5">
                 {latestCheck.idMatchedClients.map((c) => (
@@ -296,7 +296,7 @@ export function ConflictSection({
             <div className="rounded-md border border-[#65A30D]/30 bg-[#65A30D]/10 p-3 text-sm">
               <div className="flex items-center gap-2">
                 <CheckCircle2 className="h-4 w-4 text-[#65A30D]" />
-                <span className="text-foreground">未命中历史案件，系统已标记为可承接</span>
+                <span className="text-foreground">未命中历史Caso，Sistema已标记为可承接</span>
               </div>
             </div>
           ) : (
@@ -398,10 +398,10 @@ function HitCard({ hit }: { hit: Hit }) {
         )}
       </div>
       <div className="mt-1.5 grid grid-cols-2 gap-x-3 gap-y-1 text-[11px] text-muted-foreground">
-        <Field label="系统收案">{formatDate(m.intakeDate)}</Field>
-        <Field label="当前状态">{matterStatusLabel[m.status]}</Field>
+        <Field label="Sistema收案">{formatDate(m.intakeDate)}</Field>
+        <Field label="当前Estado">{matterStatusLabel[m.status]}</Field>
         <Field label="案由/类型">{causeOrCategory}</Field>
-        <Field label="主办律师">{m.ownerName ?? "—"}</Field>
+        <Field label="主办Abogado">{m.ownerName ?? "—"}</Field>
         <Field label="命中当事人">
           {hit.matchedName}{" "}
           <span className="text-foreground/70">
@@ -446,7 +446,7 @@ function HitCard({ hit }: { hit: Hit }) {
         )}
       </div>
 
-      {/* 主：案件信息 */}
+      {/* 主：Caso信息 */}
       {m ? (
         m.canViewMatter ? (
           <Link

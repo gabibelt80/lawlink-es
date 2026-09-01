@@ -69,12 +69,12 @@ export function MatterImportView() {
       <section className="ll-surface rounded-lg border border-border p-5">
         <header className="mb-3 flex items-center gap-2">
           <FileSpreadsheet className="h-4 w-4 text-primary" />
-          <h2 className="text-lg">案件批量导入</h2>
+          <h2 className="text-lg">Caso批量导入</h2>
         </header>
         <p className="mb-4 text-[12px] text-muted-foreground">
           下载 Excel 模板填写后上传 → 预览校验（有误的行会标红，仅导入无误行）→ 确认导入。
-          每行将创建客户（按名称+证件号查重）、案件（自动编号 + 所内案号 + 主办）、当事人（驱动利益冲突），
-          「办理中」的案件按类型自动生成首程序。
+          每行将CrearCliente（按Nombre+证件号查重）、Caso（自动编号 + 所内案号 + 主办）、当事人（驱动利益冲突），
+          「办理中」的Caso按类型自动生成首程序。
         </p>
 
         <div className="flex flex-wrap items-center gap-3">
@@ -116,7 +116,7 @@ export function MatterImportView() {
             </h3>
             <div className="flex gap-2">
               <Button variant="ghost" size="sm" onClick={reset}>
-                取消
+                Cancelar
               </Button>
               <Button size="sm" onClick={doImport} disabled={importing || preview.validCount === 0} className="gap-1.5">
                 {importing && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
@@ -187,7 +187,7 @@ export function MatterImportView() {
 
           {result.succeeded.length > 0 && (
             <div className="mb-3">
-              <p className="mb-1 text-[12px] text-muted-foreground">成功创建：</p>
+              <p className="mb-1 text-[12px] text-muted-foreground">成功Crear：</p>
               <ul className="space-y-0.5 text-[12px]">
                 {result.succeeded.map((s) => (
                   <li key={s.rowNo} className="space-y-0.5">
@@ -202,7 +202,7 @@ export function MatterImportView() {
                       <div className="ml-5 flex items-start gap-1.5 text-[11px] text-amber-600">
                         <AlertCircle className="mt-0.5 h-3 w-3 shrink-0" />
                         <span>
-                          案由已降级为自由文本（{s.causeDowngradeReason}），案件已导入，请事后人工核对案由
+                          案由已降级为自由文本（{s.causeDowngradeReason}），Caso已导入，请事后人工核对案由
                         </span>
                       </div>
                     )}

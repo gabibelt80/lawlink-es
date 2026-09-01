@@ -139,7 +139,7 @@ export async function deleteProcedure(id: string) {
 
   await assertCanAccessMatter(session.user.id, session.user.role, procedure.matterId);
   await assertMatterWritable(procedure.matterId);
-  await assertCanLeadMatter(session.user.id, procedure.matterId, "仅案件主办/协办可以删除程序");
+  await assertCanLeadMatter(session.user.id, procedure.matterId, "仅Caso主办/协办可以Eliminar程序");
 
   await prisma.matterProcedure.delete({ where: { id } });
   await audit({
@@ -183,7 +183,7 @@ async function materializeProcedureStage(
     const existing = existingStages.find((stage) => normalizeProcedureStageName(stage.name) === normalizedTarget);
 
     if (existing) {
-      // v0.48: 隐藏的环节重新添加时恢复为 ACTIVE（数据未删，直接复用）
+      // v0.48: 隐藏的环节重新Agregar时恢复为 ACTIVE（数据未删，直接复用）
       if (existing.status === "HIDDEN") {
         const revived = await tx.matterStage.update({
           where: { id: existing.id },
@@ -223,7 +223,7 @@ async function materializeProcedureStage(
         }
       }
 
-      if (!targetStage) throw new Error("环节创建失败");
+      if (!targetStage) throw new Error("环节Crear失败");
       return { stage: targetStage, created: true, revived: false, materializedCount: names.length };
     }
 
@@ -336,13 +336,13 @@ export async function removeProcedureStage(input: ProcedureStageRemoveInput) {
   const linkedDocuments = await prisma.document.count({
     where: { stageId: stage.id, deletedAt: null }
   });
-  const preservationRecords = stage.name.includes("保全")
+  const preservationRecords = stage.name.includes("Preservación")
     ? await prisma.preservationCase.count({ where: { matterId: stage.procedure.matterId } })
     : 0;
   const hasContent = stage._count.tasks > 0 || linkedDocuments > 0 || preservationRecords > 0;
 
   if (hasContent) {
-    // 有任务/材料/专项记录：置 HIDDEN 保留数据，重新添加同名环节时可恢复
+    // 有任务/材料/专项记录：置 HIDDEN 保留数据，重新Agregar同名环节时可恢复
     await prisma.$transaction(async (tx) => {
       await tx.matterStage.update({
         where: { id: stage.id },
@@ -446,7 +446,7 @@ export async function addDeadline(input: DeadlineCreateInput) {
       targetId: created.id,
       detail: { matterId: procedure.matterId, procedureId: data.procedureId }
     });
-    // v0.43 项4：写入案件动态时间线
+    // v0.43 项4：写入Caso动态时间线
     await prisma.timelineEvent.create({
       data: {
         matterId: procedure.matterId,

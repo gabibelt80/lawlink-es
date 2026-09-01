@@ -1,7 +1,7 @@
 /**
  * v0.22: 报表深入分析
  *
- * - 办案周期：本期已结案件的 closedAt - createdAt 天数，按 category 统计
+ * - 办案周期：本期已结Caso的 closedAt - createdAt 天数，按 category 统计
  * - AI 审查 top issues：本期 ReviewRecord.itemsJson 聚合，找高频 title
  */
 import { prisma } from "@/lib/prisma";
@@ -19,7 +19,7 @@ export type CycleStats = {
 };
 
 /**
- * 计算"收案→结案"周期。本期 closedAt 落入的案件为口径。
+ * 计算"收案→结案"周期。本期 closedAt 落入的Caso为口径。
  * 用 JS 端排序算中位数（prisma groupBy 不支持中位数）。
  */
 export async function getCaseCycleAnalysis(period: ReportPeriod): Promise<CycleStats[]> {
@@ -82,7 +82,7 @@ export type ReviewIssueAnalysis = {
 };
 
 /**
- * 本期 AI 审查的跨案件聚合统计。
+ * 本期 AI 审查的跨Caso聚合统计。
  * 从 ReviewRecord.itemsJson 拉出来 JS 聚合（PG jsonb 函数路径 prisma 不友好）。
  */
 export async function getReviewIssueAnalysis(period: ReportPeriod): Promise<ReviewIssueAnalysis> {

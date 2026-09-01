@@ -70,7 +70,7 @@ export function BatchReviewButton({ matterId }: { matterId: string }) {
         title="对本案未审查过的文档批量发起 AI 审查（单次最多 5 个）"
       >
         {pending ? <Loader2 className="h-3 w-3 animate-spin" /> : <Sparkles className="h-3 w-3" />}
-        AI 复检全部
+        AI 复检Ver todos
       </Button>
 
       <Dialog open={open} onOpenChange={setOpen}>
@@ -152,7 +152,7 @@ export function BatchReviewButton({ matterId }: { matterId: string }) {
 
           <DialogFooter>
             <Button variant="outline" size="sm" onClick={() => setOpen(false)}>
-              关闭
+              Cerrar
             </Button>
           </DialogFooter>
         </DialogContent>

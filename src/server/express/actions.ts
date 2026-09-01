@@ -86,12 +86,12 @@ async function assertCanAccessExpressRecord(userId: string, id: string) {
     await assertCanAssociateMatter(userId, record.matterId);
     return record;
   }
-  if (record.createdById !== userId) throw new Error("无权操作此快递记录");
+  if (record.createdById !== userId) throw new Error("无权Acciones此快递记录");
   return record;
 }
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-// 创建 + 首次查询
+// Crear + 首次查询
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 export async function createExpress(input: z.infer<typeof expressCreateSchema>) {
@@ -107,7 +107,7 @@ export async function createExpress(input: z.infer<typeof expressCreateSchema>) 
       where: { id: data.matterId },
       select: { id: true }
     });
-    if (!m) throw new Error("关联案件不存在");
+    if (!m) throw new Error("关联Caso不存在");
     await assertCanAssociateMatter(session.user.id, data.matterId);
     await assertMatterWritable(data.matterId);
   }
@@ -226,7 +226,7 @@ export async function deleteExpress(input: z.infer<typeof expressIdSchema>) {
 async function requireAdmin() {
   const session = await requireSession();
   if (session.user.role !== "ADMIN") {
-    throw new Error("仅管理员可修改快递接入配置");
+    throw new Error("仅Administrar员可修改快递接入配置");
   }
   return session;
 }

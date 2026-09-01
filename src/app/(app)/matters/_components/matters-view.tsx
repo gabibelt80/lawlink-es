@@ -69,15 +69,15 @@ const ALL_CATEGORIES: (MatterCategory | "ALL")[] = [
 ];
 
 const TABS: { key: Tab; label: string; icon: typeof Clock }[] = [
-  { key: "all", label: "全部案件", icon: FolderOpen },
-  { key: "intake", label: "待审批", icon: Clock },
+  { key: "all", label: "Ver todosCaso", icon: FolderOpen },
+  { key: "intake", label: "待Aprobación", icon: Clock },
   { key: "active", label: "进行中", icon: CheckCircle2 },
   { key: "revision", label: "待补正", icon: AlertCircle },
   { key: "archived", label: "已归档", icon: Archive }
 ];
 
 const ALL_STATUS_FILTERS: { value: string; label: string }[] = [
-  { value: "ALL", label: "全部状态" },
+  { value: "ALL", label: "Ver todosEstado" },
   { value: "active", label: "办理中" },
   { value: "closed", label: "已结案" },
   { value: "archived", label: "已归档" }
@@ -193,7 +193,7 @@ export function MattersView({
     return `/matters${params.toString() ? `?${params.toString()}` : ""}`;
   }
 
-  // ?new=1 自动打开；关闭弹窗时再清 URL，避免 replace 打断打开状态。
+  // ?new=1 自动打开；Cerrar弹窗时再清 URL，避免 replace 打断打开Estado。
   useEffect(() => {
     if (autoOpenIntake) {
       setSheetOpen(true);
@@ -290,7 +290,7 @@ export function MattersView({
     <div className="space-y-4">
       <header className="ll-page-head">
         <div>
-          <h1 className="ll-page-title">案件</h1>
+          <h1 className="ll-page-title">Caso</h1>
           <p className="ll-page-sub">
               <span className="text-foreground/80">
                 {TABS.find((t) => t.key === tab)?.label}
@@ -334,7 +334,7 @@ export function MattersView({
         })}
       </div>
 
-      {/* 搜索 */}
+      {/* Buscar */}
       <div className="ll-surface px-3 py-2">
         <form
           onSubmit={(e) => {
@@ -351,13 +351,13 @@ export function MattersView({
             <Input
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              placeholder="搜索案件名称 / 客户"
+              placeholder="BuscarCasoNombre / Cliente"
               className="h-[34px] rounded-md border-input bg-background pl-9 text-[13px] shadow-[var(--shadow-inset-deep)]"
             />
           </div>
           <Button type="submit" size="sm" variant="outline" className="h-[34px] gap-1 px-3">
             <Search className="h-3.5 w-3.5" />
-            搜索
+            Buscar
           </Button>
         </form>
       </div>
@@ -376,14 +376,14 @@ export function MattersView({
         >
           {ALL_CATEGORIES.map((c) => (
             <SelectItem key={c} value={c}>
-              {c === "ALL" ? "全部类型" : matterCategoryLabel[c as MatterCategory]}
+              {c === "ALL" ? "Ver todos类型" : matterCategoryLabel[c as MatterCategory]}
             </SelectItem>
           ))}
         </CompactSelect>
 
         {isAll && (
           <CompactSelect
-            label="状态"
+            label="Estado"
             value={statusFilter}
             onValueChange={(v) => {
               setStatusFilter(v);

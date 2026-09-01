@@ -39,10 +39,10 @@ export function AvatarForm({ name, initialAvatar }: { name: string; initialAvata
     startTransition(async () => {
       try {
         await saveMyAvatar({ avatar: value });
-        toast.success(value ? "头像已更新" : "头像已清除");
+        toast.success(value ? "头像已Actualizar" : "头像已清除");
         router.refresh();
       } catch (e) {
-        toast.error(e instanceof Error ? e.message : "保存失败");
+        toast.error(e instanceof Error ? e.message : "Guardar失败");
       }
     });
   };

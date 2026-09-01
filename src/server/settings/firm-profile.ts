@@ -2,7 +2,7 @@
  * v0.42 律所信息 / 编号体系配置（项 1 + 项 11）
  *
  * 单 SystemSetting key `firmProfile`，value 为 JSON：
- *   - firmName / firmSubtitle / logoDataUrl：侧栏品牌（默认 LawLink / 律师工作台）
+ *   - firmName / firmSubtitle / logoDataUrl：侧栏品牌（默认 LawLink / Abogado工作台）
  *   - matterCodePrefix：内部编号前缀（internalCode 的 LL 段，默认 LL）
  *   - firmShortName / caseNoTemplate / categoryWords：所内案号模板与各段映射
  *
@@ -15,7 +15,7 @@ import { prisma } from "@/lib/prisma";
 
 const FIRM_PROFILE_KEY = "firmProfile";
 
-/** {类词} 默认映射：可在设置页逐类编辑 */
+/** {类词} 默认映射：可在Configuración页逐类Editar */
 export const CATEGORY_WORD_DEFAULTS: Record<MatterCategory, string> = {
   CIVIL_COMMERCIAL: "民诉",
   LABOR_ARBITRATION: "劳仲",
@@ -27,7 +27,7 @@ export const CATEGORY_WORD_DEFAULTS: Record<MatterCategory, string> = {
   SPECIAL_PROJECT: "专项"
 };
 
-/** {类} 单字简称（固定，不可编辑） */
+/** {类} 单字简称（固定，不可Editar） */
 export const CATEGORY_ABBR: Record<MatterCategory, string> = {
   CIVIL_COMMERCIAL: "民",
   LABOR_ARBITRATION: "劳",
@@ -51,7 +51,7 @@ export interface FirmProfile {
 
 export const FIRM_PROFILE_DEFAULTS: FirmProfile = {
   firmName: "LawLink",
-  firmSubtitle: "律师工作台",
+  firmSubtitle: "Abogado工作台",
   logoDataUrl: null,
   matterCodePrefix: "LL",
   firmShortName: "",

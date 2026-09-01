@@ -71,7 +71,7 @@ export async function deleteBilling(id: string) {
     await assertMatterWritable(billing.matterId, { allowFinanceRole: true });
   } else {
     await assertMatterWritable(billing.matterId);
-    await assertCanLeadMatter(session.user.id, billing.matterId, "仅案件主办/协办或财务可删除合同");
+    await assertCanLeadMatter(session.user.id, billing.matterId, "仅Caso主办/协办或Finanzas可Eliminar合同");
   }
 
   await prisma.billing.delete({ where: { id } });
@@ -88,8 +88,8 @@ export async function deleteBilling(id: string) {
 // ============ FeeEntry + 自动分成 ============
 
 /**
- * 创建一条收付记录。
- * - 创建 RECEIVED 时自动按 CommissionPlan 派生 COMMISSION 子条目（每位受益人一条）
+ * Crear一条收付记录。
+ * - Crear RECEIVED 时自动按 CommissionPlan 派生 COMMISSION 子条目（每位受益人一条）
  * - parent / children 通过 parentFeeEntryId 关联
  */
 export async function createFeeEntry(input: FeeEntryCreateInput) {
@@ -169,7 +169,7 @@ export async function createFeeEntry(input: FeeEntryCreateInput) {
 export async function deleteFeeEntry(id: string) {
   const session = await requireSession();
   if (!isManager(session.user.role) && session.user.role !== "FINANCE") {
-    throw new Error("仅管理员、主办律师或财务可删除收付记录");
+    throw new Error("仅Administrar员、主办Abogado或Finanzas可Eliminar收付记录");
   }
   const entry = await prisma.feeEntry.findUnique({
     where: { id },
@@ -178,7 +178,7 @@ export async function deleteFeeEntry(id: string) {
   if (!entry) return { ok: false };
   await assertMatterWritable(entry.matterId, { allowFinanceRole: true });
 
-  // 删父条目时同时删除自动派生的分成
+  // 删父条目时同时Eliminar自动派生的分成
   await prisma.$transaction(async (tx) => {
     if (entry.commissionChildren.length > 0) {
       await tx.feeEntry.deleteMany({
@@ -206,14 +206,14 @@ export async function deleteFeeEntry(id: string) {
 // ============ CommissionPlan ============
 
 /**
- * 整体替换案件的分成方案。
- * 简单策略：删除所有现有 plan，按 items 创建新的。
+ * 整体替换Caso的分成方案。
+ * 简单策略：Eliminar所有现有 plan，按 items Crear新的。
  */
 export async function setCommissionPlan(input: CommissionPlanSetInput) {
   const session = await requireSession();
   const data = commissionPlanSetSchema.parse(input);
   await assertMatterWritable(data.matterId);
-  await assertCanLeadMatter(session.user.id, data.matterId, "仅案件主办/协办可设置分成方案");
+  await assertCanLeadMatter(session.user.id, data.matterId, "仅Caso主办/协办可Configuración分成方案");
 
   await prisma.$transaction([
     prisma.commissionPlan.deleteMany({ where: { matterId: data.matterId } }),
@@ -240,7 +240,7 @@ export async function setCommissionPlan(input: CommissionPlanSetInput) {
   return { ok: true };
 }
 
-// ============ 全局财务统计 ============
+// ============ 全局Finanzas统计 ============
 
 export async function getMatterFinance(matterId: string) {
   const session = await requireSession();
@@ -288,7 +288,7 @@ export async function getMatterFinance(matterId: string) {
 }
 
 /**
- * v0.11: 列出案件下的申请发票
+ * v0.11: 列出Caso下的申请发票
  */
 export async function listMatterInvoiceRequests(matterId: string) {
   const session = await requireSession();
@@ -317,7 +317,7 @@ export async function listMatterInvoiceRequests(matterId: string) {
 }
 
 /**
- * v0.12: 获取案件用于开票的默认信息（客户抬头 + 关联 Intake id）
+ * v0.12: 获取Caso用于开票的默认信息（Cliente抬头 + 关联 Intake id）
  */
 export async function getMatterInvoiceContext(matterId: string) {
   const session = await requireSession();
@@ -346,9 +346,9 @@ export async function getMatterInvoiceContext(matterId: string) {
       }
     }
   });
-  if (!m) throw new Error("案件不存在");
+  if (!m) throw new Error("Caso不存在");
 
-  // v0.42 项3：开票抬头下拉 = 本案关联的全部客户（去重，主要客户置顶）
+  // v0.42 项3：开票抬头下拉 = 本案关联的Ver todosCliente（去重，主要Cliente置顶）
   const clientMap = new Map<
     string,
     { id: string; name: string; taxNo: string | null; isPrimary: boolean }
@@ -398,10 +398,10 @@ export async function getMatterInvoiceContext(matterId: string) {
 }
 
 /**
- * v0.12: 创建开票申请（带类型/名目/抬头/依据）
+ * v0.12: Crear开票申请（带类型/名目/抬头/依据）
  */
 export async function createInvoiceRequest(input: {
-  // v0.43 项5：matterId 可空——无关联案件开票须填 noMatterReason
+  // v0.43 项5：matterId 可空——无关联Caso开票须填 noMatterReason
   matterId: string | null;
   noMatterReason?: string | null;
   amount: number;
@@ -421,12 +421,12 @@ export async function createInvoiceRequest(input: {
   if (input.matterId) {
     await assertCanAssociateMatter(session.user.id, input.matterId);
   } else {
-    // 无关联案件开票仅财务 / 管理员 / 主任可发起，且必须说明原因
+    // 无关联Caso开票仅Finanzas / Administrar员 / 主任可发起，且必须说明原因
     if (!isManager(session.user.role) && session.user.role !== "FINANCE") {
-      throw new Error("无关联案件开票仅财务 / 管理员 / 主任律师可发起");
+      throw new Error("无关联Caso开票仅Finanzas / Administrar员 / 主任Abogado可发起");
     }
     if (!input.noMatterReason?.trim()) {
-      throw new Error("无关联案件时必须填写原因说明");
+      throw new Error("无关联Caso时必须填写原因说明");
     }
   }
 
@@ -435,7 +435,7 @@ export async function createInvoiceRequest(input: {
     throw new Error("请选择开票类型");
   }
   if (!input.buyerName.trim()) throw new Error("请填写开票抬头");
-  // 专票合规校验（《增值税专用发票使用与管理通知》第一条 + 购方六要素）
+  // 专票合规校验（《增值税专用发票使用与AdministrarNotificaciones》第一条 + 购方六要素）
   if (input.invoiceType === "SPECIAL") {
     if (!input.buyerTaxNo?.trim()) throw new Error("增值税专用发票必须填写纳税人识别号");
     if (!input.buyerAddress?.trim()) throw new Error("增值税专用发票必须填写购方地址");
@@ -443,7 +443,7 @@ export async function createInvoiceRequest(input: {
     if (!input.buyerBank?.trim()) throw new Error("增值税专用发票必须填写开户银行");
     if (!input.buyerBankAccount?.trim()) throw new Error("增值税专用发票必须填写银行账号");
   }
-  // 关联案件时必须上传开票依据（委托合同等）；无关联案件以原因说明替代，依据可选
+  // 关联Caso时必须上传开票依据（委托合同等）；无关联Caso以原因说明替代，依据可选
   if (input.matterId && input.evidenceDocIds.length === 0) {
     throw new Error("请上传至少一份开票依据（扫描版委托合同等）");
   }
@@ -480,9 +480,9 @@ export async function createInvoiceRequest(input: {
   await notifyRoleApprovers({
     roles: ["ADMIN", "PRINCIPAL_LAWYER", "FINANCE"],
     excludeUserId: session.user.id,
-    title: "新的发票审批待处理",
-    content: `${session.user.name ?? "有用户"} 提交了开票申请：${
-      matter ? `${matter.internalCode} ${matter.title}` : input.noMatterReason?.trim() || "无关联案件"
+    title: "新的发票Aprobación待处理",
+    content: `${session.user.name ?? "有用户"} Enviar了开票申请：${
+      matter ? `${matter.internalCode} ${matter.title}` : input.noMatterReason?.trim() || "无关联Caso"
     }，金额 ${input.amount.toLocaleString("zh-CN")} 元`,
     href: "/finance",
     refType: "InvoiceRequest",
@@ -495,7 +495,7 @@ export async function createInvoiceRequest(input: {
   return created;
 }
 
-/** v0.43 项5：财务页开票弹窗用——搜索当前用户可关联案件（轻量，返回编号+标题） */
+/** v0.43 项5：Finanzas页开票弹窗用——Buscar当前用户可关联Caso（轻量，Volver编号+标题） */
 export async function searchMattersForInvoice(q?: string) {
   const session = await requireSession();
   return prisma.matter.findMany({
@@ -567,7 +567,7 @@ export async function getMonthlyRevenue(months = 6) {
 export async function getPersonalRevenue(userId: string) {
   const session = await requireSession();
   if (!isManager(session.user.role) && session.user.id !== userId) {
-    throw new Error("只能查看自己的收入数据");
+    throw new Error("只能Ver自己的收入数据");
   }
   const monthStart = new Date();
   monthStart.setDate(1);

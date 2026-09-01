@@ -192,7 +192,7 @@ function ApprovalDialog({
         }
         onClose();
       } catch (e) {
-        toast.error(e instanceof Error ? e.message : "操作失败");
+        toast.error(e instanceof Error ? e.message : "Operación fallida");
       }
     });
   };
@@ -201,7 +201,7 @@ function ApprovalDialog({
     <Dialog open onOpenChange={(o) => !o && onClose()}>
       <DialogContent className="max-h-[88vh] w-[92vw] max-w-2xl overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>审批用章申请</DialogTitle>
+          <DialogTitle>Aprobación用章申请</DialogTitle>
         </DialogHeader>
         <div className="min-w-0 space-y-2 rounded border border-border bg-muted/20 p-3 text-[12px]">
           <Field k="流水号" v={row.code} mono />
@@ -209,7 +209,7 @@ function ApprovalDialog({
           <Field k="申请人" v={row.requestedBy.name} />
           {row.matter && (
             <Field
-              k="关联案件"
+              k="关联Caso"
               v={`${row.matter.internalCode} ${row.matter.title}`}
             />
           )}
@@ -265,7 +265,7 @@ function ApprovalDialog({
           value={note}
           onChange={(e) => setNote(e.target.value)}
           placeholder={
-            mode === "approve" ? "审批意见 (可选)" : "驳回原因 (必填)"
+            mode === "approve" ? "Aprobación意见 (可选)" : "驳回原因 (必填)"
           }
           rows={2}
           className="mt-2 text-[12px]"
@@ -273,11 +273,11 @@ function ApprovalDialog({
 
         <DialogFooter>
           <Button variant="outline" onClick={onClose}>
-            取消
+            Cancelar
           </Button>
           <Button onClick={submit} disabled={pending}>
             {pending && <Loader2 className="mr-1 h-3.5 w-3.5 animate-spin" />}
-            提交
+            Enviar
           </Button>
         </DialogFooter>
       </DialogContent>
@@ -313,7 +313,7 @@ function StampDialog({
         toast.success("已完成");
         onClose();
       } catch (e) {
-        toast.error(e instanceof Error ? e.message : "提交失败");
+        toast.error(e instanceof Error ? e.message : "Enviar失败");
       }
     });
   };
@@ -355,11 +355,11 @@ function StampDialog({
         </label>
         <DialogFooter>
           <Button variant="outline" onClick={onClose}>
-            取消
+            Cancelar
           </Button>
           <Button onClick={submit} disabled={pending || !file}>
             {pending && <Loader2 className="mr-1 h-3.5 w-3.5 animate-spin" />}
-            提交
+            Enviar
           </Button>
         </DialogFooter>
       </DialogContent>
@@ -393,15 +393,15 @@ function CancelDialog({
           <DialogTitle>撤销用章申请</DialogTitle>
         </DialogHeader>
         <p className="text-[12px] text-muted-foreground">
-          确定撤销 {row.code} ？
+          Aceptar撤销 {row.code} ？
         </p>
         <DialogFooter>
           <Button variant="outline" onClick={onClose}>
-            取消
+            Cancelar
           </Button>
           <Button variant="destructive" onClick={submit} disabled={pending}>
             {pending && <Loader2 className="mr-1 h-3.5 w-3.5 animate-spin" />}
-            确定撤销
+            Aceptar撤销
           </Button>
         </DialogFooter>
       </DialogContent>

@@ -1,8 +1,8 @@
 /**
  * v0.9.3 ICS 日历文件生成（RFC 5545 简化版）
  *
- * 用于：保全到期 / 开庭 / 期限 一键导出 .ics，拖进 Apple 日历 / Google
- * Calendar / Outlook 即可在手机原生日历看到提醒。
+ * 用于：Preservación到期 / 开庭 / 期限 一键导出 .ics，拖进 Apple 日历 / Google
+ * Calendar / Outlook 即可在手机原生日历看到Recordatorios。
  *
  * 不依赖第三方库；纯字符串拼接。
  */
@@ -15,7 +15,7 @@ export interface IcsEvent {
   allDay?: boolean; // true → 用 DTSTART;VALUE=DATE
   description?: string;
   location?: string;
-  reminderMinutes?: number[]; // 提前多少分钟提醒（多个）
+  reminderMinutes?: number[]; // 提前多少分钟Recordatorios（多个）
 }
 
 function pad(n: number) {

@@ -57,11 +57,11 @@ export function NotificationPopover() {
   const [typeFilter, setTypeFilter] = useState<string | null>(null);
   const router = useRouter();
 
-  // 已弹过桌面通知的 id（含挂载时已存在的，避免刷新页面就刷屏）
+  // 已弹过桌面Notificaciones的 id（含挂载时已存在的，避免刷新页面就刷屏）
   const seenIds = useRef<Set<string>>(new Set());
   const seededRef = useRef(false);
 
-  // 轮询：刷新未读数 + 对新到的未读通知弹浏览器桌面通知
+  // 轮询：刷新未读数 + 对新到的未读Notificaciones弹浏览器桌面Notificaciones
   const poll = useCallback(async () => {
     try {
       const [count, list] = await Promise.all([
@@ -73,7 +73,7 @@ export function NotificationPopover() {
 
       const unreadList = list.filter((n) => !n.read);
       if (!seededRef.current) {
-        // 首次轮询：只记录现有 id，不弹（否则每次进站都炸一堆系统通知）
+        // 首次轮询：只记录现有 id，不弹（否则每次进站都炸一堆SistemaNotificaciones）
         unreadList.forEach((n) => seenIds.current.add(n.id));
         seededRef.current = true;
         return;
@@ -104,7 +104,7 @@ export function NotificationPopover() {
   }, [router]);
 
   useEffect(() => {
-    // 请求桌面通知授权（用户可拒绝；拒绝后仅站内铃铛生效）
+    // 请求桌面Notificaciones授权（用户可拒绝；拒绝后仅站内铃铛生效）
     if (
       typeof window !== "undefined" &&
       "Notification" in window &&
@@ -155,7 +155,7 @@ export function NotificationPopover() {
             "relative flex h-8 w-8 items-center justify-center rounded-md border border-border",
             "text-muted-foreground transition-colors hover:bg-muted hover:text-foreground",
           )}
-          aria-label="通知"
+          aria-label="Notificaciones"
         >
           <Bell className="h-3.5 w-3.5" strokeWidth={1.8} />
           {unread > 0 && (
@@ -167,13 +167,13 @@ export function NotificationPopover() {
       </PopoverTrigger>
       <PopoverContent align="end" className="w-80 p-0">
         <div className="flex items-center justify-between border-b px-3 py-2">
-          <span className="text-sm font-medium">通知</span>
+          <span className="text-sm font-medium">Notificaciones</span>
           {unread > 0 && (
             <button
               onClick={handleMarkAllRead}
               className="text-xs text-muted-foreground hover:text-foreground"
             >
-              全部已读
+              Ver todos已读
             </button>
           )}
         </div>
@@ -193,7 +193,7 @@ export function NotificationPopover() {
                     : "border-border text-muted-foreground hover:border-input hover:bg-muted hover:text-foreground",
                 )}
               >
-                全部
+                Ver todos
               </button>
               {presentTypes.map((t) => (
                 <button
@@ -221,8 +221,8 @@ export function NotificationPopover() {
               return (
                 <div className="px-3 py-8 text-center text-sm text-muted-foreground">
                   {typeFilter
-                    ? `没有「${typeLabels[typeFilter] ?? typeFilter}」类通知`
-                    : "暂无通知"}
+                    ? `没有「${typeLabels[typeFilter] ?? typeFilter}」类Notificaciones`
+                    : "暂无Notificaciones"}
                 </div>
               );
             }
@@ -271,7 +271,7 @@ export function NotificationPopover() {
               className="text-xs text-muted-foreground hover:text-foreground"
               onClick={() => setOpen(false)}
             >
-              查看全部通知
+              VerVer todosNotificaciones
             </Link>
           </div>
         )}

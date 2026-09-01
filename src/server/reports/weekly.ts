@@ -1,5 +1,5 @@
 /**
- * v0.21: 律师周报数据聚合（per-user 视角）
+ * v0.21: Abogado周报数据聚合（per-user 视角）
  *
  * 周定义：周一 00:00:00 → 下周一 00:00:00（半开区间）
  */
@@ -32,7 +32,7 @@ export type LawyerWeeklyDigest = {
 };
 
 /**
- * 单个律师本周摘要。复用单条查询，调用方循环。
+ * 单个Abogado本周摘要。复用单条查询，调用方循环。
  */
 export async function getLawyerWeeklyDigest(input: {
   userId: string;

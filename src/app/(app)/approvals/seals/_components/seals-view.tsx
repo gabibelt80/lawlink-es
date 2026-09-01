@@ -88,7 +88,7 @@ export function SealsView({
     [toApprove],
   );
   const firmTabLabel =
-    currentUser.role === "FINANCE" ? "财务章审批" : "全所审批";
+    currentUser.role === "FINANCE" ? "Finanzas章Aprobación" : "全所Aprobación";
   const rows =
     tab === "allMine"
       ? mine
@@ -127,7 +127,7 @@ export function SealsView({
         />
         <KpiCard
           icon={<AlertOctagon className="h-3.5 w-3.5" />}
-          label="待审批"
+          label="待Aprobación"
           value={stats.pendingApprovalCount}
           accent="rgb(180 130 0)"
         />
@@ -147,14 +147,14 @@ export function SealsView({
             <Count n={mine.length} />
           </TabBtn>
           <TabBtn active={tab === "pending"} onClick={() => setTab("pending")}>
-            待审批
+            待Aprobación
             <Count n={minePending.length} hot={minePending.length > 0} />
           </TabBtn>
           <TabBtn
             active={tab === "processed"}
             onClick={() => setTab("processed")}
           >
-            已审批
+            已Aprobación
             <Count n={mineProcessed.length} />
           </TabBtn>
           {capabilities.canApprove && (
@@ -162,7 +162,7 @@ export function SealsView({
               active={tab === "toApprove"}
               onClick={() => setTab("toApprove")}
             >
-              待我审批
+              待我Aprobación
               <Count n={toApprove.length} hot={toApprove.length > 0} />
             </TabBtn>
           )}
@@ -190,11 +190,11 @@ export function SealsView({
                   <th className="px-3 py-2 text-left font-normal">流水号</th>
                   <th className="px-3 py-2 text-left font-normal">章种类</th>
                   <th className="px-3 py-2 text-left font-normal">申请人</th>
-                  <th className="px-3 py-2 text-left font-normal">关联案件</th>
+                  <th className="px-3 py-2 text-left font-normal">关联Caso</th>
                   <th className="px-3 py-2 text-left font-normal">用章事由</th>
-                  <th className="px-3 py-2 text-left font-normal">状态</th>
-                  <th className="px-3 py-2 text-left font-normal">提交时间</th>
-                  <th className="px-3 py-2 text-right font-normal">操作</th>
+                  <th className="px-3 py-2 text-left font-normal">Estado</th>
+                  <th className="px-3 py-2 text-left font-normal">Enviar时间</th>
+                  <th className="px-3 py-2 text-right font-normal">Acciones</th>
                 </tr>
               </thead>
               <tbody>
@@ -300,9 +300,9 @@ function Count({ n, hot }: { n: number; hot?: boolean }) {
 }
 
 function emptyText(tab: Tab, firmTabLabel: string) {
-  if (tab === "pending") return "暂无待审批申请";
-  if (tab === "processed") return "暂无已审批申请";
-  if (tab === "toApprove") return "暂无待你审批的申请";
+  if (tab === "pending") return "暂无待Aprobación申请";
+  if (tab === "processed") return "暂无已Aprobación申请";
+  if (tab === "toApprove") return "暂无待你Aprobación的申请";
   if (tab === "firm") return `暂无${firmTabLabel}记录`;
   return "你还没有用章申请";
 }
@@ -337,7 +337,7 @@ function SealRow({
           type="button"
           onClick={() => onAction("detail")}
           className="font-mono text-[11px] text-primary hover:underline"
-          title="查看用章申请详情"
+          title="Ver用章申请详情"
         >
           {row.code}
         </button>
@@ -389,7 +389,7 @@ function SealRow({
                 onClick={() => onAction("approve")}
                 className="text-[11px] text-primary hover:underline"
               >
-                审批
+                Aprobación
               </button>
             )}
             {isOwner && (

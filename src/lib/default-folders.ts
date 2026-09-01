@@ -2,7 +2,7 @@ import type { MatterCategory } from "@prisma/client";
 import type { Prisma } from "@prisma/client";
 
 /**
- * v0.8 默认卷宗结构（按案件类别）
+ * v0.8 默认卷宗结构（按Caso类别）
  * 新建 Matter 时自动 seed；isDefault=true 不可删，可改名。
  */
 export const DEFAULT_FOLDERS_BY_CATEGORY: Record<MatterCategory, readonly string[]> = {
@@ -17,7 +17,7 @@ export const DEFAULT_FOLDERS_BY_CATEGORY: Record<MatterCategory, readonly string
 } as const;
 
 /**
- * 在事务中为新 Matter 创建默认卷宗。
+ * 在事务中为新 Matter Crear默认卷宗。
  * 调用方提供 tx；本函数只写库，不做权限/校验。
  */
 export async function seedDefaultFolders(
@@ -39,7 +39,7 @@ export async function seedDefaultFolders(
 
 /**
  * 按模板大类推荐默认归档卷宗名（用于"从模板新建"时自动选目标卷宗）。
- * 推荐不到时返回 null，由 UI 让用户手选。
+ * 推荐不到时Volver null，由 UI 让用户手选。
  */
 export function suggestFolderByTemplateCategory(
   templateCategory: string,

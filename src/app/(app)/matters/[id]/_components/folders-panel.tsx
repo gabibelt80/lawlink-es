@@ -68,7 +68,7 @@ export function FoldersPanel({
 
   return (
     <div>
-      {/* 顶部操作栏 */}
+      {/* 顶部Acciones栏 */}
       <div className="mb-4 flex items-center justify-between">
         <h3 className="text-lg">卷宗</h3>
         <div className="flex gap-2">
@@ -196,16 +196,16 @@ function FolderItem({
 
   const onDelete = () => {
     if (folder.isDefault) {
-      toast.error("默认卷宗不可删除，可改名");
+      toast.error("默认卷宗不可Eliminar，可改名");
       return;
     }
-    if (!confirm(`确定删除卷宗「${folder.name}」？内含文档将归为散件。`)) return;
+    if (!confirm(`AceptarEliminar卷宗「${folder.name}」？内含文档将归为散件。`)) return;
     startTransition(async () => {
       try {
         await deleteFolder({ id: folder.id });
-        toast.success("已删除");
+        toast.success("已Eliminar");
       } catch (e) {
-        toast.error(e instanceof Error ? e.message : "删除失败");
+        toast.error(e instanceof Error ? e.message : "Eliminar失败");
       }
     });
   };
@@ -245,7 +245,7 @@ function FolderItem({
               type="button"
               onClick={onDelete}
               disabled={isPending}
-              title="删除"
+              title="Eliminar"
               className="ml-0.5 rounded p-0.5 text-muted-foreground hover:text-destructive"
             >
               <Trash2 className="h-3 w-3" />
@@ -301,10 +301,10 @@ function DocCard({ doc, matterId }: { doc: FolderDocument; matterId: string }) {
             window.location.href = url.toString();
           }}
           className="inline-flex items-center gap-1 text-[11px] text-muted-foreground hover:text-primary"
-          title="提交用章审批"
+          title="Enviar用章Aprobación"
         >
           <Stamp className="h-3 w-3" />
-          提交用章
+          Enviar用章
         </button>
       </div>
     </div>
@@ -352,7 +352,7 @@ function NewFolderDialog({
         />
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)}>
-            取消
+            Cancelar
           </Button>
           <Button onClick={submit} disabled={pending || !name.trim()}>
             新建
@@ -383,10 +383,10 @@ function RenameFolderDialog({
     startTransition(async () => {
       try {
         await renameFolder({ id: folder.id, name: name.trim() });
-        toast.success("已更新");
+        toast.success("已Actualizar");
         onOpenChange(false);
       } catch (e) {
-        toast.error(e instanceof Error ? e.message : "更新失败");
+        toast.error(e instanceof Error ? e.message : "Actualizar失败");
       }
     });
   };
@@ -400,10 +400,10 @@ function RenameFolderDialog({
         <Input value={name} onChange={(e) => setName(e.target.value)} maxLength={40} autoFocus />
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)}>
-            取消
+            Cancelar
           </Button>
           <Button onClick={submit} disabled={pending || !name.trim()}>
-            保存
+            Guardar
           </Button>
         </DialogFooter>
       </DialogContent>

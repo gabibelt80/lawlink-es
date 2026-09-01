@@ -1,10 +1,10 @@
 /**
- * 归档逾期预警：扫描已结案但超过 30 天未提交归档的案件，给主办律师发通知。
+ * 归档逾期预警：扫描已结案但超过 30 天未Enviar归档的Caso，给主办Abogado发Notificaciones。
  *
  * 业务逻辑：
  * - status = CLOSED 且 closedAt < now - 30 天
  * - 未生成 ArchiveRecord（或都被 REJECTED）
- * - 同一案件 30 天内不重复发预警（refId 唯一性）
+ * - 同一Caso 30 天内不重复发预警（refId 唯一性）
  */
 import { prisma } from "@/lib/prisma";
 import { createNotification } from "@/server/notifications/create";
@@ -46,7 +46,7 @@ export async function scanArchiveOverdue(): Promise<OverdueScanResult> {
   // 排除已有进行中或已通过的归档
   const target = candidates.filter((m) => m.archiveRecords.length === 0);
 
-  // 防重：拉最近 30 天已发过的"ARCHIVE_OVERDUE"通知（refId = matterId）
+  // 防重：拉最近 30 天已发过的"ARCHIVE_OVERDUE"Notificaciones（refId = matterId）
   const repeatCutoff = new Date(Date.now() - REPEAT_SUPPRESS_DAYS * 86400_000);
   const matterIds = target.map((m) => m.id);
   const recentNotified = await prisma.notification.findMany({
@@ -73,7 +73,7 @@ export async function scanArchiveOverdue(): Promise<OverdueScanResult> {
       type: "SYSTEM",
       priority: "HIGH",
       title: `归档逾期：${m.internalCode}·${m.title}`,
-      content: `案件已结 ${days} 天但未提交归档，请尽快补全材料后提交归档申请。`,
+      content: `Caso已结 ${days} 天但未Enviar归档，请尽快补全材料后Enviar归档申请。`,
       href: matterHref(m),
       refType: "ArchiveOverdue",
       refId: m.id

@@ -11,11 +11,11 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 export async function GET(req: Request, { params }: { params: { id: string } }) {
-  // ?inline=1 时以 inline 方式返回，浏览器新标签内预览（PDF/图片/文本），否则下载
+  // ?inline=1 时以 inline 方式Volver，浏览器新标签内预览（PDF/图片/文本），否则下载
   const inline = new URL(req.url).searchParams.get("inline") === "1";
   const session = await getServerSession(authOptions);
   if (!session?.user) {
-    return NextResponse.json({ error: "未登录" }, { status: 401 });
+    return NextResponse.json({ error: "未Iniciar sesión" }, { status: 401 });
   }
 
   const doc = await prisma.document.findFirst({
@@ -23,8 +23,8 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
   });
   if (!doc) return NextResponse.json({ error: "材料不存在" }, { status: 404 });
 
-  // 权限检查：ADMIN / PRINCIPAL_LAWYER 可读全部；其他角色 —— 案件成员才能读案件材料；
-  // 仅 intakeId 的收案合同限收案创建人/主办/协办（含客户身份证号等隐私，不再对全所开放）
+  // 权限检查：ADMIN / PRINCIPAL_LAWYER 可读Ver todos；其他角色 —— Caso成员才能读Caso材料；
+  // 仅 intakeId 的收案合同限收案Crear人/主办/协办（含Cliente身份证号等隐私，不再对全所开放）
   if (session.user.role !== "ADMIN" && session.user.role !== "PRINCIPAL_LAWYER") {
     if (doc.matterId) {
       const member = await prisma.matterMember.findUnique({

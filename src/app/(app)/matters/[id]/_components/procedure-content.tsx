@@ -172,43 +172,43 @@ function ImportantItemsCard({
       try {
         await toggleDeadlineCompleted(id);
       } catch {
-        toast.error("操作失败");
+        toast.error("Operación fallida");
       }
     });
   }
 
   function handleDeleteDeadline(id: string) {
-    if (!confirm("删除这条期限？")) return;
+    if (!confirm("Eliminar这条期限？")) return;
     startTransition(async () => {
       try {
         await deleteDeadline(id);
-        toast.success("已删除");
+        toast.success("已Eliminar");
       } catch {
-        toast.error("删除失败");
+        toast.error("Eliminar失败");
       }
     });
   }
 
   function handleDeleteHearing(id: string) {
-    if (!confirm("删除这条开庭记录？")) return;
+    if (!confirm("Eliminar这条开庭记录？")) return;
     startTransition(async () => {
       try {
         await deleteHearing(id);
-        toast.success("已删除");
+        toast.success("已Eliminar");
       } catch {
-        toast.error("删除失败");
+        toast.error("Eliminar失败");
       }
     });
   }
 
   function handleDeleteExpress(id: string) {
-    if (!confirm("删除这条快递记录？")) return;
+    if (!confirm("Eliminar这条快递记录？")) return;
     startTransition(async () => {
       try {
         await deleteExpress({ id });
-        toast.success("已删除");
+        toast.success("已Eliminar");
       } catch {
-        toast.error("删除失败");
+        toast.error("Eliminar失败");
       }
     });
   }
@@ -218,7 +218,7 @@ function ImportantItemsCard({
       try {
         await deleteProcedureMemo(id);
       } catch {
-        toast.error("删除失败");
+        toast.error("Eliminar失败");
       }
     });
   }
@@ -259,7 +259,7 @@ function ImportantItemsCard({
               className="h-6 gap-0.5 px-2 text-[11px]"
             >
               <Plus className="h-2.5 w-2.5" />
-              添加
+              Agregar
             </Button>
           )}
         </div>
@@ -563,7 +563,7 @@ function DeadlineRow({
           ) : isOverdue ? (
             <span className="text-destructive">逾期 {-days}d</span>
           ) : days === 0 ? (
-            <span className="text-[#FBBF24]">今天</span>
+            <span className="text-[#FBBF24]">Hoy</span>
           ) : isWarn ? (
             <span className="text-[#FBBF24]">{days}d</span>
           ) : (
@@ -580,7 +580,7 @@ function DeadlineRow({
           type="button"
           onClick={onDelete}
           className="opacity-0 transition-opacity group-hover:opacity-100"
-          aria-label="删除"
+          aria-label="Eliminar"
         >
           <Trash2 className="h-3.5 w-3.5 text-muted-foreground hover:text-destructive" />
         </button>
@@ -695,7 +695,7 @@ function ExpressRow({
           type="button"
           onClick={onDelete}
           className="shrink-0 opacity-0 transition-opacity group-hover:opacity-100"
-          aria-label="删除"
+          aria-label="Eliminar"
         >
           <Trash2 className="h-3.5 w-3.5 text-muted-foreground hover:text-destructive" />
         </button>
@@ -736,7 +736,7 @@ function MemoRow({
           type="button"
           onClick={onDelete}
           className="mt-1 shrink-0 opacity-0 transition-opacity group-hover:opacity-100"
-          aria-label="删除"
+          aria-label="Eliminar"
         >
           <Trash2 className="h-3.5 w-3.5 text-muted-foreground hover:text-destructive" />
         </button>
@@ -745,7 +745,7 @@ function MemoRow({
   );
 }
 
-// ============ 统一添加重要事项 ============
+// ============ 统一Agregar重要事项 ============
 
 const deadlineCategoryLabel: Record<DeadlineCreateInput["category"], string> = {
   LIMITATION: "诉讼时效",
@@ -755,7 +755,7 @@ const deadlineCategoryLabel: Record<DeadlineCreateInput["category"], string> = {
   RESPONSE: "答辩期",
   ENFORCEMENT: "执行申请",
   ARBITRATION_SET_ASIDE: "撤销仲裁期",
-  PRESERVATION: "保全期限",
+  PRESERVATION: "Preservación期限",
   CUSTOM: "其他"
 };
 
@@ -964,11 +964,11 @@ function ImportantItemDialog({
           contact: hearingContact.trim(),
           notes: hearingNotes.trim()
         });
-        toast.success("开庭安排已添加");
+        toast.success("开庭安排已Agregar");
         onOpenChange(false);
         router.refresh();
       } catch (err) {
-        toast.error("添加失败", {
+        toast.error("Agregar失败", {
           description: err instanceof Error ? err.message : ""
         });
       }
@@ -981,7 +981,7 @@ function ImportantItemDialog({
       return;
     }
     if (!deadlineTitle.trim()) {
-      toast.error("请填写时限名称");
+      toast.error("请填写时限Nombre");
       return;
     }
     const dueAt = new Date(`${deadlineDueAt}T00:00:00`);
@@ -999,11 +999,11 @@ function ImportantItemDialog({
           basis: deadlineBasis.trim(),
           remindDays: deadlineRemindDays
         });
-        toast.success("重要时限已添加");
+        toast.success("重要时限已Agregar");
         onOpenChange(false);
         router.refresh();
       } catch (err) {
-        toast.error("添加失败", {
+        toast.error("Agregar失败", {
           description: err instanceof Error ? err.message : ""
         });
       }
@@ -1030,11 +1030,11 @@ function ImportantItemDialog({
           recipient: recipient.trim(),
           recipientPhone: recipientPhone.trim()
         });
-        toast.success("快递记录已添加");
+        toast.success("快递记录已Agregar");
         onOpenChange(false);
         router.refresh();
       } catch (err) {
-        toast.error("添加失败", {
+        toast.error("Agregar失败", {
           description: err instanceof Error ? err.message : ""
         });
       }
@@ -1056,11 +1056,11 @@ function ImportantItemDialog({
           procedureId: memoProcedureId,
           content: memoContent.trim()
         });
-        toast.success("其他备忘已添加");
+        toast.success("其他备忘已Agregar");
         onOpenChange(false);
         router.refresh();
       } catch (err) {
-        toast.error("添加失败", {
+        toast.error("Agregar失败", {
           description: err instanceof Error ? err.message : ""
         });
       }
@@ -1077,13 +1077,13 @@ function ImportantItemDialog({
 
   const needsProcedure = type !== "express";
   const procedureMissing = needsProcedure && procedures.length === 0;
-  const submitLabel = `添加${importantTypeMeta[type].label}`;
+  const submitLabel = `Agregar${importantTypeMeta[type].label}`;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="flex max-h-[88vh] max-w-2xl flex-col gap-0 p-0">
         <DialogHeader className="border-b border-border px-6 py-4">
-          <DialogTitle>添加重要事项</DialogTitle>
+          <DialogTitle>Agregar重要事项</DialogTitle>
           <DialogDescription className="text-xs">
             在一个窗口内选择事项分类并填写信息
           </DialogDescription>
@@ -1117,7 +1117,7 @@ function ImportantItemDialog({
           <div className="flex-1 space-y-3 overflow-y-auto px-6 py-5">
             {procedureMissing && (
               <div className="rounded-md border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-xs text-amber-700">
-                请先添加案件程序后，再录入开庭安排、重要时限或其他备忘。
+                请先AgregarCaso程序后，再录入开庭安排、重要时限或其他备忘。
               </div>
             )}
 
@@ -1220,7 +1220,7 @@ function ImportantItemDialog({
                     disabled={procedureMissing}
                   />
                 </ImportantField>
-                <ImportantField label="备注">
+                <ImportantField label="Observaciones">
                   <Textarea
                     rows={4}
                     value={hearingNotes}
@@ -1241,7 +1241,7 @@ function ImportantItemDialog({
                     onChange={setDeadlineProcedureId}
                   />
                 </ImportantField>
-                <ImportantField label="时限名称" required>
+                <ImportantField label="时限Nombre" required>
                   <Input
                     value={deadlineTitle}
                     onChange={(e) => setDeadlineTitle(e.target.value)}
@@ -1287,7 +1287,7 @@ function ImportantItemDialog({
                     disabled={procedureMissing}
                   />
                 </ImportantField>
-                <ImportantField label="提前提醒（天）">
+                <ImportantField label="提前Recordatorios（天）">
                   <Input
                     type="number"
                     min={0}
@@ -1413,7 +1413,7 @@ function ImportantItemDialog({
               onClick={() => onOpenChange(false)}
               disabled={isPending}
             >
-              取消
+              Cancelar
             </Button>
             <Button
               type="submit"

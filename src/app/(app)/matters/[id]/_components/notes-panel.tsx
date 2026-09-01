@@ -69,13 +69,13 @@ export function NotesPanel({
   const [isPending, startTransition] = useTransition();
 
   function handleDelete(id: string) {
-    if (!confirm("删除这条沟通记录？")) return;
+    if (!confirm("Eliminar这条沟通记录？")) return;
     startTransition(async () => {
       try {
         await deleteNote(id);
-        toast.success("已删除");
+        toast.success("已Eliminar");
       } catch (err) {
-        toast.error("删除失败", { description: err instanceof Error ? err.message : "" });
+        toast.error("Eliminar失败", { description: err instanceof Error ? err.message : "" });
       }
     });
   }
@@ -162,7 +162,7 @@ export function NotesPanel({
                     onClick={() => handleDelete(n.id)}
                     disabled={isPending}
                     className="opacity-0 transition-opacity group-hover:opacity-100"
-                    aria-label="删除"
+                    aria-label="Eliminar"
                   >
                     <Trash2 className="h-3.5 w-3.5 text-muted-foreground hover:text-destructive" />
                   </button>
@@ -212,7 +212,7 @@ function NoteSheet({
     startTransition(async () => {
       try {
         await createNote({ ...values, tags: [] });
-        toast.success("沟通记录已保存");
+        toast.success("沟通记录已Guardar");
         reset({
           matterId,
           channel: "PHONE",
@@ -222,7 +222,7 @@ function NoteSheet({
         });
         onOpenChange(false);
       } catch (err) {
-        toast.error("保存失败", { description: err instanceof Error ? err.message : "" });
+        toast.error("Guardar失败", { description: err instanceof Error ? err.message : "" });
       }
     });
   }
@@ -299,11 +299,11 @@ function NoteSheet({
               onClick={() => onOpenChange(false)}
               disabled={isPending}
             >
-              取消
+              Cancelar
             </Button>
             <Button type="submit" disabled={isPending} className="gap-1.5">
               {isPending && <Loader2 className="h-4 w-4 animate-spin" />}
-              保存
+              Guardar
             </Button>
           </SheetFooter>
         </form>

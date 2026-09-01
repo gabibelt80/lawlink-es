@@ -6,11 +6,11 @@ import { getFirmProfile } from "@/server/settings/firm-profile";
 import { prisma } from "@/lib/prisma";
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
-  // v0.27: 顶部公告 banner —— 仅登录后获取，未登录走 (auth) 段不走此 layout
+  // v0.27: 顶部公告 banner —— 仅Iniciar sesión后获取，未Iniciar sesión走 (auth) 段不走此 layout
   const session = await getSession();
   const banners = session?.user ? await listActiveBanners() : [];
 
-  // v0.42 项1：侧栏品牌（律所名 / 副标题 / Logo）可在设置页配置
+  // v0.42 项1：侧栏品牌（律所名 / 副标题 / Logo）可在Configuración页配置
   const profile = await getFirmProfile();
   const firm = {
     name: profile.firmName,

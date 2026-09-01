@@ -46,10 +46,10 @@ export function YuandianSettingsForm({
     startTransition(async () => {
       try {
         await saveYuandianSettingsAction({ apiKey, baseUrl, caseDetailHost });
-        toast.success("元典配置已保存");
+        toast.success("元典配置已Guardar");
         setApiKey("");
       } catch (e) {
-        toast.error(e instanceof Error ? e.message : "保存失败");
+        toast.error(e instanceof Error ? e.message : "Guardar失败");
       }
     });
   };
@@ -93,7 +93,7 @@ export function YuandianSettingsForm({
 
       <p className="mb-4 text-[12px] text-muted-foreground">
         元典开放平台（chineselaw.com）法律案例检索 API，配置后启用：
-        <span className="text-foreground/85"> 案件详情 → 类案 tab 类案检索</span>。
+        <span className="text-foreground/85"> Caso详情 → 类案 tab 类案检索</span>。
         按次计费（普通案例 10 POINT/次）。
       </p>
 
@@ -136,7 +136,7 @@ export function YuandianSettingsForm({
             className="mt-1 font-mono text-[12px]"
           />
           <p className="mt-1 text-[10px] text-muted-foreground">
-            用于「查看全文」外跳，与接口 URL 区分
+            用于「Ver全文」外跳，与接口 URL 区分
           </p>
         </div>
       </div>
@@ -144,7 +144,7 @@ export function YuandianSettingsForm({
       <div className="mt-4 flex items-center gap-2">
         <Button onClick={save} disabled={pending} className="gap-1.5">
           {pending && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
-          保存配置
+          Guardar配置
         </Button>
         <Button
           variant="outline"

@@ -54,13 +54,13 @@ function aggData(
     data: {
       id: "eid-1",
       name: "测试公司",
-      失信被执行人统计: { 总数: v.失信被执行人, 省份: [] },
-      被执行人统计: { 总数: v.被执行人, 立案年份: [] },
-      股权冻结统计: { 总数: v.股权冻结 },
-      严重违法统计: { 总数: v.严重违法, 类别: [{ key: "重大", count: v.严重违法 }] },
-      经营异常统计: { 总数: v.经营异常, 列入经营异常名录原因: [] },
+      失信被执行人统计: { Total数: v.失信被执行人, 省份: [] },
+      被执行人统计: { Total数: v.被执行人, 立案年份: [] },
+      股权冻结统计: { Total数: v.股权冻结 },
+      严重违法统计: { Total数: v.严重违法, 类别: [{ key: "重大", count: v.严重违法 }] },
+      经营异常统计: { Total数: v.经营异常, 列入经营异常名录原因: [] },
       法院公告统计: {
-        总数: 5,
+        Total数: 5,
         起诉方: 1,
         应诉方: 4,
         法院: [
@@ -68,18 +68,18 @@ function aggData(
           { key: "上海浦东法院", count: 2 }
         ]
       },
-      开庭公告统计: { 总数: 10, 起诉方: 2, 应诉方: 8 },
-      行政处罚统计: { 总数: 0 },
-      欠税公告统计: { 总数: 0 },
-      变更记录统计: { 总数: 3 },
-      对外担保统计: { 总数: 0 },
-      股权出质统计: { 总数: 1 },
-      对外投资统计: { 总数: 8 },
-      商标统计: { 总数: 50 },
-      专利统计: { 总数: 12 },
-      软件著作权统计: { 总数: 0 },
-      作品著作权统计: { 总数: 0 },
-      网站备案统计: { 总数: 2 }
+      开庭公告统计: { Total数: 10, 起诉方: 2, 应诉方: 8 },
+      Administrativo处罚统计: { Total数: 0 },
+      欠税公告统计: { Total数: 0 },
+      变更记录统计: { Total数: 3 },
+      对外担保统计: { Total数: 0 },
+      股权出质统计: { Total数: 1 },
+      对外投资统计: { Total数: 8 },
+      商标统计: { Total数: 50 },
+      专利统计: { Total数: 12 },
+      软件著作权统计: { Total数: 0 },
+      作品著作权统计: { Total数: 0 },
+      网站备案统计: { Total数: 2 }
     }
   };
 }
@@ -128,7 +128,7 @@ describe("getEnterpriseSummary", () => {
     ]);
   });
 
-  it("data === null → 返回 null", async () => {
+  it("data === null → Volver null", async () => {
     fetchMock.mockResolvedValue(jsonRes({ status: "success", code: 200, data: null }));
     const r = await getEnterpriseSummary({ socialCode: "abc" }, configured);
     expect(r).toBeNull();

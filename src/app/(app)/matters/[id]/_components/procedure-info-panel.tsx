@@ -60,8 +60,8 @@ const PROC_INFO_LABEL: Record<string, string> = {
   DEATH_PENALTY_REVIEW: "死刑复核信息",
   CRIMINAL_ENFORCEMENT: "刑罚执行信息",
   COMMUTATION_PAROLE_REVIEW: "减刑假释审查信息",
-  ADMIN_RECONSIDERATION: "行政复议信息",
-  ADMIN_NON_LITIGATION_ENFORCEMENT: "非诉行政执行信息",
+  ADMIN_RECONSIDERATION: "Administrativo复议信息",
+  ADMIN_NON_LITIGATION_ENFORCEMENT: "非诉Administrativo执行信息",
   NON_LITIGATION_PHASE: "非诉阶段信息",
   CUSTOM: "程序信息"
 };
@@ -132,7 +132,7 @@ type PartyEditDraft = {
 };
 
 const PARTY_ROLE_LABEL: Record<PartyRole, string> = {
-  CLIENT_PARTY: "客户",
+  CLIENT_PARTY: "Cliente",
   OPPOSING_PARTY: "相对方",
   THIRD_PARTY: "第三人",
   CO_LITIGANT: "共同诉讼人",
@@ -214,7 +214,7 @@ function partyToEditDraft(party: PartyLite): PartyEditDraft {
   };
 }
 
-// 按程序类型确定「主审法官」的称谓
+// 按程序类型Aceptar「主审法官」的称谓
 const ARBITRATION: ProcedureType[] = [
   "COMMERCIAL_ARBITRATION",
   "LABOR_ARBITRATION",
@@ -327,7 +327,7 @@ function PartyNameWithClientBadge({ party }: { party: Pick<PartyLite, "name" | "
       <span className="min-w-0 truncate">{party.name}</span>
       {party.role === "CLIENT_PARTY" && (
         <span className="shrink-0 rounded border border-primary/20 bg-primary/10 px-1 py-0 text-[10px] font-medium leading-4 text-primary">
-          客户
+          Cliente
         </span>
       )}
     </span>
@@ -520,13 +520,13 @@ export function ProcedurePartiesCard({
             className="h-6 gap-1 px-2 text-[11px] text-muted-foreground hover:text-primary"
           >
             <Pencil className="h-3 w-3" strokeWidth={1.8} />
-            编辑
+            Editar
           </Button>
         )}
       </header>
       <div className="space-y-3 px-4 py-3">
         {groups.length === 0 ? (
-          <p className="py-4 text-center text-xs text-muted-foreground">暂无案件当事人</p>
+          <p className="py-4 text-center text-xs text-muted-foreground">暂无Caso当事人</p>
         ) : (
           groups.map((group) => (
             <div key={group.key} className="space-y-2">
@@ -678,7 +678,7 @@ function ProcedurePartyBlock({
       </div>
       <div className="flex shrink-0 flex-wrap justify-end gap-1 self-center">
         <StandingName standing={primaryStanding}>
-          {primaryStanding ? litigationStandingLabel[primaryStanding] : "未设置地位"}
+          {primaryStanding ? litigationStandingLabel[primaryStanding] : "未Configuración地位"}
         </StandingName>
         {otherStandings.map((standing) => (
           <StandingName key={standing} standing={standing}>
@@ -837,7 +837,7 @@ function EditDialog({
   function addNewProcedureParty() {
     const name = newPartyForm.name.trim();
     if (!name) {
-      toast.error("请填写当事人名称");
+      toast.error("请填写当事人Nombre");
       return;
     }
     if (newPartyForm.standings.length === 0) {
@@ -919,10 +919,10 @@ function EditDialog({
             standings
           }))
         });
-        toast.success("已保存");
+        toast.success("已Guardar");
         onSaved();
       } catch (err) {
-        toast.error("保存失败", { description: err instanceof Error ? err.message : "" });
+        toast.error("Guardar失败", { description: err instanceof Error ? err.message : "" });
       }
     });
   }
@@ -931,7 +931,7 @@ function EditDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="flex max-h-[86vh] w-[92vw] max-w-[720px] flex-col gap-0 overflow-hidden bg-[#EEF2F6] p-0">
         <DialogHeader className="border-b border-border bg-card px-5 py-4">
-          <DialogTitle>编辑{PROC_INFO_LABEL[proc.type] ?? "程序信息"}</DialogTitle>
+          <DialogTitle>Editar{PROC_INFO_LABEL[proc.type] ?? "程序信息"}</DialogTitle>
         </DialogHeader>
         <div className="max-h-[calc(86vh-116px)] space-y-4 overflow-y-auto bg-[#EEF2F6] px-5 py-4">
           <section className={editorSectionClass}>
@@ -1027,12 +1027,12 @@ function EditDialog({
                 ) : (
                   <Plus className="h-3.5 w-3.5" />
                 )}
-                {showNewPartyForm ? "收起" : "添加"}
+                {showNewPartyForm ? "收起" : "Agregar"}
               </Button>
             </div>
             {parties.length === 0 ? (
               <div className="rounded-md border border-border px-3 py-2 text-xs text-muted-foreground">
-                暂无案件当事人
+                暂无Caso当事人
               </div>
             ) : (
               <div className="max-h-[440px] overflow-y-auto rounded-md border border-[#D9E0EA] bg-white">
@@ -1072,7 +1072,7 @@ function EditDialog({
                           主体基础信息
                         </div>
                         <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-                          <FieldRow label="名称">
+                          <FieldRow label="Nombre">
                             <Input
                               value={draft.name}
                               onChange={(e) => setPartyEditValue(party.id, "name", e.target.value)}
@@ -1221,7 +1221,7 @@ function EditDialog({
                     list={`new-procedure-party-${proc.id}`}
                     value={newPartyForm.name}
                     onChange={(e) => handleNewPartyNameChange(e.target.value)}
-                    placeholder="新增当事人名称"
+                    placeholder="新增当事人Nombre"
                     className={cn(editorControlClass, "h-8 text-xs")}
                   />
                   <datalist id={`new-procedure-party-${proc.id}`}>
@@ -1283,7 +1283,7 @@ function EditDialog({
                     onClick={addNewProcedureParty}
                     className="h-8 px-2 text-xs"
                   >
-                    确认添加
+                    确认Agregar
                   </Button>
                 </div>
                 <div className="mt-2 flex flex-wrap gap-x-3 gap-y-2">
@@ -1308,11 +1308,11 @@ function EditDialog({
         </div>
         <DialogFooter className="border-t border-border bg-card px-5 py-3">
           <Button variant="outline" onClick={() => onOpenChange(false)} disabled={pending}>
-            取消
+            Cancelar
           </Button>
           <Button onClick={save} disabled={pending} className="gap-1.5">
             {pending && <Loader2 className="h-4 w-4 animate-spin" />}
-            保存
+            Guardar
           </Button>
         </DialogFooter>
       </DialogContent>

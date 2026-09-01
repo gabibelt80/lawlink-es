@@ -1,7 +1,7 @@
 /**
  * S3-compatible storage provider (v0.17 完整实现).
  *
- * 启用方式：在 .env 设置 STORAGE_PROVIDER=s3，并提供：
+ * 启用方式：在 .env Configuración STORAGE_PROVIDER=s3，并提供：
  *   - AWS_REGION（必填，例 ap-northeast-1）
  *   - S3_BUCKET（必填）
  *   - AWS_ACCESS_KEY_ID / AWS_SECRET_ACCESS_KEY（IAM key 必填；或用其他 AWS 凭证机制）
@@ -57,7 +57,7 @@ function buildClient(): S3Client {
 }
 
 /**
- * AWS SDK 把对象 body 当成 ReadableStream / SDK stream-like 对象返回；统一吸成 Buffer。
+ * AWS SDK 把对象 body 当成 ReadableStream / SDK stream-like 对象Volver；统一吸成 Buffer。
  */
 async function streamToBuffer(stream: unknown): Promise<Buffer> {
   if (!stream) return Buffer.alloc(0);

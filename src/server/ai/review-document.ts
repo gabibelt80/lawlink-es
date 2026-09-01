@@ -104,7 +104,7 @@ export async function reviewDocument(input: {
         { role: "system", content: systemPrompt },
         {
           role: "user",
-          content: `文书名称：${doc.name}\n审查类型：${promptLabel}\n\n文书正文：\n${text}${truncated ? "\n\n（注：原文较长，已截断前部分内容供审查）" : ""}`
+          content: `文书Nombre：${doc.name}\n审查类型：${promptLabel}\n\n文书正文：\n${text}${truncated ? "\n\n（注：原文较长，已截断前部分内容供审查）" : ""}`
         }
       ],
       maxTokens: 2000,

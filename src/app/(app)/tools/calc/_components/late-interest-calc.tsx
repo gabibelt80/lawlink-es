@@ -65,7 +65,7 @@ export function LateInterestCalc() {
           />
         </div>
         <div>
-          <Label className="text-[11px]">应履行日期</Label>
+          <Label className="text-[11px]">应履行Fecha</Label>
           <Input
             type="date"
             value={dueDate}
@@ -74,7 +74,7 @@ export function LateInterestCalc() {
           />
         </div>
         <div>
-          <Label className="text-[11px]">实际履行日期（或截至日）</Label>
+          <Label className="text-[11px]">实际履行Fecha（或截至日）</Label>
           <Input
             type="date"
             value={paidDate}

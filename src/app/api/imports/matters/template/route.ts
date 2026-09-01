@@ -10,7 +10,7 @@ export const dynamic = "force-dynamic";
 export async function GET() {
   const session = await getServerSession(authOptions);
   if (!session?.user) {
-    return NextResponse.json({ error: "未登录" }, { status: 401 });
+    return NextResponse.json({ error: "未Iniciar sesión" }, { status: 401 });
   }
   const role = session.user.role;
   if (role !== "ADMIN" && role !== "PRINCIPAL_LAWYER") {
@@ -25,7 +25,7 @@ export async function GET() {
     return NextResponse.json({ error: "模板生成失败" }, { status: 500 });
   }
 
-  const filename = "lawlink-案件导入模板.xlsx";
+  const filename = "lawlink-Caso导入模板.xlsx";
   const arr = buf.buffer.slice(buf.byteOffset, buf.byteOffset + buf.byteLength) as ArrayBuffer;
   return new NextResponse(arr, {
     status: 200,

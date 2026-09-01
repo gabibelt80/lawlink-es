@@ -187,7 +187,7 @@ export function ConflictDialog({
             利益冲突检索
           </DialogTitle>
           <DialogDescription className="text-xs">
-            填入待查的姓名或证件号（至少一项），快速比对历史客户与案件
+            填入待查的姓名或证件号（至少一项），快速比对历史Cliente与Caso
           </DialogDescription>
         </DialogHeader>
 
@@ -204,7 +204,7 @@ export function ConflictDialog({
                 className="h-7 gap-1"
               >
                 <Plus className="h-3 w-3" />
-                添加
+                Agregar
               </Button>
             </div>
 
@@ -249,7 +249,7 @@ export function ConflictDialog({
                           ),
                         )
                       }
-                      placeholder="姓名 / 名称"
+                      placeholder="姓名 / Nombre"
                       className="h-9 bg-background"
                     />
                   </div>
@@ -294,7 +294,7 @@ export function ConflictDialog({
                 className="text-[11px] text-muted-foreground hover:text-primary"
                 onClick={() => onOpenChange(false)}
               >
-                查看完整记录页 →
+                Ver完整记录页 →
               </Link>
               <Button
                 type="button"
@@ -312,12 +312,12 @@ export function ConflictDialog({
             </div>
           </section>
 
-          {/* 客户库同名（非冲突，仅提示） */}
+          {/* Cliente库同名（非冲突，仅提示） */}
           {hasRun && sameName.length > 0 && (
             <section className="rounded-md border border-[#5B8DEF]/30 bg-[#5B8DEF]/10 p-3">
               <div className="flex items-center gap-2 text-xs text-[#5B8DEF]">
                 <Info className="h-3.5 w-3.5" />
-                客户库已有 {sameName.length} 个同名记录（仅提示，非冲突）
+                Cliente库已有 {sameName.length} 个同名记录（仅提示，非冲突）
               </div>
               <div className="mt-2 flex flex-wrap gap-1.5">
                 {sameName.map((c) => (
@@ -340,7 +340,7 @@ export function ConflictDialog({
             <section className="rounded-md border border-amber-500/40 bg-amber-500/10 p-3">
               <div className="flex items-center gap-2 text-xs text-amber-400">
                 <AlertTriangle className="h-3.5 w-3.5" />
-                身份证 / 信用代码与客户库 {idMatched.length}{" "}
+                身份证 / 信用代码与Cliente库 {idMatched.length}{" "}
                 条记录精确匹配，请人工核对
               </div>
               <div className="mt-2 flex flex-wrap gap-1.5">
@@ -371,7 +371,7 @@ export function ConflictDialog({
                 <div className="rounded-md border border-[#4ADE80]/30 bg-[#4ADE80]/10 p-3 text-sm">
                   <div className="flex items-center gap-2">
                     <CheckCircle2 className="h-4 w-4 text-[#4ADE80]" />
-                    <span>未命中任何历史客户或案件</span>
+                    <span>未命中任何历史Cliente或Caso</span>
                   </div>
                 </div>
               ) : (
@@ -414,8 +414,8 @@ export function ConflictDialog({
                               </span>
                               <span className="text-xs text-muted-foreground">
                                 {h.hitType === "HISTORICAL_CLIENT"
-                                  ? "历史客户"
-                                  : "历史案件"}
+                                  ? "历史Cliente"
+                                  : "历史Caso"}
                               </span>
                             </div>
                             <p className="mt-1 text-sm">{h.reason}</p>
@@ -438,7 +438,7 @@ export function ConflictDialog({
                               onClick={() => onOpenChange(false)}
                               className="flex shrink-0 items-center gap-1 text-xs text-primary hover:underline"
                             >
-                              查看
+                              Ver
                               <ExternalLink className="h-3 w-3" />
                             </Link>
                           )}
@@ -476,10 +476,10 @@ function MatterContext({
         </span>
       </div>
       <div className="grid grid-cols-2 gap-x-3 gap-y-1 text-muted-foreground">
-        <Field label="系统收案">{formatDate(info.intakeDate)}</Field>
-        <Field label="当前状态">{matterStatusLabel[info.status]}</Field>
+        <Field label="Sistema收案">{formatDate(info.intakeDate)}</Field>
+        <Field label="当前Estado">{matterStatusLabel[info.status]}</Field>
         <Field label="案由/类型">{causeOrCategory}</Field>
-        <Field label="主办律师">{info.ownerName ?? "—"}</Field>
+        <Field label="主办Abogado">{info.ownerName ?? "—"}</Field>
         <Field label="命中角色">
           {partyRoleLabel[info.partyRole]}
           {info.partyStanding

@@ -102,7 +102,7 @@ export const partyInputSchema = z
     ordinal: z.number().int().min(1).default(1),
     // v0.27: 主体类型决定必填字段
     partyType: partyTypeSchema.default("NATURAL_PERSON"),
-    name: z.string().min(1, "当事人姓名/名称必填").max(120),
+    name: z.string().min(1, "当事人姓名/Nombre必填").max(120),
     // 自然人路径必填：身份证号；公司路径必填：enterpriseSocialCode（superRefine 校验）
     idNumber: z.string().max(50).optional().or(z.literal("")),
     enterpriseSocialCode: z.string().max(50).optional().or(z.literal("")),
@@ -134,10 +134,10 @@ export const partyInputSchema = z
   });
 
 export const matterCreateSchema = z.object({
-  // v0.27: 案件名称去除所有空白字符（产品要求，避免列表/详情显示空格）
+  // v0.27: CasoNombre去除所有空白字符（产品要求，避免列表/详情显示空格）
   title: z.preprocess(
     (v) => (typeof v === "string" ? v.replace(/\s+/g, "") : v),
-    z.string().min(1, "案件名称必填").max(200)
+    z.string().min(1, "CasoNombre必填").max(200)
   ),
   category: matterCategorySchema,
 
@@ -153,7 +153,7 @@ export const matterCreateSchema = z.object({
 
   intakeDate: z.coerce.date().optional(),
 
-  // 客户：至少一个，第一个默认 primary
+  // Cliente：至少一个，第一个默认 primary
   clientIds: z.array(z.string().cuid()).min(1, "至少选择一个委托方"),
 
   // 当事人列表（委托方、对方、第三人）
@@ -172,12 +172,12 @@ export const matterCreateSchema = z.object({
 export type MatterCreateInput = z.infer<typeof matterCreateSchema>;
 export type PartyInput = z.infer<typeof partyInputSchema>;
 
-// v0.27: 案件基本信息编辑（系统编号 / 收案日期 readonly，不在此处）
+// v0.27: Caso基本信息Editar（Sistema编号 / 收案Fecha readonly，不在此处）
 export const matterUpdateBasicSchema = z.object({
   id: z.string().cuid(),
   title: z.preprocess(
     (v) => (typeof v === "string" ? v.replace(/\s+/g, "") : v),
-    z.string().min(1, "案件名称必填").max(200)
+    z.string().min(1, "CasoNombre必填").max(200)
   ),
   causeId: z.string().cuid().optional().or(z.literal("")),
   causeFreeText: z.string().max(200).optional().or(z.literal("")),

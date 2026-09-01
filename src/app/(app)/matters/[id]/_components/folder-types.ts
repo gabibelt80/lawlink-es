@@ -48,15 +48,15 @@ export const TEMPLATE_CATEGORY_CN: Record<TemplateSummary["category"], string> =
 };
 
 export const VARIABLE_LABEL_CN: Record<string, string> = {
-  "firm.name": "律所名称",
+  "firm.name": "律所Nombre",
   "firm.address": "律所地址",
   "firm.phone": "律所电话",
-  "lawyer.name": "主办律师",
-  "lawyer.phone": "律师电话",
-  "matter.code": "案件编号",
-  "matter.title": "案件名称",
+  "lawyer.name": "主办Abogado",
+  "lawyer.phone": "Abogado电话",
+  "matter.code": "Caso编号",
+  "matter.title": "CasoNombre",
   "matter.causeText": "案由",
-  "matter.intakeDate": "收案日期",
+  "matter.intakeDate": "收案Fecha",
   "matter.claimAmount": "涉案标的",
   "matter.ourStanding": "我方诉讼地位",
   "client.name": "委托人姓名",
@@ -69,5 +69,5 @@ export const VARIABLE_LABEL_CN: Record<string, string> = {
   "opposing.phone": "对方电话",
   "proceeding.court": "受理法院",
   "proceeding.caseNo": "案号",
-  "todayCN": "生成日期"
+  "todayCN": "生成Fecha"
 };

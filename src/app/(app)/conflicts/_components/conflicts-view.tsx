@@ -160,7 +160,7 @@ export function ConflictsView() {
           冲突检索
         </h1>
         <p className="relative z-[1] mt-2 max-w-2xl text-[13px] text-muted-foreground">
-          拟代理的委托方、相对方或第三人，必须先与历史客户和案件主体比对。命中阻塞冲突时，建议停止收案并形成留痕结论。
+          拟代理的委托方、相对方或第三人，必须先与历史Cliente和Caso主体比对。命中阻塞冲突时，建议停止收案并形成留痕结论。
         </p>
       </header>
 
@@ -174,7 +174,7 @@ export function ConflictsView() {
             className="h-7 gap-1"
           >
             <Plus className="h-3.5 w-3.5" />
-            添加检索项
+            Agregar检索项
           </Button>
         </div>
 
@@ -208,7 +208,7 @@ export function ConflictsView() {
               </div>
               <div className="col-span-4">
                 <Label className="text-[10px] uppercase tracking-wider text-muted-foreground">
-                  姓名 / 名称
+                  姓名 / Nombre
                 </Label>
                 <Input
                   value={q.name}
@@ -273,7 +273,7 @@ export function ConflictsView() {
             <div className="rounded-md border border-[#15803D]/30 bg-[#E6F2EC] p-4 text-sm">
               <div className="flex items-center gap-2">
                 <CheckCircle2 className="h-4 w-4 text-[#15803D]" />
-                <span>未命中任何历史客户或案件</span>
+                <span>未命中任何历史Cliente或Caso</span>
               </div>
             </div>
           ) : (
@@ -316,8 +316,8 @@ export function ConflictsView() {
                           </span>
                           <span className="text-xs text-muted-foreground">
                             {h.hitType === "HISTORICAL_CLIENT"
-                              ? "历史客户"
-                              : "历史案件"}
+                              ? "历史Cliente"
+                              : "历史Caso"}
                           </span>
                         </div>
                         <p className="mt-1.5 text-sm">{h.reason}</p>
@@ -338,7 +338,7 @@ export function ConflictsView() {
                           href={targetHref}
                           className="flex shrink-0 items-center gap-1 text-xs text-primary hover:underline"
                         >
-                          查看
+                          Ver
                           <ExternalLink className="h-3 w-3" />
                         </Link>
                       )}
@@ -377,7 +377,7 @@ function ConflictSummaryBar({
 
   return (
     <div className="mb-3 flex flex-wrap items-center gap-3 rounded-md border border-border bg-muted/55 px-3 py-2 text-xs">
-      <span className="font-semibold">风险汇总</span>
+      <span className="font-semibold">风险汇Total</span>
       <RiskCount severity="BLOCKING" label="阻塞" count={counts.BLOCKING} />
       <RiskCount severity="HIGH" label="高风险" count={counts.HIGH} />
       <RiskCount severity="MEDIUM" label="中风险" count={counts.MEDIUM} />
@@ -439,10 +439,10 @@ function MatterContext({
         </span>
       </div>
       <div className="grid grid-cols-2 gap-x-4 gap-y-1.5 text-muted-foreground md:grid-cols-3">
-        <Field label="系统收案">{formatDate(info.intakeDate)}</Field>
-        <Field label="当前状态">{matterStatusLabel[info.status]}</Field>
+        <Field label="Sistema收案">{formatDate(info.intakeDate)}</Field>
+        <Field label="当前Estado">{matterStatusLabel[info.status]}</Field>
         <Field label="案由/类型">{causeOrCategory}</Field>
-        <Field label="主办律师">{info.ownerName ?? "—"}</Field>
+        <Field label="主办Abogado">{info.ownerName ?? "—"}</Field>
         <Field label="命中角色">
           {partyRoleLabel[info.partyRole]}
           {info.partyStanding

@@ -10,7 +10,7 @@ import { saveFirmProfile, CATEGORY_WORD_DEFAULTS } from "./firm-profile";
 
 const CATEGORY_KEYS = Object.keys(CATEGORY_WORD_DEFAULTS) as MatterCategory[];
 
-/** 约 256KB（base64 编码后的字符长度上限）——律所 logo 应远小于此 */
+/** 约 256KB（base64 Código后的字符长度上限）——律所 logo 应远小于此 */
 const MAX_LOGO_CHARS = 256 * 1024;
 
 const saveSchema = z.object({
@@ -27,7 +27,7 @@ const saveSchema = z.object({
 async function requireAdmin() {
   const session = await requireSession();
   if (session.user.role !== "ADMIN") {
-    throw new Error("仅管理员可修改律所信息配置");
+    throw new Error("仅Administrar员可修改律所信息配置");
   }
   return session;
 }

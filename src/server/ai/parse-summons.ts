@@ -3,8 +3,8 @@
 /**
  * v0.44: 法院传票 OCR
  *
- * 律师上传传票图片 → aiVision 提取开庭日期、时间、法庭、案号、法官、当事人
- * 失败时返回 null 字段，让律师手动填写
+ * Abogado上传传票图片 → aiVision 提取开庭Fecha、时间、法庭、案号、法官、当事人
+ * 失败时Volver null 字段，让Abogado手动填写
  */
 import { requireSession } from "@/lib/auth/session";
 import { aiVision, extractJson, AiNotConfiguredError } from "@/lib/ai/client";
@@ -20,18 +20,18 @@ export type ParsedSummons = {
 
 const SUPPORTED = new Set(["image/jpeg", "image/png", "image/webp", "image/heic", "application/pdf"]);
 
-const PROMPT = `下方图片是一张中国法院传票（开庭传票）。请严格返回 JSON：
+const PROMPT = `下方图片是一张中国法院传票（开庭传票）。请严格Volver JSON：
 {
-  "hearingDate": "开庭日期（YYYY-MM-DD）",
+  "hearingDate": "开庭Fecha（YYYY-MM-DD）",
   "hearingTime": "开庭时间（HH:mm，24小时制）",
   "courtRoom": "开庭地点/法庭（如：本院第三法庭）",
   "caseNumber": "案号（如：(2024)京0105民初1234号）",
   "judge": "审判员/法官姓名",
-  "parties": ["原告/上诉人名称", "被告/被上诉人名称"]
+  "parties": ["原告/上诉人Nombre", "被告/被上诉人Nombre"]
 }
 规则：
-- 严格按照传票上的内容提取，不确定的字段返回 null
-- hearingDate 格式必须为 YYYY-MM-DD，如原始日期为"二〇二四年六月十五日"则转为 2024-06-15
+- 严格按照传票上的内容提取，不Aceptar的字段Volver null
+- hearingDate 格式必须为 YYYY-MM-DD，如原始Fecha为"二〇二四年Junio十五日"则转为 2024-06-15
 - hearingTime 格式为 HH:mm，如"上午九时三十分"转为 09:30
 - parties 为数组，包含传票上列明的当事人
 - 仅 JSON，不要解释`;

@@ -24,7 +24,7 @@ import {
 import { revalidateMatter } from "@/server/matters/route";
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-// 解析并保存（支持批量）
+// 解析并Guardar（支持批量）
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 async function findMatchingMatter(caseNumbers: string[]): Promise<string | null> {
@@ -81,7 +81,7 @@ function normalizeStoredParsed(rawText: string, parsedJson: Prisma.JsonValue): P
   };
 }
 
-// v0.48: 待人工状态冗余到 SmsMessage.needsManualAction 供 SQL 过滤
+// v0.48: 待人工Estado冗余到 SmsMessage.needsManualAction 供 SQL 过滤
 function needsManualFromResults(results: ParsedSms["attachmentResults"]) {
   return results.some((r) => r.status === "LOGIN_REQUIRED" || r.status === "SKIPPED_NO_MATTER");
 }
@@ -98,7 +98,7 @@ function skippedNoMatterResults(parsed: ParsedSms): ParsedSms["attachmentResults
   return parsed.urls.map((url) => ({
     url,
     status: "SKIPPED_NO_MATTER",
-    message: "请先关联案件，再提取送达附件",
+    message: "请先关联Caso，再提取送达附件",
     checkedAt: new Date().toISOString()
   }));
 }
@@ -182,7 +182,7 @@ export async function parseAndSaveSms(input: z.infer<typeof smsParseAndSaveSchem
       }
     }
 
-    // 通知关联案件的负责人
+    // Notificaciones关联Caso的负责人
     if (matchedMatterId) {
       const matter = await prisma.matter.findUnique({
         where: { id: matchedMatterId },
@@ -192,8 +192,8 @@ export async function parseAndSaveSms(input: z.infer<typeof smsParseAndSaveSchem
         await createNotification({
           userId: matter.ownerId,
           type: "SMS_ARRIVAL",
-          title: "收到新法院短信",
-          content: `案件收到新的法院短信，类型：${parsed.smsType ?? "未知"}`,
+          title: "收到新法院SMS",
+          content: `Caso收到新的法院SMS，类型：${parsed.smsType ?? "未知"}`,
           href: "/inbox",
           refType: "SmsMessage",
           refId: created.id
@@ -228,9 +228,9 @@ export async function extractSmsAttachments(input: z.infer<typeof smsIdSchema>) 
       matchedMatterId: true
     }
   });
-  if (!sms) throw new Error("短信不存在");
+  if (!sms) throw new Error("SMS不存在");
   if (sms.receivedById !== session.user.id && !sms.matchedMatterId) {
-    throw new Error("无权处理这条短信");
+    throw new Error("无权处理这条SMS");
   }
   if (!sms.matchedMatterId) {
     const parsed = normalizeStoredParsed(sms.rawText, sms.parsedJson);
@@ -252,7 +252,7 @@ export async function extractSmsAttachments(input: z.infer<typeof smsIdSchema>) 
 
   await assertCanAccessMatter(session.user.id, session.user.role, sms.matchedMatterId);
   const parsed = normalizeStoredParsed(sms.rawText, sms.parsedJson);
-  if (parsed.urls.length === 0) throw new Error("短信中没有可提取的链接");
+  if (parsed.urls.length === 0) throw new Error("SMS中没有可提取的链接");
 
   const attachmentResults = await tryExtractAttachments({
     smsId: sms.id,
@@ -506,9 +506,9 @@ export async function deleteSms(input: z.infer<typeof smsIdSchema>) {
     where: { id: data.id },
     select: { receivedById: true }
   });
-  if (!sms) throw new Error("短信不存在");
+  if (!sms) throw new Error("SMS不存在");
   if (sms.receivedById !== session.user.id && session.user.role !== "ADMIN") {
-    throw new Error("仅收件人或管理员可删除");
+    throw new Error("仅收件人或Administrar员可Eliminar");
   }
 
   await prisma.smsMessage.delete({ where: { id: data.id } });
@@ -524,7 +524,7 @@ export async function deleteSms(input: z.infer<typeof smsIdSchema>) {
   return { ok: true };
 }
 
-// 把解析出的字符串日期尽量转 JS Date（UI 预填用）
+// 把解析出的字符串Fecha尽量转 JS Date（UI 预填用）
 export async function parseDateString(s: string) {
   await requireSession();
   const d = toDate(s);
@@ -532,9 +532,9 @@ export async function parseDateString(s: string) {
 }
 
 /**
- * v0.51: 立案/受理短信解析出的案号回填到程序（收件箱闭环）。
- * 只允许回填短信里真实解析出的案号；只填空案号的程序，已有案号不覆盖
- * （更正走程序信息编辑，留痕清晰）。
+ * v0.51: 立案/受理SMS解析出的案号回填到程序（收件箱闭环）。
+ * 只允许回填SMS里真实解析出的案号；只填空案号的程序，已有案号不覆盖
+ * （更正走程序信息Editar，留痕清晰）。
  */
 export async function backfillCaseNumberFromSms(
   input: z.infer<typeof smsBackfillCaseNumberSchema>
@@ -546,14 +546,14 @@ export async function backfillCaseNumberFromSms(
     where: { id: data.smsId },
     select: { id: true, rawText: true, parsedJson: true, matchedMatterId: true }
   });
-  if (!sms) throw new Error("短信不存在");
-  if (!sms.matchedMatterId) throw new Error("请先关联案件");
+  if (!sms) throw new Error("SMS不存在");
+  if (!sms.matchedMatterId) throw new Error("请先关联Caso");
   await assertCanAssociateMatter(session.user.id, sms.matchedMatterId);
   await assertMatterWritable(sms.matchedMatterId);
 
   const parsed = normalizeStoredParsed(sms.rawText, sms.parsedJson);
   if (!parsed.caseNumbers.includes(data.caseNumber)) {
-    throw new Error("只能回填本条短信解析出的案号");
+    throw new Error("只能回填本条SMS解析出的案号");
   }
 
   const procedure = await prisma.matterProcedure.findUnique({
@@ -561,7 +561,7 @@ export async function backfillCaseNumberFromSms(
     select: { id: true, matterId: true, caseNumber: true, type: true, customLabel: true }
   });
   if (!procedure || procedure.matterId !== sms.matchedMatterId) {
-    throw new Error("程序与短信关联的案件不匹配");
+    throw new Error("程序与SMS关联的Caso不匹配");
   }
   if (procedure.caseNumber === data.caseNumber) {
     return { ok: true, unchanged: true };
@@ -579,7 +579,7 @@ export async function backfillCaseNumberFromSms(
     data: {
       matterId: sms.matchedMatterId,
       eventType: "PROCEDURE_UPDATED",
-      title: `案号回填：${data.caseNumber}（来自法院短信）`,
+      title: `案号回填：${data.caseNumber}（来自法院SMS）`,
       occurredAt: new Date(),
       refType: "MatterProcedure",
       refId: procedure.id

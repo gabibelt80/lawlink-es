@@ -59,7 +59,7 @@ export function AddTaskDialog({
 
   function submit() {
     if (!matterId) {
-      toast.warning("请选择关联案件");
+      toast.warning("请选择关联Caso");
       return;
     }
     if (!title.trim()) {
@@ -67,7 +67,7 @@ export function AddTaskDialog({
       return;
     }
     if (!date) {
-      toast.warning("缺少日期");
+      toast.warning("缺少Fecha");
       return;
     }
 
@@ -93,11 +93,11 @@ export function AddTaskDialog({
           assigneeId: "",
           stageId: ""
         });
-        toast.success("事项已添加");
+        toast.success("事项已Agregar");
         onOpenChange(false);
         router.refresh();
       } catch (err) {
-        toast.error("添加失败", {
+        toast.error("Agregar失败", {
           description: err instanceof Error ? err.message : ""
         });
       }
@@ -110,7 +110,7 @@ export function AddTaskDialog({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Plus className="h-4 w-4 text-primary" />
-            添加事项
+            Agregar事项
           </DialogTitle>
           <DialogDescription className="text-xs">
             {date
@@ -127,7 +127,7 @@ export function AddTaskDialog({
         <div className="space-y-3">
           <div className="space-y-1.5">
             <Label className="text-xs">
-              关联案件 <span className="text-destructive">*</span>
+              关联Caso <span className="text-destructive">*</span>
             </Label>
             <Select value={matterId} onValueChange={setMatterId}>
               <SelectTrigger>
@@ -151,7 +151,7 @@ export function AddTaskDialog({
               事项标题 <span className="text-destructive">*</span>
             </Label>
             <Input
-              placeholder="如：起草起诉状 / 提交证据清单"
+              placeholder="如：起草起诉状 / Enviar证据清单"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
             />
@@ -184,7 +184,7 @@ export function AddTaskDialog({
           </div>
 
           <div className="space-y-1.5">
-            <Label className="text-xs">描述（可选）</Label>
+            <Label className="text-xs">Descripción（可选）</Label>
             <Textarea
               rows={2}
               placeholder="事项详情、相关材料等"
@@ -224,11 +224,11 @@ export function AddTaskDialog({
             onClick={() => onOpenChange(false)}
             disabled={isPending}
           >
-            取消
+            Cancelar
           </Button>
           <Button onClick={submit} disabled={isPending} className="gap-1.5">
             {isPending && <Loader2 className="h-4 w-4 animate-spin" />}
-            添加
+            Agregar
           </Button>
         </DialogFooter>
       </DialogContent>

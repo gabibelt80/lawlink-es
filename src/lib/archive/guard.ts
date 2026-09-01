@@ -2,13 +2,13 @@
  * v0.9.4 归档只读门禁
  *
  * 策略（用户选择"中"）：
- *   - 案件 status === "ARCHIVED" 后：业务写操作全禁
+ *   - Caso status === "ARCHIVED" 后：业务写Acciones全禁
  *   - 例外：补传材料到 ARCHIVE 卷宗（结案/归档）允许
  *
- * 调用方式（每个写操作 server action 入口）：
+ * 调用方式（每个写Acciones server action 入口）：
  *   await assertMatterWritable(matterId);
  *
- * 文档上传 / 删除 需要 isArchiveFolder() 配合放行 ARCHIVE 卷宗。
+ * 文档上传 / Eliminar 需要 isArchiveFolder() 配合放行 ARCHIVE 卷宗。
  */
 import { requireSession } from "@/lib/auth/session";
 import { matterAssociationFilter } from "@/lib/permissions";
@@ -36,7 +36,7 @@ async function findWritableMatter(
 }
 
 /**
- * 已归档案件视为只读。抛错（中文）由 UI catch 显示 toast。
+ * 已归档Caso视为只读。抛错（中文）由 UI catch 显示 toast。
  */
 export async function assertMatterWritable(
   matterId: string | null | undefined,
@@ -44,12 +44,12 @@ export async function assertMatterWritable(
 ): Promise<void> {
   if (!matterId) return;
   const matter = await findWritableMatter(matterId, opts);
-  if (!matter) throw new Error("案件不存在或无权处理");
+  if (!matter) throw new Error("Caso不存在或无权处理");
   if (matter.status === "ARCHIVED") {
     const detail = opts?.allowedIfArchivedReason
       ? `（${opts.allowedIfArchivedReason}除外）`
       : "";
-    throw new Error(`案件已归档，禁止修改${detail}`);
+    throw new Error(`Caso已归档，禁止修改${detail}`);
   }
 }
 
@@ -65,7 +65,7 @@ export function isArchiveFolderName(name: string | null | undefined): boolean {
 }
 
 /**
- * 文档操作门禁：归档后只允许上传到 ARCHIVE 卷宗。删除/重命名/移动一律禁止。
+ * 文档Acciones门禁：归档后只允许上传到 ARCHIVE 卷宗。Eliminar/重命名/移动一律禁止。
  */
 export async function assertDocumentWritable(
   matterId: string | null | undefined,
@@ -73,13 +73,13 @@ export async function assertDocumentWritable(
 ): Promise<void> {
   if (!matterId) return;
   const matter = await findWritableMatter(matterId, opts);
-  if (!matter) throw new Error("案件不存在或无权处理");
+  if (!matter) throw new Error("Caso不存在或无权处理");
   if (matter.status !== "ARCHIVED") return;
 
   if (opts.kind === "modify") {
-    throw new Error("案件已归档，材料不可修改或删除");
+    throw new Error("Caso已归档，材料不可修改或Eliminar");
   }
   if (opts.kind === "upload" && !isArchiveFolderName(opts.folderName)) {
-    throw new Error("案件已归档，仅允许补传材料到「结案」或「归档」卷宗");
+    throw new Error("Caso已归档，仅允许补传材料到「结案」或「归档」卷宗");
   }
 }

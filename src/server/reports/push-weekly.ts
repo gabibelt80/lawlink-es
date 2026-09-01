@@ -1,7 +1,7 @@
 "use server";
 
 /**
- * v0.21: 推送本周报告给全员
+ * v0.21: 推送本周Informe给全员
  *
  * 两个入口：
  * - admin 手动：pushWeeklyReportToAll（require session）
@@ -55,7 +55,7 @@ export async function runWeeklyReportPush(
         userId: u.id,
         type: "SYSTEM",
         priority: "NORMAL",
-        title: `本周报告（${period.label}）`,
+        title: `本周Informe（${period.label}）`,
         content: formatWeeklyDigestContent(digest),
         href: "/reports?period=month",
         refType: "WeeklyReport",
@@ -90,7 +90,7 @@ export async function runWeeklyReportPush(
 export async function pushWeeklyReportToAll(): Promise<WeeklyPushResult> {
   const session = await requireSession();
   if (session.user.role !== "ADMIN" && session.user.role !== "PRINCIPAL_LAWYER") {
-    throw new Error("仅管理员 / 主任律师可推送周报");
+    throw new Error("仅Administrar员 / 主任Abogado可推送周报");
   }
   return runWeeklyReportPush(session.user.id);
 }

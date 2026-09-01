@@ -5,13 +5,13 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 const typeLabels: Record<string, string> = {
-  PRESERVATION_EXPIRY: "保全到期",
+  PRESERVATION_EXPIRY: "Preservación到期",
   HEARING_REMINDER: "庭审",
   DEADLINE_REMINDER: "期限",
   SEAL_STATUS_CHANGE: "用章",
-  SMS_ARRIVAL: "短信",
-  TASK_ASSIGNED: "系统",
-  SYSTEM: "系统",
+  SMS_ARRIVAL: "SMS",
+  TASK_ASSIGNED: "Sistema",
+  SYSTEM: "Sistema",
   ARCHIVE_APPROVED: "归档",
   ARCHIVE_REJECTED: "归档"
 };
@@ -36,16 +36,16 @@ export default async function NotificationsPage() {
     <div className="space-y-5 pb-8">
       <div className="flex items-start justify-between gap-4">
         <div>
-          <h1 className="text-2xl">通知</h1>
+          <h1 className="text-2xl">Notificaciones</h1>
           <p className="mt-0.5 text-[11px] text-muted-foreground">
-            系统提醒、用章、期限和庭审通知
+            SistemaRecordatorios、用章、期限和庭审Notificaciones
           </p>
         </div>
         {unreadCount > 0 && (
           <form action={markAllReadAction}>
             <Button type="submit" variant="outline" size="sm" className="gap-1.5">
               <CheckCheck className="h-3.5 w-3.5" />
-              全部已读
+              Ver todos已读
             </Button>
           </form>
         )}
@@ -55,7 +55,7 @@ export default async function NotificationsPage() {
         {notifications.length === 0 ? (
           <div className="p-12 text-center text-sm text-muted-foreground">
             <Bell className="mx-auto mb-2 h-6 w-6 opacity-40" />
-            暂无通知
+            暂无Notificaciones
           </div>
         ) : (
           <div className="divide-y divide-border">

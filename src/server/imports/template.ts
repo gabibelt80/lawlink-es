@@ -1,12 +1,12 @@
 /**
- * v0.42 批F：案件批量导入 xlsx 模板生成。
+ * v0.42 批F：Caso批量导入 xlsx 模板生成。
  * 第 1 行表头（必填列带 *），第 2 行示例，另一 sheet 写填写说明。
  */
 import ExcelJS from "exceljs";
 
 import { IMPORT_COLUMNS } from "@/lib/imports/matter-import";
 
-export const IMPORT_SHEET_NAME = "案件导入";
+export const IMPORT_SHEET_NAME = "Caso导入";
 
 const EXAMPLE: Record<string, string> = {
   clientName: "张三",
@@ -64,13 +64,13 @@ export async function buildMatterImportTemplate(): Promise<Buffer> {
     { header: "说明", key: "d", width: 60 }
   ];
   notes.getRow(1).font = { bold: true };
-  notes.addRow({ h: "必填列", d: "表头带 * 的为必填：客户名称/证件号、相对方名称/证件号、案件类型、案件状态" });
+  notes.addRow({ h: "必填列", d: "表头带 * 的为必填：ClienteNombre/证件号、相对方Nombre/证件号、Caso类型、CasoEstado" });
   for (const c of IMPORT_COLUMNS) {
     if (c.hint) notes.addRow({ h: c.header, d: c.hint });
   }
-  notes.addRow({ h: "首程序", d: "「办理中」的案件按案件类型自动生成首程序（诉讼→一审、其他→非诉/仲裁阶段）；已结案/已归档不建程序" });
-  notes.addRow({ h: "利益冲突", d: "客户与相对方的名称+证件号会写入当事人库，导入后即可被冲突检索命中" });
-  notes.addRow({ h: "示例行", d: "第 2 行为示例，正式导入前请删除或覆盖" });
+  notes.addRow({ h: "首程序", d: "「办理中」的Caso按Caso类型自动生成首程序（诉讼→一审、其他→非诉/仲裁阶段）；已结案/已归档不建程序" });
+  notes.addRow({ h: "利益冲突", d: "Cliente与相对方的Nombre+证件号会写入当事人库，导入后即可被冲突检索命中" });
+  notes.addRow({ h: "示例行", d: "第 2 行为示例，正式导入前请Eliminar或覆盖" });
 
   const out = await wb.xlsx.writeBuffer();
   return Buffer.from(out);

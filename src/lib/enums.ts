@@ -23,7 +23,7 @@ export const clientTypeLabel: Record<ClientType, string> = {
   ORGANIZATION: "其他组织"
 };
 
-// v0.39: 客户合作状态
+// v0.39: Cliente合作Estado
 export const cooperationStatusLabel: Record<ClientCooperationStatus, string> = {
   POTENTIAL: "潜在",
   NEGOTIATING: "洽谈中",
@@ -38,7 +38,7 @@ export const COOPERATION_STATUS_OPTIONS: ClientCooperationStatus[] = [
   "TERMINATED"
 ];
 
-// v0.39: 客户性别（个人客户）
+// v0.39: Cliente性别（个人Cliente）
 export const genderLabel: Record<ClientGender, string> = {
   MALE: "男",
   FEMALE: "女"
@@ -74,10 +74,10 @@ export const PARTY_TYPE_OPTIONS: PartyType[] = [
 // v0.30: 需向律协备案与否
 export const barFilingLabel: Record<BarFilingType, string> = {
   NONE: "否",
-  COLLECTIVE: "需要，涉集体案件",
-  SENSITIVE: "需要，涉敏感案件",
-  MAJOR: "需要，涉重大案件",
-  OTHER: "需要，其他特殊案件"
+  COLLECTIVE: "需要，涉集体Caso",
+  SENSITIVE: "需要，涉敏感Caso",
+  MAJOR: "需要，涉重大Caso",
+  OTHER: "需要，其他特殊Caso"
 };
 
 export const BAR_FILING_OPTIONS: BarFilingType[] = [
@@ -88,14 +88,14 @@ export const BAR_FILING_OPTIONS: BarFilingType[] = [
   "OTHER"
 ];
 
-// v0.31: 案件类别按业务性质分三类——决定收案表单结构
-// litigation 诉讼/仲裁（民商事/刑事/行政）；project 非诉/专项；counsel 顾问
+// v0.31: Caso类别按业务性质分三类——决定收案表单结构
+// litigation 诉讼/仲裁（Civil/Comercial/Penal/Administrativo）；project 非诉/专项；counsel 顾问
 export type CategoryKind = "litigation" | "project" | "counsel";
 
 export function matterCategoryKind(c: MatterCategory): CategoryKind {
   if (c === "LEGAL_COUNSEL") return "counsel";
   if (c === "NON_LITIGATION" || c === "SPECIAL_PROJECT") return "project";
-  // 民商诉讼 / 劳动仲裁 / 商事仲裁 / 刑事 / 行政 → 诉讼/仲裁类
+  // 民商诉讼 / 劳动仲裁 / 商事仲裁 / Penal / Administrativo → 诉讼/仲裁类
   return "litigation";
 }
 
@@ -110,7 +110,7 @@ export const PROJECT_BUSINESS_TYPES: string[] = [
   "知识产权",
   "合规体系",
   "招投标",
-  "行政许可 / 审批",
+  "Administrativo许可 / Aprobación",
   "其他"
 ];
 
@@ -121,8 +121,8 @@ export const matterCategoryLabel: Record<MatterCategory, string> = {
   CIVIL_COMMERCIAL: "民商诉讼",
   LABOR_ARBITRATION: "劳动仲裁",
   COMMERCIAL_ARBITRATION: "商事仲裁",
-  CRIMINAL: "刑事诉讼",
-  ADMINISTRATIVE: "行政诉讼",
+  CRIMINAL: "Penal诉讼",
+  ADMINISTRATIVE: "Administrativo诉讼",
   NON_LITIGATION: "非诉项目",
   LEGAL_COUNSEL: "常年顾问",
   SPECIAL_PROJECT: "法律专项"
@@ -139,7 +139,7 @@ export const matterCategoryColor: Record<MatterCategory, string> = {
   SPECIAL_PROJECT: "#60A5FA"
 };
 
-// v0.17: 案件类别单字图标（用于列表卡片标题前）
+// v0.17: Caso类别单字图标（用于列表卡片标题前）
 export const matterCategoryShort: Record<MatterCategory, string> = {
   CIVIL_COMMERCIAL: "民",
   LABOR_ARBITRATION: "劳",
@@ -168,11 +168,11 @@ export const intakeStatusLabel: Record<IntakeStatus, string> = {
 };
 
 export const userRoleLabel: Record<UserRole, string> = {
-  ADMIN: "系统管理员",
-  PRINCIPAL_LAWYER: "主办律师",
-  LAWYER: "经办律师",
+  ADMIN: "SistemaAdministrar员",
+  PRINCIPAL_LAWYER: "主办Abogado",
+  LAWYER: "经办Abogado",
   ASSISTANT: "助理",
-  FINANCE: "财务"
+  FINANCE: "Finanzas"
 };
 
 export const litigationStandingLabel: Record<LitigationStanding, string> = {
@@ -189,14 +189,14 @@ export const litigationStandingLabel: Record<LitigationStanding, string> = {
   RETRIAL_RESPONDENT: "再审被申请人",
   ENFORCEMENT_APPLICANT: "申请执行人",
   EXECUTED_PERSON: "被执行人",
-  CRIMINAL_DEFENDANT: "刑事被告人",
+  CRIMINAL_DEFENDANT: "Penal被告人",
   CRIMINAL_VICTIM: "被害人",
   PRIVATE_PROSECUTOR: "自诉人",
-  CRIMINAL_INCIDENTAL_PLAINTIFF: "刑事附带民事原告",
+  CRIMINAL_INCIDENTAL_PLAINTIFF: "Penal附带民事原告",
   ARBITRATION_CLAIMANT: "仲裁申请人",
   ARBITRATION_RESPONDENT: "仲裁被申请人",
-  ADMIN_PLAINTIFF: "行政原告",
-  ADMIN_DEFENDANT: "行政被告",
+  ADMIN_PLAINTIFF: "Administrativo原告",
+  ADMIN_DEFENDANT: "Administrativo被告",
   ADMIN_RECONSIDERATION_APPLICANT: "复议申请人",
   ADMIN_RECONSIDERATION_RESPONDENT: "复议被申请人",
   NON_LITIGATION_PARTY: "项目当事人"
@@ -221,8 +221,8 @@ export const procedureTypeLabel: Record<ProcedureType, string> = {
   DEATH_PENALTY_REVIEW: "死刑复核",
   CRIMINAL_ENFORCEMENT: "刑罚执行",
   COMMUTATION_PAROLE_REVIEW: "减刑假释审查",
-  ADMIN_RECONSIDERATION: "行政复议",
-  ADMIN_NON_LITIGATION_ENFORCEMENT: "非诉行政执行",
+  ADMIN_RECONSIDERATION: "Administrativo复议",
+  ADMIN_NON_LITIGATION_ENFORCEMENT: "非诉Administrativo执行",
   NON_LITIGATION_PHASE: "非诉阶段",
   CUSTOM: "自定义"
 };
@@ -234,7 +234,7 @@ export const feeTypeLabel: Record<FeeType, string> = {
 };
 
 export const invoiceRequestStatusLabel: Record<InvoiceRequestStatus, string> = {
-  PENDING: "待财务处理",
+  PENDING: "待Finanzas处理",
   APPROVED: "已批准",
   ISSUED: "已开具",
   REJECTED: "已驳回"
@@ -248,8 +248,8 @@ export const invoiceRequestStatusColor: Record<InvoiceRequestStatus, string> = {
 };
 
 /**
- * 按程序类型 + 立场（我方 or 对方）返回可选诉讼地位枚举。
- * 用于收案表单 / 案件详情中的当事人录入联动。
+ * 按程序类型 + 立场（我方 or 对方）Volver可选诉讼地位枚举。
+ * 用于收案表单 / Caso详情中的当事人录入联动。
  */
 export function procedureToStandingOptions(
   proc: ProcedureType | null | undefined,

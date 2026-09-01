@@ -131,7 +131,7 @@ export default async function IntakeDetailPage({ params }: PageProps) {
           className="inline-flex items-center gap-1 text-sm text-muted-foreground transition-colors hover:text-foreground"
         >
           <ArrowLeft className="h-3.5 w-3.5" />
-          返回收案列表
+          Volver收案列表
         </Link>
       </div>
 
@@ -161,7 +161,7 @@ export default async function IntakeDetailPage({ params }: PageProps) {
                   href={matterHref(intake.matter)}
                   className="inline-flex items-center gap-1 rounded-md border border-primary/30 bg-primary/10 px-2 py-0.5 text-xs text-primary hover:bg-primary/15"
                 >
-                  已转为案件 {intake.matter.internalCode} →
+                  已转为Caso {intake.matter.internalCode} →
                 </Link>
               )}
             </div>
@@ -179,8 +179,8 @@ export default async function IntakeDetailPage({ params }: PageProps) {
             {intake.cause?.name ?? intake.causeFreeText ?? "—"}
           </InfoItem>
           <InfoItem label="发起人">{createdBy?.name ?? "—"}</InfoItem>
-          <InfoItem label="主办律师">{intake.ownerUser?.name ?? "—"}</InfoItem>
-          <InfoItem label="客户">
+          <InfoItem label="主办Abogado">{intake.ownerUser?.name ?? "—"}</InfoItem>
+          <InfoItem label="Cliente">
             {intake.client ? (
               <Link
                 href={`/clients/${intake.client.id}`}
@@ -192,7 +192,7 @@ export default async function IntakeDetailPage({ params }: PageProps) {
               "—"
             )}
           </InfoItem>
-          <InfoItem label="收案日期">
+          <InfoItem label="收案Fecha">
             {new Date(intake.receivedAt).toLocaleDateString("zh-CN")}
           </InfoItem>
         </dl>
@@ -202,7 +202,7 @@ export default async function IntakeDetailPage({ params }: PageProps) {
             <Separator className="my-5" />
             <div>
               <div className="mb-1.5 text-xs uppercase tracking-wider text-muted-foreground">
-                描述
+                Descripción
               </div>
               <p className="whitespace-pre-wrap text-sm text-foreground/90">
                 {intake.description}
@@ -250,7 +250,7 @@ export default async function IntakeDetailPage({ params }: PageProps) {
         </h2>
 
         <div className="grid grid-cols-1 gap-5 md:grid-cols-3">
-          <Column title="客户" color="#5B8DEF">
+          <Column title="Cliente" color="#5B8DEF">
             {intake.client ? (
               <PartyCard
                 name={intake.client.name}

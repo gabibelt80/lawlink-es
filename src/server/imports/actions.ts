@@ -22,12 +22,12 @@ import {
 async function requireManager() {
   const session = await requireSession();
   if (session.user.role !== "ADMIN" && session.user.role !== "PRINCIPAL_LAWYER") {
-    throw new Error("仅管理员 / 主任律师可批量导入案件");
+    throw new Error("仅Administrar员 / 主任Abogado可批量导入Caso");
   }
   return session;
 }
 
-/** Excel 单元格值 → 字符串（日期统一格式化为 YYYY-MM-DD） */
+/** Excel 单元格值 → 字符串（Fecha统一格式化为 YYYY-MM-DD） */
 function cellToString(value: ExcelJS.CellValue): string {
   if (value === null || value === undefined) return "";
   if (value instanceof Date) {
@@ -96,7 +96,7 @@ export interface ImportPreview {
   validCount: number;
 }
 
-/** 解析 + 校验（不写库），返回预览表 */
+/** 解析 + 校验（不写库），Volver预览表 */
 export async function parseMatterImportAction(formData: FormData): Promise<ImportPreview> {
   await requireManager();
   const file = formData.get("file");
@@ -104,10 +104,10 @@ export async function parseMatterImportAction(formData: FormData): Promise<Impor
 
   const parsed = await readSheet(file);
   if (parsed.length === 0) {
-    throw new Error("未读取到数据行（请在模板第 2 行起填写，并删除示例行）");
+    throw new Error("未读取到数据行（请在模板第 2 行起填写，并Eliminar示例行）");
   }
 
-  // 预取主办律师邮箱，用于校验
+  // 预取主办AbogadoEmail，用于校验
   const emails = [
     ...new Set(parsed.map((p) => (p.raw.ownerEmail ?? "").trim().toLowerCase()).filter(Boolean))
   ];
@@ -120,7 +120,7 @@ export async function parseMatterImportAction(formData: FormData): Promise<Impor
     const { errors, normalized } = validateRow(raw);
     const errs = [...errors];
     if (normalized?.ownerEmail && !knownEmails.has(normalized.ownerEmail.toLowerCase())) {
-      errs.push(`主办律师邮箱「${normalized.ownerEmail}」未匹配到用户`);
+      errs.push(`主办AbogadoEmail「${normalized.ownerEmail}」未匹配到用户`);
     }
     return { rowNo, raw, errors: errs, valid: errs.length === 0 };
   });
@@ -133,16 +133,16 @@ export async function parseMatterImportAction(formData: FormData): Promise<Impor
   };
 }
 
-/** 落库单行：find-or-create 客户 → 建案件(+编号+主办+当事人+首程序+卷宗) */
+/** 落库单行：find-or-create Cliente → 建Caso(+编号+主办+当事人+首程序+卷宗) */
 async function createOneMatter(n: NormalizedRow, currentUserId: string) {
-  // 主办律师
+  // 主办Abogado
   let ownerId = currentUserId;
   if (n.ownerEmail) {
     const lawyer = await prisma.user.findFirst({
       where: { email: { equals: n.ownerEmail, mode: "insensitive" } },
       select: { id: true }
     });
-    if (!lawyer) throw new Error(`主办律师邮箱「${n.ownerEmail}」未匹配到用户`);
+    if (!lawyer) throw new Error(`主办AbogadoEmail「${n.ownerEmail}」未匹配到用户`);
     ownerId = lawyer.id;
   }
 
@@ -159,11 +159,11 @@ async function createOneMatter(n: NormalizedRow, currentUserId: string) {
     else causeFreeText = n.causeText;
   }
 
-  // v1.2：导入曾是唯一绕过案由校验的写入路径，能造出界面创建不出来的组合
-  // （如劳动仲裁案件挂婚姻家庭类案由）。校验基准与创建案件一致：类别 + 首程序类型。
+  // v1.2：导入曾是唯一绕过案由校验的写入路径，能造出界面Crear不出来的组合
+  // （如劳动仲裁Caso挂婚姻家庭类案由）。校验基准与CrearCaso一致：类别 + 首程序类型。
   //
-  // 不合规时降级为自由文本、不整行失败：导入是历史数据迁移工具，历史案件按当时
-  // 规则立的案由未必符合现行范围，为一个案由把整条案件挡在门外代价过大。
+  // 不合规时降级为自由文本、不整行失败：导入是历史数据迁移工具，历史Caso按当时
+  // 规则立的案由未必符合现行范围，为一个案由把整条Caso挡在门外代价过大。
   // 自由文本字段本就不参与联动校验，信息不丢，降级情况在导入结果里逐行列出。
   if (causeId) {
     try {
@@ -173,7 +173,7 @@ async function createOneMatter(n: NormalizedRow, currentUserId: string) {
         procedureType: firstProcedureTypeFor(n.category)
       });
     } catch (e) {
-      causeDowngradeReason = e instanceof Error ? e.message : "案由与案件类别不匹配";
+      causeDowngradeReason = e instanceof Error ? e.message : "案由与Caso类别不匹配";
       causeFreeText = n.causeText ?? null;
       causeId = null;
     }
@@ -182,7 +182,7 @@ async function createOneMatter(n: NormalizedRow, currentUserId: string) {
   const internalCode = await generateInternalCode(n.category);
   const firmCaseNo = await generateFirmCaseNo(n.category);
 
-  // find-or-create 客户（名称 + 证件号）
+  // find-or-create Cliente（Nombre + 证件号）
   const existingClient = await prisma.client.findFirst({
     where: { name: n.clientName, idNumber: n.clientIdNumber, deletedAt: null },
     select: { id: true }
@@ -271,7 +271,7 @@ async function createOneMatter(n: NormalizedRow, currentUserId: string) {
       data: {
         matterId: matter.id,
         eventType: "MATTER_CREATED",
-        title: "案件已创建（批量导入）",
+        title: "Caso已Crear（批量导入）",
         occurredAt: new Date()
       }
     });
@@ -289,13 +289,13 @@ export interface ImportResult {
     internalCode: string;
     firmCaseNo: string | null;
     title: string;
-    /** 案由与案件类别不匹配、已降级为自由文本；需事后人工核对 */
+    /** 案由与Caso类别不匹配、已降级为自由文本；需事后人工核对 */
     causeDowngradeReason?: string;
   }[];
   failed: { rowNo: number; error: string }[];
 }
 
-/** 确认导入：逐行事务、失败不阻断，返回成功/失败清单 */
+/** 确认导入：逐行事务、失败不阻断，Volver成功/失败清单 */
 export async function commitMatterImportAction(input: {
   rows: { rowNo: number; raw: RawRow }[];
 }): Promise<ImportResult> {

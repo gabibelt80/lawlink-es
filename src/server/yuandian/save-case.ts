@@ -1,7 +1,7 @@
 "use server";
 
 /**
- * v0.20: 把检索到的元典类案保存为案件 Document（category=JUDGMENT）
+ * v0.20: 把检索到的元典类案Guardar为Caso Document（category=JUDGMENT）
  *
  * 跳过 uploadDocument 的 file validation —— 这是 LawLink 内部生成的 md 文本，
  * 不走"用户上传"路径。
@@ -45,13 +45,13 @@ function buildMarkdown(c: SaveCaseInput["caseHit"]): string {
     "",
     `- **案号**：${c.ah}`,
     `- **法院**：${c.jbdw}`,
-    `- **裁判日期**：${c.cprq}`,
+    `- **裁判Fecha**：${c.cprq}`,
     `- **案由**：${c.ay.join("、")}`,
-    `- **案件类别**：${c.ajlb}`,
+    `- **Caso类别**：${c.ajlb}`,
     `- **地区**：${c.xzqh_p}`,
     `- **文书种类**：${c.wszl}`,
     `- **元典链接**：${c.detailUrl}`,
-    `- **保存时间**：${now}`,
+    `- **Guardar时间**：${now}`,
     "",
     "---",
     "",
@@ -71,9 +71,9 @@ export async function saveCaseToMatter(input: SaveCaseInput): Promise<{
     where: { id: input.matterId, deletedAt: null },
     select: { id: true, status: true }
   });
-  if (!matter) throw new Error("案件不存在");
+  if (!matter) throw new Error("Caso不存在");
   if (matter.status === "ARCHIVED") {
-    throw new Error("案件已归档（只读），不能再保存类案");
+    throw new Error("Caso已归档（只读），不能再Guardar类案");
   }
 
   const md = buildMarkdown(input.caseHit);
@@ -156,14 +156,14 @@ function buildVectorMarkdown(c: SaveVectorCaseInput["caseHit"]): string {
     "",
     `- **案号**：${c.ah || "—"}`,
     `- **法院**：${c.jbdw || "—"}`,
-    `- **裁判日期**：${formatJaDate(c.jaDate)}`,
+    `- **裁判Fecha**：${formatJaDate(c.jaDate)}`,
     `- **案由**：${ay}`,
-    `- **案件类别**：${c.ajlb}`,
+    `- **Caso类别**：${c.ajlb}`,
     `- **地区**：${c.xzqh_p}`,
     `- **文书种类**：${c.wszl}`,
     `- **相似度评分**：${c.score.toFixed(4)}`,
     `- **元典链接**：${c.detailUrl}`,
-    `- **保存时间**：${now}`,
+    `- **Guardar时间**：${now}`,
     "",
     "---",
     "",
@@ -183,9 +183,9 @@ export async function saveVectorCaseToMatter(input: SaveVectorCaseInput): Promis
     where: { id: input.matterId, deletedAt: null },
     select: { id: true, status: true }
   });
-  if (!matter) throw new Error("案件不存在");
+  if (!matter) throw new Error("Caso不存在");
   if (matter.status === "ARCHIVED") {
-    throw new Error("案件已归档（只读），不能再保存类案");
+    throw new Error("Caso已归档（只读），不能再Guardar类案");
   }
 
   const md = buildVectorMarkdown(input.caseHit);

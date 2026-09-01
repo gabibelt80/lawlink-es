@@ -3,10 +3,10 @@
 /**
  * v0.22: 律所资料库（FirmFile）
  *
- * 全所共享：所有 active 用户可读；admin / PRINCIPAL_LAWYER 可上传 / 替代 / 删除。
+ * 全所共享：所有 active 用户可读；admin / PRINCIPAL_LAWYER 可上传 / 替代 / Eliminar。
  * 4 分类：制度 / 指引 / 参考模板 / 其他文件。
  * 版本：supersededById 链接旧→新；列表默认只显示"最新"。
- * 搜索：ILIKE name + description + tags 多字段模糊匹配（不用 tsvector）。
+ * Buscar：ILIKE name + description + tags 多字段模糊匹配（不用 tsvector）。
  */
 import { prisma } from "@/lib/prisma";
 import { requireSession } from "@/lib/auth/session";
@@ -36,7 +36,7 @@ export type FirmFileEntry = {
 async function requireUploader() {
   const session = await requireSession();
   if (session.user.role !== "ADMIN" && session.user.role !== "PRINCIPAL_LAWYER") {
-    throw new Error("仅管理员 / 主任律师可管理律所资料");
+    throw new Error("仅Administrar员 / 主任Abogado可Administrar律所资料");
   }
   return session;
 }
@@ -170,7 +170,7 @@ export async function uploadFirmFile(formData: FormData): Promise<{
   if (file.size === 0) throw new Error("空文件");
   if (file.size > FIRM_FILE_MAX_BYTES)
     throw new Error(`文件超过 ${Math.round(FIRM_FILE_MAX_BYTES / 1024 / 1024)}MB`);
-  if (typeof name !== "string" || !name.trim()) throw new Error("名称必填");
+  if (typeof name !== "string" || !name.trim()) throw new Error("Nombre必填");
 
   const supersedesId =
     typeof supersedesRaw === "string" && supersedesRaw ? supersedesRaw : null;
@@ -183,7 +183,7 @@ export async function uploadFirmFile(formData: FormData): Promise<{
     });
     if (!old) throw new Error("被替代的旧版不存在");
     if (old.supersededById) throw new Error("该旧版已被其他新版替代");
-    if (old.archivedAt) throw new Error("该旧版已删除，无法被替代");
+    if (old.archivedAt) throw new Error("该旧版已Eliminar，无法被替代");
   }
 
   const buf = Buffer.from(await file.arrayBuffer());
@@ -252,7 +252,7 @@ export async function updateFirmFile(input: {
     select: { id: true, archivedAt: true }
   });
   if (!existing) throw new Error("资料不存在");
-  if (existing.archivedAt) throw new Error("已删除的资料不可编辑");
+  if (existing.archivedAt) throw new Error("已Eliminar的资料不可Editar");
 
   const data: Prisma.FirmFileUpdateInput = {};
   if (input.name !== undefined) data.name = input.name.trim().slice(0, 200);

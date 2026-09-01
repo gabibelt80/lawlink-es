@@ -27,7 +27,7 @@ export interface PartySnapshot {
 export interface RenderContext {
   firm: { name: string; address: string; phone: string };
   today: string; // YYYY-MM-DD
-  todayCN: string; // 二〇二六年五月二十三日
+  todayCN: string; // 二〇二六年Mayo二十三日
   lawyer: { name: string; phone: string };
   matter: {
     code: string;
@@ -77,17 +77,17 @@ const STANDING_CN: Record<string, string> = {
   CRIMINAL_INCIDENTAL_PLAINTIFF: "附带民事诉讼原告人",
   ARBITRATION_CLAIMANT: "仲裁申请人",
   ARBITRATION_RESPONDENT: "仲裁被申请人",
-  ADMIN_PLAINTIFF: "行政诉讼原告",
-  ADMIN_DEFENDANT: "行政诉讼被告",
-  ADMIN_RECONSIDERATION_APPLICANT: "行政复议申请人",
-  ADMIN_RECONSIDERATION_RESPONDENT: "行政复议被申请人",
+  ADMIN_PLAINTIFF: "Administrativo诉讼原告",
+  ADMIN_DEFENDANT: "Administrativo诉讼被告",
+  ADMIN_RECONSIDERATION_APPLICANT: "Administrativo复议申请人",
+  ADMIN_RECONSIDERATION_RESPONDENT: "Administrativo复议被申请人",
   NON_LITIGATION_PARTY: "项目当事人"
 };
 
 const CATEGORY_CN: Record<string, string> = {
-  CIVIL_COMMERCIAL: "民商事",
-  CRIMINAL: "刑事",
-  ADMINISTRATIVE: "行政",
+  CIVIL_COMMERCIAL: "Civil/Comercial",
+  CRIMINAL: "Penal",
+  ADMINISTRATIVE: "Administrativo",
   NON_LITIGATION: "非诉",
   LEGAL_COUNSEL: "法律顾问",
   SPECIAL_PROJECT: "专项法律服务"
@@ -129,7 +129,7 @@ async function getFirmInfo(): Promise<{ name: string; address: string; phone: st
   });
   const dict = new Map(rows.map((r) => [r.key, (r.value as { value?: string })?.value ?? ""]));
   return {
-    name: dict.get(FIRM_NAME_KEY) || "LawLink 律师事务所",
+    name: dict.get(FIRM_NAME_KEY) || "LawLink Abogado事务所",
     address: dict.get(FIRM_ADDRESS_KEY) || "",
     phone: dict.get(FIRM_PHONE_KEY) || ""
   };
@@ -138,7 +138,7 @@ async function getFirmInfo(): Promise<{ name: string; address: string; phone: st
 /**
  * 应用 overrides（来自 UI 的行内补全），路径键如 "client.idNumber" 写回源表。
  * 注意：只回写 v0.8 高频缺失字段（client.idNumber / client.address / opposing.idNumber 等）。
- * 其他字段一律忽略，避免误操作。
+ * 其他字段一律忽略，避免误Acciones。
  */
 async function applyOverrides(matterId: string | undefined, overrides: Record<string, string>) {
   if (!matterId) return;
@@ -229,7 +229,7 @@ export async function buildContext(opts: {
       procedures: { orderBy: { order: "asc" }, where: { engagement: "ENGAGED" }, take: 1 }
     }
   });
-  if (!matter) throw new Error("案件不存在");
+  if (!matter) throw new Error("Caso不存在");
 
   const causeText = matter.cause?.name ?? matter.causeFreeText ?? "";
   const clientParty = matter.primaryClient
@@ -322,10 +322,10 @@ function formatDocxError(err: unknown): string {
 }
 
 /**
- * 渲染 docx：传入模板 Buffer + 上下文 → 返回填充后的 Buffer。
+ * 渲染 docx：传入模板 Buffer + 上下文 → Volver填充后的 Buffer。
  * 模板用 {{var}} 语法（双大括号），避免与 docx 内嵌 "{" 冲突。
  *
- * 出错时抛出含具体 tag / 原因的中文异常，方便律师定位是哪个模板字段坏了。
+ * 出错时抛出含具体 tag / 原因的中文异常，方便Abogado定位是哪个模板字段坏了。
  */
 export function renderDocxBuffer(
   templateBuffer: Buffer,
@@ -354,7 +354,7 @@ export function renderDocxBuffer(
 }
 
 /**
- * 检查上下文中哪些变量为空，返回缺失变量路径列表（UI 弹窗用）。
+ * 检查上下文中哪些变量为空，Volver缺失变量路径列表（UI 弹窗用）。
  * @param required 模板声明的变量清单（DocumentTemplate.variables）
  */
 export function detectMissing(required: string[], context: RenderContext): string[] {

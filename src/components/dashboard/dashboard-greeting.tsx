@@ -21,7 +21,7 @@ const typeMeta = {
   hearing: { icon: Calendar, color: "text-primary", label: "Audiencia" },
 };
 
-/** v0.47：工作台顶部问候区 + 右侧近期日程 */
+/** v0.47：工作台顶部问候区 + 右侧近期Calendario */
 export function DashboardGreeting({
   name,
   summary,
@@ -60,7 +60,7 @@ export function DashboardGreeting({
             {name && <span className="text-primary">，{name}</span>}
           </h1>
           <p className="mt-1.5 max-w-xl text-[13px] leading-relaxed text-muted-foreground">
-            今天有 <Num>{summary.todayDeadlineCount}</Num> 件事需处理；本周开庭{" "}
+            Hoy有 <Num>{summary.todayDeadlineCount}</Num> 件事需处理；本周开庭{" "}
             <Num>{summary.weekHearingCount}</Num> 场；近期期限{" "}
             <Num>{summary.nearTermCount}</Num> 项。
           </p>
@@ -115,7 +115,7 @@ export function DashboardGreeting({
         </div>
         <div className="relative z-[1] min-w-0">
           <div className="truncate text-[13px] font-medium text-foreground">
-            {focusItem?.matter ?? "日程看板"}
+            {focusItem?.matter ?? "Calendario看板"}
           </div>
           <div className="mt-1 flex items-center gap-1 text-[10.5px] text-muted-foreground">
             <span className="font-mono tabular">
@@ -130,7 +130,7 @@ export function DashboardGreeting({
         <div className="mb-2 flex items-start justify-between gap-2">
           <div>
             <h3 className="text-[12px] font-medium text-foreground">
-              近期日程
+              近期Calendario
             </h3>
           </div>
           <Link

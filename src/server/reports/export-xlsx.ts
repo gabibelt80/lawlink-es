@@ -1,7 +1,7 @@
 /**
  * v0.20: 律所报表 xlsx 导出
  *
- * 3 个 sheet：案件清单（本期新收）/ 收款明细（本期 RECEIVED）/ 律师产出（本期聚合）
+ * 3 个 sheet：Caso清单（本期新收）/ 收款明细（本期 RECEIVED）/ Abogado产出（本期聚合）
  */
 import ExcelJS from "exceljs";
 import { prisma } from "@/lib/prisma";
@@ -14,7 +14,7 @@ export async function buildReportWorkbook(period: ReportPeriod): Promise<Buffer>
   wb.creator = "LawLink";
   wb.created = new Date();
 
-  // Sheet 1: 案件清单（本期新收）
+  // Sheet 1: Caso清单（本期新收）
   const matters = await prisma.matter.findMany({
     where: {
       createdAt: { gte: period.start, lt: period.end },
@@ -35,18 +35,18 @@ export async function buildReportWorkbook(period: ReportPeriod): Promise<Buffer>
     orderBy: { createdAt: "asc" }
   });
 
-  const sheetMatters = wb.addWorksheet("案件清单");
+  const sheetMatters = wb.addWorksheet("Caso清单");
   sheetMatters.columns = [
-    { header: "案件编号", key: "code", width: 14 },
+    { header: "Caso编号", key: "code", width: 14 },
     { header: "标题", key: "title", width: 36 },
     { header: "类别", key: "category", width: 8 },
     { header: "案由", key: "cause", width: 18 },
-    { header: "客户", key: "client", width: 18 },
-    { header: "主办律师", key: "owner", width: 10 },
-    { header: "状态", key: "status", width: 10 },
-    { header: "收案日期", key: "createdAt", width: 12 },
-    { header: "结案日期", key: "closedAt", width: 12 },
-    { header: "归档日期", key: "archivedAt", width: 12 }
+    { header: "Cliente", key: "client", width: 18 },
+    { header: "主办Abogado", key: "owner", width: 10 },
+    { header: "Estado", key: "status", width: 10 },
+    { header: "收案Fecha", key: "createdAt", width: 12 },
+    { header: "结案Fecha", key: "closedAt", width: 12 },
+    { header: "归档Fecha", key: "archivedAt", width: 12 }
   ];
   for (const m of matters) {
     sheetMatters.addRow({
@@ -89,12 +89,12 @@ export async function buildReportWorkbook(period: ReportPeriod): Promise<Buffer>
   });
   const sheetFees = wb.addWorksheet("收款明细");
   sheetFees.columns = [
-    { header: "收款日期", key: "occurredAt", width: 12 },
+    { header: "收款Fecha", key: "occurredAt", width: 12 },
     { header: "金额", key: "amount", width: 14 },
-    { header: "客户", key: "client", width: 18 },
-    { header: "案件编号", key: "matterCode", width: 14 },
-    { header: "案件标题", key: "matterTitle", width: 36 },
-    { header: "主办律师", key: "owner", width: 10 },
+    { header: "Cliente", key: "client", width: 18 },
+    { header: "Caso编号", key: "matterCode", width: 14 },
+    { header: "Caso标题", key: "matterTitle", width: 36 },
+    { header: "主办Abogado", key: "owner", width: 10 },
     { header: "付款方", key: "payer", width: 18 },
     { header: "发票号", key: "invoiceNo", width: 18 },
     { header: "收款方式", key: "method", width: 12 }
@@ -115,11 +115,11 @@ export async function buildReportWorkbook(period: ReportPeriod): Promise<Buffer>
   sheetFees.getRow(1).font = { bold: true };
   sheetFees.getColumn("amount").numFmt = "#,##0.00";
 
-  // Sheet 3: 律师产出（来自 getReportData 已聚合的数据，避免重算）
+  // Sheet 3: Abogado产出（来自 getReportData 已聚合的数据，避免重算）
   const data = await getReportData(period);
-  const sheetLawyer = wb.addWorksheet("律师产出");
+  const sheetLawyer = wb.addWorksheet("Abogado产出");
   sheetLawyer.columns = [
-    { header: "律师", key: "name", width: 12 },
+    { header: "Abogado", key: "name", width: 12 },
     { header: "本期新收", key: "owned", width: 12 },
     { header: "本期已结", key: "closed", width: 12 },
     { header: "本期收款金额", key: "received", width: 18 }
@@ -135,10 +135,10 @@ export async function buildReportWorkbook(period: ReportPeriod): Promise<Buffer>
   sheetLawyer.getRow(1).font = { bold: true };
   sheetLawyer.getColumn("received").numFmt = "#,##0.00";
 
-  // Sheet 4: 客户应收（顺手补一份，律师常用）
-  const sheetClient = wb.addWorksheet("客户应收");
+  // Sheet 4: Cliente应收（顺手补一份，Abogado常用）
+  const sheetClient = wb.addWorksheet("Cliente应收");
   sheetClient.columns = [
-    { header: "客户", key: "name", width: 24 },
+    { header: "Cliente", key: "name", width: 24 },
     { header: "应收金额", key: "receivable", width: 14 },
     { header: "已收金额", key: "received", width: 14 },
     { header: "应收余额", key: "balance", width: 14 }

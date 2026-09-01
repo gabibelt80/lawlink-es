@@ -112,7 +112,7 @@ export function AuditView({
             <SelectValue placeholder="动作" />
           </SelectTrigger>
           <SelectContent className="max-h-80">
-            <SelectItem value="ALL">全部动作</SelectItem>
+            <SelectItem value="ALL">Ver todos动作</SelectItem>
             {distinctActions.map((a) => (
               <SelectItem key={a} value={a}>
                 {a}
@@ -132,7 +132,7 @@ export function AuditView({
             <SelectValue placeholder="用户" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="ALL">全部用户</SelectItem>
+            <SelectItem value="ALL">Ver todos用户</SelectItem>
             {userOptions.map((u) => (
               <SelectItem key={u.id} value={u.id}>
                 {u.name}

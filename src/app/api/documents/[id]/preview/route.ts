@@ -11,10 +11,10 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 /**
- * v0.42: 案件材料在线预览。
+ * v0.42: Caso材料在线预览。
  * - docx → mammoth 转 HTML
  * - xlsx/xls → exceljs 读单元格转 HTML 表
- * 返回完整 HTML 文档，前端 <iframe> 内嵌。
+ * Volver完整 HTML 文档，前端 <iframe> 内嵌。
  * pdf/图片/文本等浏览器原生可预览的走 download?inline=1（本路由不处理）。
  */
 function htmlShell(title: string, body: string): string {
@@ -46,7 +46,7 @@ function escapeHtml(s: string): string {
 export async function GET(req: Request, { params }: { params: { id: string } }) {
   const session = await getServerSession(authOptions);
   if (!session?.user) {
-    return NextResponse.json({ error: "未登录" }, { status: 401 });
+    return NextResponse.json({ error: "未Iniciar sesión" }, { status: 401 });
   }
 
   const doc = await prisma.document.findFirst({
@@ -54,7 +54,7 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
   });
   if (!doc) return NextResponse.json({ error: "材料不存在" }, { status: 404 });
 
-  // 权限：与 download 路由一致（ADMIN/主任全看；案件成员看本案；收案合同限相关人）
+  // 权限：与 download 路由一致（ADMIN/主任全看；Caso成员看本案；收案合同限相关人）
   if (session.user.role !== "ADMIN" && session.user.role !== "PRINCIPAL_LAWYER") {
     if (doc.matterId) {
       const member = await prisma.matterMember.findUnique({
@@ -79,7 +79,7 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
   const kind = officePreviewKind(doc.mimeType, doc.name);
   if (!kind) {
     return NextResponse.json(
-      { error: "该类型不支持在线预览，请下载查看" },
+      { error: "该类型不支持在线预览，请下载Ver" },
       { status: 415 }
     );
   }
@@ -135,7 +135,7 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
     }
   } catch (err) {
     console.error("[preview] 转换失败：", err);
-    return NextResponse.json({ error: "文档转换失败，请下载查看" }, { status: 500 });
+    return NextResponse.json({ error: "文档转换失败，请下载Ver" }, { status: 500 });
   }
 
   await audit({

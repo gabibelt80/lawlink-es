@@ -142,7 +142,7 @@ export function ClientsTable({
                       size="sm"
                       onClick={() => onEdit(c)}
                       className="h-7 w-7 p-0 opacity-0 transition-opacity group-hover:opacity-100"
-                      aria-label="编辑"
+                      aria-label="Editar"
                     >
                       <Pencil className="h-3.5 w-3.5" strokeWidth={1.8} />
                     </Button>
@@ -182,7 +182,7 @@ export function ClientsTable({
                   size="sm"
                   onClick={() => onEdit(c)}
                   className="h-7 w-7 shrink-0 p-0"
-                  aria-label="编辑"
+                  aria-label="Editar"
                 >
                   <Pencil className="h-3.5 w-3.5" strokeWidth={1.8} />
                 </Button>
@@ -195,7 +195,7 @@ export function ClientsTable({
                     {c.phone}
                   </span>
                 )}
-                <span className="ll-stat">{c._count.matters} 个案件</span>
+                <span className="ll-stat">{c._count.matters} 个Caso</span>
               </div>
               {c.tags.length > 0 && (
                 <div className="mt-1.5 flex flex-wrap gap-1">

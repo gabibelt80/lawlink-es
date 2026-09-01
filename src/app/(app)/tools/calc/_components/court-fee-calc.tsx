@@ -10,7 +10,7 @@ import { calcCourtFee, numberToChinese, type CourtFeeCaseType } from "@/lib/lega
 import { cn } from "@/lib/utils";
 
 const CASE_TYPES: { value: CourtFeeCaseType; label: string }[] = [
-  { value: "PROPERTY", label: "财产案件" },
+  { value: "PROPERTY", label: "财产Caso" },
   { value: "DIVORCE", label: "离婚" },
   { value: "LABOR", label: "劳动争议" },
   { value: "IP", label: "知识产权" },
@@ -40,7 +40,7 @@ export function CourtFeeCalc() {
 
       <div className="space-y-3">
         <div>
-          <Label className="text-[11px]">案件类型</Label>
+          <Label className="text-[11px]">Caso类型</Label>
           <RadioChips
             size="sm"
             className="mt-2"

@@ -66,7 +66,7 @@ export function TemplatePickerDialog({
   const [overrides, setOverrides] = useState<Record<string, string>>({});
   const [pending, startTransition] = useTransition();
 
-  // 适用本案件类别的模板（含未限定类别的）
+  // 适用本Caso类别的模板（含未限定类别的）
   const applicable = useMemo(
     () =>
       templates.filter(
@@ -88,7 +88,7 @@ export function TemplatePickerDialog({
 
   const selected = applicable.find((t) => t.id === selectedId) ?? null;
 
-  // 列出该模板的可编辑变量（白名单内的）
+  // 列出该模板的可Editar变量（白名单内的）
   const editableVars = selected
     ? selected.variables.filter((v) => EDITABLE_OVERRIDES.has(v))
     : [];
@@ -149,7 +149,7 @@ export function TemplatePickerDialog({
             <div className="mt-2 max-h-[280px] overflow-y-auto rounded border border-border">
               {grouped.length === 0 ? (
                 <p className="p-4 text-center text-sm text-muted-foreground">
-                  该案件类型暂无可用模板
+                  该Caso类型暂无可用模板
                 </p>
               ) : (
                 grouped.map(([cat, items]) => (
@@ -250,7 +250,7 @@ export function TemplatePickerDialog({
 
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)}>
-            取消
+            Cancelar
           </Button>
           <Button onClick={submit} disabled={!selected || pending}>
             {pending && <Loader2 className="mr-1 h-3.5 w-3.5 animate-spin" />}

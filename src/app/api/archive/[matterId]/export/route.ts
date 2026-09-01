@@ -15,17 +15,17 @@ export async function GET(
 ) {
   const session = await getServerSession(authOptions);
   if (!session?.user) {
-    return NextResponse.json({ error: "未登录" }, { status: 401 });
+    return NextResponse.json({ error: "未Iniciar sesión" }, { status: 401 });
   }
 
-  // 权限：ADMIN / PRINCIPAL_LAWYER 或案件成员
+  // 权限：ADMIN / PRINCIPAL_LAWYER 或Caso成员
   const matter = await prisma.matter.findUnique({
     where: { id: params.matterId },
     select: { id: true, status: true, internalCode: true }
   });
-  if (!matter) return NextResponse.json({ error: "案件不存在" }, { status: 404 });
+  if (!matter) return NextResponse.json({ error: "Caso不存在" }, { status: 404 });
   if (matter.status !== "ARCHIVED") {
-    return NextResponse.json({ error: "案件尚未归档" }, { status: 400 });
+    return NextResponse.json({ error: "Caso尚未归档" }, { status: 400 });
   }
 
   if (session.user.role !== "ADMIN" && session.user.role !== "PRINCIPAL_LAWYER") {

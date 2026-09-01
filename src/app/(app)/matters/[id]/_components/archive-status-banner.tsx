@@ -41,7 +41,7 @@ export function ArchiveStatusBanner({ record, onReArchive }: Props) {
       <div className="flex-1 space-y-1">
         <div className="flex items-center gap-2">
           <span className={cn("text-sm font-medium", isRejected ? "text-destructive" : "text-[#9B7BF7]")}>
-            {isRejected ? "归档申请被驳回" : "归档申请审批中"}
+            {isRejected ? "归档申请被驳回" : "归档申请Aprobación中"}
           </span>
           <Badge
             variant="outline"
@@ -59,8 +59,8 @@ export function ArchiveStatusBanner({ record, onReArchive }: Props) {
           {isRejected
             ? record.reviewNote
               ? `驳回原因：${record.reviewNote}`
-              : "管理员未填写驳回原因"
-            : "归档申请已提交，请等待管理员审批。审批通过后案件将转为只读。"}
+              : "Administrar员未填写驳回原因"
+            : "归档申请已Enviar，请等待Administrar员Aprobación。Aprobación通过后Caso将转为只读。"}
         </div>
         {isRejected && record.missingItems.length > 0 && (
           <div className="text-[11px] text-muted-foreground">

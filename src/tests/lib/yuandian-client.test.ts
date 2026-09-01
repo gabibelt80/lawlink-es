@@ -61,7 +61,7 @@ describe("searchPtalCases", () => {
               title: "甲诉乙",
               ay: ["民间借贷纠纷"],
               jbdw: "北京市第三中院",
-              ajlb: "民事案件",
+              ajlb: "民事Caso",
               xzqh_p: "北京",
               wszl: "判决书",
               cprq: "2022年01月01日",
@@ -93,7 +93,7 @@ describe("searchPtalCases", () => {
     expect(body.top_k).toBe(3);
   });
 
-  it("data === null（未命中）→ 返回空", async () => {
+  it("data === null（未命中）→ Volver空", async () => {
     fetchMock.mockResolvedValue(
       jsonResponse({ status: "success", code: 200, data: null, message: "未查询到相关内容" })
     );

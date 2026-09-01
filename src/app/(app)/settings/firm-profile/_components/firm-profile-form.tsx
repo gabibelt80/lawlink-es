@@ -77,9 +77,9 @@ export function FirmProfileForm({ initial }: { initial: Initial }) {
           logoDataUrl,
           categoryWords: words
         });
-        toast.success("律所信息已保存");
+        toast.success("律所信息已Guardar");
       } catch (e) {
-        toast.error(e instanceof Error ? e.message : "保存失败");
+        toast.error(e instanceof Error ? e.message : "Guardar失败");
       }
     });
   };
@@ -93,7 +93,7 @@ export function FirmProfileForm({ initial }: { initial: Initial }) {
           <h2 className="text-lg">律所品牌</h2>
         </header>
         <p className="mb-4 text-[12px] text-muted-foreground">
-          侧边栏顶部显示的名称、副标题与 Logo。留空名称将回退默认「LawLink」。
+          侧边栏顶部显示的Nombre、副标题与 Logo。留空Nombre将回退默认「LawLink」。
         </p>
 
         <div className="flex items-start gap-5">
@@ -141,11 +141,11 @@ export function FirmProfileForm({ initial }: { initial: Initial }) {
 
           <div className="grid flex-1 grid-cols-1 gap-3 md:grid-cols-2">
             <div>
-              <Label className="text-[11px]">律所名称</Label>
+              <Label className="text-[11px]">律所Nombre</Label>
               <Input
                 value={firmName}
                 onChange={(e) => setFirmName(e.target.value)}
-                placeholder="如：星澜律师事务所"
+                placeholder="如：星澜Abogado事务所"
                 className="mt-1"
               />
             </div>
@@ -154,7 +154,7 @@ export function FirmProfileForm({ initial }: { initial: Initial }) {
               <Input
                 value={firmSubtitle}
                 onChange={(e) => setFirmSubtitle(e.target.value)}
-                placeholder="如：律师工作台"
+                placeholder="如：Abogado工作台"
                 className="mt-1"
               />
             </div>
@@ -166,10 +166,10 @@ export function FirmProfileForm({ initial }: { initial: Initial }) {
       <section className="ll-surface rounded-lg border border-border p-5">
         <header className="mb-3 flex items-center gap-2">
           <Hash className="h-4 w-4 text-primary" />
-          <h2 className="text-lg">系统内部编号</h2>
+          <h2 className="text-lg">Sistema内部编号</h2>
         </header>
         <p className="mb-4 text-[12px] text-muted-foreground">
-          每个案件自动生成的系统编号前缀。格式固定为
+          每个Caso自动生成的Sistema编号前缀。格式固定为
           <span className="mx-1 font-mono">前缀-年份-类别-流水</span>，仅前缀可改。
         </p>
         <div className="flex items-end gap-4">
@@ -258,11 +258,11 @@ export function FirmProfileForm({ initial }: { initial: Initial }) {
 
       <div className="flex items-center justify-between">
         <p className="text-[11px] text-muted-foreground">
-          修改前缀 / 模板不影响已生成的历史编号；仅对之后新建的案件生效。
+          修改前缀 / 模板不影响已生成的历史编号；仅对之后新建的Caso生效。
         </p>
         <Button onClick={save} disabled={pending} className="gap-1.5">
           {pending && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
-          保存
+          Guardar
         </Button>
       </div>
     </div>

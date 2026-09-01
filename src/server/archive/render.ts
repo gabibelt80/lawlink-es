@@ -2,7 +2,7 @@
  * v0.9.4 归档专用渲染：卷宗封皮 + 卷宗目录
  *
  * 复用 docxtemplater 管道，但比通用 renderTemplate 多两件事：
- *   1. 注入 archive.* 上下文（归档号、结案方式、归档日期等）
+ *   1. 注入 archive.* 上下文（归档号、结案方式、归档Fecha等）
  *   2. 卷宗目录额外注入 documents[] 数组用于行循环
  *
  * 渲染产物落到 ARCHIVE/结案/归档 卷宗，category=PROCEDURE，绑定模板 ID（用于审计）。
@@ -84,7 +84,7 @@ async function findOrCreateArchiveFolder(
 }
 
 /**
- * 渲染卷宗封皮 → 返回 Document.id
+ * 渲染卷宗封皮 → Volver Document.id
  */
 export async function renderArchiveCover(
   prisma: PrismaClient,
@@ -101,7 +101,7 @@ export async function renderArchiveCover(
     where: { id: opts.matterId },
     select: { internalCode: true, category: true }
   });
-  if (!matter) throw new Error("案件不存在");
+  if (!matter) throw new Error("Caso不存在");
 
   const ctx: RenderContext = {
     ...baseCtx,
@@ -154,10 +154,10 @@ interface CatalogDocEntry {
 }
 
 /**
- * 渲染卷宗目录 → 返回 Document.id
+ * 渲染卷宗目录 → Volver Document.id
  *
- * documents 数组从案件下所有 Document 取（按 createdAt 升序）；
- * 排除自身（封皮 + 目录尚未生成）+ 已删除（deletedAt）。
+ * documents 数组从Caso下所有 Document 取（按 createdAt 升序）；
+ * 排除自身（封皮 + 目录尚未生成）+ 已Eliminar（deletedAt）。
  */
 export async function renderArchiveCatalog(
   prisma: PrismaClient,
@@ -175,7 +175,7 @@ export async function renderArchiveCatalog(
     where: { id: opts.matterId },
     select: { internalCode: true, category: true }
   });
-  if (!matter) throw new Error("案件不存在");
+  if (!matter) throw new Error("Caso不存在");
 
   const docs = await prisma.document.findMany({
     where: {

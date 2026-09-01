@@ -3,13 +3,13 @@ import { prisma } from "@/lib/prisma";
 import { matterHref, normalizeMatterParam } from "@/lib/matters/route";
 
 /**
- * 把详情页路由参数解析成案件主键。
+ * 把详情页路由参数解析成Caso主键。
  *
  * 不去猜参数形状（cuid 还是编号），直接让数据库同时匹配两者：
  * `internalCode` 有唯一索引，cuid 不含 `-`、编号必含，两者不可能撞，
  * 一次查询即可，也不用为 cuid 的具体格式（v1/v2）写正则。
  *
- * 返回 `internalCode` 供调用方判断是否需要重定向到规范地址。
+ * Volver `internalCode` 供调用方判断是否需要重定向到规范地址。
  */
 export async function resolveMatterRoute(
   param: string
@@ -28,7 +28,7 @@ export async function resolveMatterRoute(
 }
 
 /**
- * 只拿得到 matterId 时的详情页地址（通知 href 会落库，必须用稳定的编号）。
+ * 只拿得到 matterId 时的详情页地址（Notificaciones href 会落库，必须用稳定的编号）。
  */
 export async function matterHrefById(matterId: string): Promise<string> {
   const matter = await prisma.matter.findUnique({
@@ -39,7 +39,7 @@ export async function matterHrefById(matterId: string): Promise<string> {
 }
 
 /**
- * 让案件详情页的缓存失效。
+ * 让Caso详情页的缓存失效。
  *
  * 详情页路由键是 `internalCode`，而各 server action 手里只有 matterId，
  * 直接 `revalidatePath(`/matters/${matterId}`)` 会打到一个不存在的路径、

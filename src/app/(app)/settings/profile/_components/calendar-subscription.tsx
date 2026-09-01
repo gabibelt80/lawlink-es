@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * v0.50: 日历订阅卡片（设置 → 个人信息）。
+ * v0.50: 日历订阅卡片（Configuración → 个人信息）。
  * 展示当前用户的 ICS 订阅 URL，可复制 / 重置；URL 即凭证。
  */
 import { useEffect, useState, useTransition } from "react";
@@ -47,7 +47,7 @@ export function CalendarSubscription() {
   function regenerate() {
     if (
       !confirm(
-        "重置后旧订阅链接立即失效，已订阅的日历需要重新添加。确定重置？"
+        "重置后旧订阅链接立即失效，已订阅的日历需要重新Agregar。Aceptar重置？"
       )
     ) {
       return;
@@ -70,9 +70,9 @@ export function CalendarSubscription() {
         <h2 className="text-base font-semibold">日历订阅</h2>
       </div>
       <p className="mb-4 text-[12px] leading-5 text-muted-foreground">
-        把下方链接添加到 Apple 日历 / Google Calendar / Outlook 的「订阅日历」，
-        开庭、期限、任务和保全到期会自动同步到手机日历（含过去 7 天 ~ 未来 90 天，
-        事项只显示客户名不含完整案件名）。链接即凭证，请勿外发；怀疑泄露时点「重置」作废旧链接。
+        把下方链接Agregar到 Apple 日历 / Google Calendar / Outlook 的「订阅日历」，
+        开庭、期限、任务和Preservación到期会自动同步到手机日历（含过去 7 天 ~ 未来 90 天，
+        事项只显示Cliente名不含完整Caso名）。链接即凭证，请勿外发；怀疑泄露时点「重置」作废旧链接。
       </p>
 
       {loading ? (

@@ -3,9 +3,9 @@
  *
  * 每天 02:30 调 scripts/backup.sh（pg_dump + storage 打包），备份到
  * BACKUP_DIR（默认 ./backups），并做保留数清理（BACKUP_KEEP，默认 14 份）。
- * 失败时给所有 ADMIN 发站内通知——备份静默失败等于没有备份。
+ * 失败时给所有 ADMIN 发站内Notificaciones——备份静默失败等于没有备份。
  *
- * 关闭方式：环境变量 BACKUP_CRON_ENABLED=false（部署环境没有 pg_dump 时）。
+ * Cerrar方式：环境变量 BACKUP_CRON_ENABLED=false（部署环境没有 pg_dump 时）。
  */
 import { spawn } from "node:child_process";
 import { readdir, rm, stat } from "node:fs/promises";
@@ -114,7 +114,7 @@ export async function runDatabaseBackup(): Promise<BackupResult> {
   try {
     const { code, output } = await runScript(baseDir);
     if (code !== 0) {
-      throw new Error(`backup.sh 退出码 ${code}：${output.slice(-500)}`);
+      throw new Error(`backup.sh Cerrar sesión码 ${code}：${output.slice(-500)}`);
     }
     const removedOld = await pruneOldBackups(baseDir, keepCount());
 
@@ -130,7 +130,7 @@ export async function runDatabaseBackup(): Promise<BackupResult> {
     const message = err instanceof Error ? err.message : String(err);
     await notifyAdmins(
       "数据库自动备份失败",
-      `${message.slice(0, 300)}｜请检查 pg_dump 是否可用、BACKUP_DIR 是否可写；修复前系统没有新备份。`
+      `${message.slice(0, 300)}｜请检查 pg_dump 是否可用、BACKUP_DIR 是否可写；修复前Sistema没有新备份。`
     );
     // 抛出让 scheduler 统一写 *_FAILED_CRON audit
     throw err;

@@ -70,28 +70,28 @@ export function LifecycleActions({
       try {
         if (dialog === "close") {
           await closeMatter({ id: matterId, summary: text });
-          toast.success("案件已结案");
+          toast.success("Caso已结案");
         } else if (dialog === "hold") {
           await holdMatter({ id: matterId, reason: text });
-          toast.success("案件已暂停");
+          toast.success("Caso已暂停");
         }
         setDialog(null);
         router.refresh();
       } catch (err) {
-        toast.error("操作失败", { description: err instanceof Error ? err.message : "" });
+        toast.error("Operación fallida", { description: err instanceof Error ? err.message : "" });
       }
     });
   }
 
   function handleReopen() {
-    if (!confirm("将案件重新开放为'办理中'？")) return;
+    if (!confirm("将Caso重新开放为'办理中'？")) return;
     startTransition(async () => {
       try {
         await reopenMatter(matterId);
-        toast.success("案件已重新开放");
+        toast.success("Caso已重新开放");
         router.refresh();
       } catch (err) {
-        toast.error("操作失败", { description: err instanceof Error ? err.message : "" });
+        toast.error("Operación fallida", { description: err instanceof Error ? err.message : "" });
       }
     });
   }
@@ -121,7 +121,7 @@ export function LifecycleActions({
         <DropdownMenuTrigger asChild>
           <Button variant="outline" size="sm" disabled={isPending} className="gap-1.5">
             {isPending ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <MoreHorizontal className="h-3.5 w-3.5" />}
-            状态
+            Estado
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-44">
@@ -161,11 +161,11 @@ export function LifecycleActions({
       <Dialog open={dialog !== null} onOpenChange={(o) => !o && setDialog(null)}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>{dialog === "close" ? "结案" : "暂停案件"}</DialogTitle>
+            <DialogTitle>{dialog === "close" ? "结案" : "暂停Caso"}</DialogTitle>
             <DialogDescription>
               {dialog === "close" &&
-                "结案后案件状态为'已结案'，仍可编辑。结案小结会进入时间线。"}
-              {dialog === "hold" && "暂停后案件不再显示在'办理中'筛选。"}
+                "结案后CasoEstado为'已结案'，仍可Editar。结案小结会进入时间线。"}
+              {dialog === "hold" && "暂停后Caso不再显示在'办理中'筛选。"}
             </DialogDescription>
           </DialogHeader>
 
@@ -180,7 +180,7 @@ export function LifecycleActions({
               placeholder={
                 dialog === "close"
                   ? "如：经一审判决支持原告诉请，对方未上诉，判决已生效"
-                  : "如：等待客户补充证据材料"
+                  : "如：等待Cliente补充证据材料"
               }
               rows={5}
             />
@@ -188,7 +188,7 @@ export function LifecycleActions({
 
           <DialogFooter>
             <Button variant="outline" onClick={() => setDialog(null)} disabled={isPending}>
-              取消
+              Cancelar
             </Button>
             <Button onClick={handleSubmit} disabled={isPending}>
               {isPending && <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />}

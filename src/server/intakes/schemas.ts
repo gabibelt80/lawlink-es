@@ -49,7 +49,7 @@ const litigationIntakeCategories = new Set([
 ]);
 
 // HTML number 输入框留空时，react-hook-form 的 valueAsNumber 会产生 NaN。
-// 可选金额应将其视为“未填写”，否则 resolver 会在用户看不到的字段上阻断提交。
+// 可选金额应将其视为“未填写”，否则 resolver 会在用户看不到的字段上阻断Enviar。
 const optionalNonnegativeNumberSchema = z.preprocess(
   (value) => (typeof value === "number" && Number.isNaN(value) ? undefined : value),
   z.coerce.number().nonnegative("金额不能为负数").optional()
@@ -57,7 +57,7 @@ const optionalNonnegativeNumberSchema = z.preprocess(
 
 const intakeCreateBaseSchema = z.object({
   // 基础
-  // 案件名称去除所有空白字符（产品要求，避免列表/详情显示空格）
+  // CasoNombre去除所有空白字符（产品要求，避免列表/详情显示空格）
   title: z.preprocess(
     (v) => (typeof v === "string" ? v.replace(/\s+/g, "") : v),
     z.string().max(200).optional().or(z.literal(""))
@@ -95,14 +95,14 @@ const intakeCreateBaseSchema = z.object({
   contactName: z.string().max(40).optional().or(z.literal("")),
   contactPhone: z.string().max(30).optional().or(z.literal("")),
 
-  // 企业自动填充（元典查询结果，透传到 Client 创建）
+  // 企业自动填充（元典查询结果，透传到 Client Crear）
   clientIdNumber: z.string().max(50).optional().or(z.literal("")),
   clientAddress: z.string().max(200).optional().or(z.literal("")),
   clientLegalRep: z.string().max(40).optional().or(z.literal("")),
 
-  // 律师费
+  // Abogado费
   feeType: feeTypeSchema.optional(),
-  feeAmount: optionalNonnegativeNumberSchema, // FIXED: 总金额；CONTINGENCY: 基础办案费
+  feeAmount: optionalNonnegativeNumberSchema, // FIXED: Total金额；CONTINGENCY: 基础办案费
   contingencyTerms: z.string().max(1000).optional().or(z.literal("")), // CONTINGENCY 收费方式
   feeSchedule: z.string().max(500).optional().or(z.literal("")),
   feeNote: z.string().max(500).optional().or(z.literal("")),

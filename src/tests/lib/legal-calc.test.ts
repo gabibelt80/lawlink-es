@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { calcCourtFee, calcLateInterest, daysBetween, numberToChinese } from "@/lib/legal-calc";
 
-describe("calcCourtFee — 财产案件分段累进", () => {
+describe("calcCourtFee — 财产Caso分段累进", () => {
   it("≤1万：固定50元", () => {
     expect(calcCourtFee({ caseType: "PROPERTY", amount: 5000 }).fee).toBe(50);
   });
@@ -20,7 +20,7 @@ describe("calcCourtFee — 财产案件分段累进", () => {
   });
 });
 
-describe("calcCourtFee — 其他案件类型", () => {
+describe("calcCourtFee — 其他Caso类型", () => {
   it("劳动争议固定10元", () => {
     const r = calcCourtFee({ caseType: "LABOR" });
     expect(r.fee).toBe(10);

@@ -83,7 +83,7 @@ export type InvoiceRequestRow = {
   buyerPhone: string | null;
   buyerBank: string | null;
   buyerBankAccount: string | null;
-  // v0.43 项5：matter 可空（无关联案件开票）
+  // v0.43 项5：matter 可空（无关联Caso开票）
   matter: { id: string; internalCode: string; title: string } | null;
   noMatterReason: string | null;
   requestedBy: { id: string; name: string };
@@ -145,7 +145,7 @@ export function FinanceView({
     <div className="space-y-4">
       <header className="ll-page-head">
         <div>
-          <h1 className="ll-page-title">财务</h1>
+          <h1 className="ll-page-title">Finanzas</h1>
           <p className="ll-page-sub">
             Flujo de ingresos/gastos y solicitudes de facturación visibles
             dentro del alcance ·{" "}
@@ -371,7 +371,7 @@ export function FinanceView({
                 <SelectContent>
                   {TYPE_FILTERS.map((t) => (
                     <SelectItem key={t} value={t}>
-                      {t === "ALL" ? "全部" : feeTypeLabel[t]}
+                      {t === "ALL" ? "Ver todos" : feeTypeLabel[t]}
                     </SelectItem>
                   ))}
                 </SelectContent>

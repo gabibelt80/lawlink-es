@@ -136,13 +136,13 @@ export function DocumentsPanel({
   );
 
   function handleDelete(id: string, name: string) {
-    if (!confirm(`删除材料"${name}"？`)) return;
+    if (!confirm(`Eliminar材料"${name}"？`)) return;
     startTransition(async () => {
       try {
         await deleteDocument(id);
-        toast.success("已删除（保留在审计中）");
+        toast.success("已Eliminar（保留在审计中）");
       } catch (err) {
-        toast.error("删除失败", { description: err instanceof Error ? err.message : "" });
+        toast.error("Eliminar失败", { description: err instanceof Error ? err.message : "" });
       }
     });
   }
@@ -166,7 +166,7 @@ export function DocumentsPanel({
       {/* 分类筛选 */}
       <div className="flex flex-wrap gap-1.5">
         <CategoryChip
-          label="全部"
+          label="Ver todos"
           color="#5B8DEF"
           count={documents.length}
           active={activeCategory === "ALL"}
@@ -262,7 +262,7 @@ export function DocumentsPanel({
                     onClick={() => handleDelete(d.id, d.name)}
                     disabled={isPending}
                     className="rounded-md p-1.5 text-muted-foreground opacity-0 transition-opacity hover:bg-popover hover:text-destructive group-hover:opacity-100"
-                    title="删除"
+                    title="Eliminar"
                   >
                     <Trash2 className="h-3.5 w-3.5" />
                   </button>
@@ -383,11 +383,11 @@ function UploadSheet({
       return;
     }
     if (!name.trim()) {
-      toast.warning("请填写材料名称");
+      toast.warning("请填写材料Nombre");
       return;
     }
     if (isArchived && folderId === "none") {
-      toast.warning("案件已归档，需选择「结案」或「归档」卷宗");
+      toast.warning("Caso已归档，需选择「结案」或「归档」卷宗");
       return;
     }
     const fd = new FormData();
@@ -476,7 +476,7 @@ function UploadSheet({
             </div>
           </div>
 
-          <Field label="材料名称" required>
+          <Field label="材料Nombre" required>
             <Input
               value={name}
               onChange={(e) => setName(e.target.value)}
@@ -516,7 +516,7 @@ function UploadSheet({
             </Select>
             {isArchived && (
               <p className="text-[11px] text-[#9B7BF7]">
-                案件已归档，仅允许补传到「结案」或「归档」卷宗
+                Caso已归档，仅允许补传到「结案」或「归档」卷宗
               </p>
             )}
           </Field>
@@ -561,7 +561,7 @@ function UploadSheet({
             onClick={() => onOpenChange(false)}
             disabled={isPending}
           >
-            取消
+            Cancelar
           </Button>
           <Button onClick={handleSubmit} disabled={isPending || !file} className="gap-1.5">
             {isPending && <Loader2 className="h-4 w-4 animate-spin" />}

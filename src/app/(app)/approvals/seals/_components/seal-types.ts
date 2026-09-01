@@ -25,13 +25,13 @@ export type MatterOption = {
 export const SEAL_TYPE_CN: Record<string, string> = {
   OFFICIAL_SEAL: "律所公章",
   CONTRACT_SEAL: "合同专用章",
-  FINANCE_SEAL: "财务专用章",
+  FINANCE_SEAL: "Finanzas专用章",
   LEGAL_REP_SEAL: "法定代表人章",
   CONTRACT_REVIEW_SEAL: "合同审核章",
 };
 
 export const SEAL_STATUS_CN: Record<string, string> = {
-  PENDING: "待审批",
+  PENDING: "待Aprobación",
   APPROVED: "待盖章",
   STAMPED: "已完成",
   REJECTED: "已驳回",

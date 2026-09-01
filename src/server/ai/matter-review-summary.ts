@@ -1,5 +1,5 @@
 /**
- * v0.22: 案件级 AI 审查总览（聚合本案全部 ReviewRecord）
+ * v0.22: Caso级 AI 审查Total览（聚合本案Ver todos ReviewRecord）
  *
  * read-only，无 "use server"，server component 直接调用。
  */

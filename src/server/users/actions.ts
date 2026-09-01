@@ -17,8 +17,8 @@ const userRoleSchema = z.enum([
 
 const userCreateSchema = z.object({
   name: z.string().min(1, "姓名必填").max(40),
-  email: z.string().email("邮箱格式不正确"),
-  password: z.string().min(8, "密码至少 8 位").max(128),
+  email: z.string().email("Email格式不正确"),
+  password: z.string().min(8, "Contraseña至少 8 位").max(128),
   role: userRoleSchema,
   phone: z.string().max(30).optional().or(z.literal(""))
 });
@@ -46,7 +46,7 @@ export type ChangeMyPasswordInput = z.infer<typeof changeMyPasswordSchema>;
 async function requireAdmin() {
   const session = await requireSession();
   if (session.user.role !== "ADMIN") {
-    throw new Error("仅管理员可执行");
+    throw new Error("仅Administrar员可执行");
   }
   return session;
 }
@@ -70,8 +70,8 @@ export async function listUsers() {
 }
 
 /**
- * 任意登录用户都可调：拿活跃同事列表，用于收案/案件团队选择。
- * 默认排除 FINANCE/ADMIN 系统角色（仍可选，做"全部"切换时再开放）。
+ * 任意Iniciar sesión用户都可调：拿活跃同事列表，用于收案/Caso团队选择。
+ * 默认排除 FINANCE/ADMIN Sistema角色（仍可选，做"Ver todos"切换时再开放）。
  */
 export async function listActiveColleagues() {
   await requireSession();
@@ -87,7 +87,7 @@ export async function createUser(input: UserCreateInput) {
   const data = userCreateSchema.parse(input);
 
   const existing = await prisma.user.findUnique({ where: { email: data.email } });
-  if (existing) throw new Error("邮箱已被使用");
+  if (existing) throw new Error("Email已被使用");
 
   const passwordHash = await bcrypt.hash(data.password, 12);
   const created = await prisma.user.create({
@@ -182,7 +182,7 @@ export async function resetUserPassword(input: ResetPasswordInput) {
 }
 
 /**
- * 当前用户改自己的密码（任何角色可用）。
+ * 当前用户改自己的Contraseña（任何角色可用）。
  */
 export async function changeMyPassword(input: ChangeMyPasswordInput) {
   const session = await requireSession();
@@ -195,7 +195,7 @@ export async function changeMyPassword(input: ChangeMyPasswordInput) {
   if (!me) throw new Error("用户不存在");
 
   const matches = await bcrypt.compare(data.currentPassword, me.passwordHash);
-  if (!matches) throw new Error("当前密码不正确");
+  if (!matches) throw new Error("当前Contraseña不正确");
 
   const passwordHash = await bcrypt.hash(data.newPassword, 12);
   await prisma.user.update({
@@ -213,7 +213,7 @@ export async function changeMyPassword(input: ChangeMyPasswordInput) {
   return { ok: true };
 }
 
-/** v0.43：保存 / 清除个人头像（base64 data URL 内联存 User.avatar，约 256KB 上限） */
+/** v0.43：Guardar / 清除个人头像（base64 data URL 内联存 User.avatar，约 256KB 上限） */
 const AVATAR_MAX_CHARS = 256 * 1024;
 export async function saveMyAvatar(input: { avatar: string | null }) {
   const session = await requireSession();

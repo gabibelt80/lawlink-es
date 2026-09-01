@@ -9,7 +9,7 @@ import {
 const d = (s: string) => new Date(`${s}T00:00:00`);
 
 describe("computeDeadlineDate", () => {
-  it("按日期间：开始之日不计入，到期日 = 触发日 + N 日（民诉法第85条）", () => {
+  it("按Fecha间：开始之日不计入，到期日 = 触发日 + N 日（民诉法第85条）", () => {
     // 判决书 7/1 送达，上诉期 15 日 → 7/16 届满
     expect(formatLocalDate(computeDeadlineDate(d("2026-07-01"), 15, "DAYS"))).toBe("2026-07-16");
     // 裁定 10 日
@@ -59,7 +59,7 @@ describe("periodLabel / buildDeadlineBasis", () => {
     expect(periodLabel(2, "YEARS")).toBe("2 年");
   });
 
-  it("basis 文本包含法条、触发日期与顺延提示，且不超过 200 字（schema 上限）", () => {
+  it("basis 文本包含法条、触发Fecha与顺延提示，且不超过 200 字（schema 上限）", () => {
     const basis = buildDeadlineBasis({
       legalBasis: "《中华人民共和国民事诉讼法（2023修正）》第一百七十一条",
       triggerLabel: "判决书送达之日",

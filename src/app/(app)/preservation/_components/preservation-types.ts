@@ -36,12 +36,12 @@ export type MatterOption = {
 export type UserOption = { id: string; name: string };
 
 export const PRES_TYPE_CN: Record<PreservationType, string> = {
-  PRE_LITIGATION: "诉前保全",
-  LITIGATION: "诉中保全",
-  ENFORCEMENT: "执行保全"
+  PRE_LITIGATION: "诉前Preservación",
+  LITIGATION: "诉中Preservación",
+  ENFORCEMENT: "执行Preservación"
 };
 
-// v1.2: 定义已挪到 @/lib/preservation-defaults（cron 通知也要用），此处仅转出
+// v1.2: 定义已挪到 @/lib/preservation-defaults（cron Notificaciones也要用），此处仅转出
 export { PROPERTY_TYPE_CN } from "@/lib/preservation-defaults";
 
 export const GUARANTEE_TYPE_CN: Record<GuaranteeType, string> = {

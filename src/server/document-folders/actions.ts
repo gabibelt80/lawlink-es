@@ -16,9 +16,9 @@ import {
 } from "./schemas";
 import { revalidateMatter } from "@/server/matters/route";
 
-/** 判断当前用户是否能编辑该案件的卷宗结构（仅本案 LEAD / CO_LEAD） */
+/** 判断当前用户是否能Editar该Caso的卷宗结构（仅本案 LEAD / CO_LEAD） */
 async function requireFolderEditor(matterId: string, session: { user: { id: string; role: string } }) {
-  await assertCanLeadMatter(session.user.id, matterId, "仅案件主办/协办可管理卷宗");
+  await assertCanLeadMatter(session.user.id, matterId, "仅Caso主办/协办可Administrar卷宗");
 }
 
 export async function listFoldersByMatter(matterId: string) {
@@ -121,7 +121,7 @@ export async function deleteFolder(input: z.infer<typeof folderDeleteSchema>) {
     select: { id: true, matterId: true, isDefault: true, _count: { select: { documents: true } } }
   });
   if (!folder) throw new Error("卷宗不存在");
-  if (folder.isDefault) throw new Error("默认卷宗不可删除，只能改名");
+  if (folder.isDefault) throw new Error("默认卷宗不可Eliminar，只能改名");
   await requireFolderEditor(folder.matterId, session);
   await assertMatterWritable(folder.matterId);
 
@@ -173,16 +173,16 @@ export async function moveDocumentToFolder(input: z.infer<typeof moveDocumentToF
     where: { id: data.documentId },
     select: { id: true, matterId: true }
   });
-  if (!doc || !doc.matterId) throw new Error("文档不存在或未归属案件");
+  if (!doc || !doc.matterId) throw new Error("文档不存在或未归属Caso");
 
-  // 校验目标卷宗与文档同案件
+  // 校验目标卷宗与文档同Caso
   if (data.folderId) {
     const folder = await prisma.documentFolder.findUnique({
       where: { id: data.folderId },
       select: { matterId: true }
     });
     if (!folder || folder.matterId !== doc.matterId) {
-      throw new Error("目标卷宗与文档不属于同一案件");
+      throw new Error("目标卷宗与文档不属于同一Caso");
     }
   }
   await requireFolderEditor(doc.matterId, session);

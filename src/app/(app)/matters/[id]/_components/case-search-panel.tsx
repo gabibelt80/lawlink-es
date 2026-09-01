@@ -47,11 +47,11 @@ function ajlbFromCategory(cat: MatterCategory): string | undefined {
     case "CIVIL_COMMERCIAL":
     case "LABOR_ARBITRATION":
     case "COMMERCIAL_ARBITRATION":
-      return "民事案件";
+      return "民事Caso";
     case "CRIMINAL":
-      return "刑事案件";
+      return "PenalCaso";
     case "ADMINISTRATIVE":
-      return "行政案件";
+      return "AdministrativoCaso";
     default:
       return undefined;
   }
@@ -99,11 +99,11 @@ export function CaseSearchPanel({ matterId, matterCategory, defaultCauseName }: 
         caseHit: c
       });
       setSavedIds((prev) => new Set(prev).add(c.id));
-      toast.success("已保存到案件资料", {
+      toast.success("已Guardar到Caso资料", {
         description: res.documentName
       });
     } catch (err) {
-      toast.error("保存失败", {
+      toast.error("Guardar失败", {
         description: err instanceof Error ? err.message : ""
       });
     } finally {
@@ -119,11 +119,11 @@ export function CaseSearchPanel({ matterId, matterCategory, defaultCauseName }: 
         caseHit: c
       });
       setSavedIds((prev) => new Set(prev).add(c.scid));
-      toast.success("已保存到案件资料", {
+      toast.success("已Guardar到Caso资料", {
         description: res.documentName
       });
     } catch (err) {
-      toast.error("保存失败", {
+      toast.error("Guardar失败", {
         description: err instanceof Error ? err.message : ""
       });
     } finally {
@@ -156,7 +156,7 @@ export function CaseSearchPanel({ matterId, matterCategory, defaultCauseName }: 
           if (r.items.length === 0) toast.info("未命中类案");
         } else {
           if (!vectorQuery.trim()) {
-            setError("语义检索的案情描述不能为空");
+            setError("语义检索的案情Descripción不能为空");
             return;
           }
           const r = await searchSimilarCasesByVector({
@@ -226,7 +226,7 @@ export function CaseSearchPanel({ matterId, matterCategory, defaultCauseName }: 
       <div className="space-y-3 rounded-lg border border-border bg-card p-4">
         {mode === "vector" && (
           <div>
-            <Label className="text-[11px]">案情描述（自然语言）</Label>
+            <Label className="text-[11px]">案情Descripción（自然语言）</Label>
             <textarea
               value={vectorQuery}
               onChange={(e) => setVectorQuery(e.target.value)}
@@ -306,7 +306,7 @@ export function CaseSearchPanel({ matterId, matterCategory, defaultCauseName }: 
             </div>
           </div>
           <div>
-            <Label className="text-[11px]">裁判日期</Label>
+            <Label className="text-[11px]">裁判Fecha</Label>
             <div className="mt-1 flex items-center gap-1.5">
               <Input
                 type="date"
@@ -324,7 +324,7 @@ export function CaseSearchPanel({ matterId, matterCategory, defaultCauseName }: 
             </div>
           </div>
           <div>
-            <Label className="text-[11px]">返回条数（1-50）</Label>
+            <Label className="text-[11px]">Volver条数（1-50）</Label>
             <Input
               type="number"
               min={1}
@@ -356,7 +356,7 @@ export function CaseSearchPanel({ matterId, matterCategory, defaultCauseName }: 
         <div className="space-y-2">
           <p className="text-[11px] text-muted-foreground">
             命中 <span className="font-mono text-foreground">{keywordResult.total}</span> 条，
-            已返回 <span className="font-mono text-foreground">{keywordResult.items.length}</span> 条，
+            已Volver <span className="font-mono text-foreground">{keywordResult.items.length}</span> 条，
             本次扣 <span className="font-mono text-foreground">{keywordResult.pointsCharged}</span> POINT
           </p>
           <ul className="space-y-2">
@@ -396,7 +396,7 @@ export function CaseSearchPanel({ matterId, matterCategory, defaultCauseName }: 
                         onClick={() => handleSave(c)}
                         disabled={savingId === c.id}
                         className="inline-flex items-center gap-1 rounded-md border border-border bg-background px-2 py-1 text-[11px] text-foreground hover:bg-popover hover:text-primary disabled:opacity-50"
-                        title="作为类案存档保存到本案件资料"
+                        title="作为类案存档Guardar到本Caso资料"
                       >
                         {savingId === c.id ? (
                           <Loader2 className="h-3 w-3 animate-spin" />
@@ -431,7 +431,7 @@ export function CaseSearchPanel({ matterId, matterCategory, defaultCauseName }: 
       {vectorResult && (
         <div className="space-y-2">
           <p className="text-[11px] text-muted-foreground">
-            语义检索返回 <span className="font-mono text-foreground">{vectorResult.items.length}</span> 条（按相似度评分排序），
+            语义检索Volver <span className="font-mono text-foreground">{vectorResult.items.length}</span> 条（按相似度评分排序），
             本次扣 <span className="font-mono text-foreground">{vectorResult.pointsCharged}</span> POINT
           </p>
           <ul className="space-y-2">
@@ -480,7 +480,7 @@ export function CaseSearchPanel({ matterId, matterCategory, defaultCauseName }: 
                         onClick={() => handleSaveVector(c)}
                         disabled={savingId === c.scid}
                         className="inline-flex items-center gap-1 rounded-md border border-border bg-background px-2 py-1 text-[11px] text-foreground hover:bg-popover hover:text-primary disabled:opacity-50"
-                        title="作为类案存档保存到本案件资料"
+                        title="作为类案存档Guardar到本Caso资料"
                       >
                         {savingId === c.scid ? (
                           <Loader2 className="h-3 w-3 animate-spin" />

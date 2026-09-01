@@ -38,15 +38,15 @@ export type MatterOption = {
 };
 
 export const SMS_TYPE_CN: Record<SmsType, string> = {
-  HEARING_NOTICE: "开庭通知",
-  SERVICE_NOTICE: "送达通知",
-  FEE_NOTICE: "缴费通知",
-  MEDIATION: "调解通知",
-  ENFORCEMENT: "执行通知",
-  FILING_NOTICE: "立案通知",
-  JUDGMENT_NOTICE: "判决通知",
-  EVIDENCE_SUBMIT: "提交材料",
-  OTHER: "其他通知"
+  HEARING_NOTICE: "开庭Notificaciones",
+  SERVICE_NOTICE: "送达Notificaciones",
+  FEE_NOTICE: "缴费Notificaciones",
+  MEDIATION: "调解Notificaciones",
+  ENFORCEMENT: "执行Notificaciones",
+  FILING_NOTICE: "立案Notificaciones",
+  JUDGMENT_NOTICE: "判决Notificaciones",
+  EVIDENCE_SUBMIT: "Enviar材料",
+  OTHER: "其他Notificaciones"
 };
 
 export const SMS_TYPE_ACCENT: Record<SmsType, string> = {

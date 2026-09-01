@@ -39,7 +39,7 @@ async function buildT11(): Promise<Buffer> {
     body("住所地：{{client.address}}"),
     body("法定代表人 / 负责人：________________"),
     blank(),
-    body("受委托人：{{lawyer.name}}，{{firm.name}}律师。"),
+    body("受委托人：{{lawyer.name}}，{{firm.name}}Abogado。"),
     blank(),
     body("现委托上列受委托人在本单位与 {{opposing.name}} {{matter.causeText}} 一案中，作为本单位的诉讼（仲裁）代理人。", { indent: true }),
     blank(),
@@ -105,7 +105,7 @@ async function buildT12(): Promise<Buffer> {
     blank(),
     blank(),
     body("上诉人(签字/盖章)：________________"),
-    body("                                                            代理律师：{{lawyer.name}}"),
+    body("                                                            代理Abogado：{{lawyer.name}}"),
     blank(),
     body("{{todayCN}}", { align: AlignmentType.RIGHT })
   ]);
@@ -160,14 +160,14 @@ async function buildT13(): Promise<Buffer> {
     blank(),
     blank(),
     body("申请人(签字/盖章)：________________"),
-    body("                                                            代理律师：{{lawyer.name}}"),
+    body("                                                            代理Abogado：{{lawyer.name}}"),
     blank(),
     body("{{todayCN}}", { align: AlignmentType.RIGHT })
   ]);
 }
 
 // ============================================================
-// T14 财产保全申请书
+// T14 财产Preservación申请书
 // ============================================================
 const T14_VARS = [
   "client.name",
@@ -184,7 +184,7 @@ const T14_VARS = [
 
 async function buildT14(): Promise<Buffer> {
   return pack([
-    title("财产保全申请书"),
+    title("财产Preservación申请书"),
     blank(),
     body("申请人：{{client.name}}"),
     body("住址：{{client.address}}"),
@@ -199,7 +199,7 @@ async function buildT14(): Promise<Buffer> {
     body("2. 具体财产线索：详见附件《财产线索清单》。", { indent: true }),
     blank(),
     body("事实与理由：", { bold: true }),
-    body("申请人与被申请人 {{matter.causeText}} 一案，因被申请人存在转移、隐匿财产的可能，不采取保全措施将导致生效裁判难以执行。根据《中华人民共和国民事诉讼法》第一百〇三条、第一百〇四条之规定，特申请财产保全。", { indent: true }),
+    body("申请人与被申请人 {{matter.causeText}} 一案，因被申请人存在转移、隐匿财产的可能，不采取Preservación措施将导致生效裁判难以执行。根据《中华人民共和国民事诉讼法》第一百〇三条、第一百〇四条之规定，特申请财产Preservación。", { indent: true }),
     blank(),
     body("担保方式：☐ 现金担保  ☐ 保险公司保函  ☐ 财产担保（详见担保材料）", { indent: true }),
     blank(),
@@ -208,14 +208,14 @@ async function buildT14(): Promise<Buffer> {
     blank(),
     blank(),
     body("申请人(签字/盖章)：________________"),
-    body("                                                            代理律师：{{lawyer.name}}"),
+    body("                                                            代理Abogado：{{lawyer.name}}"),
     blank(),
     body("{{todayCN}}", { align: AlignmentType.RIGHT })
   ]);
 }
 
 // ============================================================
-// T15 律师函
+// T15 Abogado函
 // ============================================================
 const T15_VARS = [
   "firm.name",
@@ -238,22 +238,22 @@ async function buildT15(): Promise<Buffer> {
     blank(),
     body("{{opposing.name}}："),
     blank(),
-    body("{{firm.name}}接受 {{client.name}} 的委托，指派本律师就 {{matter.causeText}} 相关事宜致函贵方。", { indent: true }),
+    body("{{firm.name}}接受 {{client.name}} 的委托，指派本Abogado就 {{matter.causeText}} 相关事宜致函贵方。", { indent: true }),
     blank(),
     body("一、基本事实", { bold: true }),
     body("________________________________________________________________________", { indent: true }),
     blank(),
-    body("二、律师意见", { bold: true }),
+    body("二、Abogado意见", { bold: true }),
     body("________________________________________________________________________", { indent: true }),
     blank(),
     body("三、要求与期限", { bold: true }),
-    body("请贵方于收到本函之日起____日内________________；逾期，本律师将建议委托人依法采取诉讼、仲裁、保全等法律措施，由此产生的一切法律后果由贵方承担。", { indent: true }),
+    body("请贵方于收到本函之日起____日内________________；逾期，本Abogado将建议委托人依法采取诉讼、仲裁、Preservación等法律措施，由此产生的一切法律后果由贵方承担。", { indent: true }),
     blank(),
     body("特此函告。", { indent: true }),
     blank(),
     blank(),
     body("{{firm.name}}", { align: AlignmentType.RIGHT }),
-    body("律师：{{lawyer.name}}", { align: AlignmentType.RIGHT }),
+    body("Abogado：{{lawyer.name}}", { align: AlignmentType.RIGHT }),
     body("{{todayCN}}", { align: AlignmentType.RIGHT })
   ]);
 }
@@ -278,7 +278,7 @@ async function buildT16(): Promise<Buffer> {
     blank(),
     body("致：{{client.name}}"),
     blank(),
-    body("{{firm.name}}接受贵方委托，指派本律师就「{{matter.title}}」相关法律事项出具本法律意见书。", { indent: true }),
+    body("{{firm.name}}接受贵方委托，指派本Abogado就「{{matter.title}}」相关法律事项出具本法律意见书。", { indent: true }),
     blank(),
     body("一、委托事项与审查范围", { bold: true }),
     body("________________________________________________________________________", { indent: true }),
@@ -297,7 +297,7 @@ async function buildT16(): Promise<Buffer> {
     blank(),
     blank(),
     body("{{firm.name}}", { align: AlignmentType.RIGHT }),
-    body("经办律师：{{lawyer.name}}", { align: AlignmentType.RIGHT }),
+    body("经办Abogado：{{lawyer.name}}", { align: AlignmentType.RIGHT }),
     body("{{todayCN}}", { align: AlignmentType.RIGHT })
   ]);
 }
@@ -321,7 +321,7 @@ async function buildT17(): Promise<Buffer> {
     blank(),
     body("审判长、审判员："),
     blank(),
-    body("{{firm.name}}接受 {{client.name}} 的委托，指派本律师担任其与对方当事人 {{matter.causeText}} 一案（案号：{{proceeding.caseNo}}）的诉讼代理人。经庭前阅卷、调查取证并参加法庭审理，现发表如下代理意见：", { indent: true }),
+    body("{{firm.name}}接受 {{client.name}} 的委托，指派本Abogado担任其与对方当事人 {{matter.causeText}} 一案（案号：{{proceeding.caseNo}}）的诉讼代理人。经庭前阅卷、调查取证并参加法庭审理，现发表如下代理意见：", { indent: true }),
     blank(),
     body("一、关于本案事实", { bold: true }),
     body("________________________________________________________________________", { indent: true }),
@@ -338,7 +338,7 @@ async function buildT17(): Promise<Buffer> {
     body("{{proceeding.court}}", { bold: true }),
     blank(),
     blank(),
-    body("代理律师：{{lawyer.name}}", { align: AlignmentType.RIGHT }),
+    body("代理Abogado：{{lawyer.name}}", { align: AlignmentType.RIGHT }),
     body("{{todayCN}}", { align: AlignmentType.RIGHT })
   ]);
 }
@@ -354,7 +354,7 @@ async function buildT18(): Promise<Buffer> {
     title("谈 话 笔 录"),
     blank(),
     kvTable([
-      ["案件", "{{matter.title}}（{{matter.code}}）"],
+      ["Caso", "{{matter.title}}（{{matter.code}}）"],
       ["时间", "____年__月__日 __时__分 至 __时__分"],
       ["地点", ""],
       ["谈话人", "{{lawyer.name}}"],
@@ -383,7 +383,7 @@ async function buildT18(): Promise<Buffer> {
 }
 
 // ============================================================
-// T19 会见笔录（刑事）
+// T19 会见笔录（Penal）
 // ============================================================
 const T19_VARS = ["firm.name", "matter.code", "matter.title", "client.name", "lawyer.name", "todayCN"];
 
@@ -393,32 +393,32 @@ async function buildT19(): Promise<Buffer> {
     title("会 见 笔 录"),
     blank(),
     kvTable([
-      ["案件", "{{matter.title}}（{{matter.code}}）"],
+      ["Caso", "{{matter.title}}（{{matter.code}}）"],
       ["会见时间", "____年__月__日 __时__分 至 __时__分"],
       ["会见地点", "________看守所 / 监狱"],
-      ["会见律师", "{{lawyer.name}}"],
+      ["会见Abogado", "{{lawyer.name}}"],
       ["被会见人", "{{client.name}}"],
       ["涉嫌罪名 / 诉讼阶段", ""],
       ["羁押期限情况", ""]
     ]),
     blank(),
     body("会见内容：", { bold: true }),
-    body("一、告知事项（律师身份、委托手续、权利义务）：", { bold: true }),
+    body("一、告知事项（Abogado身份、委托手续、权利义务）：", { bold: true }),
     body("________________________________________________________________________"),
     blank(),
-    body("二、案件事实了解：", { bold: true }),
+    body("二、Caso事实了解：", { bold: true }),
     body("________________________________________________________________________"),
     body("________________________________________________________________________"),
     blank(),
     body("三、程序性事项（强制措施、讯问情况、身体状况、家属转达）：", { bold: true }),
     body("________________________________________________________________________"),
     blank(),
-    body("四、下一步辩护安排：", { bold: true }),
+    body("四、Siguiente辩护安排：", { bold: true }),
     body("________________________________________________________________________"),
     blank(),
     body("以上笔录经被会见人核对无误。"),
     blank(),
-    body("被会见人(签字按印)：________________    会见律师(签字)：{{lawyer.name}}"),
+    body("被会见人(签字按印)：________________    会见Abogado(签字)：{{lawyer.name}}"),
     blank(),
     body("{{todayCN}}", { align: AlignmentType.RIGHT })
   ]);
@@ -448,17 +448,17 @@ async function buildT20(): Promise<Buffer> {
     title("结案登记表"),
     blank(),
     kvTable([
-      ["案件编号", "{{matter.code}}"],
-      ["案件名称", "{{matter.title}}"],
-      ["案件类别", "{{matter.category}}"],
+      ["Caso编号", "{{matter.code}}"],
+      ["CasoNombre", "{{matter.title}}"],
+      ["Caso类别", "{{matter.category}}"],
       ["案由", "{{matter.causeText}}"],
       ["委托人", "{{client.name}}"],
       ["对方当事人", "{{opposing.name}}"],
       ["办理机关", "{{proceeding.court}}"],
       ["案号", "{{proceeding.caseNo}}"],
       ["标的金额", "{{matter.claimAmount}}"],
-      ["承办律师", "{{lawyer.name}}"],
-      ["结案日期", "{{todayCN}}"]
+      ["承办Abogado", "{{lawyer.name}}"],
+      ["结案Fecha", "{{todayCN}}"]
     ]),
     blank(),
     body("结案方式：☐ 判决  ☐ 调解  ☐ 仲裁裁决  ☐ 和解撤诉  ☐ 执行完毕  ☐ 其他________", { bold: true }),
@@ -467,10 +467,10 @@ async function buildT20(): Promise<Buffer> {
     body("________________________________________________________________________"),
     body("________________________________________________________________________"),
     blank(),
-    body("律师费收取情况：☐ 已结清  ☐ 未结清（余额________元）"),
+    body("Abogado费收取情况：☐ 已结清  ☐ 未结清（余额________元）"),
     body("原件材料退还情况：☐ 已退还并签收  ☐ 无需退还"),
     blank(),
-    body("承办律师(签字)：________________    主任审核(签字)：________________"),
+    body("承办Abogado(签字)：________________    主任审核(签字)：________________"),
     blank(),
     body("{{todayCN}}", { align: AlignmentType.RIGHT })
   ]);
@@ -492,11 +492,11 @@ async function buildT21(): Promise<Buffer> {
   return pack([
     title("证 据 目 录"),
     blank(),
-    body("提交人：{{client.name}}    案由：{{matter.causeText}}"),
+    body("Enviar人：{{client.name}}    案由：{{matter.causeText}}"),
     body("受理机关：{{proceeding.court}}    案号：{{proceeding.caseNo}}"),
     blank(),
     kvTable([
-      ["序号 / 证据名称", "证明目的 / 来源 / 页数"],
+      ["序号 / 证据Nombre", "证明目的 / 来源 / 页数"],
       ["证据一：", ""],
       ["证据二：", ""],
       ["证据三：", ""],
@@ -505,9 +505,9 @@ async function buildT21(): Promise<Buffer> {
       ["证据六：", ""]
     ]),
     blank(),
-    body("以上证据均提交复印件，原件当庭核对。", { indent: true }),
+    body("以上证据均Enviar复印件，原件当庭核对。", { indent: true }),
     blank(),
-    body("提交人(签字/盖章)：________________    代理律师：{{lawyer.name}}"),
+    body("Enviar人(签字/盖章)：________________    代理Abogado：{{lawyer.name}}"),
     blank(),
     body("{{todayCN}}", { align: AlignmentType.RIGHT })
   ]);
@@ -534,13 +534,13 @@ async function buildT22(): Promise<Buffer> {
     body(""),
     blank(),
     blank(),
-    body("经办律师：{{lawyer.name}}", { align: AlignmentType.RIGHT }),
+    body("经办Abogado：{{lawyer.name}}", { align: AlignmentType.RIGHT }),
     body("{{todayCN}}", { align: AlignmentType.RIGHT })
   ]);
 }
 
 // ============================================================
-// 注册表（第二批）
+// Registrarse表（第二批）
 // ============================================================
 export const V1_TEMPLATES: BuiltInTemplate[] = [
   {
@@ -556,7 +556,7 @@ export const V1_TEMPLATES: BuiltInTemplate[] = [
     key: "civil_appeal",
     name: "民事上诉状",
     category: "LITIGATION",
-    description: "不服一审判决/裁定的上诉状标准格式。上诉请求与理由需律师填充。",
+    description: "不服一审判决/裁定的上诉状标准格式。上诉请求与理由需Abogado填充。",
     applicableCategories: ["CIVIL_COMMERCIAL"],
     variables: T12_VARS,
     buildBuffer: buildT12
@@ -572,16 +572,16 @@ export const V1_TEMPLATES: BuiltInTemplate[] = [
   },
   {
     key: "property_preservation_application",
-    name: "财产保全申请书",
+    name: "财产Preservación申请书",
     category: "LITIGATION",
-    description: "诉前/诉中财产保全申请，含担保方式勾选（依据民诉法 103/104 条）。",
+    description: "诉前/诉中财产Preservación申请，含担保方式勾选（依据民诉法 103/104 条）。",
     applicableCategories: ["CIVIL_COMMERCIAL", "COMMERCIAL_ARBITRATION"],
     variables: T14_VARS,
     buildBuffer: buildT14
   },
   {
     key: "lawyer_letter",
-    name: "律师函",
+    name: "Abogado函",
     category: "WORK_PRODUCT",
     description: "对外催告/告知函，套律所抬头，含要求与期限段落。",
     applicableCategories: [],
@@ -617,9 +617,9 @@ export const V1_TEMPLATES: BuiltInTemplate[] = [
   },
   {
     key: "detention_meeting_notes",
-    name: "会见笔录(刑事)",
+    name: "会见笔录(Penal)",
     category: "HEARING",
-    description: "看守所会见笔录：告知事项/案件事实/程序事项/辩护安排四段。",
+    description: "看守所会见笔录：告知事项/Caso事实/程序事项/辩护安排四段。",
     applicableCategories: ["CRIMINAL"],
     variables: T19_VARS,
     buildBuffer: buildT19
@@ -637,7 +637,7 @@ export const V1_TEMPLATES: BuiltInTemplate[] = [
     key: "evidence_catalog",
     name: "证据目录",
     category: "ARCHIVE",
-    description: "随证据材料提交法院/仲裁机构的证据清单（名称/证明目的/页数）。",
+    description: "随证据材料Enviar法院/仲裁机构的证据清单（Nombre/证明目的/页数）。",
     applicableCategories: ["CIVIL_COMMERCIAL", "COMMERCIAL_ARBITRATION", "LABOR_ARBITRATION", "ADMINISTRATIVE"],
     variables: T21_VARS,
     buildBuffer: buildT21

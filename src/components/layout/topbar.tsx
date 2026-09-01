@@ -37,11 +37,11 @@ import { ToolsDialog } from "@/components/layout/tools-dialog";
 import { cn } from "@/lib/utils";
 
 const roleLabels: Record<string, string> = {
-  ADMIN: "系统管理员",
-  PRINCIPAL_LAWYER: "主办律师",
-  LAWYER: "经办律师",
+  ADMIN: "SistemaAdministrar员",
+  PRINCIPAL_LAWYER: "主办Abogado",
+  LAWYER: "经办Abogado",
   ASSISTANT: "助理",
-  FINANCE: "财务",
+  FINANCE: "Finanzas",
 };
 
 // 应用菜单聚合入口（v0.38：各分类拆回独立页；实务工具=全局弹窗；法律导航=外链）
@@ -117,7 +117,7 @@ export function Topbar({
 
       {/* 工具按钮组 */}
       <div className="flex items-center gap-1.5">
-        {/* 应用菜单（案件云式聚合入口）*/}
+        {/* 应用菜单（Caso云式聚合入口）*/}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <button
@@ -228,7 +228,7 @@ export function Topbar({
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-52">
           <DropdownMenuLabel className="text-xs font-normal text-muted-foreground">
-            {displayName ? `${displayName} · ${roleLabel}` : "加载中..."}
+            {displayName ? `${displayName} · ${roleLabel}` : "Cargar中..."}
           </DropdownMenuLabel>
           <DropdownMenuSeparator />
           <DropdownMenuItem asChild>
@@ -240,7 +240,7 @@ export function Topbar({
           <DropdownMenuItem asChild>
             <Link href="/settings" className="cursor-pointer">
               <SettingsIcon className="mr-2 h-4 w-4" />
-              偏好设置
+              偏好Configuración
             </Link>
           </DropdownMenuItem>
           <DropdownMenuSeparator />
@@ -252,7 +252,7 @@ export function Topbar({
             className="cursor-pointer text-destructive focus:text-destructive"
           >
             <LogOut className="mr-2 h-4 w-4" />
-            退出登录
+            Cerrar sesiónIniciar sesión
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>

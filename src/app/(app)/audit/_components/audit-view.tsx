@@ -110,7 +110,7 @@ export function AuditView({
             审计日志
           </h1>
           <p className="mt-0.5 text-[12px] text-muted-foreground">
-            记录每个用户的关键操作。默认保留 365 天，每天 03:00 自动清理旧记录
+            记录每个用户的关键Acciones。默认保留 365 天，每天 03:00 自动清理旧记录
           </p>
         </div>
         <Button
@@ -133,7 +133,7 @@ export function AuditView({
       {/* 筛选区 */}
       <div className="space-y-2 rounded-lg border border-border bg-card p-3">
         <div className="flex flex-wrap items-end gap-2">
-          <FilterCol label="操作人">
+          <FilterCol label="Acciones人">
             <Select
               value={currentFilter.userId || ALL_VALUE}
               onValueChange={(v) =>
@@ -141,10 +141,10 @@ export function AuditView({
               }
             >
               <SelectTrigger className="h-8 w-36 text-xs">
-                <SelectValue placeholder="全部" />
+                <SelectValue placeholder="Ver todos" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value={ALL_VALUE}>全部</SelectItem>
+                <SelectItem value={ALL_VALUE}>Ver todos</SelectItem>
                 {options.users.map((u) => (
                   <SelectItem key={u.id} value={u.id}>
                     {u.name}
@@ -162,10 +162,10 @@ export function AuditView({
               }
             >
               <SelectTrigger className="h-8 w-48 text-xs">
-                <SelectValue placeholder="全部" />
+                <SelectValue placeholder="Ver todos" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value={ALL_VALUE}>全部</SelectItem>
+                <SelectItem value={ALL_VALUE}>Ver todos</SelectItem>
                 {options.actions.map((a) => (
                   <SelectItem key={a} value={a}>
                     {a}
@@ -183,10 +183,10 @@ export function AuditView({
               }
             >
               <SelectTrigger className="h-8 w-36 text-xs">
-                <SelectValue placeholder="全部" />
+                <SelectValue placeholder="Ver todos" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value={ALL_VALUE}>全部</SelectItem>
+                <SelectItem value={ALL_VALUE}>Ver todos</SelectItem>
                 {options.targetTypes.map((t) => (
                   <SelectItem key={t} value={t}>
                     {t}
@@ -243,7 +243,7 @@ export function AuditView({
             <tr>
               <th className="w-8 px-2 py-1.5"></th>
               <th className="w-40 px-2 py-1.5 text-left font-normal">时间</th>
-              <th className="w-20 px-2 py-1.5 text-left font-normal">操作人</th>
+              <th className="w-20 px-2 py-1.5 text-left font-normal">Acciones人</th>
               <th className="px-2 py-1.5 text-left font-normal">动作</th>
               <th className="w-32 px-2 py-1.5 text-left font-normal">
                 对象类型

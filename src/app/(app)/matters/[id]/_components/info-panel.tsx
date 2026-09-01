@@ -63,13 +63,13 @@ export function InfoPanel({
   canManageRelatedMatters: boolean;
   onEdit: () => void;
 }) {
-  // 关联案件（双向合并去重）
+  // 关联Caso（双向合并去重）
   const relatedMatters = [
     ...matter.linksFrom.map((l) => l.relatedMatter),
     ...matter.linksTo.map((l) => l.matter)
   ].filter((m, i, arr) => arr.findIndex((x) => x.id === m.id) === i);
 
-  // v0.35: 按案件类别分叉展示（诉讼/仲裁 vs 非诉/专项 vs 顾问）
+  // v0.35: 按Caso类别分叉展示（诉讼/仲裁 vs 非诉/专项 vs 顾问）
   const kind = matterCategoryKind(matter.category);
   const period = (s: Date | null, e: Date | null) => {
     if (!s && !e) return "—";
@@ -78,7 +78,7 @@ export function InfoPanel({
   const claimText = matter.claimAmount ? formatCurrency(Number(matter.claimAmount)) : "—";
   const amountLabel = kind === "counsel" ? "服务期限" : "标的";
   const amountValue = kind === "counsel" ? period(matter.serviceStart, matter.serviceEnd) : claimText;
-  // v1.1「信息总览」：只放标题区/侧栏没有的内容——案由、类别、状态、期限
+  // v1.1「信息Total览」：只放标题区/侧栏没有的内容——案由、类别、Estado、期限
   // 已由页头与 MatterKeypoints 承载，此处聚焦当前程序的档案字段
   const contactLabels = contactRoleLabels(currentProcedure?.type);
 
@@ -109,7 +109,7 @@ export function InfoPanel({
         <div className="flex min-w-0 items-baseline gap-2">
           <span className="flex items-center gap-2">
             <FileText className="h-4 w-4 text-primary" strokeWidth={1.8} />
-            <h3 className="text-[15px] font-medium">信息总览</h3>
+            <h3 className="text-[15px] font-medium">信息Total览</h3>
           </span>
           {matter.firmCaseNo && (
             <span className="truncate font-mono text-[11px] text-muted-foreground tabular">
@@ -125,7 +125,7 @@ export function InfoPanel({
             className="h-7 gap-1.5 px-2 text-[11px]"
           >
             <Pencil className="h-3 w-3" strokeWidth={1.8} />
-            编辑
+            Editar
           </Button>
         )}
       </div>
@@ -146,7 +146,7 @@ export function InfoPanel({
           </Pair>
         </InfoRow>
         <InfoRow>
-          <Pair label="客户名称">{dash(clientName)}</Pair>
+          <Pair label="ClienteNombre">{dash(clientName)}</Pair>
           <Pair label="相对方">{dash(opposingNames)}</Pair>
         </InfoRow>
         <InfoRow>
@@ -195,7 +195,7 @@ export function InfoPanel({
           </InfoRow>
         )}
         <InfoRow>
-          <Pair label="关联案件">
+          <Pair label="关联Caso">
             <RelatedMattersField
               matterId={matter.id}
               related={relatedMatters}
@@ -232,7 +232,7 @@ function ClampedText({ text }: { text: string }) {
   );
 }
 
-/** 数字/案号/日期类取值统一等宽字体 */
+/** 数字/案号/Fecha类取值统一等宽字体 */
 function Mono({ children }: { children: React.ReactNode }) {
   return <span className="font-mono tabular">{children}</span>;
 }

@@ -25,7 +25,7 @@ export type IntakeRow = {
 };
 
 /**
- * v0.17: 待审批 / 待补正 收案列表 — 复用 MattersTable 的 CaseListCard 保证视觉一致
+ * v0.17: 待Aprobación / 待补正 收案列表 — 复用 MattersTable 的 CaseListCard 保证视觉一致
  */
 export function IntakesTable({
   items,
@@ -38,11 +38,11 @@ export function IntakesTable({
     return (
       <div className="flex flex-col items-center gap-2 rounded-md border border-border bg-card py-20 text-center">
         <div className="text-base text-muted-foreground">
-          {kind === "revision" ? "暂无待补正收案" : "暂无待审批收案"}
+          {kind === "revision" ? "暂无待补正收案" : "暂无待Aprobación收案"}
         </div>
         <div className="text-xs text-muted-foreground/70">
           {kind === "revision"
-            ? "在 待审批 中拒绝的收案，可补正材料后重新提交，会出现在这里"
+            ? "在 待Aprobación 中拒绝的收案，可补正材料后重新Enviar，会出现在这里"
             : (
               <>
                 点击右上角 <span className="text-foreground/80">新建收案</span> 开始

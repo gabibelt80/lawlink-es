@@ -24,7 +24,7 @@ const clearSchema = z.object({ confirm: z.literal(true) });
 async function requireAdmin() {
   const session = await requireSession();
   if (session.user.role !== "ADMIN") {
-    throw new Error("仅管理员可修改元典配置");
+    throw new Error("仅Administrar员可修改元典配置");
   }
   return session;
 }
@@ -84,7 +84,7 @@ export async function testYuandianConnection(): Promise<{
       return { ok: false, message: err.message };
     }
     if (err instanceof YuandianApiError) {
-      return { ok: false, message: `元典返回错误：${err.message}` };
+      return { ok: false, message: `元典Volver错误：${err.message}` };
     }
     return { ok: false, message: err instanceof Error ? err.message : "未知错误" };
   }

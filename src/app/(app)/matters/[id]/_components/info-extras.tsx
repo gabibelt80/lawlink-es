@@ -179,14 +179,14 @@ export function ExpressMiniCard({
           {matterId && (
             <Button size="sm" onClick={() => setAddOpen(true)} className="h-6 gap-0.5 px-2 text-[11px]">
               <Plus className="h-2.5 w-2.5" />
-              添加
+              Agregar
             </Button>
           )}
           <Link
             href="/express"
             className="text-[11px] text-muted-foreground transition-colors hover:text-primary"
           >
-            全部 →
+            Ver todos →
           </Link>
         </div>
       </header>
@@ -231,11 +231,11 @@ export function ExpressMiniCard({
 }
 
 /**
- * v0.27: 添加快递记录 dialog
+ * v0.27: Agregar快递记录 dialog
  *
  * - 单号：可手动输入 / 上传单号照片 OCR 自动填
  * - 用途必填；方向默认 OUTBOUND；matter 已绑定
- * - 提交后调 createExpress（内部自动 detectCompany + trackExpress 拉取首条轨迹）
+ * - Enviar后调 createExpress（内部自动 detectCompany + trackExpress 拉取首条轨迹）
  */
 function AddExpressDialog({
   open,
@@ -308,12 +308,12 @@ function AddExpressDialog({
           recipient: recipient.trim(),
           recipientPhone: recipientPhone.trim()
         });
-        toast.success("快递记录已创建");
+        toast.success("快递记录已Crear");
         reset();
         onOpenChange(false);
         router.refresh();
       } catch (err) {
-        toast.error("创建失败", {
+        toast.error("Crear失败", {
           description: err instanceof Error ? err.message : ""
         });
       }
@@ -324,7 +324,7 @@ function AddExpressDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>添加快递记录</DialogTitle>
+          <DialogTitle>Agregar快递记录</DialogTitle>
           <DialogDescription className="text-xs">
             可上传快递单照片自动识别单号，也可手动输入。
           </DialogDescription>
@@ -425,11 +425,11 @@ function AddExpressDialog({
 
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)} disabled={submitting}>
-            取消
+            Cancelar
           </Button>
           <Button onClick={handleSubmit} disabled={submitting}>
             {submitting && <Loader2 className="mr-1.5 h-4 w-4 animate-spin" />}
-            保存并跟踪
+            Guardar并跟踪
           </Button>
         </DialogFooter>
       </DialogContent>

@@ -13,7 +13,7 @@ import { runAuditCleanup } from "./jobs/audit-cleanup";
 async function requireAdmin() {
   const session = await requireSession();
   if (session.user.role !== "ADMIN" && session.user.role !== "PRINCIPAL_LAWYER") {
-    throw new Error("仅管理员 / 主任律师可触发");
+    throw new Error("仅Administrar员 / 主任Abogado可触发");
   }
   return session;
 }

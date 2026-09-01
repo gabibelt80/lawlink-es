@@ -7,10 +7,10 @@
 import { getYuandianSettings, type ResolvedYuandianSettings } from "./settings";
 import { YuandianNotConfiguredError, YuandianApiError } from "./client";
 
-// 元典企业搜索候选
+// 元典企业Buscar候选
 export type EnterpriseCandidate = {
   id: string;
-  企业名称: string;
+  企业Nombre: string;
   统一社会信用代码: string;
 };
 
@@ -38,7 +38,7 @@ function getStr(obj: Record<string, unknown>, key: string): string {
 }
 
 /**
- * 企业名称搜索候选（rh_enterpriseSearch，1 POINT/次）
+ * 企业NombreBuscar候选（rh_enterpriseSearch，1 POINT/次）
  */
 export async function searchEnterpriseCandidates(
   name: string,
@@ -77,7 +77,7 @@ export async function searchEnterpriseCandidates(
   }
 
   if (json.status !== "success") {
-    throw new YuandianApiError(json.message ?? "元典企业搜索失败", json.code ?? 500);
+    throw new YuandianApiError(json.message ?? "元典企业Buscar失败", json.code ?? 500);
   }
   return json.data ?? [];
 }
@@ -125,26 +125,26 @@ export async function getEnterpriseBaseInfo(
   const d = json.data as Record<string, unknown>;
   return {
     id: String(d.id ?? id),
-    name: getStr(d, "企业名称"),
+    name: getStr(d, "企业Nombre"),
     creditCode: getStr(d, "统一社会信用代码"),
     legalRep: getStr(d, "法定代表人"),
-    registeredCapital: getStr(d, "注册资本"),
-    address: getStr(d, "注册地址"),
-    status: getStr(d, "经营状态"),
+    registeredCapital: getStr(d, "Registrarse资本"),
+    address: getStr(d, "Registrarse地址"),
+    status: getStr(d, "经营Estado"),
     businessScope: getStr(d, "经营范围"),
-    establishedDate: getStr(d, "成立日期")
+    establishedDate: getStr(d, "成立Fecha")
   };
 }
 
 // ============================================================
-// v0.26: 企业聚合总览（rh_enterpriseAggregationSummary，10 POINT/次）
+// v0.26: 企业聚合Total览（rh_enterpriseAggregationSummary，10 POINT/次）
 // ============================================================
 
-/** 聚合接口返回各模块统计的通用结构。律师视角主要看「总数」。 */
+/** 聚合接口Volver各模块统计的通用结构。Abogado视角主要看「Total数」。 */
 export type EnterpriseStat = {
   /** 模块名（"失信被执行人统计" 等，去掉"统计"后缀） */
   category: string;
-  /** 该模块总记录数 */
+  /** 该模块Total记录数 */
   total: number;
   /** 起诉方计数（仅涉诉相关模块） */
   asPlaintiff?: number;
@@ -159,7 +159,7 @@ export type EnterpriseRiskLevel = "HIGH" | "MEDIUM" | "LOW" | "NONE";
 export type EnterpriseSummary = {
   id: string;
   name: string;
-  /** 核心风险（律师重点关注） */
+  /** 核心风险（Abogado重点关注） */
   coreRisks: EnterpriseStat[];
   /** 涉诉概况 */
   litigation: EnterpriseStat[];
@@ -169,7 +169,7 @@ export type EnterpriseSummary = {
   level: EnterpriseRiskLevel;
 };
 
-// 律师核心关心：5 类风险 — 命中即标红
+// Abogado核心关心：5 类风险 — 命中即标红
 const CORE_RISK_KEYS = [
   "失信被执行人统计",
   "被执行人统计",
@@ -182,7 +182,7 @@ const CORE_RISK_KEYS = [
 const LITIGATION_KEYS = [
   "法院公告统计",
   "开庭公告统计",
-  "行政处罚统计",
+  "Administrativo处罚统计",
   "欠税公告统计"
 ] as const;
 
@@ -208,12 +208,12 @@ const TOP_FIELD_BY_CATEGORY: Record<string, string> = {
   经营异常统计: "列入经营异常名录原因",
   法院公告统计: "法院",
   开庭公告统计: "审理法院",
-  行政处罚统计: "决定机关",
+  Administrativo处罚统计: "决定机关",
   欠税公告统计: "欠税税种",
   变更记录统计: "变更项目",
   对外担保统计: "主债权种类",
-  股权出质统计: "状态",
-  对外投资统计: "投资经营状态",
+  股权出质统计: "Estado",
+  对外投资统计: "投资经营Estado",
   商标统计: "类别",
   专利统计: "申请公布年份",
   软件著作权统计: "批准年份",
@@ -228,7 +228,7 @@ function pickStat(
   const node = raw[rawKey];
   if (!node || typeof node !== "object") return null;
   const obj = node as Record<string, unknown>;
-  const total = typeof obj["总数"] === "number" ? (obj["总数"] as number) : 0;
+  const total = typeof obj["Total数"] === "number" ? (obj["Total数"] as number) : 0;
   const asPlaintiff =
     typeof obj["起诉方"] === "number" ? (obj["起诉方"] as number) : undefined;
   const asDefendant =
@@ -263,7 +263,7 @@ function computeRiskLevel(coreRisks: EnterpriseStat[]): EnterpriseRiskLevel {
   const m = new Map(coreRisks.map((s) => [s.category, s.total]));
   // HIGH：失信被执行人（拒不履行的最强信号）
   if ((m.get("失信被执行人") ?? 0) > 0) return "HIGH";
-  // MEDIUM：被执行人 / 股权冻结 / 严重违法 — 已有执行案件或重大违规
+  // MEDIUM：被执行人 / 股权冻结 / 严重违法 — 已有执行Caso或重大违规
   if (
     (m.get("被执行人") ?? 0) > 0 ||
     (m.get("股权冻结") ?? 0) > 0 ||
@@ -277,7 +277,7 @@ function computeRiskLevel(coreRisks: EnterpriseStat[]): EnterpriseRiskLevel {
 }
 
 /**
- * 企业聚合总览（rh_enterpriseAggregationSummary，10 POINT/次）
+ * 企业聚合Total览（rh_enterpriseAggregationSummary，10 POINT/次）
  *
  * 接受企业 ID 或统一社会信用代码（二者至少一个）。
  */

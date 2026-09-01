@@ -34,7 +34,7 @@ type InvoiceType = "PLAIN" | "SPECIAL";
 type InvoiceItem = "LAWYER_FEE" | "CONSULTING_FEE" | "AGENCY_FEE" | "OTHER";
 
 const INVOICE_ITEM_OPTIONS: { value: InvoiceItem; label: string }[] = [
-  { value: "LAWYER_FEE", label: "律师服务费" },
+  { value: "LAWYER_FEE", label: "Abogado服务费" },
   { value: "CONSULTING_FEE", label: "法律咨询费" },
   { value: "AGENCY_FEE", label: "代理费" },
   { value: "OTHER", label: "其他法律服务" }
@@ -55,12 +55,12 @@ export function InvoiceRequestSheet({
     ReturnType<typeof getMatterInvoiceContext>
   > | null>(null);
 
-  // 表单状态
+  // 表单Estado
   const [amount, setAmount] = useState<string>("");
   // v0.42 项5：开票类型无默认值，必须主动选择一次
   const [invoiceType, setInvoiceType] = useState<InvoiceType | null>(null);
   const [invoiceItem, setInvoiceItem] = useState<InvoiceItem>("LAWYER_FEE");
-  // v0.42 项3：开票抬头改下拉（本案客户）
+  // v0.42 项3：开票抬头改下拉（本案Cliente）
   const [buyerClientId, setBuyerClientId] = useState<string>("");
   const [buyerName, setBuyerName] = useState("");
   const [buyerTaxNo, setBuyerTaxNo] = useState("");
@@ -73,14 +73,14 @@ export function InvoiceRequestSheet({
   const [evidenceFiles, setEvidenceFiles] = useState<File[]>([]);
   const fileRef = useRef<HTMLInputElement>(null);
 
-  // 拉取案件上下文 + 重置表单
+  // 拉取Caso上下文 + 重置表单
   useEffect(() => {
     if (!open) return;
     setCtxLoading(true);
     getMatterInvoiceContext(matterId)
       .then((data) => {
         setCtx(data);
-        // 只有一个客户时默认选中，多客户强制选择
+        // 只有一个Cliente时默认选中，多Cliente强制选择
         if (data.clientOptions.length === 1) {
           const only = data.clientOptions[0];
           setBuyerClientId(only.id);
@@ -109,7 +109,7 @@ export function InvoiceRequestSheet({
     const c = ctx?.clientOptions.find((o) => o.id === id);
     if (c) {
       setBuyerName(c.name);
-      // 选中客户时预填税号（专票可直接复用，律师可改）
+      // 选中Cliente时预填税号（专票可直接复用，Abogado可改）
       if (c.taxNo) setBuyerTaxNo(c.taxNo);
     }
   }
@@ -179,7 +179,7 @@ export function InvoiceRequestSheet({
           docIds.push(doc.id);
         }
 
-        // 2. 创建开票申请
+        // 2. Crear开票申请
         const isSpecial = invoiceType === "SPECIAL";
         await createInvoiceRequest({
           matterId,
@@ -196,10 +196,10 @@ export function InvoiceRequestSheet({
           requestNote
         });
 
-        toast.success("开票申请已提交");
+        toast.success("开票申请已Enviar");
         onOpenChange(false);
       } catch (err) {
-        toast.error("提交失败", {
+        toast.error("Enviar失败", {
           description: err instanceof Error ? err.message : ""
         });
       }
@@ -218,10 +218,10 @@ export function InvoiceRequestSheet({
           </DialogTitle>
           <DialogDescription className="text-xs">
             {ctxLoading
-              ? "加载案件信息..."
+              ? "CargarCaso信息..."
               : ctx
-                ? `案件：${ctx.matterTitle}${ctx.intake ? "（已关联收案审批）" : ""}`
-                : "无法加载案件信息"}
+                ? `Caso：${ctx.matterTitle}${ctx.intake ? "（已关联收案Aprobación）" : ""}`
+                : "无法CargarCaso信息"}
           </DialogDescription>
         </DialogHeader>
 
@@ -264,14 +264,14 @@ export function InvoiceRequestSheet({
             />
           </Field>
 
-          {/* v0.42 项3：客户抬头下拉（本案客户） */}
+          {/* v0.42 项3：Cliente抬头下拉（本案Cliente） */}
           <Field
-            label="开票抬头（客户）"
+            label="开票抬头（Cliente）"
             required
             hint={
               clientOptions.length === 0
-                ? "本案暂无关联客户，请先在案件当事人中登记客户"
-                : "选项为本案关联的客户"
+                ? "本案暂无关联Cliente，请先在Caso当事人中登记Cliente"
+                : "选项为本案关联的Cliente"
             }
           >
             {clientOptions.length > 0 ? (
@@ -283,7 +283,7 @@ export function InvoiceRequestSheet({
                   {clientOptions.map((c) => (
                     <SelectItem key={c.id} value={c.id}>
                       {c.name}
-                      {c.isPrimary ? "（主要客户）" : ""}
+                      {c.isPrimary ? "（主要Cliente）" : ""}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -349,7 +349,7 @@ export function InvoiceRequestSheet({
           <Field
             label="开票依据"
             required
-            hint="正常情况下必须上传扫描版委托合同，支付凭证可选；特殊情况请提交情况说明，单文件 ≤ 20MB"
+            hint="正常情况下必须上传扫描版委托合同，支付凭证可选；特殊情况请Enviar情况说明，单文件 ≤ 20MB"
             action={
               <Button
                 type="button"
@@ -359,7 +359,7 @@ export function InvoiceRequestSheet({
                 className="h-7 gap-1.5 px-2 text-[11px]"
               >
                 <Paperclip className="h-3.5 w-3.5" />
-                添加文件
+                Agregar文件
               </Button>
             }
           >
@@ -405,11 +405,11 @@ export function InvoiceRequestSheet({
             </div>
           </Field>
 
-          {/* 申请备注 */}
-          <Field label="申请备注（可选）">
+          {/* 申请Observaciones */}
+          <Field label="申请Observaciones（可选）">
             <Textarea
               rows={2}
-              placeholder="如：请尽快开具，客户催要"
+              placeholder="如：请尽快开具，Cliente催要"
               value={requestNote}
               onChange={(e) => setRequestNote(e.target.value)}
             />
@@ -423,11 +423,11 @@ export function InvoiceRequestSheet({
             onClick={() => onOpenChange(false)}
             disabled={isPending}
           >
-            取消
+            Cancelar
           </Button>
           <Button onClick={submit} disabled={isPending || ctxLoading} className="gap-1.5">
             {isPending && <Loader2 className="h-4 w-4 animate-spin" />}
-            提交申请
+            Enviar申请
           </Button>
         </DialogFooter>
       </DialogContent>

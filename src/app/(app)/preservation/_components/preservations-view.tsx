@@ -30,7 +30,7 @@ import {
 } from "./preservation-types";
 
 const STATUS_FILTERS = [
-  { value: "ALL", label: "全部" },
+  { value: "ALL", label: "Ver todos" },
   { value: "ACTIVE", label: "生效中" },
   { value: "RENEWED", label: "已续保" },
   { value: "EXPIRED", label: "已到期" },
@@ -94,16 +94,16 @@ export function PreservationsView({
       <header>
         <h1 className="flex items-center gap-2 text-xl">
           <Shield className="h-5 w-5 text-primary" strokeWidth={1.8} />
-          财产保全
+          财产Preservación
         </h1>
         <p className="mt-0.5 text-[12px] text-muted-foreground">
-          按被保全人及财产跟踪保全期限，到期前持续提醒
+          按被Preservación人及财产跟踪Preservación期限，到期前持续Recordatorios
         </p>
       </header>
 
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-        <KpiCard label="生效保全" value={activeCount} />
-        <KpiCard label="累计保全金额" value={formatCurrency(totalAmount)} />
+        <KpiCard label="生效Preservación" value={activeCount} />
+        <KpiCard label="累计Preservación金额" value={formatCurrency(totalAmount)} />
         <KpiCard label="30天内到期" value={expiring30} tone="warn" />
         <KpiCard label="已过期未处理" value={expiredCount} tone="danger" />
       </div>
@@ -111,18 +111,18 @@ export function PreservationsView({
       <div className="flex flex-wrap items-center gap-3">
         <div className="relative flex-1 max-w-xs">
           <Search className="absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
-          <Input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="搜索被保全人 / 案件 / 法院" className="pl-8 text-xs" />
+          <Input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Buscar被Preservación人 / Caso / 法院" className="pl-8 text-xs" />
         </div>
         <RadioChips items={STATUS_FILTERS} value={statusFilter} onChange={setStatusFilter} />
         <Button size="sm" onClick={() => setCreateOpen(true)} className="ml-auto gap-1.5">
-          <Plus className="h-3.5 w-3.5" /> 新建保全
+          <Plus className="h-3.5 w-3.5" /> 新建Preservación
         </Button>
       </div>
 
       {filtered.length === 0 ? (
         <div className="rounded-xl border border-dashed border-border bg-card py-16 text-center">
           <Shield className="mx-auto mb-2 h-8 w-8 text-muted-foreground/40" />
-          <p className="text-sm text-muted-foreground">{search ? `没有匹配「${search}」的保全记录` : "还没有保全记录"}</p>
+          <p className="text-sm text-muted-foreground">{search ? `没有匹配「${search}」的Preservación记录` : "还没有Preservación记录"}</p>
         </div>
       ) : (
         <div className="space-y-3">
@@ -165,31 +165,31 @@ function CaseCard({ caseData: cs, expanded, onToggle, matters, users }: { caseDa
           <Shield className="h-4 w-4 shrink-0 text-primary" strokeWidth={1.8} />
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-2">
-              <span className="text-sm font-medium truncate">{cs.matter ? cs.matter.title : "未关联案件"}</span>
+              <span className="text-sm font-medium truncate">{cs.matter ? cs.matter.title : "未关联Caso"}</span>
               <span className="shrink-0 rounded border px-1.5 py-0.5 text-[10px] text-primary border-primary/30 bg-primary/5">{PRES_TYPE_CN[cs.type]}</span>
               {expiryInfo && <span className={cn("shrink-0 text-[10px] font-medium", expiryInfo.tone === "danger" ? "text-destructive" : expiryInfo.tone === "warn" ? "text-amber-500" : "text-muted-foreground")}>{expiryInfo.label}</span>}
             </div>
             <div className="mt-0.5 text-[11px] text-muted-foreground">
-              {cs.court && <span>{cs.court}</span>}{cs.rulingNumber && <span> · {cs.rulingNumber}</span>}{" · "}{cs.targets.length} 个被保全人 · {allProps.length} 项财产
+              {cs.court && <span>{cs.court}</span>}{cs.rulingNumber && <span> · {cs.rulingNumber}</span>}{" · "}{cs.targets.length} 个被Preservación人 · {allProps.length} 项财产
             </div>
           </div>
         </button>
         <div className="flex shrink-0 items-center gap-1">
           <button type="button" onClick={() => setEditOpen(true)} className="rounded-md p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground"><Pencil className="h-3.5 w-3.5" /></button>
-          <button type="button" onClick={() => { if (confirm("确认删除此保全案件及所有记录？")) { startTransition(async () => { try { await deletePreservationCase({ id: cs.id }); toast.success("已删除"); } catch { toast.error("删除失败"); } }); } }} className="rounded-md p-1.5 text-muted-foreground hover:bg-muted hover:text-destructive"><Trash2 className="h-3.5 w-3.5" /></button>
+          <button type="button" onClick={() => { if (confirm("确认Eliminar此PreservaciónCaso及所有记录？")) { startTransition(async () => { try { await deletePreservationCase({ id: cs.id }); toast.success("已Eliminar"); } catch { toast.error("Eliminar失败"); } }); } }} className="rounded-md p-1.5 text-muted-foreground hover:bg-muted hover:text-destructive"><Trash2 className="h-3.5 w-3.5" /></button>
         </div>
       </div>
 
       {expanded && (
         <div className="border-t border-border px-4 py-3 space-y-4">
           {cs.targets.length === 0 ? (
-            <p className="py-4 text-center text-xs text-muted-foreground">还没有被保全人</p>
+            <p className="py-4 text-center text-xs text-muted-foreground">还没有被Preservación人</p>
           ) : cs.targets.map((target) => (
             <div key={target.id} className="space-y-2">
               <div className="flex items-center gap-2">
                 <UserPlus className="h-3.5 w-3.5 text-muted-foreground" />
                 <span className="text-sm font-medium">{target.name}</span>
-                <button type="button" onClick={() => setAddPropOpen(target.id)} className="ml-auto text-[11px] text-primary hover:underline">+ 添加财产</button>
+                <button type="button" onClick={() => setAddPropOpen(target.id)} className="ml-auto text-[11px] text-primary hover:underline">+ Agregar财产</button>
               </div>
               {target.properties.length === 0 ? (
                 <p className="pl-6 text-xs text-muted-foreground">暂无财产记录</p>
@@ -210,7 +210,7 @@ function CaseCard({ caseData: cs, expanded, onToggle, matters, users }: { caseDa
                         {(prop.status === "ACTIVE" || prop.status === "RENEWED") && (
                           <>
                             <button type="button" onClick={() => setRenewPropOpen(prop.id)} className="shrink-0 text-[10px] text-primary hover:underline">续保</button>
-                            <button type="button" onClick={() => { startTransition(async () => { try { const { liftProperty } = await import("@/server/preservations/actions-v2"); await liftProperty(prop.id); toast.success("已解除"); } catch { toast.error("操作失败"); } }); }} className="shrink-0 text-[10px] text-muted-foreground hover:text-foreground">解除</button>
+                            <button type="button" onClick={() => { startTransition(async () => { try { const { liftProperty } = await import("@/server/preservations/actions-v2"); await liftProperty(prop.id); toast.success("已解除"); } catch { toast.error("Operación fallida"); } }); }} className="shrink-0 text-[10px] text-muted-foreground hover:text-foreground">解除</button>
                           </>
                         )}
                       </div>
@@ -220,7 +220,7 @@ function CaseCard({ caseData: cs, expanded, onToggle, matters, users }: { caseDa
               )}
             </div>
           ))}
-          <Button size="sm" variant="outline" onClick={() => setAddTargetOpen(true)} className="gap-1 text-xs"><UserPlus className="h-3 w-3" /> 添加被保全人</Button>
+          <Button size="sm" variant="outline" onClick={() => setAddTargetOpen(true)} className="gap-1 text-xs"><UserPlus className="h-3 w-3" /> Agregar被Preservación人</Button>
         </div>
       )}
 

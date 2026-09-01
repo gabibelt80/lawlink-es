@@ -105,9 +105,9 @@ export function AnnouncementDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
-          <DialogTitle>{editing ? "编辑公告" : "发布公告"}</DialogTitle>
+          <DialogTitle>{editing ? "Editar公告" : "发布公告"}</DialogTitle>
           <DialogDescription className="text-xs">
-            置顶公告会显示在全站顶部 banner，设置过期日期后 banner
+            置顶公告会显示在全站顶部 banner，Configuración过期Fecha后 banner
             自动消失（列表仍保留）。
           </DialogDescription>
         </DialogHeader>
@@ -141,7 +141,7 @@ export function AnnouncementDialog({
               置顶（顶部 banner）
             </label>
             <div className="space-y-1.5">
-              <Label className="text-xs">过期日期（可选）</Label>
+              <Label className="text-xs">过期Fecha（可选）</Label>
               <Input
                 type="date"
                 value={expiresAt}
@@ -157,11 +157,11 @@ export function AnnouncementDialog({
             onClick={() => onOpenChange(false)}
             disabled={isPending}
           >
-            取消
+            Cancelar
           </Button>
           <Button onClick={handleSave} disabled={isPending}>
             {isPending && <Loader2 className="mr-1.5 h-4 w-4 animate-spin" />}
-            {editing ? "更新" : "发布"}
+            {editing ? "Actualizar" : "发布"}
           </Button>
         </DialogFooter>
       </DialogContent>

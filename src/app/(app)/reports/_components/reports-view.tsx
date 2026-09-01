@@ -68,12 +68,12 @@ export function ReportsView({
   const [scanning, startScanning] = useTransition();
 
   function handleScanOverdue() {
-    if (!confirm("立刻扫描已结案超过 30 天未归档的案件，给主办律师发预警通知？")) return;
+    if (!confirm("立刻扫描已结案超过 30 天未归档的Caso，给主办Abogado发预警Notificaciones？")) return;
     startScanning(async () => {
       try {
         const r = await triggerArchiveOverdueScanNow();
         toast.success(
-          `归档逾期扫描完成：${r.scanned} 候选 / ${r.notified} 通知 / ${r.suppressed} 抑制`
+          `归档逾期扫描完成：${r.scanned} 候选 / ${r.notified} Notificaciones / ${r.suppressed} 抑制`
         );
       } catch (err) {
         toast.error("扫描失败", { description: err instanceof Error ? err.message : "" });
@@ -82,12 +82,12 @@ export function ReportsView({
   }
 
   function handlePushWeekly() {
-    if (!confirm("立刻给所有 ADMIN / 主任律师 / 律师推送本周报告？每人收到一条通知。")) return;
+    if (!confirm("立刻给所有 ADMIN / 主任Abogado / Abogado推送本周Informe？每人收到一条Notificaciones。")) return;
     startPushing(async () => {
       try {
         const res = await pushWeeklyReportToAll();
         if (res.failed.length === 0) {
-          toast.success(`已推送本周报告（${res.weekLabel}），共 ${res.succeeded} 人`);
+          toast.success(`已推送本周Informe（${res.weekLabel}），共 ${res.succeeded} 人`);
         } else {
           toast.warning(
             `部分成功：${res.succeeded} 成功，${res.failed.length} 失败`,
@@ -179,7 +179,7 @@ export function ReportsView({
             onClick={handleScanOverdue}
             disabled={scanning}
             className="gap-1.5"
-            title="扫描已结超过 30 天未归档的案件"
+            title="扫描已结超过 30 天未归档的Caso"
           >
             {scanning ? (
               <Loader2 className="h-3.5 w-3.5 animate-spin" />
@@ -194,7 +194,7 @@ export function ReportsView({
             onClick={handlePushWeekly}
             disabled={pushing}
             className="gap-1.5"
-            title="给所有律师推送本周报告通知"
+            title="给所有Abogado推送本周InformeNotificaciones"
           >
             {pushing ? (
               <Loader2 className="h-3.5 w-3.5 animate-spin" />
@@ -275,7 +275,7 @@ export function ReportsView({
       <section className="rounded-lg border border-border bg-card p-5">
         <h3 className="mb-3 text-sm font-medium">本期新收 · 类别分布</h3>
         {data.byCategory.length === 0 ? (
-          <p className="py-6 text-center text-sm text-muted-foreground">本期暂无新收案件</p>
+          <p className="py-6 text-center text-sm text-muted-foreground">本期暂无新收Caso</p>
         ) : (
           <ul className="space-y-2">
             {data.byCategory.map((c) => {
@@ -307,9 +307,9 @@ export function ReportsView({
       </section>
 
       <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
-        {/* 律师产出 */}
+        {/* Abogado产出 */}
         <section className="rounded-lg border border-border bg-card p-4">
-          <h3 className="mb-3 text-sm font-medium">律师产出 · 本期</h3>
+          <h3 className="mb-3 text-sm font-medium">Abogado产出 · 本期</h3>
           {data.byLawyer.length === 0 ? (
             <p className="py-6 text-center text-sm text-muted-foreground">本期无产出数据</p>
           ) : (
@@ -317,7 +317,7 @@ export function ReportsView({
               <table className="w-full text-xs">
                 <thead className="bg-muted/30 text-muted-foreground">
                   <tr>
-                    <th className="px-2 py-1.5 text-left font-normal">律师</th>
+                    <th className="px-2 py-1.5 text-left font-normal">Abogado</th>
                     <th className="px-2 py-1.5 text-right font-normal">新收</th>
                     <th className="px-2 py-1.5 text-right font-normal">已结</th>
                     <th className="px-2 py-1.5 text-right font-normal">收款（元）</th>
@@ -343,9 +343,9 @@ export function ReportsView({
           )}
         </section>
 
-        {/* 客户应收 */}
+        {/* Cliente应收 */}
         <section className="rounded-lg border border-border bg-card p-4">
-          <h3 className="mb-3 text-sm font-medium">客户应收 · 本期</h3>
+          <h3 className="mb-3 text-sm font-medium">Cliente应收 · 本期</h3>
           {data.byClientReceivable.length === 0 ? (
             <p className="py-6 text-center text-sm text-muted-foreground">本期无应收数据</p>
           ) : (
@@ -353,7 +353,7 @@ export function ReportsView({
               <table className="w-full text-xs">
                 <thead className="bg-muted/30 text-muted-foreground">
                   <tr>
-                    <th className="px-2 py-1.5 text-left font-normal">客户</th>
+                    <th className="px-2 py-1.5 text-left font-normal">Cliente</th>
                     <th className="px-2 py-1.5 text-right font-normal">应收</th>
                     <th className="px-2 py-1.5 text-right font-normal">已收</th>
                     <th className="px-2 py-1.5 text-right font-normal">余额</th>
@@ -388,9 +388,9 @@ export function ReportsView({
 
       {/* 办案周期分析 */}
       <section className="rounded-lg border border-border bg-card p-5">
-        <h3 className="mb-3 text-sm font-medium">办案周期 · 本期已结案件（收案 → 结案）</h3>
+        <h3 className="mb-3 text-sm font-medium">办案周期 · 本期已结Caso（收案 → 结案）</h3>
         {cycle.length === 0 ? (
-          <p className="py-6 text-center text-sm text-muted-foreground">本期无已结案件</p>
+          <p className="py-6 text-center text-sm text-muted-foreground">本期无已结Caso</p>
         ) : (
           <div className="overflow-hidden rounded border border-border">
             <table className="w-full text-xs">

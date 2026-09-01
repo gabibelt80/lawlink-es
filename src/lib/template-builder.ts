@@ -5,8 +5,8 @@
  * 律所部署后可在 /settings/templates 上传自定义模板替换。
  *
  * 8 个：
- *   1. 民事案件收案登记表
- *   2. 刑事案件收案登记表
+ *   1. 民事Caso收案登记表
+ *   2. PenalCaso收案登记表
  *   3. 法律服务风险告知书
  *   4. 委托代理合同（个人）
  *   5. 委托代理合同（单位）
@@ -151,7 +151,7 @@ export async function pack(children: (Paragraph | Table)[]): Promise<Buffer> {
 }
 
 // ============================================================
-// 模板 1: 民事案件收案登记表
+// 模板 1: 民事Caso收案登记表
 // ============================================================
 const T1_VARS = [
   "firm.name",
@@ -172,13 +172,13 @@ const T1_VARS = [
 async function buildT1(): Promise<Buffer> {
   return pack([
     body("{{firm.name}}", { align: AlignmentType.CENTER, bold: true }),
-    title("民事案件收案登记表"),
-    body("案件编号：{{matter.code}}", { align: AlignmentType.RIGHT }),
+    title("民事Caso收案登记表"),
+    body("Caso编号：{{matter.code}}", { align: AlignmentType.RIGHT }),
     blank(),
     kvTable([
-      ["收案日期", "{{matter.intakeDate}}"],
+      ["收案Fecha", "{{matter.intakeDate}}"],
       ["案由", "{{matter.causeText}}"],
-      ["案件类型", "民事案件"],
+      ["Caso类型", "民事Caso"],
       ["委托人", "{{client.name}}"],
       ["委托人住址", "{{client.address}}"],
       ["联系电话", "{{client.phone}}"],
@@ -186,15 +186,15 @@ async function buildT1(): Promise<Buffer> {
       ["对方住址", "{{opposing.address}}"],
       ["受理法院", "{{proceeding.court}}"],
       ["涉案标的", "{{matter.claimAmount}}"],
-      ["主办律师", "{{lawyer.name}}"]
+      ["主办Abogado", "{{lawyer.name}}"]
     ]),
     blank(),
-    body("登记日期：{{todayCN}}", { align: AlignmentType.RIGHT })
+    body("登记Fecha：{{todayCN}}", { align: AlignmentType.RIGHT })
   ]);
 }
 
 // ============================================================
-// 模板 2: 刑事案件收案登记表
+// 模板 2: PenalCaso收案登记表
 // ============================================================
 const T2_VARS = [
   "firm.name",
@@ -212,23 +212,23 @@ const T2_VARS = [
 async function buildT2(): Promise<Buffer> {
   return pack([
     body("{{firm.name}}", { align: AlignmentType.CENTER, bold: true }),
-    title("刑事案件收案登记表"),
-    body("案件编号：{{matter.code}}", { align: AlignmentType.RIGHT }),
+    title("PenalCaso收案登记表"),
+    body("Caso编号：{{matter.code}}", { align: AlignmentType.RIGHT }),
     blank(),
     kvTable([
-      ["收案日期", "{{matter.intakeDate}}"],
+      ["收案Fecha", "{{matter.intakeDate}}"],
       ["涉嫌罪名", "{{matter.causeText}}"],
       ["委托人(家属)", "{{client.name}}"],
       ["与被告人关系", ""],
       ["联系电话", "{{client.phone}}"],
       ["被告人姓名", "{{opposing.name}}"],
       ["羁押/居所地点", "{{opposing.address}}"],
-      ["案件阶段", "侦查 / 审查起诉 / 一审 / 二审 / 再审"],
+      ["Caso阶段", "侦查 / 审查起诉 / 一审 / 二审 / 再审"],
       ["办理机关", ""],
-      ["主办律师", "{{lawyer.name}}"]
+      ["主办Abogado", "{{lawyer.name}}"]
     ]),
     blank(),
-    body("登记日期：{{todayCN}}", { align: AlignmentType.RIGHT })
+    body("登记Fecha：{{todayCN}}", { align: AlignmentType.RIGHT })
   ]);
 }
 
@@ -243,23 +243,23 @@ async function buildT3(): Promise<Buffer> {
     body("致：{{client.name}}", { bold: true }),
     blank(),
     body(
-      "本所及本所律师在接受您的委托办理 {{matter.causeText}} 一案前，依据《律师法》《律师执业行为规范》等相关规定，将以下法律服务风险事项明确告知您，请仔细阅读：",
+      "本所及本所Abogado在接受您的委托办理 {{matter.causeText}} 一案前，依据《Abogado法》《Abogado执业行为规范》等相关规定，将以下法律服务风险事项明确告知您，请仔细阅读：",
       { indent: true }
     ),
     blank(),
-    body("一、法律服务结果的不确定性。法律事务的处理受案件事实、证据、法律适用、司法裁量、对方当事人行为等多种因素影响，律师无法承诺任何确定的结果。", { indent: true }),
-    body("二、案件结果不取决于代理费金额。律师收费与办案投入相关，与诉讼结果无对应关系。", { indent: true }),
+    body("一、法律服务结果的不Aceptar性。法律事务的处理受Caso事实、证据、法律适用、司法裁量、对方当事人行为等多种因素影响，Abogado无法承诺任何Aceptar的结果。", { indent: true }),
+    body("二、Caso结果不取决于代理费金额。Abogado收费与办案投入相关，与诉讼结果无对应关系。", { indent: true }),
     body("三、证据材料的真实性责任。委托人提供的证据材料须真实、合法。如因证据虚假或瑕疵导致不利后果，由委托人自行承担。", { indent: true }),
-    body("四、诉讼时效与举证期限。委托人应当在法律规定的诉讼时效内主张权利，在举证期限内提交全部证据，逾期可能丧失相应权利。", { indent: true }),
+    body("四、诉讼时效与举证期限。委托人应当在法律规定的诉讼时效内主张权利，在举证期限内EnviarVer todos证据，逾期可能丧失相应权利。", { indent: true }),
     body("五、判决的执行风险。即使获得胜诉判决，因对方履行能力等原因，仍可能存在执行不能或执行不到位的风险。", { indent: true }),
-    body("六、和解与调解的可能性。律师将根据案件情况评估和解、调解方案，是否接受由委托人最终决定。", { indent: true }),
+    body("六、和解与调解的可能性。Abogado将根据Caso情况评估和解、调解方案，是否接受由委托人最终决定。", { indent: true }),
     body("七、其他事项。", { indent: true }),
     blank(),
     body("委托人(签字)：________________"),
     blank(),
-    body("承办律师：{{lawyer.name}}"),
-    body("律师事务所：{{firm.name}}"),
-    body("告知日期：{{todayCN}}")
+    body("承办Abogado：{{lawyer.name}}"),
+    body("Abogado事务所：{{firm.name}}"),
+    body("告知Fecha：{{todayCN}}")
   ]);
 }
 
@@ -293,20 +293,20 @@ async function buildT4(): Promise<Buffer> {
     body("地址：{{firm.address}}"),
     body("电话：{{firm.phone}}"),
     blank(),
-    body("甲乙双方根据《中华人民共和国民法典》《中华人民共和国律师法》之规定，经协商一致，签订本委托代理合同：", { indent: true }),
+    body("甲乙双方根据《中华人民共和国民法典》《中华人民共和国Abogado法》之规定，经协商一致，签订本委托代理合同：", { indent: true }),
     blank(),
     body("第一条 委托事项及代理权限", { bold: true }),
-    body("甲方委托乙方指派律师就 {{matter.causeText}} 一案为甲方提供法律服务。代理权限为：________________(一般代理 / 特别代理：包括代为承认、放弃、变更诉讼请求，代为和解，代为提起反诉或上诉等)。", { indent: true }),
+    body("甲方委托乙方指派Abogado就 {{matter.causeText}} 一案为甲方提供法律服务。代理权限为：________________(一般代理 / 特别代理：包括代为承认、放弃、变更诉讼请求，代为和解，代为提起反诉或上诉等)。", { indent: true }),
     blank(),
     body("第二条 委托代理事项的范围", { bold: true }),
     body("(一审 / 二审 / 再审 / 仲裁 / 执行)", { indent: true }),
     blank(),
-    body("第三条 律师费及支付方式", { bold: true }),
+    body("第三条 Abogado费及支付方式", { bold: true }),
     body("代理费金额：人民币________元(大写：________________元整)。", { indent: true }),
     body("支付方式：________________。", { indent: true }),
     blank(),
     body("第四条 其他费用", { bold: true }),
-    body("案件办理过程中产生的诉讼费、保全费、鉴定费、差旅费等，由甲方另行承担。", { indent: true }),
+    body("Caso办理过程中产生的诉讼费、Preservación费、鉴定费、差旅费等，由甲方另行承担。", { indent: true }),
     blank(),
     body("第五条 双方权利义务", { bold: true }),
     body("略", { indent: true }),
@@ -315,16 +315,16 @@ async function buildT4(): Promise<Buffer> {
     body("略", { indent: true }),
     blank(),
     body("第七条 争议解决", { bold: true }),
-    body("因本合同发生的争议，由双方协商解决；协商不成的，提交乙方所在地有管辖权的人民法院诉讼解决。", { indent: true }),
+    body("因本合同发生的争议，由双方协商解决；协商不成的，Enviar乙方所在地有管辖权的人民法院诉讼解决。", { indent: true }),
     blank(),
     body("本合同一式两份，甲乙双方各执一份，自双方签字盖章之日起生效。", { indent: true }),
     blank(),
     blank(),
     body("甲方(签字)：________________            乙方(盖章)："),
     blank(),
-    body("                                            承办律师：{{lawyer.name}}"),
+    body("                                            承办Abogado：{{lawyer.name}}"),
     blank(),
-    body("签订日期：{{todayCN}}", { align: AlignmentType.RIGHT })
+    body("签订Fecha：{{todayCN}}", { align: AlignmentType.RIGHT })
   ]);
 }
 
@@ -362,12 +362,12 @@ async function buildT5(): Promise<Buffer> {
     body("甲乙双方就以下事项签订本委托代理合同：", { indent: true }),
     blank(),
     body("第一条 委托事项", { bold: true }),
-    body("甲方委托乙方指派律师就 {{matter.causeText}} 一案为甲方提供法律服务。", { indent: true }),
+    body("甲方委托乙方指派Abogado就 {{matter.causeText}} 一案为甲方提供法律服务。", { indent: true }),
     blank(),
     body("第二条 代理权限", { bold: true }),
     body("特别代理(含代为承认、放弃、变更诉讼请求，代为和解，代为提起反诉或上诉)。", { indent: true }),
     blank(),
-    body("第三条 律师费", { bold: true }),
+    body("第三条 Abogado费", { bold: true }),
     body("代理费金额：人民币________元(大写：________________元整)。", { indent: true }),
     body("支付方式：分期 / 一次性 / 风险代理 / 按小时计费。", { indent: true }),
     blank(),
@@ -375,17 +375,17 @@ async function buildT5(): Promise<Buffer> {
     body("自本合同签订之日起至本案代理事项处理完毕(取得生效法律文书或双方书面终止)。", { indent: true }),
     blank(),
     body("第五条 保密条款", { bold: true }),
-    body("乙方对甲方提供的资料及案件信息负有保密义务。", { indent: true }),
+    body("乙方对甲方提供的资料及Caso信息负有保密义务。", { indent: true }),
     blank(),
     body("第六条 争议解决", { bold: true }),
-    body("协商不成提交乙方所在地有管辖权的人民法院。", { indent: true }),
+    body("协商不成Enviar乙方所在地有管辖权的人民法院。", { indent: true }),
     blank(),
     blank(),
     body("甲方(盖章)：                                    乙方(盖章)："),
     blank(),
-    body("法定代表人/负责人：________________              承办律师：{{lawyer.name}}"),
+    body("法定代表人/负责人：________________              承办Abogado：{{lawyer.name}}"),
     blank(),
-    body("签订日期：{{todayCN}}", { align: AlignmentType.RIGHT })
+    body("签订Fecha：{{todayCN}}", { align: AlignmentType.RIGHT })
   ]);
 }
 
@@ -409,7 +409,7 @@ async function buildT6(): Promise<Buffer> {
     body("委托人：{{client.name}}"),
     body("身份证号：{{client.idNumber}}"),
     blank(),
-    body("受委托人：{{lawyer.name}}，{{firm.name}}律师。"),
+    body("受委托人：{{lawyer.name}}，{{firm.name}}Abogado。"),
     blank(),
     body("现委托上列受委托人在我与 {{opposing.name}} {{matter.causeText}} 一案中，作为我的诉讼代理人。", { indent: true }),
     blank(),
@@ -465,7 +465,7 @@ async function buildT7(): Promise<Buffer> {
     body("诉讼请求：", { bold: true }),
     body("1. ________________；", { indent: true }),
     body("2. ________________；", { indent: true }),
-    body("3. 本案诉讼费、保全费等由被告承担。", { indent: true }),
+    body("3. 本案诉讼费、Preservación费等由被告承担。", { indent: true }),
     blank(),
     body("事实与理由：", { bold: true }),
     body("________________________________________________________________________", { indent: true }),
@@ -480,7 +480,7 @@ async function buildT7(): Promise<Buffer> {
     blank(),
     blank(),
     body("起诉人(签字)：________________"),
-    body("                                                            代理律师：{{lawyer.name}}"),
+    body("                                                            代理Abogado：{{lawyer.name}}"),
     blank(),
     body("{{todayCN}}", { align: AlignmentType.RIGHT })
   ]);
@@ -537,7 +537,7 @@ async function buildT8(): Promise<Buffer> {
     blank(),
     blank(),
     body("答辩人(签字)：________________"),
-    body("                                                            代理律师：{{lawyer.name}}"),
+    body("                                                            代理Abogado：{{lawyer.name}}"),
     blank(),
     body("{{todayCN}}", { align: AlignmentType.RIGHT })
   ]);
@@ -590,17 +590,17 @@ async function buildT9(): Promise<Buffer> {
     blank(),
     kvTable([
       ["归档编号", "{{archive.archiveNo}}"],
-      ["案件编号", "{{matter.code}}"],
-      ["案件类别", "{{matter.category}}"],
+      ["Caso编号", "{{matter.code}}"],
+      ["Caso类别", "{{matter.category}}"],
       ["案由", "{{matter.causeText}}"],
       ["结案方式", "{{archive.closedReasonCN}}"],
-      ["结案日期", "{{archive.completedAtCN}}"],
-      ["归档日期", "{{archive.archivedAtCN}}"],
-      ["承办律师", "{{lawyer.name}}"]
+      ["结案Fecha", "{{archive.completedAtCN}}"],
+      ["归档Fecha", "{{archive.archivedAtCN}}"],
+      ["承办Abogado", "{{lawyer.name}}"]
     ]),
     blank(),
     blank(),
-    body("本卷宗自归档日起按律所规定保存，未经许可不得借阅、复制或转交。", { align: AlignmentType.CENTER })
+    body("本卷宗自归档日起按律所规定Guardar，未经许可不得借阅、复制或转交。", { align: AlignmentType.CENTER })
   ]);
 }
 
@@ -618,7 +618,7 @@ const T10_VARS = [
 ];
 
 function docCatalogHeaderRow(): TableRow {
-  const headers = ["序号", "材料名称", "类别", "上传日期", "页数", "备注"];
+  const headers = ["序号", "材料Nombre", "类别", "上传Fecha", "页数", "Observaciones"];
   return new TableRow({
     tableHeader: true,
     children: headers.map((h, idx) => new TableCell({
@@ -707,34 +707,34 @@ async function buildT10(): Promise<Buffer> {
   return pack([
     body("{{firm.name}}", { align: AlignmentType.CENTER, bold: true }),
     title("卷 宗 目 录"),
-    body("归档编号：{{archive.archiveNo}}    案件编号：{{matter.code}}", { align: AlignmentType.RIGHT }),
-    body("案件：{{matter.title}}", { align: AlignmentType.RIGHT }),
+    body("归档编号：{{archive.archiveNo}}    Caso编号：{{matter.code}}", { align: AlignmentType.RIGHT }),
+    body("Caso：{{matter.title}}", { align: AlignmentType.RIGHT }),
     blank(),
     table,
     blank(),
-    body("承办律师：{{lawyer.name}}", { align: AlignmentType.RIGHT }),
-    body("归档日期：{{archive.archivedAtCN}}", { align: AlignmentType.RIGHT })
+    body("承办Abogado：{{lawyer.name}}", { align: AlignmentType.RIGHT }),
+    body("归档Fecha：{{archive.archivedAtCN}}", { align: AlignmentType.RIGHT })
   ]);
 }
 
 // ============================================================
-// 注册表
+// Registrarse表
 // ============================================================
 export const BUILTIN_TEMPLATES: BuiltInTemplate[] = [
   {
     key: "civil_intake_registration",
-    name: "民事案件收案登记表",
+    name: "民事Caso收案登记表",
     category: "INTAKE",
-    description: "民事案件收案信息登记，用于律所收案立卷。字段自动从案件信息抓取。",
+    description: "民事Caso收案信息登记，用于律所收案立卷。字段自动从Caso信息抓取。",
     applicableCategories: ["CIVIL_COMMERCIAL"],
     variables: T1_VARS,
     buildBuffer: buildT1
   },
   {
     key: "criminal_intake_registration",
-    name: "刑事案件收案登记表",
+    name: "PenalCaso收案登记表",
     category: "INTAKE",
-    description: "刑事案件收案信息登记。被告人羁押地点等关键字段。",
+    description: "PenalCaso收案信息登记。被告人羁押地点等关键字段。",
     applicableCategories: ["CRIMINAL"],
     variables: T2_VARS,
     buildBuffer: buildT2
@@ -743,7 +743,7 @@ export const BUILTIN_TEMPLATES: BuiltInTemplate[] = [
     key: "legal_service_risk_notice",
     name: "法律服务风险告知书",
     category: "INTAKE",
-    description: "向委托人告知法律服务的不确定性与各类风险。律师与委托人签字。",
+    description: "向委托人告知法律服务的不Aceptar性与各类风险。Abogado与委托人签字。",
     applicableCategories: [],
     variables: T3_VARS,
     buildBuffer: buildT3
@@ -752,7 +752,7 @@ export const BUILTIN_TEMPLATES: BuiltInTemplate[] = [
     key: "retainer_individual",
     name: "委托代理合同(个人)",
     category: "RETAINER",
-    description: "自然人委托代理合同标准模板，含代理权限/律师费/争议解决条款。",
+    description: "自然人委托代理合同标准模板，含代理权限/Abogado费/争议解决条款。",
     applicableCategories: [],
     variables: T4_VARS,
     buildBuffer: buildT4
@@ -779,7 +779,7 @@ export const BUILTIN_TEMPLATES: BuiltInTemplate[] = [
     key: "civil_complaint",
     name: "民事起诉状",
     category: "LITIGATION",
-    description: "民事起诉状标准格式。诉讼请求与事实理由需律师填充。",
+    description: "民事起诉状标准格式。诉讼请求与事实理由需Abogado填充。",
     applicableCategories: ["CIVIL_COMMERCIAL"],
     variables: T7_VARS,
     buildBuffer: buildT7
@@ -788,7 +788,7 @@ export const BUILTIN_TEMPLATES: BuiltInTemplate[] = [
     key: "civil_answer",
     name: "民事答辩状",
     category: "LITIGATION",
-    description: "民事答辩状标准格式。答辩内容需律师填充。",
+    description: "民事答辩状标准格式。答辩内容需Abogado填充。",
     applicableCategories: ["CIVIL_COMMERCIAL"],
     variables: T8_VARS,
     buildBuffer: buildT8
@@ -797,7 +797,7 @@ export const BUILTIN_TEMPLATES: BuiltInTemplate[] = [
     key: "archive_cover",
     name: "卷宗封皮",
     category: "ARCHIVE",
-    description: "归档时自动生成。律所标识 + 案件标题 + 归档编号 + 结案信息。律师勿手动渲染。",
+    description: "归档时自动生成。律所标识 + Caso标题 + 归档编号 + 结案信息。Abogado勿手动渲染。",
     applicableCategories: [],
     variables: T9_VARS,
     buildBuffer: buildT9
@@ -806,7 +806,7 @@ export const BUILTIN_TEMPLATES: BuiltInTemplate[] = [
     key: "archive_catalog",
     name: "卷宗目录",
     category: "ARCHIVE",
-    description: "归档时自动生成。列出本案全部材料（按上传时间排序）。律师勿手动渲染。",
+    description: "归档时自动生成。列出本案Ver todos材料（按上传时间排序）。Abogado勿手动渲染。",
     applicableCategories: [],
     variables: T10_VARS,
     buildBuffer: buildT10

@@ -1,12 +1,12 @@
 "use server";
 
 /**
- * v0.22: 一键扫描案件全部未审查文档
+ * v0.22: 一键扫描CasoVer todos未审查文档
  *
  * - 取本案中 mime 支持的（PDF / DOCX / text）且 7 天内没审查过的 documents
  * - 硬上限单次 5 个文档（防 token 爆）
  * - 循环调 reviewDocument；单条失败不阻断
- * - 返回 { reviewed, skipped, errors[] }
+ * - Volver { reviewed, skipped, errors[] }
  */
 import { prisma } from "@/lib/prisma";
 import { requireSession } from "@/lib/auth/session";

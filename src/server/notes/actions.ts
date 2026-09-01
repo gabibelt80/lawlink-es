@@ -63,7 +63,7 @@ export async function updateNote(input: NoteUpdateInput) {
   const existing = await prisma.note.findUnique({ where: { id: data.id } });
   if (!existing) throw new Error("沟通记录不存在");
   if (existing.authorId !== session.user.id && session.user.role !== "ADMIN") {
-    throw new Error("只能编辑自己的沟通记录");
+    throw new Error("只能Editar自己的沟通记录");
   }
   await assertMatterWritable(existing.matterId);
 
@@ -94,7 +94,7 @@ export async function deleteNote(id: string) {
   const existing = await prisma.note.findUnique({ where: { id } });
   if (!existing) return { ok: false };
   if (existing.authorId !== session.user.id && session.user.role !== "ADMIN") {
-    throw new Error("只能删除自己的沟通记录");
+    throw new Error("只能Eliminar自己的沟通记录");
   }
   await assertMatterWritable(existing.matterId);
 

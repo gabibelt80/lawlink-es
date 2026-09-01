@@ -14,8 +14,8 @@ import { globalSearch, type GlobalSearchResult } from "@/server/search/actions";
 import { FolderOpen, Users, FileText, Inbox } from "lucide-react";
 
 const groupConfig = [
-  { key: "matters" as const, label: "案件", icon: FolderOpen },
-  { key: "clients" as const, label: "客户", icon: Users },
+  { key: "matters" as const, label: "Caso", icon: FolderOpen },
+  { key: "clients" as const, label: "Cliente", icon: Users },
   { key: "intakes" as const, label: "收案", icon: Inbox },
   { key: "documents" as const, label: "材料", icon: FileText },
 ];
@@ -85,7 +85,7 @@ export function SearchDialog({
   return (
     <CommandDialog open={open} onOpenChange={onOpenChange}>
       <CommandInput
-        placeholder="搜索案件、客户、材料..."
+        placeholder="BuscarCaso、Cliente、材料..."
         value={query}
         onValueChange={setQuery}
         className="ll-command-input"

@@ -196,10 +196,10 @@ export function MatterDetailTabs({
     startTransition(async () => {
       try {
         await deleteProcedure(id);
-        toast.success("程序已删除");
+        toast.success("程序已Eliminar");
         router.refresh();
       } catch (err) {
-        toast.error("删除失败", { description: err instanceof Error ? err.message : "" });
+        toast.error("Eliminar失败", { description: err instanceof Error ? err.message : "" });
       }
     });
   }
@@ -250,7 +250,7 @@ export function MatterDetailTabs({
 
   return (
     <div className="space-y-4">
-      {/* 案件详情是每天要开几十次的页面，页面级入场动画只会让它显得慢，故不加动效 */}
+      {/* Caso详情是每天要开几十次的页面，页面级入场动画只会让它显得慢，故不加动效 */}
       <header className="ll-hero-surface px-5 py-4">
         <div className="relative z-[1] flex flex-wrap items-start justify-between gap-4">
           <div className="min-w-0 flex-1">
@@ -289,7 +289,7 @@ export function MatterDetailTabs({
                 className="gap-1.5"
               >
                 <Pencil className="h-3.5 w-3.5" strokeWidth={1.8} />
-                编辑信息
+                Editar信息
               </Button>
             )}
             {currentUserRole && canLeadThisMatter && (
@@ -309,7 +309,7 @@ export function MatterDetailTabs({
         />
       </header>
 
-      {/* v1.1 UI（方案 B）：吸顶摘要条——标题滚出视野后，案件身份 +
+      {/* v1.1 UI（方案 B）：吸顶摘要条——标题滚出视野后，Caso身份 +
           下一节点倒计时仍常驻可见 */}
       <MatterStickyBar
         title={matter.title}
@@ -317,7 +317,7 @@ export function MatterDetailTabs({
         procedures={engagedProcedures}
       />
 
-      {/* 归档状态 banner */}
+      {/* 归档Estado banner */}
       {latestArchive && (
         <div>
           <ArchiveStatusBanner
@@ -478,10 +478,10 @@ type DeadlineProgressItem = ProcedureItem["deadlines"][number] & {
 };
 
 /**
- * 删除程序的确认文案。
+ * Eliminar程序的确认文案。
  *
- * 原文案是「该程序下的所有开庭、期限、备忘和材料记录将被一并删除」——两个问题：
- * 1. 笼统。人对「所有相关记录」会习惯性点确定，对「3 条期限」会停手。
+ * 原文案是「该程序下的所有开庭、期限、备忘和材料记录将被一并Eliminar」——两个问题：
+ * 1. 笼统。人对「所有相关记录」会习惯性点Aceptar，对「3 条期限」会停手。
  * 2. 不准确。材料（Document）的外键是 SetNull，只会丢失程序关联，本身不删。
  *
  * 级联硬删的实际范围（schema onDelete: Cascade）：Deadline / Hearing /
@@ -495,12 +495,12 @@ function deleteProcedureWarning(procedure: ProcedureItem, label: string): string
   if (procedure.memos.length > 0) parts.push(`${procedure.memos.length} 条备忘`);
 
   if (parts.length === 0) {
-    return `确定删除程序「${label}」？该程序下暂无期限、开庭、环节和备忘记录。`;
+    return `AceptarEliminar程序「${label}」？该程序下暂无期限、开庭、环节和备忘记录。`;
   }
   return (
-    `确定删除程序「${label}」？\n\n` +
-    `该程序下的 ${parts.join("、")} 将被一并删除，此操作不可撤销。\n` +
-    `（材料不会被删除，仅解除与本程序的关联。）`
+    `AceptarEliminar程序「${label}」？\n\n` +
+    `该程序下的 ${parts.join("、")} 将被一并Eliminar，此Acciones不可撤销。\n` +
+    `（材料不会被Eliminar，仅解除与本程序的关联。）`
   );
 }
 
@@ -588,7 +588,7 @@ function ProcedureChainBar({
                             ? "text-primary-foreground/75 hover:text-primary-foreground"
                             : "text-muted-foreground hover:text-destructive"
                         )}
-                        title="删除此程序"
+                        title="Eliminar此程序"
                       >
                         <X className="h-2.5 w-2.5" />
                       </button>
@@ -603,7 +603,7 @@ function ProcedureChainBar({
               type="button"
               onClick={onAdd}
               className="ml-1 inline-flex h-[26px] w-[26px] shrink-0 items-center justify-center rounded-full border border-dashed border-input text-muted-foreground transition-colors hover:border-primary hover:text-primary"
-              title="添加程序"
+              title="Agregar程序"
             >
               <Plus className="h-3 w-3" strokeWidth={1.8} />
             </button>
@@ -677,7 +677,7 @@ function MatterStickyBar({
   const deadlineTone =
     days === null ? "" : days < 0 || days <= 7 ? "text-destructive" : days <= 30 ? "text-amber-600" : "text-muted-foreground";
   const deadlineText =
-    days === null ? "" : days < 0 ? `逾期 ${-days} 天` : days === 0 ? "今天到期" : `剩 ${days} 天`;
+    days === null ? "" : days < 0 ? `逾期 ${-days} 天` : days === 0 ? "Hoy到期" : `剩 ${days} 天`;
 
   return (
     <div ref={wrapRef} className="h-0 w-full" aria-hidden={!pinned}>
@@ -775,9 +775,9 @@ function MatterKeypoints({
       />
       <ProgressMetricCard
         icon={<Landmark className="h-3 w-3" />}
-        label="立案日期"
+        label="立案Fecha"
         value={acceptedDate ? formatMonthDay(acceptedDate) : "—"}
-        sub={acceptedDate ? String(new Date(acceptedDate).getFullYear()) : "未填写立案日期"}
+        sub={acceptedDate ? String(new Date(acceptedDate).getFullYear()) : "未填写立案Fecha"}
       />
       <ProgressMetricCard
         icon={<CalendarClock className="h-3 w-3" />}
@@ -845,7 +845,7 @@ function MatterTeamCard({
             onClick={onManage}
             className="h-6 px-2 text-[11px] text-muted-foreground hover:text-primary"
           >
-            管理
+            Administrar
           </Button>
         )}
       </header>
@@ -963,16 +963,16 @@ function matterTeamRoleLabel(role: MatterTeamMember["matterRole"]) {
 }
 
 function matterTeamRoleDescription(role: MatterTeamMember["matterRole"]) {
-  if (role === "LEAD") return "主办律师";
-  if (role === "CO_LEAD") return "协办律师";
-  return "律师助理";
+  if (role === "LEAD") return "主办Abogado";
+  if (role === "CO_LEAD") return "协办Abogado";
+  return "Abogado助理";
 }
 
 function deadlineValue(deadline: DeadlineProgressItem | null) {
   if (!deadline) return "—";
   const days = daysFromToday(deadline.dueAt);
   if (days < 0) return `逾期 ${Math.abs(days)} 天`;
-  if (days === 0) return "今天";
+  if (days === 0) return "Hoy";
   return `${days} 天`;
 }
 
@@ -1097,7 +1097,7 @@ function buildProcedurePartyOptions(matter: MatterPayload) {
       enterpriseSocialCode: client.type === "INDIVIDUAL" ? null : client.idNumber,
       enterpriseName: client.type === "INDIVIDUAL" ? null : client.name,
       enterpriseBoundAt: null,
-      notes: "案件关联客户",
+      notes: "Caso关联Cliente",
       createdAt: new Date(),
       updatedAt: new Date()
     });

@@ -63,7 +63,7 @@ export function OverviewPanel({ matter }: { matter: MatterPayload }) {
                             : "text-foreground"
                       }`}
                     >
-                      {isOverdue ? `逾期 ${-days} 天` : days === 0 ? "今天" : `${days} 天`}
+                      {isOverdue ? `逾期 ${-days} 天` : days === 0 ? "Hoy" : `${days} 天`}
                     </div>
                     <div className="font-mono text-[10px] text-muted-foreground tabular">
                       {new Date(d.dueAt).toLocaleDateString("zh-CN")}

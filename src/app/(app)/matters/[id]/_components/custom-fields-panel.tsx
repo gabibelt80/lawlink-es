@@ -51,7 +51,7 @@ export function CustomFieldsPanel({
         {canEdit && (
           <Button variant="ghost" size="sm" className="h-7 gap-1" onClick={() => setEditOpen(true)}>
             <Pencil className="h-3 w-3" />
-            编辑
+            Editar
           </Button>
         )}
       </header>
@@ -105,10 +105,10 @@ function EditDialog({
     startTransition(async () => {
       try {
         await saveMatterCustomValues(matterId, draft);
-        toast.success("已保存");
+        toast.success("已Guardar");
         onClose();
       } catch (err) {
-        toast.error("保存失败", { description: err instanceof Error ? err.message : "" });
+        toast.error("Guardar失败", { description: err instanceof Error ? err.message : "" });
       }
     });
   }
@@ -117,7 +117,7 @@ function EditDialog({
     <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
       <DialogContent className="max-w-md">
         <DialogHeader>
-          <DialogTitle>编辑自定义信息</DialogTitle>
+          <DialogTitle>Editar自定义信息</DialogTitle>
         </DialogHeader>
 
         <div className="max-h-[60vh] space-y-3 overflow-y-auto">
@@ -153,10 +153,10 @@ function EditDialog({
 
         <DialogFooter>
           <Button variant="outline" onClick={onClose} disabled={pending}>
-            取消
+            Cancelar
           </Button>
           <Button onClick={submit} disabled={pending}>
-            保存
+            Guardar
           </Button>
         </DialogFooter>
       </DialogContent>

@@ -8,10 +8,10 @@ import { InvoiceRequestSheet } from "./invoice-request-sheet";
 import type { FinancePayload, UserOption } from "./matter-detail-tabs";
 
 /**
- * v0.12 重构：财务面板瘦身
- * - 删除：合同板块 / 分成方案 / 快捷录入 / 收付流水（5 类）
- * - 保留：律师费到账列表（仅 RECEIVED 类型）+ 顶部小计 + 申请开票按钮
- * - 数据主要由后台财务人员录入，案件页只读
+ * v0.12 重构：Finanzas面板瘦身
+ * - Eliminar：合同板块 / 分成方案 / 快捷录入 / 收付流水（5 类）
+ * - 保留：Abogado费到账列表（仅 RECEIVED 类型）+ 顶部小计 + 申请开票按钮
+ * - 数据主要由后台Finanzas人员录入，Caso页只读
  */
 export function FinancePanel({
   matterId,
@@ -35,11 +35,11 @@ export function FinancePanel({
   const outstanding = Math.max(stats.receivable - stats.received, 0);
 
   const cards: { label: string; value: number; tone: StatTone; className?: string }[] = [
-    { label: "合同约定律师费", value: stats.contractAmount, tone: "neutral", className: "col-span-3" },
+    { label: "合同约定Abogado费", value: stats.contractAmount, tone: "neutral", className: "col-span-3" },
     { label: "已收", value: stats.received, tone: "emerald" },
     { label: "待收", value: outstanding, tone: "amber" },
     { label: "支出", value: stats.cost, tone: "red" },
-    // v1.0: 分成降级——没配分成方案的案件不展示该卡（独立律师无此概念）
+    // v1.0: 分成降级——没配分成方案的Caso不展示该卡（独立Abogado无此概念）
     ...(stats.commission > 0
       ? [{ label: "分成", value: stats.commission, tone: "neutral" as StatTone }]
       : [])
@@ -51,7 +51,7 @@ export function FinancePanel({
         <div className="flex flex-wrap items-center justify-between gap-2">
           <span className="flex items-center gap-1.5 text-[13px] font-medium">
             <Wallet className="h-3.5 w-3.5 text-primary" />
-            财务费用
+            Finanzas费用
           </span>
           {canRequestInvoice && (
             <Button
@@ -66,7 +66,7 @@ export function FinancePanel({
         </div>
       </header>
 
-      {/* 紧凑指标卡（对照案件云"财务概览"指标看板） */}
+      {/* 紧凑指标卡（对照Caso云"Finanzas概览"指标看板） */}
       <div
         className={
           compact
@@ -88,7 +88,7 @@ export function FinancePanel({
 
       {received.length === 0 ? (
         <p className="py-6 text-center text-xs text-muted-foreground">
-          暂无到账记录（由财务管理人员后台录入）
+          暂无到账记录（由FinanzasAdministrar人员后台录入）
         </p>
       ) : (
         <ul className="divide-y divide-border">

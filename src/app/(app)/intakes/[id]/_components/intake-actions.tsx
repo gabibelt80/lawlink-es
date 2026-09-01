@@ -41,16 +41,16 @@ export function IntakeActions({
   const role = session?.user?.role;
   const canApprove = role === "ADMIN" || role === "PRINCIPAL_LAWYER";
 
-  // 律师端：待补正状态 → 显示"重新提交"按钮
+  // Abogado端：待补正Estado → 显示"重新Enviar"按钮
   function handleResubmit() {
-    if (!confirm("确认重新提交审批？")) return;
+    if (!confirm("确认重新EnviarAprobación？")) return;
     startTransition(async () => {
       try {
         await resubmitIntake(intakeId);
-        toast.success("已重新提交审批");
+        toast.success("已重新EnviarAprobación");
         router.refresh();
       } catch (err) {
-        toast.error("操作失败", {
+        toast.error("Operación fallida", {
           description: err instanceof Error ? err.message : ""
         });
       }
@@ -62,7 +62,7 @@ export function IntakeActions({
       <div className="flex items-center gap-2">
         <div className="inline-flex items-center gap-1.5 rounded-md border border-amber-500/40 bg-amber-500/10 px-3 py-1.5 text-xs text-amber-700">
           <AlertCircle className="h-3.5 w-3.5" />
-          待补正：补充材料后可重新提交
+          待补正：补充材料后可重新Enviar
         </div>
         <Button size="sm" onClick={handleResubmit} disabled={isPending} className="gap-1.5">
           {isPending ? (
@@ -70,7 +70,7 @@ export function IntakeActions({
           ) : (
             <RotateCcw className="h-3.5 w-3.5" />
           )}
-          重新提交
+          重新Enviar
         </Button>
       </div>
     );
@@ -80,17 +80,17 @@ export function IntakeActions({
     return (
       <div className="inline-flex items-center gap-1.5 rounded-md border border-border bg-muted/30 px-3 py-1.5 text-xs text-muted-foreground">
         <Clock className="h-3.5 w-3.5" />
-        等待管理员/主任律师审批
+        等待Administrar员/主任AbogadoAprobación
       </div>
     );
   }
 
   function handleConvert() {
-    if (!confirm("确认转为正式案件？将占用一个案件编号。")) return;
+    if (!confirm("确认转为正式Caso？将占用一个Caso编号。")) return;
     startTransition(async () => {
       try {
         const res = await convertIntakeToMatter(intakeId);
-        toast.success(`已转化为案件 ${res.internalCode}`);
+        toast.success(`已转化为Caso ${res.internalCode}`);
         router.push(matterHref({ id: res.matterId, internalCode: res.internalCode }));
       } catch (err) {
         toast.error("转化失败", {
@@ -117,12 +117,12 @@ export function IntakeActions({
           toast.success("已标记为不接案");
         } else {
           await markIntakeNeedsRevision({ id: intakeId, reason });
-          toast.success("已标记待补正，律师可补充后重新提交");
+          toast.success("已标记待补正，Abogado可补充后重新Enviar");
         }
         setDialogKind(null);
         router.refresh();
       } catch (err) {
-        toast.error("操作失败", {
+        toast.error("Operación fallida", {
           description: err instanceof Error ? err.message : ""
         });
       }
@@ -165,7 +165,7 @@ export function IntakeActions({
           ) : (
             <ArrowRight className="h-3.5 w-3.5" />
           )}
-          转为正式案件
+          转为正式Caso
         </Button>
       </div>
 
@@ -175,8 +175,8 @@ export function IntakeActions({
             <DialogTitle>{isDecline ? "标记不接案" : "标记待补正"}</DialogTitle>
             <DialogDescription>
               {isDecline
-                ? "终态：此收案不会再转为正式案件。仍保留在历史中。"
-                : "律师补充材料后可点击「重新提交审批」，区别于真正的不接案。"}
+                ? "终态：此收案不会再转为正式Caso。仍保留在历史中。"
+                : "Abogado补充材料后可点击「重新EnviarAprobación」，区别于真正的不接案。"}
             </DialogDescription>
           </DialogHeader>
 
@@ -190,7 +190,7 @@ export function IntakeActions({
               onChange={(e) => setReason(e.target.value)}
               placeholder={
                 isDecline
-                  ? "如：与已有客户存在阻塞性冲突 / 客户已撤回 / 不在业务范围内 ..."
+                  ? "如：与已有Cliente存在阻塞性冲突 / Cliente已撤回 / 不在业务范围内 ..."
                   : "如：缺身份证扫描件 / 委托代理合同未签字 / 利益冲突说明不充分 ..."
               }
               rows={4}
@@ -199,7 +199,7 @@ export function IntakeActions({
 
           <DialogFooter>
             <Button variant="outline" onClick={() => setDialogKind(null)} disabled={isPending}>
-              取消
+              Cancelar
             </Button>
             <Button
               onClick={handleConfirm}

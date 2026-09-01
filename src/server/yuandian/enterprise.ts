@@ -24,7 +24,7 @@ export type EnterpriseSearchItem = {
 };
 
 /**
- * 企业名称搜索（1 POINT/次），未配置时静默返回 configured: false
+ * 企业NombreBuscar（1 POINT/次），未配置时静默Volver configured: false
  */
 export async function searchEnterpriseCandidates(
   name: string
@@ -47,7 +47,7 @@ export async function searchEnterpriseCandidates(
     return {
       items: candidates.map((c) => ({
         id: c.id,
-        name: c["企业名称"],
+        name: c["企业Nombre"],
         creditCode: c["统一社会信用代码"]
       })),
       configured: true
@@ -58,7 +58,7 @@ export async function searchEnterpriseCandidates(
 }
 
 /**
- * 企业详情（10 POINT/次），未配置时返回 configured: false
+ * 企业详情（10 POINT/次），未配置时Volver configured: false
  */
 export async function getEnterpriseDetail(
   id: string
@@ -81,7 +81,7 @@ export async function getEnterpriseDetail(
 }
 
 // ============================================================
-// v0.26: 对方公司风险查询（聚合总览 + Party 绑定）
+// v0.26: 对方公司风险查询（聚合Total览 + Party 绑定）
 // ============================================================
 
 async function loadPartyWithMatter(partyId: string) {
@@ -99,7 +99,7 @@ async function loadPartyWithMatter(partyId: string) {
     }
   });
   if (!party) throw new Error("当事人不存在");
-  if (!party.matterId) throw new Error("当事人未关联案件");
+  if (!party.matterId) throw new Error("当事人未关联Caso");
   return party;
 }
 
@@ -189,7 +189,7 @@ export async function unbindPartyEnterprise(
 }
 
 /**
- * 拉取某个已绑定 Party 的企业聚合总览（10 POINT/次）
+ * 拉取某个已绑定 Party 的企业聚合Total览（10 POINT/次）
  *
  * 权限：当前用户对该 Matter 有访问权限。
  */

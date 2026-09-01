@@ -67,7 +67,7 @@ export async function listClients(input: Partial<ClientListQuery> = {}) {
 
 export async function getClientById(id: string) {
   const session = await requireSession();
-  // 权限检查：manager/finance 看全部，其他人需有关联案件
+  // 权限检查：manager/finance 看Ver todos，其他人需有关联Caso
   if (!isManager(session.user.role) && session.user.role !== "FINANCE") {
     const accessible = await prisma.client.findFirst({
       where: {
@@ -77,7 +77,7 @@ export async function getClientById(id: string) {
       },
       select: { id: true }
     });
-    if (!accessible) throw new Error("客户不存在");
+    if (!accessible) throw new Error("Cliente不存在");
   }
   const client = await prisma.client.findFirst({
     where: { id, deletedAt: null },
@@ -110,7 +110,7 @@ export async function getClientById(id: string) {
   return client;
 }
 
-// v0.37: 客户财务汇总 —— 跨该客户名下所有案件聚合合同/应收/已收
+// v0.37: ClienteFinanzas汇Total —— 跨该Cliente名下所有Caso聚合合同/应收/已收
 export async function getClientFinanceSummary(clientId: string) {
   const session = await requireSession();
   // 权限：与 getClientById 一致
@@ -123,7 +123,7 @@ export async function getClientFinanceSummary(clientId: string) {
       },
       select: { id: true }
     });
-    if (!accessible) throw new Error("客户不存在");
+    if (!accessible) throw new Error("Cliente不存在");
   }
 
   const matterWhere = { primaryClientId: clientId, deletedAt: null };
@@ -219,12 +219,12 @@ export async function createClient(input: ClientCreateInput) {
 export async function updateClient(input: ClientUpdateInput) {
   const session = await requireSession();
   if (!isManager(session.user.role)) {
-    throw new Error("仅管理员或主办律师可编辑客户信息");
+    throw new Error("仅Administrar员或主办Abogado可EditarCliente信息");
   }
   const data = clientUpdateSchema.parse(input);
   const { id, contacts, gender, ...rest } = data;
 
-  // 简单策略：删除所有联系人 + 重新创建。后续可优化为 diff
+  // 简单策略：Eliminar所有联系人 + 重新Crear。后续可优化为 diff
   await prisma.$transaction([
     prisma.contact.deleteMany({ where: { clientId: id } }),
     prisma.client.update({
@@ -265,7 +265,7 @@ export async function updateClient(input: ClientUpdateInput) {
 export async function softDeleteClient(id: string) {
   const session = await requireSession();
   if (session.user.role !== "ADMIN" && session.user.role !== "PRINCIPAL_LAWYER") {
-    throw new Error("只有管理员或主办律师可以删除客户");
+    throw new Error("只有Administrar员或主办Abogado可以EliminarCliente");
   }
 
   await prisma.client.update({
@@ -284,11 +284,11 @@ export async function softDeleteClient(id: string) {
   return { ok: true };
 }
 
-// 单独的 contact 操作（用于详情页快速编辑联系人，不通过整 client 重写）
+// 单独的 contact Acciones（用于详情页快速Editar联系人，不通过整 client 重写）
 export async function addContact(clientId: string, input: ContactInput) {
   const session = await requireSession();
   if (!isManager(session.user.role)) {
-    throw new Error("仅管理员或主办律师可编辑联系人");
+    throw new Error("仅Administrar员或主办Abogado可Editar联系人");
   }
   const data = contactInputSchema.parse(input);
   const created = await prisma.contact.create({
@@ -308,7 +308,7 @@ export async function addContact(clientId: string, input: ContactInput) {
 export async function deleteContact(id: string) {
   const session = await requireSession();
   if (!isManager(session.user.role)) {
-    throw new Error("仅管理员或主办律师可删除联系人");
+    throw new Error("仅Administrar员或主办Abogado可Eliminar联系人");
   }
   const contact = await prisma.contact.findUnique({ where: { id } });
   if (!contact) return { ok: false };

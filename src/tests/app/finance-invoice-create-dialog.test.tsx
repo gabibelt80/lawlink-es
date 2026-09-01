@@ -5,7 +5,7 @@ import {
 } from "@/server/finance/invoice-matter-search";
 
 describe("invoice matter search", () => {
-  it("空关键词返回本人可关联案件条件", () => {
+  it("空关键词Volver本人可关联Caso条件", () => {
     expect(invoiceMatterSearchWhere("u1", "")).toEqual({
       deletedAt: null,
       OR: [
@@ -16,7 +16,7 @@ describe("invoice matter search", () => {
     expect(invoiceMatterSearchLimit("")).toBe(12);
   });
 
-  it("输入关键词后按案名、系统编号和所内案号筛选", () => {
+  it("输入关键词后按案名、Sistema编号和所内案号筛选", () => {
     expect(invoiceMatterSearchWhere("u1", " 二审 ")).toEqual({
       deletedAt: null,
       AND: [

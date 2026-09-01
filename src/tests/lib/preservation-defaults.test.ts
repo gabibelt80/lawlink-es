@@ -11,7 +11,7 @@ const d = (s: string) => new Date(`${s}T00:00:00`);
 const f = (x: Date) =>
   `${x.getFullYear()}-${`${x.getMonth() + 1}`.padStart(2, "0")}-${`${x.getDate()}`.padStart(2, "0")}`;
 
-describe("保全期限年限（民诉法解释第 485 条）", () => {
+describe("Preservación期限年限（民诉法解释第 485 条）", () => {
   it("银行存款一年、动产两年、不动产与其他财产权三年", () => {
     expect(PRESERVATION_DURATION_YEARS.BANK_DEPOSIT).toBe(1);
     expect(PRESERVATION_DURATION_YEARS.VEHICLE).toBe(2);

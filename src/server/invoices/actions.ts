@@ -25,7 +25,7 @@ const MAX_FILE_SIZE = 20 * 1024 * 1024;
 
 function requireFinanceOrApprover(role: string) {
   if (role !== "FINANCE" && role !== "ADMIN" && role !== "PRINCIPAL_LAWYER") {
-    throw new Error("仅财务 / 管理员 / 主任律师可处理开票");
+    throw new Error("仅Finanzas / Administrar员 / 主任Abogado可处理开票");
   }
 }
 
@@ -51,7 +51,7 @@ function invoiceRequestVisibilityWhere(
   };
 }
 
-/** 律师在案件详情提交开票申请 */
+/** Abogado在Caso详情Enviar开票申请 */
 const createSchema = z.object({
   matterId: z.string().cuid(),
   amount: z.coerce.number().positive("金额需大于 0"),
@@ -65,7 +65,7 @@ export async function createInvoiceRequest(input: z.infer<typeof createSchema>) 
   await assertCanAssociateMatter(session.user.id, data.matterId);
   await assertMatterWritable(data.matterId);
 
-  await assertCanLeadMatter(session.user.id, data.matterId, "仅案件主办/协办律师可申请开票");
+  await assertCanLeadMatter(session.user.id, data.matterId, "仅Caso主办/协办Abogado可申请开票");
 
   const created = await prisma.invoiceRequest.create({
     data: {
@@ -94,9 +94,9 @@ export async function createInvoiceRequest(input: z.infer<typeof createSchema>) 
   await notifyRoleApprovers({
     roles: ["ADMIN", "PRINCIPAL_LAWYER", "FINANCE"],
     excludeUserId: session.user.id,
-    title: "新的发票审批待处理",
-    content: `${session.user.name ?? "有用户"} 提交了开票申请：${
-      matter ? `${matter.internalCode} ${matter.title}` : "关联案件"
+    title: "新的发票Aprobación待处理",
+    content: `${session.user.name ?? "有用户"} Enviar了开票申请：${
+      matter ? `${matter.internalCode} ${matter.title}` : "关联Caso"
     }，金额 ${data.amount.toLocaleString("zh-CN")} 元`,
     href: "/finance",
     refType: "InvoiceRequest",
@@ -162,10 +162,10 @@ export async function listInvoiceRequestsByMatter(matterId: string) {
 }
 
 /**
- * 财务批准 + 上传电子发票。FormData：
+ * Finanzas批准 + 上传电子发票。FormData：
  *   requestId, processNote?, contractScan(File?), invoiceFile(File?)
- * - 不传 invoiceFile：状态 APPROVED
- * - 传 invoiceFile：状态 ISSUED
+ * - 不传 invoiceFile：Estado APPROVED
+ * - 传 invoiceFile：Estado ISSUED
  *
  * contractScan 仅保留兼容旧数据流；申请依据应由申请人上传到 evidenceDocIds。
  */
@@ -187,13 +187,13 @@ export async function approveInvoiceRequest(formData: FormData) {
   const processNote = formData.get("processNote");
   const contractScan = formData.get("contractScan");
   const invoiceFile = formData.get("invoiceFile");
-  // v0.14: 真实发票号（财务批准/开具时回填）
+  // v0.14: 真实发票号（Finanzas批准/开具时回填）
   const invoiceNo = formData.get("invoiceNo");
 
   let contractScanDocId: string | undefined;
   let invoiceFileDocId: string | undefined;
 
-  // 兼容旧流程：历史上允许财务补传扫描件合同；新流程由申请人上传 evidenceDocIds。
+  // 兼容旧流程：历史上允许Finanzas补传扫描件合同；新流程由申请人上传 evidenceDocIds。
   if (contractScan instanceof File && contractScan.size > 0) {
     validateUploadedFile(contractScan, { purpose: "invoice", maxBytes: MAX_FILE_SIZE });
     const raw = Buffer.from(await contractScan.arrayBuffer());
@@ -331,7 +331,7 @@ export async function rejectInvoiceRequest(input: z.infer<typeof rejectSchema>) 
   return { ok: true };
 }
 
-/** 财务页 KPI：本月已开票合计 */
+/** Finanzas页 KPI：本月已开票合计 */
 export async function getInvoiceStats() {
   const session = await requireSession();
   const now = new Date();

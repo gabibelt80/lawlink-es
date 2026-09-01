@@ -38,8 +38,8 @@ import { matterHref } from "@/lib/matters/route";
 
 const CATEGORY_CN: Record<string, string> = {
   CIVIL_COMMERCIAL: "民商",
-  CRIMINAL: "刑事",
-  ADMINISTRATIVE: "行政",
+  CRIMINAL: "Penal",
+  ADMINISTRATIVE: "Administrativo",
   NON_LITIGATION: "非诉",
   LEGAL_COUNSEL: "顾问",
   SPECIAL_PROJECT: "专项",

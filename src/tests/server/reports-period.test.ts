@@ -63,7 +63,7 @@ describe("customPeriod", () => {
     expect(ymd(p.end)).toEqual([2026, 2, 1]);
   });
 
-  it("日期格式不合法抛错", () => {
+  it("Fecha格式不合法抛错", () => {
     expect(() => customPeriod("2026/01/01", "2026-03-31")).toThrow(/格式/);
     expect(() => customPeriod("2026-1-1", "2026-3-31")).toThrow(/格式/);
   });

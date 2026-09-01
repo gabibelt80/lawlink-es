@@ -1,7 +1,7 @@
 /**
- * v0.50: 日程聚合查询（无 session 依赖的内部实现）。
+ * v0.50: Calendario聚合查询（无 session 依赖的内部实现）。
  * 被 listScheduleItems（server action）和 ICS 日历订阅路由共用；
- * 调用方负责确定 userId / role 的可信来源（session 或 calendarToken）。
+ * 调用方负责Aceptar userId / role 的可信来源（session 或 calendarToken）。
  */
 import { prisma } from "@/lib/prisma";
 import { matterAssociationFilter, matterVisibilityFilter } from "@/lib/permissions";
@@ -228,11 +228,11 @@ export async function queryScheduleItems(
     items.push({
       id: `p-${p.id}`,
       type: "deadline",
-      title: `保全到期：${p.target.name}`,
+      title: `Preservación到期：${p.target.name}`,
       occurredAt: p.expiryDate,
       matter: matterBrief(matter),
       clientName: clientNameOf(matter),
-      procedureLabel: "财产保全",
+      procedureLabel: "财产Preservación",
       completed: p.status !== "ACTIVE" && p.status !== "RENEWED",
       remindDays: 30,
       category: "PRESERVATION"

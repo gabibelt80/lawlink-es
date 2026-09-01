@@ -58,7 +58,7 @@ async function generateSealCode(): Promise<string> {
 }
 
 // ============================================================
-// 权限 - 谁能审批某 sealType
+// 权限 - 谁能Aprobación某 sealType
 // ============================================================
 async function getFirmLegalRepUserId(): Promise<string | null> {
   const s = await prisma.systemSetting.findUnique({ where: { key: FIRM_LEGAL_REP_KEY } });
@@ -94,7 +94,7 @@ export async function listSealRequests(input?: z.input<typeof sealListFilterSche
   if (filter.scope === "mine") {
     where.requestedById = session.user.id;
   } else if (filter.scope === "approval") {
-    // 待我审批：根据用户角色拼出可审批的 sealTypes
+    // 待我Aprobación：根据用户角色拼出可Aprobación的 sealTypes
     const approvableTypes = await pickApprovableSealTypes(session.user);
     if (approvableTypes.length === 0) {
       return [];
@@ -102,13 +102,13 @@ export async function listSealRequests(input?: z.input<typeof sealListFilterSche
     where.sealType = { in: approvableTypes };
     where.status = "PENDING";
   } else {
-    // 全所流水：FINANCE 只看财务章；LAWYER/ASSISTANT 只看自己
+    // 全所流水：FINANCE 只看Finanzas章；LAWYER/ASSISTANT 只看自己
     if (session.user.role === "FINANCE") {
       where.sealType = "FINANCE_SEAL";
     } else if (session.user.role === "LAWYER" || session.user.role === "ASSISTANT") {
       where.requestedById = session.user.id;
     }
-    // ADMIN / PRINCIPAL_LAWYER 看全部
+    // ADMIN / PRINCIPAL_LAWYER 看Ver todos
   }
 
   return prisma.sealRequest.findMany({
@@ -183,8 +183,8 @@ async function notifySealApprovalRequested(input: {
   await notifyDirectApprovers({
     userIds,
     excludeUserId: input.requesterId,
-    title: "新的用印审批待处理",
-    content: `${input.requesterName ?? "有用户"} 提交了用印申请：${input.code} · ${input.documentTitle} · ${input.purpose}`,
+    title: "新的用印Aprobación待处理",
+    content: `${input.requesterName ?? "有用户"} Enviar了用印申请：${input.code} · ${input.documentTitle} · ${input.purpose}`,
     href: `/approvals/seals?id=${input.sealRequestId}`,
     refType: "SealRequest",
     refId: input.sealRequestId,
@@ -260,7 +260,7 @@ export async function getSealStats() {
 export async function createSealRequest(formData: FormData) {
   const session = await requireSession();
   if (session.user.role !== "ADMIN" && session.user.role !== "PRINCIPAL_LAWYER" && session.user.role !== "LAWYER") {
-    throw new Error("仅律师、主任、管理员可申请用章");
+    throw new Error("仅Abogado、主任、Administrar员可申请用章");
   }
 
   const raw = {
@@ -277,8 +277,8 @@ export async function createSealRequest(formData: FormData) {
   };
   const data = sealCreateSchema.parse(raw);
 
-  // "同时加盖法定代表人章"：主章不是法人章时附带创建一个 LEGAL_REP_SEAL 子请求，
-  // 共用同一份文件副本，便于两条审批线分别走（公章/合同章走对应审批人，法人章走法定代表人）
+  // "同时加盖法定代表人章"：主章不是法人章时附带Crear一个 LEGAL_REP_SEAL 子请求，
+  // 共用同一份文件副本，便于两条Aprobación线分别走（公章/合同章走对应Aprobación人，法人章走法定代表人）
   const alsoLegalRep =
     formData.get("alsoLegalRep") === "true" && data.sealType !== "LEGAL_REP_SEAL";
 
@@ -293,7 +293,7 @@ export async function createSealRequest(formData: FormData) {
       where: { id: data.matterId },
       select: { id: true }
     });
-    if (!m) throw new Error("关联案件不存在");
+    if (!m) throw new Error("关联Caso不存在");
   }
 
   // 准备 draftDocId：要么复制现有文档（卷宗联动），要么上传新文件
@@ -522,7 +522,7 @@ export async function createSealRequest(formData: FormData) {
 }
 
 // ============================================================
-// 审批通过
+// Aprobación通过
 // ============================================================
 export async function approveSealRequest(input: z.infer<typeof sealApproveSchema>) {
   const session = await requireSession();
@@ -536,7 +536,7 @@ export async function approveSealRequest(input: z.infer<typeof sealApproveSchema
   if (seal.status !== "PENDING") throw new Error("此申请已处理");
 
   const ok = await canApproveSealType(seal.sealType, session.user);
-  if (!ok) throw new Error("无权审批该用章类型");
+  if (!ok) throw new Error("无权Aprobación该用章类型");
 
   await prisma.sealRequest.update({
     where: { id: data.id },
@@ -560,7 +560,7 @@ export async function approveSealRequest(input: z.infer<typeof sealApproveSchema
     userId: seal.requestedById,
     type: "SEAL_STATUS_CHANGE",
     title: "用章申请已通过",
-    content: `您的用章申请（${seal.sealType}）已审批通过`,
+    content: `您的用章申请（${seal.sealType}）已Aprobación通过`,
     href: "/approvals/seals",
     refType: "SealRequest",
     refId: data.id
@@ -638,7 +638,7 @@ export async function stampSealRequest(formData: FormData) {
   if (!seal) throw new Error("申请不存在");
   if (seal.status !== "APPROVED") throw new Error("仅已批准的申请可回填盖章件");
 
-  // 权限：申请人可回填；审批人 / ADMIN 可回填；财务章额外允许 FINANCE
+  // 权限：申请人可回填；Aprobación人 / ADMIN 可回填；Finanzas章额外允许 FINANCE
   const okApprover = await canApproveSealType(seal.sealType, session.user);
   const okRequester = seal.requestedById === session.user.id;
   if (!okRequester && !okApprover) throw new Error("无权回填盖章件");
@@ -700,7 +700,7 @@ export async function stampSealRequest(formData: FormData) {
 }
 
 // ============================================================
-// 撤销（仅未审批 + 仅申请人/管理员）
+// 撤销（仅未Aprobación + 仅申请人/Administrar员）
 // ============================================================
 export async function cancelSealRequest(input: z.infer<typeof sealCancelSchema>) {
   const session = await requireSession();
@@ -711,12 +711,12 @@ export async function cancelSealRequest(input: z.infer<typeof sealCancelSchema>)
     select: { id: true, status: true, requestedById: true, matterId: true }
   });
   if (!seal) throw new Error("申请不存在");
-  if (seal.status !== "PENDING") throw new Error("仅未审批的申请可撤销");
+  if (seal.status !== "PENDING") throw new Error("仅未Aprobación的申请可撤销");
 
   const isOwner = seal.requestedById === session.user.id;
   const isAdmin =
     session.user.role === "ADMIN" || session.user.role === "PRINCIPAL_LAWYER";
-  if (!isOwner && !isAdmin) throw new Error("仅申请人或管理员可撤销");
+  if (!isOwner && !isAdmin) throw new Error("仅申请人或Administrar员可撤销");
 
   await prisma.sealRequest.update({
     where: { id: data.id },

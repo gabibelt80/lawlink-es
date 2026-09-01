@@ -13,7 +13,7 @@ const saveSchema = z.object({
 async function requireAdmin() {
   const session = await requireSession();
   if (session.user.role !== "ADMIN") {
-    throw new Error("仅管理员可修改工作流开关");
+    throw new Error("仅Administrar员可修改工作流开关");
   }
   return session;
 }

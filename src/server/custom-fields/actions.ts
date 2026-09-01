@@ -2,7 +2,7 @@
 
 /**
  * v0.28: 自定义字段（JSON 列方案）
- * - 字段定义存 CustomFieldDef 表，管理限 ADMIN
+ * - 字段定义存 CustomFieldDef 表，Administrar限 ADMIN
  * - 字段值存于实体的 customValues JSON（本期落地 MATTER）
  */
 import { randomUUID } from "crypto";
@@ -21,7 +21,7 @@ const typeSchema = z.enum(["TEXT", "NUMBER", "DATE", "SELECT"]);
 
 const defCreateSchema = z.object({
   entityType: entitySchema,
-  label: z.string().min(1, "字段名称必填").max(40),
+  label: z.string().min(1, "字段Nombre必填").max(40),
   fieldType: typeSchema.default("TEXT"),
   options: z.array(z.string().min(1).max(40)).max(50).default([]),
   required: z.boolean().default(false)
@@ -34,7 +34,7 @@ const defUpdateSchema = defCreateSchema.partial().extend({
 async function requireAdmin() {
   const session = await requireSession();
   if (session.user.role !== "ADMIN") {
-    throw new Error("仅管理员可管理自定义字段");
+    throw new Error("仅Administrar员可Administrar自定义字段");
   }
   return session;
 }
@@ -118,14 +118,14 @@ export async function deleteCustomFieldDef(id: string) {
   return { ok: true as const };
 }
 
-/** 保存案件的自定义字段值 */
+/** GuardarCaso的自定义字段值 */
 export async function saveMatterCustomValues(
   matterId: string,
   values: Record<string, string>
 ) {
   const session = await requireSession();
   await assertMatterWritable(matterId);
-  await assertCanLeadMatter(session.user.id, matterId, "仅案件主办/协办可编辑");
+  await assertCanLeadMatter(session.user.id, matterId, "仅Caso主办/协办可Editar");
 
   // 仅保留当前已启用字段定义的键，避免脏数据
   const defs = await prisma.customFieldDef.findMany({

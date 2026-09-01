@@ -37,7 +37,7 @@ describe("selectReviewPrompt — 按 DocumentCategory 分流", () => {
 });
 
 describe("reviewPromptLabel — 中文标签", () => {
-  it("各 category 返回对应中文", () => {
+  it("各 category Volver对应中文", () => {
     expect(reviewPromptLabel("CONTRACT")).toBe("合同审查");
     expect(reviewPromptLabel("PLEADING")).toBe("诉状/申请书审查");
     expect(reviewPromptLabel("EVIDENCE")).toBe("证据审查");

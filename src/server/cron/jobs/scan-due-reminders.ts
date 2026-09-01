@@ -1,15 +1,15 @@
 /**
- * v0.27: 期限到期提醒扫描
- * v0.38: 增加开庭提醒（Hearing 表）
+ * v0.27: 期限到期Recordatorios扫描
+ * v0.38: 增加开庭Recordatorios（Hearing 表）
  *
  * 每天 09:00 跑一次（Asia/Shanghai），覆盖 Deadline / Hearing：
- * - Deadline：命中 dueAt 落在 T-3 / T-1 / T / T+1 的未完成项各发一条通知
- * - Hearing：命中 startsAt 落在 T-3 / T-1 / T（开庭过去不提醒，不含 T+1），文案带具体开庭时间
+ * - Deadline：命中 dueAt 落在 T-3 / T-1 / T / T+1 的未完成项各发一条Notificaciones
+ * - Hearing：命中 startsAt 落在 T-3 / T-1 / T（开庭过去不Recordatorios，不含 T+1），文案带具体开庭时间
  * - 接收人：Deadline/Hearing → procedure.matter.ownerId
  * - 去重：refType="DueReminder:Deadline:-3" 等 + refId 实体 ID + 当日已发不再发
  *
- * 业务原因：v0.26 之前没有"扫到期发提醒"机制，导致律师设的答辩期、举证期等到点不响；
- * v0.38 用户要求：凡有具体开庭时间，开庭前主动提醒（提前3天/1天/当天早上）。
+ * 业务原因：v0.26 之前没有"扫到期发Recordatorios"机制，导致Abogado设的答辩期、举证期等到点不响；
+ * v0.38 用户要求：凡有具体开庭时间，开庭前主动Recordatorios（提前3天/1天/当天早上）。
  */
 import { prisma } from "@/lib/prisma";
 import { createNotification } from "@/server/notifications/create";
@@ -26,7 +26,7 @@ export type DueReminderScanResult = {
   deadlineNotified: number;
   hearingScanned: number;
   hearingNotified: number;
-  /** v1.2: 保全续封提醒 */
+  /** v1.2: Preservación续封Recordatorios */
   preservationScanned: number;
   preservationNotified: number;
   /** v1.2: 过期未续封、自动置为 EXPIRED 的条目数 */
@@ -59,15 +59,15 @@ function priorityFor(offset: Offset) {
 
 function stateText(offset: Offset) {
   if (offset > 0) return `逾期 ${offset} 天`;
-  if (offset === 0) return "今天到期";
+  if (offset === 0) return "Hoy到期";
   return `还有 ${-offset} 天到期`;
 }
 
-// 开庭专用：带"今天/明天/X天后"前缀 + 具体时分（开庭精确到时分，区别于只到天的期限）
+// 开庭专用：带"Hoy/Mañana/X天后"前缀 + 具体时分（开庭精确到时分，区别于只到天的期限）
 function hearingWhenText(offset: Offset, startsAt: Date) {
   const hh = String(startsAt.getHours()).padStart(2, "0");
   const mm = String(startsAt.getMinutes()).padStart(2, "0");
-  const day = offset === 0 ? "今天" : offset === -1 ? "明天" : `${-offset} 天后`;
+  const day = offset === 0 ? "Hoy" : offset === -1 ? "Mañana" : `${-offset} 天后`;
   return `${day} ${hh}:${mm} 开庭`;
 }
 
@@ -83,7 +83,7 @@ export async function scanDueReminders(): Promise<DueReminderScanResult> {
   let preservationNotified = 0;
   let preservationExpired = 0;
   let suppressed = 0;
-  // v0.50: 汇总本次新提醒，扫描结束后一次性推 webhook（避免逐条刷群）
+  // v0.50: 汇Total本次新Recordatorios，扫描结束后一次性推 webhook（避免逐条刷群）
   const digestLines: string[] = [];
 
   for (const offset of OFFSETS) {
@@ -133,7 +133,7 @@ export async function scanDueReminders(): Promise<DueReminderScanResult> {
         type: "DEADLINE_REMINDER",
         priority: priorityFor(offset),
         title: `${stateText(offset)}：${d.title}`,
-        content: `案件 ${d.procedure.matter.internalCode}·${d.procedure.matter.title}`,
+        content: `Caso ${d.procedure.matter.internalCode}·${d.procedure.matter.title}`,
         href: matterHref(d.procedure.matter),
         refType: refTypeDL,
         refId: d.id
@@ -144,7 +144,7 @@ export async function scanDueReminders(): Promise<DueReminderScanResult> {
       );
     }
 
-    // Hearing 扫描（开庭提醒）—— 开庭过去不再提醒，跳过 T+1 这档
+    // Hearing 扫描（开庭Recordatorios）—— 开庭过去不再Recordatorios，跳过 T+1 这档
     if (offset <= 0) {
       const hearings = await prisma.hearing.findMany({
         where: {
@@ -189,7 +189,7 @@ export async function scanDueReminders(): Promise<DueReminderScanResult> {
           type: "HEARING_REMINDER",
           priority: priorityFor(offset),
           title: `${hearingWhenText(offset, h.startsAt)}：${h.title}`,
-          content: `案件 ${h.procedure.matter.internalCode}·${h.procedure.matter.title}${place ? ` · ${place}` : ""}`,
+          content: `Caso ${h.procedure.matter.internalCode}·${h.procedure.matter.title}${place ? ` · ${place}` : ""}`,
           href: matterHref(h.procedure.matter),
           refType: refTypeHearing,
           refId: h.id
@@ -202,11 +202,11 @@ export async function scanDueReminders(): Promise<DueReminderScanResult> {
     }
   }
 
-  // ── v1.2: 保全续封提醒 ──────────────────────────────────────────────
+  // ── v1.2: Preservación续封Recordatorios ──────────────────────────────────────────────
   //
   // 不走上面的 OFFSETS，也不在 Deadline 表里建镜像行，原因有二：
   // 1. 提前量不同。OFFSETS 是 -3/-1/0/+1，对答辩、举证够用；续封要备材料、
-  //    跑法院、等裁定，提前 3 天通知等于没通知。各保全案件自带
+  //    跑法院、等裁定，提前 3 天Notificaciones等于没Notificaciones。各PreservaciónCaso自带
   //    remindDays（默认 30/15/7/3/1），此前只写不读，是死配置，这里让它生效。
   // 2. 建镜像 Deadline 行要多一个关联字段和一套同步逻辑，expiryDate 一改
   //    两处就可能不一致；直接扫源表没有这个问题。
@@ -245,7 +245,7 @@ export async function scanDueReminders(): Promise<DueReminderScanResult> {
       (startOfLocalDay(prop.expiryDate).getTime() - todayStart.getTime()) / 86_400_000
     );
 
-    // 到期当天与逾期首日一律提醒（此时效力可能已消灭），此外按本案 remindDays
+    // 到期当天与逾期首日一律Recordatorios（此时效力可能已消灭），此外按本案 remindDays
     const isCritical = daysUntil === 0 || daysUntil === -1;
     if (!isCritical && !cs.remindDays.includes(daysUntil)) continue;
 
@@ -266,20 +266,20 @@ export async function scanDueReminders(): Promise<DueReminderScanResult> {
 
     const whenText =
       daysUntil === 0
-        ? "今天到期"
+        ? "Hoy到期"
         : daysUntil < 0
-          ? `已逾期 ${-daysUntil} 天，保全效力可能已消灭`
+          ? `已逾期 ${-daysUntil} 天，Preservación效力可能已消灭`
           : `还有 ${daysUntil} 天到期`;
     const propertyLabel = prop.propertyDetail?.trim() || PROPERTY_TYPE_CN[prop.propertyType];
     const matterText = cs.matter
-      ? `案件 ${cs.matter.internalCode}·${cs.matter.title}`
-      : "未关联案件";
+      ? `Caso ${cs.matter.internalCode}·${cs.matter.title}`
+      : "未关联Caso";
 
     await createNotification({
       userId,
       type: "DEADLINE_REMINDER",
       priority: daysUntil <= 3 ? "URGENT" : daysUntil <= 15 ? "HIGH" : "NORMAL",
-      title: `保全${whenText}：${prop.target.name} · ${propertyLabel}`,
+      title: `Preservación${whenText}：${prop.target.name} · ${propertyLabel}`,
       content: `${matterText}。逾期未办续封手续的，查封、扣押、冻结的效力消灭（查扣冻规定第二十七条）。`,
       href: cs.matter ? matterHref(cs.matter) : "/preservation",
       refType,
@@ -287,22 +287,22 @@ export async function scanDueReminders(): Promise<DueReminderScanResult> {
     });
     preservationNotified++;
     digestLines.push(
-      `· 保全${whenText}：${prop.target.name}·${propertyLabel}（${cs.matter?.internalCode ?? "未关联案件"}）`
+      `· Preservación${whenText}：${prop.target.name}·${propertyLabel}（${cs.matter?.internalCode ?? "未关联Caso"}）`
     );
   }
 
-  // ── v1.2: 过期未续封的保全自动置为 EXPIRED ───────────────────────────
+  // ── v1.2: 过期未续封的Preservación自动置为 EXPIRED ───────────────────────────
   //
   // 依据查扣冻规定第二十七条，期限届满未办延期手续的，效力「消灭」——
   // 这是法律上自动发生的事实，不需要任何人做动作。因此库里仍写 ACTIVE
-  // 不是「待处理状态」，而是错误数据，改正它不等于擅自变更业务数据。
+  // 不是「待处理Estado」，而是错误数据，改正它不等于擅自变更业务数据。
   //
   // 两个方向的错误代价不对称，据此选择朝安全方向失败：
-  //   显示生效中但实际已失效 → 律师不行动、财产被转移，不可逆；
-  //   显示已过期但实际已续封 → 律师看到告警去核对并更新记录，可自我修正。
+  //   显示生效中但实际已失效 → Abogado不行动、财产被转移，不可逆；
+  //   显示已过期但实际已续封 → Abogado看到告警去核对并Actualizar记录，可自我修正。
   //
-  // 但不静默翻转：每条都发通知并单独记审计，翻转可见、可纠正。
-  // 到期当日仍在期限内，故只处理 expiryDate 早于今天零点的条目。
+  // 但不静默翻转：每条都发Notificaciones并单独记审计，翻转可见、可纠正。
+  // 到期当日仍在期限内，故只处理 expiryDate 早于Hoy零点的条目。
   const lapsed = await prisma.preservationProperty.findMany({
     where: {
       status: { in: ["ACTIVE", "RENEWED"] },
@@ -359,17 +359,17 @@ export async function scanDueReminders(): Promise<DueReminderScanResult> {
       userId,
       type: "DEADLINE_REMINDER",
       priority: "URGENT",
-      title: `保全已过期未续封：${prop.target.name} · ${propertyLabel}`,
+      title: `Preservación已过期未续封：${prop.target.name} · ${propertyLabel}`,
       content:
         `到期日 ${prop.expiryDate.toLocaleDateString("zh-CN")}，已过 ${daysOverdue} 天。` +
         `未办理续封手续的，查封、扣押、冻结的效力消灭（查扣冻规定第二十七条），` +
-        `系统已将该条保全标记为「已到期」。若实际已办理续封，请在系统中更新记录。`,
+        `Sistema已将该条Preservación标记为「已到期」。若实际已办理续封，请在Sistema中Actualizar记录。`,
       href: cs.matter ? matterHref(cs.matter) : "/preservation",
       refType: "PreservationExpired",
       refId: prop.id
     });
     digestLines.push(
-      `· 保全已过期未续封：${prop.target.name}·${propertyLabel}（逾期 ${daysOverdue} 天）`
+      `· Preservación已过期未续封：${prop.target.name}·${propertyLabel}（逾期 ${daysOverdue} 天）`
     );
   }
 
@@ -381,9 +381,9 @@ export async function scanDueReminders(): Promise<DueReminderScanResult> {
     const more = digestLines.length - shown.length;
     webhookResult = await sendWebhookText(
       [
-        `LawLink 今日提醒（${digestLines.length} 条）`,
+        `LawLink 今日Recordatorios（${digestLines.length} 条）`,
         ...shown,
-        ...(more > 0 ? [`… 另有 ${more} 条，详见系统通知`] : [])
+        ...(more > 0 ? [`… 另有 ${more} 条，详见SistemaNotificaciones`] : [])
       ].join("\n")
     );
   }
@@ -419,4 +419,4 @@ export async function scanDueReminders(): Promise<DueReminderScanResult> {
   };
 }
 
-// 手动触发入口已移至 @/server/reminders/actions（顶层 "use server"，可被客户端组件 import）
+// 手动触发入口已移至 @/server/reminders/actions（顶层 "use server"，可被Cliente端组件 import）

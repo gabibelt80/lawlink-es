@@ -1,5 +1,5 @@
 /**
- * v0.9 法院短信解析（TypeScript 实现，对应旧系统 server.py 的 parse_sms_regex）
+ * v0.9 法院SMS解析（TypeScript 实现，对应旧Sistema server.py 的 parse_sms_regex）
  *
  * 用法：
  *   const parsed = parseSms(rawText);
@@ -23,16 +23,16 @@ const COURT_PLATFORMS: SmsPlatformHint[] = [
   { keyword: "court.gov.cn", label: "人民法院在线服务" },
   { keyword: "songda", label: "电子送达" },
   { keyword: "12368", label: "12368 诉讼服务" },
-  { keyword: "rmfyaj", label: "人民法院案件库" }
+  { keyword: "rmfyaj", label: "人民法院Caso库" }
 ];
 
 export interface ParsedSms {
   smsType: SmsType;
   caseNumbers: string[];
   court: string | null;
-  // 完整日期时间字符串数组（保留原文格式，UI 友好显示）
+  // 完整Fecha时间字符串数组（保留原文格式，UI 友好显示）
   dates: string[];
-  // 推测开庭时间（取 SMS 中第一个含时分的日期，开庭通知场景才有意义）
+  // 推测开庭时间（取 SMS 中第一个含时分的Fecha，开庭Notificaciones场景才有意义）
   hearingDate: string | null;
   filingDate: string | null;
   judgmentDate: string | null;
@@ -51,7 +51,7 @@ export interface ParsedSms {
   summary: string;
   // v0.9.1 AI 增强字段（aiEnriched=true 时才填）
   aiEnriched?: boolean;
-  action?: string | null;       // 律师应采取的动作
+  action?: string | null;       // Abogado应采取的动作
   urgency?: "HIGH" | "MEDIUM" | "LOW" | null;
 }
 
@@ -125,7 +125,7 @@ export interface SmsAttachmentResult {
   checkedAt?: string;
 }
 
-// ━━━ 正则模式（与旧系统 SMS_PATTERNS 对齐）━━━
+// ━━━ 正则模式（与旧Sistema SMS_PATTERNS 对齐）━━━
 const PAT_CASE_NUMBER = [/[（(]\d{4}[)）][一-龥]{1,4}\d{0,4}[一-龥]{1,4}\d+号/g];
 
 const PAT_COURT = [
@@ -164,12 +164,12 @@ const PAT_CLERK = [
 const PAT_PHONE = [/1[3-9]\d{9}/g, /0\d{2,3}-?\d{7,8}/g];
 
 const PAT_FILING_DATE = [
-  /立案(?:日期|时间)?[:：\s]*(\d{4}[-/年]\d{1,2}[-/月]\d{1,2}日?)/,
+  /立案(?:Fecha|时间)?[:：\s]*(\d{4}[-/年]\d{1,2}[-/月]\d{1,2}日?)/,
   /(\d{4}年\d{1,2}月\d{1,2}日)\s*(?:立案|受理)/
 ];
 
 const PAT_JUDGMENT_DATE = [
-  /(?:判决|裁定|宣判)(?:日期|时间)?[:：\s]*(\d{4}[-/年]\d{1,2}[-/月]\d{1,2}日?)/,
+  /(?:判决|裁定|宣判)(?:Fecha|时间)?[:：\s]*(\d{4}[-/年]\d{1,2}[-/月]\d{1,2}日?)/,
   /(\d{4}年\d{1,2}月\d{1,2}日)\s*(?:作出判决|判决|宣判)/
 ];
 
@@ -209,9 +209,9 @@ const SMS_TYPE_KEYWORDS: Array<{ type: SmsType; words: string[] }> = [
   { type: "FEE_NOTICE", words: ["缴费", "交费", "诉讼费", "缴纳"] },
   { type: "MEDIATION", words: ["调解", "协商"] },
   { type: "ENFORCEMENT", words: ["执行", "被执行", "履行", "冻结", "查封"] },
-  { type: "FILING_NOTICE", words: ["立案", "受理", "案件编号"] },
+  { type: "FILING_NOTICE", words: ["立案", "受理", "Caso编号"] },
   { type: "JUDGMENT_NOTICE", words: ["判决", "裁定", "裁判文书"] },
-  { type: "EVIDENCE_SUBMIT", words: ["补充材料", "举证期", "证据交换", "提交材料"] }
+  { type: "EVIDENCE_SUBMIT", words: ["补充材料", "举证期", "证据交换", "Enviar材料"] }
 ];
 
 // ━━━ 工具 ━━━
@@ -292,10 +292,10 @@ function classifyImportantItem(context: string, smsType: SmsType): Omit<SmsImpor
   if (/开庭|庭审|出庭|到庭|法庭/.test(context)) {
     return { kind: "HEARING", title: "开庭 / 庭审", category: "HEARING" };
   }
-  if (/举证|证据|补充材料|提交材料|质证/.test(context)) {
-    return { kind: "EVIDENCE_DEADLINE", title: "举证 / 提交材料", category: "DEADLINE" };
+  if (/举证|证据|补充材料|Enviar材料|质证/.test(context)) {
+    return { kind: "EVIDENCE_DEADLINE", title: "举证 / Enviar材料", category: "DEADLINE" };
   }
-  if (/缴费|交费|诉讼费|受理费|保全费|公告费/.test(context)) {
+  if (/缴费|交费|诉讼费|受理费|Preservación费|公告费/.test(context)) {
     return { kind: "FEE_DEADLINE", title: "缴费期限", category: "DEADLINE" };
   }
   if (/调解|和解|谈话/.test(context)) {
@@ -316,7 +316,7 @@ function classifyImportantItem(context: string, smsType: SmsType): Omit<SmsImpor
   if (/执行|查封|冻结|扣划|拍卖/.test(context)) {
     return { kind: "ENFORCEMENT", title: "执行事项", category: "ACTION" };
   }
-  if (/立案|受理|案件编号/.test(context) || smsType === "FILING_NOTICE") {
+  if (/立案|受理|Caso编号/.test(context) || smsType === "FILING_NOTICE") {
     return { kind: "FILING", title: "立案 / 受理", category: "INFO" };
   }
   return { kind: "IMPORTANT_DATE", title: "重要时间", category: "INFO" };
@@ -355,11 +355,11 @@ function extractImportantItems(text: string, dates: string[], smsType: SmsType, 
 }
 
 const CREDENTIAL_PATTERNS: Array<{ kind: SmsCredentialKind; label: string; pattern: RegExp }> = [
-  { kind: "USERNAME", label: "账号", pattern: /(?:账号|账户|用户名|登录名)[:：\s]*([A-Za-z0-9_\-@.]{3,40})/g },
-  { kind: "PASSWORD", label: "密码", pattern: /(?:密码|口令|初始密码)[:：\s]*([A-Za-z0-9_\-@#.$%*!?]{3,40})/g },
-  { kind: "VERIFY_CODE", label: "验证码", pattern: /(?:验证码|校验码|短信码)[:：\s]*([A-Za-z0-9]{4,12})/g },
+  { kind: "USERNAME", label: "账号", pattern: /(?:账号|账户|Usuario|Iniciar sesión名)[:：\s]*([A-Za-z0-9_\-@.]{3,40})/g },
+  { kind: "PASSWORD", label: "Contraseña", pattern: /(?:Contraseña|口令|初始Contraseña)[:：\s]*([A-Za-z0-9_\-@#.$%*!?]{3,40})/g },
+  { kind: "VERIFY_CODE", label: "验证码", pattern: /(?:验证码|校验码|SMS码)[:：\s]*([A-Za-z0-9]{4,12})/g },
   { kind: "EXTRACT_CODE", label: "提取码", pattern: /(?:提取码|取件码|访问码)[:：\s]*([A-Za-z0-9]{3,16})/g },
-  { kind: "QUERY_CODE", label: "查询码", pattern: /(?:查询码|案件查询码|阅卷码)[:：\s]*([A-Za-z0-9]{3,20})/g }
+  { kind: "QUERY_CODE", label: "查询码", pattern: /(?:查询码|Caso查询码|阅卷码)[:：\s]*([A-Za-z0-9]{3,20})/g }
 ];
 
 function maskCredential(value: string): string {
@@ -388,7 +388,7 @@ function extractCredentials(text: string): SmsCredential[] {
 }
 
 function buildDocumentLinks(text: string, urls: string[], credentials: SmsCredential[]): SmsDocumentLink[] {
-  const requiresLoginByText = /登录|账号|账户|用户名|密码|验证码|提取码|取件码|访问码|查询码/.test(text);
+  const requiresLoginByText = /Iniciar sesión|账号|账户|Usuario|Contraseña|验证码|提取码|取件码|访问码|查询码/.test(text);
   const extractionCodes = credentials.filter((c) =>
     c.kind === "EXTRACT_CODE" || c.kind === "VERIFY_CODE" || c.kind === "QUERY_CODE"
   );
@@ -449,7 +449,7 @@ export function parseSms(text: string): ParsedSms {
     }
   }
 
-  // 日期时间
+  // Fecha时间
   for (const pat of PAT_DATETIME) {
     const ms = text.match(pat);
     if (ms) result.dates.push(...ms);
@@ -554,7 +554,7 @@ export function splitSmsBatch(text: string): string[] {
     .filter(Boolean);
 }
 
-// ━━━ 尝试把短信 dates 解析为 JS Date，方便落到 Hearing/Deadline ━━━
+// ━━━ 尝试把SMS dates 解析为 JS Date，方便落到 Hearing/Deadline ━━━
 const CN_DIGIT: Record<string, number> = {
   "一": 1, "二": 2, "三": 3, "四": 4, "五": 5, "六": 6, "七": 7, "八": 8, "九": 9, "十": 10
 };

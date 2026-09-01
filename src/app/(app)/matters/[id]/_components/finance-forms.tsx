@@ -86,9 +86,9 @@ export function AddBillingSheet({
           fd.set("tags", `合同,${values.title}`);
           fd.set("file", contractFile);
           await uploadDocument(fd);
-          toast.success("合同已创建，附件已加密入库");
+          toast.success("合同已Crear，附件已加密入库");
         } else {
-          toast.success("合同已创建");
+          toast.success("合同已Crear");
         }
         reset();
         setContractFile(null);
@@ -105,13 +105,13 @@ export function AddBillingSheet({
         <DialogHeader className="border-b border-border px-6 py-4">
           <DialogTitle>新增合同</DialogTitle>
           <DialogDescription className="text-xs">
-            一个案件可以有多份合同（如分阶段委托）。可同时上传合同扫描件，加密入库后归到本案材料库。
+            一个Caso可以有多份合同（如分阶段委托）。可同时上传合同扫描件，加密入库后归到本案材料库。
           </DialogDescription>
         </DialogHeader>
 
         <form onSubmit={handleSubmit(onSubmit)} className="flex flex-1 flex-col">
           <div className="flex-1 space-y-3 overflow-y-auto px-6 py-5">
-            <Field label="合同名称" required error={errors.title?.message}>
+            <Field label="合同Nombre" required error={errors.title?.message}>
               <Input
                 placeholder="如：委托代理合同 - 一审阶段"
                 {...register("title")}
@@ -127,7 +127,7 @@ export function AddBillingSheet({
               />
             </Field>
 
-            <Field label="状态">
+            <Field label="Estado">
               <RadioChips
                 size="sm"
                 items={[
@@ -140,7 +140,7 @@ export function AddBillingSheet({
               />
             </Field>
 
-            <Field label="签订日期">
+            <Field label="签订Fecha">
               <Input type="date" {...register("signedAt", { valueAsDate: true })} />
             </Field>
 
@@ -164,7 +164,7 @@ export function AddBillingSheet({
                     </span>
                   </span>
                 ) : (
-                  "选择 PDF / docx 文件，提交时自动加密入库"
+                  "选择 PDF / docx 文件，Enviar时自动加密入库"
                 )}
                 <input
                   type="file"
@@ -183,11 +183,11 @@ export function AddBillingSheet({
               onClick={() => onOpenChange(false)}
               disabled={isPending}
             >
-              取消
+              Cancelar
             </Button>
             <Button type="submit" disabled={isPending} className="gap-1.5">
               {isPending && <Loader2 className="h-4 w-4 animate-spin" />}
-              创建
+              Crear
             </Button>
           </DialogFooter>
         </form>
@@ -252,7 +252,7 @@ export function AddFeeEntrySheet({
       try {
         await createFeeEntry(values);
         toast.success(
-          values.type === "RECEIVED" ? "实收已录入" : "记录已创建"
+          values.type === "RECEIVED" ? "实收已录入" : "记录已Crear"
         );
         reset();
         onOpenChange(false);
@@ -294,7 +294,7 @@ export function AddFeeEntrySheet({
               />
             </Field>
 
-            <Field label="发生日期" required>
+            <Field label="发生Fecha" required>
               <Input
                 type="date"
                 {...register("occurredAt", { valueAsDate: true })}
@@ -344,7 +344,7 @@ export function AddFeeEntrySheet({
                     const req = invoiceRequests.find((r) => r.id === v);
                     if (!req) return;
                     setValue("amount", Number(req.amount), { shouldDirty: true });
-                    // 优先用真实发票号（财务已 ISSUED 时回填），否则用占位
+                    // 优先用真实发票号（Finanzas已 ISSUED 时回填），否则用占位
                     const invoiceNoValue = req.invoiceNo ?? `req:${req.id.slice(0, 8)}`;
                     setValue("invoiceNo", invoiceNoValue, { shouldDirty: true });
                     const existing = getValues("note") ?? "";
@@ -396,7 +396,7 @@ export function AddFeeEntrySheet({
               }}
             />
 
-            <Field label="备注">
+            <Field label="Observaciones">
               <Textarea rows={2} {...register("note")} />
             </Field>
           </div>
@@ -408,11 +408,11 @@ export function AddFeeEntrySheet({
               onClick={() => onOpenChange(false)}
               disabled={isPending}
             >
-              取消
+              Cancelar
             </Button>
             <Button type="submit" disabled={isPending} className="gap-1.5">
               {isPending && <Loader2 className="h-4 w-4 animate-spin" />}
-              {type === "RECEIVED" ? "记录实收" : "保存"}
+              {type === "RECEIVED" ? "记录实收" : "Guardar"}
             </Button>
           </DialogFooter>
         </form>
@@ -446,7 +446,7 @@ export function EditCommissionPlanDialog({
     if (available) {
       setPlans([...plans, { userId: available.id, percent: 0, label: "" }]);
     } else {
-      toast.warning("已为所有用户添加分成");
+      toast.warning("已为所有用户Agregar分成");
     }
   }
 
@@ -462,16 +462,16 @@ export function EditCommissionPlanDialog({
 
   function handleSave() {
     if (total > 100) {
-      toast.error("分成总和不能超过 100%");
+      toast.error("分成Total和不能超过 100%");
       return;
     }
     startTransition(async () => {
       try {
         await setCommissionPlan({ matterId, items: plans });
-        toast.success("分成方案已保存");
+        toast.success("分成方案已Guardar");
         onOpenChange(false);
       } catch (err) {
-        toast.error("保存失败", {
+        toast.error("Guardar失败", {
           description: err instanceof Error ? err.message : ""
         });
       }
@@ -543,7 +543,7 @@ export function EditCommissionPlanDialog({
                     <Input
                       value={p.label}
                       onChange={(e) => updateRow(idx, { label: e.target.value })}
-                      placeholder="主办律师 / 推荐人 / 合伙人"
+                      placeholder="主办Abogado / 推荐人 / 合伙人"
                       className="mt-1 h-9 bg-background"
                     />
                   </div>
@@ -566,7 +566,7 @@ export function EditCommissionPlanDialog({
         <div className="flex items-center justify-between rounded-md border border-border bg-background px-3 py-2">
           <Button variant="outline" size="sm" onClick={addRow} className="h-7 gap-1">
             <Plus className="h-3.5 w-3.5" />
-            添加
+            Agregar
           </Button>
           <div className="flex items-center gap-4 text-xs">
             <div>
@@ -584,11 +584,11 @@ export function EditCommissionPlanDialog({
 
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)} disabled={isPending}>
-            取消
+            Cancelar
           </Button>
           <Button onClick={handleSave} disabled={isPending} className="gap-1.5">
             {isPending && <Loader2 className="h-4 w-4 animate-spin" />}
-            保存方案
+            Guardar方案
           </Button>
         </DialogFooter>
       </DialogContent>

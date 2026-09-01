@@ -2,18 +2,18 @@
  * 冲突检索算法（V2）
  *
  * 与 V1 的关键区别：
- *   - V1 把"客户库同名"也当作冲突命中并标 HIGH，会出现"自己跟自己冲突"
- *     的错觉（系统已有同名客户档案 ≠ 利益冲突）。
+ *   - V1 把"Cliente库同名"也当作冲突命中并标 HIGH，会出现"自己跟自己冲突"
+ *     的错觉（Sistema已有同名Cliente档案 ≠ 利益冲突）。
  *   - V2 严格把"利益冲突"定义为：候选当事人在过去 Matter 里的角色与本次
  *     候选角色组合构成冲突。命中只落在 Matter 上，不落在 Client。
- *   - 同名客户档案单独走 sameNameClients 提示，不染色、不计入 hits。
+ *   - 同名Cliente档案单独走 sameNameClients 提示，不染色、不计入 hits。
  *   - 身份证号一致 → 单独走 idMatchedClients（强提示，可点开人工核对）。
  *
  * 严重度判定：
  *   候选 CLIENT_PARTY  ×  历史 OPPOSING_PARTY  → HIGH        曾经的对手现在要变委托方
- *   候选 OPPOSING_PARTY × 历史 CLIENT_PARTY    → BLOCKING    拟代理的对方曾是我所客户
+ *   候选 OPPOSING_PARTY × 历史 CLIENT_PARTY    → BLOCKING    拟代理的对方曾是我所Cliente
  *   候选 OPPOSING_PARTY × 历史 OPPOSING_PARTY  → LOW         历史交锋提示，可继续办
- *   候选 CLIENT_PARTY  ×  历史 CLIENT_PARTY    → LOW         熟客户复办
+ *   候选 CLIENT_PARTY  ×  历史 CLIENT_PARTY    → LOW         熟Cliente复办
  *   候选 THIRD_PARTY    × 任何                  → MEDIUM
  *   身份证一致 → 在原严重度基础上升 1 级（BLOCKING 顶天）
  */
@@ -132,11 +132,11 @@ export async function runConflictCheck(queries: QueryItem[]): Promise<ConflictCh
     const idNumber = q.idNumber?.trim() || null;
     if (!name && !idNumber) continue;
 
-    // v0.16: 同名 / 证件号匹配客户档案不再作为冲突提示
+    // v0.16: 同名 / 证件号匹配Cliente档案不再作为冲突提示
     //  (用户反馈：与利益冲突检索无关；保留 sameNameClients/idMatchedClients 数据
     //  结构以兼容历史 ConflictCheck 记录，但新检索时永远为空)
 
-    // ============ 历史案件 Party 匹配 ============
+    // ============ 历史Caso Party 匹配 ============
     const partyWhere: Prisma.PartyWhereInput[] = [];
     if (name) partyWhere.push({ name });
     if (idNumber) partyWhere.push({ idNumber });
@@ -177,7 +177,7 @@ export async function runConflictCheck(queries: QueryItem[]): Promise<ConflictCh
           matchedValue: idNumber,
           matchedRatio: 1,
           severity: sev,
-          reason: `身份证 / 信用代码与案件「${p.matter.internalCode}」中 ${roleLabel(p.role)}「${p.name}」一致`,
+          reason: `身份证 / 信用代码与Caso「${p.matter.internalCode}」中 ${roleLabel(p.role)}「${p.name}」一致`,
           matterInfo
         });
       }
@@ -192,7 +192,7 @@ export async function runConflictCheck(queries: QueryItem[]): Promise<ConflictCh
           matchedValue: name,
           matchedRatio: 1,
           severity: sev,
-          reason: `与案件「${p.matter.internalCode}」中 ${roleLabel(p.role)}「${p.name}」同名`,
+          reason: `与Caso「${p.matter.internalCode}」中 ${roleLabel(p.role)}「${p.name}」同名`,
           matterInfo
         });
       }
@@ -229,17 +229,17 @@ export async function runConflictCheck(queries: QueryItem[]): Promise<ConflictCh
           matchedValue: name,
           matchedRatio: name.length / p.name.length,
           severity: "LOW",
-          reason: `与案件「${p.matter.internalCode}」中 ${roleLabel(p.role)}「${p.name}」名称相似`,
+          reason: `与Caso「${p.matter.internalCode}」中 ${roleLabel(p.role)}「${p.name}」Nombre相似`,
           matterInfo: toMatterInfo(p.matter, p.role, p.standing)
         });
       }
     }
 
-    // ============ v0.43: 客户档案 → 关联案件 检索（修复漏报）============
-    // 老案件常只在 Matter.primaryClient / clientLinks 记客户、Party 表为空，
-    // 上面的 Party 检索会漏掉。客户作为某案件的「委托方(CLIENT_PARTY)」是真实
-    // 冲突信号，故按名称/证件号查 Client，再回溯其关联 Matter 产出命中。
-    // 不滤 status（已归档/进行中都要提示）；孤立客户档案（无任何关联案件）不产出命中。
+    // ============ v0.43: Cliente档案 → 关联Caso 检索（修复漏报）============
+    // 老Caso常只在 Matter.primaryClient / clientLinks 记Cliente、Party 表为空，
+    // 上面的 Party 检索会漏掉。Cliente作为某Caso的「委托方(CLIENT_PARTY)」是真实
+    // 冲突信号，故按Nombre/证件号查 Client，再回溯其关联 Matter 产出命中。
+    // 不滤 status（已归档/进行中都要提示）；孤立Cliente档案（无任何关联Caso）不产出命中。
     const clientWhere: Prisma.ClientWhereInput[] = [];
     if (name) clientWhere.push({ name });
     if (idNumber) clientWhere.push({ idNumber });
@@ -261,7 +261,7 @@ export async function runConflictCheck(queries: QueryItem[]): Promise<ConflictCh
       });
 
       for (const c of clients) {
-        // 该客户关联的全部案件（primaryClient + clientLinks），按 id 去重
+        // 该Cliente关联的Ver todosCaso（primaryClient + clientLinks），按 id 去重
         const matters = [...c.matters, ...c.matterLinks.map((l) => l.matter)].filter(
           (m, i, arr) => arr.findIndex((x) => x.id === m.id) === i
         );
@@ -284,7 +284,7 @@ export async function runConflictCheck(queries: QueryItem[]): Promise<ConflictCh
               matchedValue: idNumber!,
               matchedRatio: 1,
               severity: sev,
-              reason: `身份证 / 信用代码与案件「${m.internalCode}」的委托方「${c.name}」一致`,
+              reason: `身份证 / 信用代码与Caso「${m.internalCode}」的委托方「${c.name}」一致`,
               matterInfo
             });
           }
@@ -298,7 +298,7 @@ export async function runConflictCheck(queries: QueryItem[]): Promise<ConflictCh
               matchedValue: name,
               matchedRatio: 1,
               severity: pickSeverity(q.role, "CLIENT_PARTY"),
-              reason: `与案件「${m.internalCode}」的委托方「${c.name}」同名`,
+              reason: `与Caso「${m.internalCode}」的委托方「${c.name}」同名`,
               matterInfo
             });
           } else if (nameFuzzy) {
@@ -311,7 +311,7 @@ export async function runConflictCheck(queries: QueryItem[]): Promise<ConflictCh
               matchedValue: name,
               matchedRatio: name.length / c.name.length,
               severity: "LOW",
-              reason: `与案件「${m.internalCode}」的委托方「${c.name}」名称相似`,
+              reason: `与Caso「${m.internalCode}」的委托方「${c.name}」Nombre相似`,
               matterInfo
             });
           }

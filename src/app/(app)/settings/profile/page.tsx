@@ -23,7 +23,7 @@ export default async function ProfilePage() {
         </div>
         <dl className="grid grid-cols-1 gap-4 text-sm md:grid-cols-2">
           <Item label="姓名">{user.name}</Item>
-          <Item label="邮箱" mono>{user.email}</Item>
+          <Item label="Email" mono>{user.email}</Item>
           <Item label="角色">{userRoleLabel[user.role as keyof typeof userRoleLabel] ?? user.role}</Item>
         </dl>
       </section>
@@ -31,7 +31,7 @@ export default async function ProfilePage() {
       <CalendarSubscription />
 
       <section className="rounded-xl border border-border bg-card p-6">
-        <h2 className="mb-4 text-base font-semibold">修改密码</h2>
+        <h2 className="mb-4 text-base font-semibold">修改Contraseña</h2>
         <ChangePasswordForm />
       </section>
     </div>

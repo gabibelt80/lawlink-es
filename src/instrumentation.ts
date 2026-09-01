@@ -1,9 +1,9 @@
 /**
- * Next.js instrumentation hook：进程启动时一次性副作用注册。
+ * Next.js instrumentation hook：进程启动时一次性副作用Registrarse。
  * 启用方式：next.config.mjs experimental.instrumentationHook = true
  *
- * 当前唯一职责：注册 cron 定时作业（仅生产 / nodejs runtime）。
- * dev 模式跳过，避免开发时误推真实通知。
+ * 当前唯一职责：Registrarse cron 定时作业（仅生产 / nodejs runtime）。
+ * dev 模式跳过，避免开发时误推真实Notificaciones。
  *
  * ⚠ 重要：Next 14.x 即使 register() 内用了 dynamic import，dev 模式仍会扫描
  * 依赖链给 edge runtime 编译一遍（next-auth/bcryptjs 依赖 node:crypto 会 500）。

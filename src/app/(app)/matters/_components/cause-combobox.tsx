@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import {
   Popover,
   PopoverContent,
-  PopoverTrigger
+  PopoverTrigger,
 } from "@/components/ui/popover";
 import { Input } from "@/components/ui/input";
 import { searchCauses, type CauseSearchResult } from "@/server/causes/actions";
@@ -28,11 +28,11 @@ type Props = {
 
 /**
  * 案由级联选择器
- * - 一次性拉本 category 全部案由
+ * - 一次性拉本 category Ver todos案由
  * - 去掉一级，从二级起级联：二级 / 三级 / 四级，渐进展开（选了上一级才出现下一列）
  * - 单击即选：有子级 → 展开下一列；无子级（叶子）→ 直接选中。两次点击可选到常见三级案由。
  * - 列宽收窄，弹层随列数增长，避免一打开就铺满整页
- * - 名称过长截断，hover 显示全名
+ * - Nombre过长截断，hover 显示全名
  */
 export function CauseCombobox({
   value,
@@ -40,8 +40,8 @@ export function CauseCombobox({
   category,
   procedureType,
   disabled,
-  placeholder = "点击选择",
-  triggerClassName
+  placeholder = "Seleccionar",
+  triggerClassName,
 }: Props) {
   const [open, setOpen] = useState(false);
   const [allNodes, setAllNodes] = useState<Node[]>([]);
@@ -58,7 +58,7 @@ export function CauseCombobox({
     return [
       scope.dbCategory,
       scope.includeCodePrefixes?.join(",") ?? "*",
-      scope.excludeCodePrefixes.join(",")
+      scope.excludeCodePrefixes.join(","),
     ].join("|");
   }, [category, procedureType]);
   const previousCauseScopeKey = useRef(causeScopeKey);
@@ -68,12 +68,16 @@ export function CauseCombobox({
     setOpen(o);
     if (o && allNodes.length === 0) {
       startTransition(async () => {
-        const data = await searchCauses({ category, procedureType, limit: 2000 });
+        const data = await searchCauses({
+          category,
+          procedureType,
+          limit: 2000,
+        });
         setAllNodes(data);
       });
     }
     if (o) {
-      // 重置 picked 状态（避免上次残留）
+      // 重置 picked Estado（避免上次残留）
       setPickedL2(null);
       setPickedL3(null);
       setSearchInput("");
@@ -104,17 +108,26 @@ export function CauseCombobox({
   }, [value, allNodes]);
 
   // 去掉一级：二级直接平铺为第一列
-  const l2Nodes = useMemo(() => allNodes.filter((n) => n.level === 2), [allNodes]);
+  const l2Nodes = useMemo(
+    () => allNodes.filter((n) => n.level === 2),
+    [allNodes],
+  );
   const l3Nodes = useMemo(
-    () => (pickedL2 ? allNodes.filter((n) => n.level === 3 && n.parentId === pickedL2) : []),
-    [allNodes, pickedL2]
+    () =>
+      pickedL2
+        ? allNodes.filter((n) => n.level === 3 && n.parentId === pickedL2)
+        : [],
+    [allNodes, pickedL2],
   );
   const l4Nodes = useMemo(
-    () => (pickedL3 ? allNodes.filter((n) => n.level === 4 && n.parentId === pickedL3) : []),
-    [allNodes, pickedL3]
+    () =>
+      pickedL3
+        ? allNodes.filter((n) => n.level === 4 && n.parentId === pickedL3)
+        : [],
+    [allNodes, pickedL3],
   );
 
-  // 搜索过滤（跨级模糊）
+  // Buscar过滤（跨级模糊）
   const searchMatched = useMemo(() => {
     const q = searchInput.trim();
     if (!q) return null;
@@ -129,7 +142,7 @@ export function CauseCombobox({
   }
 
   // 选用一个案由：任意层级都可直接选中。
-  // 有子级 → 选中并展开下一列（可继续下钻，也可就此停下）；叶子 → 选中并关闭。
+  // 有子级 → 选中并展开下一列（可继续下钻，也可就此停下）；叶子 → 选中并Cerrar。
   function selectNode(node: Node, level: number) {
     onChange(node.id, node.name);
     setSelectedName(node.name);
@@ -145,7 +158,7 @@ export function CauseCombobox({
     }
   }
 
-  // 搜索结果直接选中并关闭
+  // Buscar结果直接选中并Cerrar
   function pickNode(node: Node) {
     onChange(node.id, node.name);
     setSelectedName(node.name);
@@ -160,12 +173,17 @@ export function CauseCombobox({
           variant="outline"
           role="combobox"
           aria-expanded={open}
-          className={cn("h-10 w-full justify-between rounded-sm font-normal", triggerClassName)}
+          className={cn(
+            "h-10 w-full justify-between rounded-sm font-normal",
+            triggerClassName,
+          )}
         >
           {value && selectedName ? (
             <span className="truncate">{selectedName}</span>
           ) : (
-            <span className="truncate text-muted-foreground">{placeholder}</span>
+            <span className="truncate text-muted-foreground">
+              {placeholder}
+            </span>
           )}
           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
@@ -177,11 +195,11 @@ export function CauseCombobox({
         portalled={false}
         className="w-auto max-w-[92vw] p-0"
       >
-        {/* 搜索栏 */}
+        {/* Buscar栏 */}
         <div className="border-b border-border p-2">
           <div className="relative w-[240px]">
             <Input
-              placeholder="搜索案由，或下方逐级浏览"
+              placeholder="Buscar案由，或下方逐级浏览"
               value={searchInput}
               onChange={(e) => setSearchInput(e.target.value)}
               className="h-8 pr-7 text-xs"
@@ -201,13 +219,15 @@ export function CauseCombobox({
         {isPending ? (
           <div className="flex w-[240px] items-center justify-center py-10 text-xs text-muted-foreground">
             <Loader2 className="h-3.5 w-3.5 animate-spin" />
-            <span className="ml-2">加载案由库...</span>
+            <span className="ml-2">Cargar案由库...</span>
           </div>
         ) : searchMatched ? (
-          // 搜索模式：扁平结果带路径
+          // Buscar模式：扁平结果带路径
           <div className="max-h-[360px] w-[320px] overflow-y-auto p-1">
             {searchMatched.length === 0 ? (
-              <p className="py-6 text-center text-xs text-muted-foreground">未找到匹配</p>
+              <p className="py-6 text-center text-xs text-muted-foreground">
+                未找到匹配
+              </p>
             ) : (
               searchMatched.map((n) => (
                 <button
@@ -268,7 +288,7 @@ function Column({
   activeId,
   empty = "—",
   hasChildren,
-  onPick
+  onPick,
 }: {
   title: string;
   items: Node[];
@@ -284,7 +304,9 @@ function Column({
       </div>
       <div className="flex-1 overflow-y-auto p-1">
         {items.length === 0 ? (
-          <p className="px-2 py-3 text-[11px] text-muted-foreground/60">{empty}</p>
+          <p className="px-2 py-3 text-[11px] text-muted-foreground/60">
+            {empty}
+          </p>
         ) : (
           items.map((n) => {
             const branching = hasChildren(n);
@@ -297,7 +319,9 @@ function Column({
                 title={n.name}
                 className={cn(
                   "flex min-h-8 w-full items-center justify-between gap-1 rounded-sm px-2 py-1.5 text-left text-[13px] transition-colors",
-                  isActive ? "bg-accent text-primary" : "hover:bg-muted hover:text-foreground"
+                  isActive
+                    ? "bg-accent text-primary"
+                    : "hover:bg-muted hover:text-foreground",
                 )}
               >
                 <span className="truncate">{n.name}</span>
@@ -305,7 +329,7 @@ function Column({
                   className={cn(
                     "h-3 w-3 shrink-0 text-muted-foreground/50",
                     isActive && "text-primary",
-                    !branching && "invisible"
+                    !branching && "invisible",
                   )}
                 />
               </button>

@@ -24,7 +24,7 @@ import type { SmsRow, MatterOption, ParsedJson } from "./sms-types";
 import { toDate } from "@/lib/sms-parser";
 import { procedureTypeLabel } from "@/lib/enums";
 
-// v0.51: 程序默认选中——优先取案号与短信解析案号一致的程序
+// v0.51: 程序默认选中——优先取案号与SMS解析案号一致的程序
 function preferredProcedureId(
   procedures: NonNullable<SmsRow["matchedMatter"]>["procedures"],
   parsed: ParsedJson,
@@ -85,7 +85,7 @@ export function GenerateHearingDialog({
           judge: judge.trim(),
           notes: notes.trim(),
         });
-        toast.success("已生成开庭并标记此短信处理完成");
+        toast.success("已生成开庭并标记此SMS处理完成");
         onOpenChange(false);
       } catch (e) {
         toast.error(e instanceof Error ? e.message : "失败");
@@ -157,7 +157,7 @@ export function GenerateHearingDialog({
           </div>
 
           <div className="md:col-span-2">
-            <Label className="text-[11px]">备注</Label>
+            <Label className="text-[11px]">Observaciones</Label>
             <Textarea
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
@@ -173,7 +173,7 @@ export function GenerateHearingDialog({
             onClick={() => onOpenChange(false)}
             disabled={pending}
           >
-            取消
+            Cancelar
           </Button>
           <Button onClick={submit} disabled={pending}>
             {pending && <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />}
@@ -239,7 +239,7 @@ function pickDefaultDeadlineTitle(parsed: ParsedJson): {
 }
 
 function pickDefaultDueDate(parsed: ParsedJson): Date | null {
-  // v0.51: 优先用重要事项自带的日期
+  // v0.51: 优先用重要事项自带的Fecha
   const item = firstDeadlineItem(parsed);
   if (item?.dateText) {
     const d = toDate(item.dateText);
@@ -255,7 +255,7 @@ function pickDefaultDueDate(parsed: ParsedJson): Date | null {
       return d;
     }
   }
-  // 其他：取 dates 中第一个日期
+  // 其他：取 dates 中第一个Fecha
   for (const s of parsed.dates) {
     const d = toDate(s);
     if (d) return d;
@@ -297,7 +297,7 @@ export function GenerateDeadlineDialog({
     }
     const d = dateStr ? new Date(dateStr) : null;
     if (!d || isNaN(d.getTime())) {
-      toast.error("请填写有效的截止日期");
+      toast.error("请填写有效的截止Fecha");
       return;
     }
     startTransition(async () => {
@@ -311,7 +311,7 @@ export function GenerateDeadlineDialog({
           basis: basis.trim(),
           remindDays,
         });
-        toast.success("已生成期限并标记此短信处理完成");
+        toast.success("已生成期限并标记此SMS处理完成");
         onOpenChange(false);
       } catch (e) {
         toast.error(e instanceof Error ? e.message : "失败");
@@ -369,7 +369,7 @@ export function GenerateDeadlineDialog({
           </div>
 
           <div>
-            <Label className="text-[11px]">截止日期 *</Label>
+            <Label className="text-[11px]">截止Fecha *</Label>
             <Input
               type="date"
               value={dateStr}
@@ -379,7 +379,7 @@ export function GenerateDeadlineDialog({
           </div>
 
           <div>
-            <Label className="text-[11px]">提前提醒（天）</Label>
+            <Label className="text-[11px]">提前Recordatorios（天）</Label>
             <Input
               type="number"
               min={1}
@@ -409,7 +409,7 @@ export function GenerateDeadlineDialog({
             onClick={() => onOpenChange(false)}
             disabled={pending}
           >
-            取消
+            Cancelar
           </Button>
           <Button onClick={submit} disabled={pending}>
             {pending && <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />}
@@ -481,7 +481,7 @@ export function BackfillCaseNumberDialog({
 
         <div className="space-y-3">
           <div>
-            <Label className="text-[11px]">短信解析出的案号 *</Label>
+            <Label className="text-[11px]">SMS解析出的案号 *</Label>
             <RadioChips
               size="sm"
               className="mt-2"
@@ -506,7 +506,7 @@ export function BackfillCaseNumberDialog({
             />
           </div>
           <p className="text-[11px] text-muted-foreground">
-            已有案号的程序不可覆盖；如需更正请到案件详情的程序信息中修改。
+            已有案号的程序不可覆盖；如需更正请到Caso详情的程序信息中修改。
           </p>
         </div>
 
@@ -516,7 +516,7 @@ export function BackfillCaseNumberDialog({
             onClick={() => onOpenChange(false)}
             disabled={pending}
           >
-            取消
+            Cancelar
           </Button>
           <Button
             onClick={submit}

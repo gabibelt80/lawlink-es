@@ -1,5 +1,5 @@
 /**
- * AI 文书审查返回内容的解析逻辑（纯函数，便于单测）
+ * AI 文书审查Volver内容的解析逻辑（纯函数，便于单测）
  * 实际调用走 src/server/ai/review-document.ts
  */
 import { extractJson } from "./client";
@@ -24,7 +24,7 @@ const VALID_SEV: ReadonlySet<ReviewSeverity> = new Set(["HIGH", "MEDIUM", "LOW"]
 const SEV_ORDER: Record<ReviewSeverity, number> = { HIGH: 0, MEDIUM: 1, LOW: 2 };
 
 /**
- * 把 AI 返回文本解析为规范化 ReviewItem 数组。
+ * 把 AI Volver文本解析为规范化 ReviewItem 数组。
  * - JSON 解析失败抛错（调用方决定怎么处理）
  * - 非法 type/severity 回退为 ISSUE/MEDIUM
  * - title/detail 任一为空的条目丢弃
@@ -33,7 +33,7 @@ const SEV_ORDER: Record<ReviewSeverity, number> = { HIGH: 0, MEDIUM: 1, LOW: 2 }
 export function parseReviewItems(content: string): ReviewItem[] {
   const parsed = extractJson<unknown>(content);
   if (!Array.isArray(parsed)) {
-    throw new Error("AI 返回内容无法解析为审查清单");
+    throw new Error("AI Volver内容无法解析为审查清单");
   }
   const items: ReviewItem[] = [];
   for (const raw of parsed as Array<Record<string, unknown>>) {

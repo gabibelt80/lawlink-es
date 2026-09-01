@@ -1,5 +1,5 @@
 /**
- * 元典开放平台 HTTP 客户端（server-side only）
+ * 元典开放平台 HTTP Cliente端（server-side only）
  *
  * 入口：POST {baseUrl}/{routeKey}，header X-API-Key。
  * 详见 https://open.chineselaw.com/llms-full.txt
@@ -8,7 +8,7 @@ import { getYuandianSettings, type ResolvedYuandianSettings } from "./settings";
 
 export class YuandianNotConfiguredError extends Error {
   constructor() {
-    super("元典 API 未配置，请先到 设置 → AI 接入 填写元典 API key");
+    super("元典 API 未配置，请先到 Configuración → AI 接入 填写元典 API key");
     this.name = "YuandianNotConfiguredError";
   }
 }
@@ -25,17 +25,17 @@ export class YuandianApiError extends Error {
 export type PtalSearchParams = {
   ay?: string[]; // 案由数组
   ajlb?:
-    | "刑事案件"
-    | "民事案件"
-    | "行政案件"
-    | "执行案件"
-    | "管辖案件"
-    | "国家赔偿与司法救助案件"
-    | "强制清算与破产案件"
-    | "国际司法协助案件"
-    | "非诉保全审查案件"
-    | "其他案件";
-  xzqh_p?: string[]; // 省级行政区
+    | "PenalCaso"
+    | "民事Caso"
+    | "AdministrativoCaso"
+    | "执行Caso"
+    | "管辖Caso"
+    | "国家赔偿与司法救助Caso"
+    | "强制清算与破产Caso"
+    | "国际司法协助Caso"
+    | "非诉Preservación审查Caso"
+    | "其他Caso";
+  xzqh_p?: string[]; // 省级Administrativo区
   wszl?: ("判决书" | "裁定书" | "调解书" | "决定书")[];
   qw?: string; // 全文关键词（空格拆分）
   ja_start?: string; // yyyy-MM-dd
@@ -50,10 +50,10 @@ export type PtalCase = {
   title: string;
   ay: string[]; // 案由
   jbdw: string; // 经办法院
-  ajlb: string; // 案件类别
+  ajlb: string; // Caso类别
   xzqh_p: string; // 省份
   wszl: string; // 文书种类
-  cprq: string; // 裁判日期
+  cprq: string; // 裁判Fecha
   content: string; // 内容片段
   url: string; // 详情相对路径
   score: number;
@@ -85,7 +85,7 @@ export async function searchPtalCases(
     (params.wszl?.length ?? 0) > 0 ||
     !!params.ja_start ||
     !!params.ja_end;
-  if (!hasAny) throw new Error("至少填写一个检索条件（案由 / 关键词 / 法院 / 地区 / 日期）");
+  if (!hasAny) throw new Error("至少填写一个检索条件（案由 / 关键词 / 法院 / 地区 / Fecha）");
 
   const body: Record<string, unknown> = {};
   if (params.ay?.length) body.ay = params.ay;
@@ -129,7 +129,7 @@ export async function searchPtalCases(
   }
 
   if (json.status !== "success") {
-    throw new YuandianApiError(json.message ?? "元典返回失败", json.code ?? 500);
+    throw new YuandianApiError(json.message ?? "元典Volver失败", json.code ?? 500);
   }
   // 未命中：data === null
   if (!json.data) return { total: 0, items: [] };
@@ -140,8 +140,8 @@ export async function searchPtalCases(
 }
 
 /**
- * 拼出元典前端的案例详情完整 URL（用于"查看全文"外跳）。
- * caseDetailHost 默认 https://www.chineselaw.com，可在设置里改。
+ * 拼出元典前端的案例详情完整 URL（用于"Ver全文"外跳）。
+ * caseDetailHost 默认 https://www.chineselaw.com，可在Configuración里改。
  */
 export function buildCaseDetailUrl(host: string, relPath: string): string {
   const h = host.replace(/\/$/, "");
@@ -175,8 +175,8 @@ export type VectorCase = {
   scid: string;
   title: string;
   ah: string;
-  ay: string[]; // ⚠ 返回的是 code 数组，不是名字
-  anyou?: string[]; // 案由名（如果返回字段有的话，做兜底）
+  ay: string[]; // ⚠ Volver的是 code 数组，不是名字
+  anyou?: string[]; // 案由名（如果Volver字段有的话，做兜底）
   jbdw: string | null;
   ajlb: string;
   wszl: string;

@@ -64,13 +64,13 @@ export function CaseListHeader({
       ) : (
         <div />
       )}
-      <div>案件</div>
+      <div>Caso</div>
       {!showIntakeDateColumn && !showArchiveDateColumn ? metaHeader : null}
-      <div>客户</div>
+      <div>Cliente</div>
       <div>{detailColumnLabel}</div>
       {showArchiveDateColumn ? metaHeader : null}
       {showArchiveDateColumn ? null : <div>标的</div>}
-      <div>状态</div>
+      <div>Estado</div>
     </div>
   );
 }
@@ -89,7 +89,7 @@ export function MattersTable({
   if (items.length === 0) {
     return (
       <div className="flex flex-col items-center gap-2 rounded-md border border-border bg-card py-20 text-center">
-        <div className="text-base text-muted-foreground">没有匹配的案件</div>
+        <div className="text-base text-muted-foreground">没有匹配的Caso</div>
         <div className="text-xs text-muted-foreground/70">
           点击右上角 <span className="text-foreground/80">新建收案</span> 开始
         </div>
@@ -285,13 +285,13 @@ export function CaseListCard({
 
           {!hasLeadingDateColumn ? metaCell : null}
 
-          <DataCell label="客户">
+          <DataCell label="Cliente">
             <span className="flex min-w-0 items-center gap-2">
               <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-accent text-[10px] font-semibold text-primary">
                 {(clientName ?? "未").charAt(0)}
               </span>
               <span className="truncate text-[12.5px] text-muted-foreground">
-                {clientName ?? "未关联客户"}
+                {clientName ?? "未关联Cliente"}
               </span>
             </span>
           </DataCell>
@@ -321,7 +321,7 @@ export function CaseListCard({
             </DataCell>
           )}
 
-          <DataCell label="状态">
+          <DataCell label="Estado">
             <StatusChip label={status.label} dot={status.dot} />
           </DataCell>
         </div>

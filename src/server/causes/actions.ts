@@ -68,10 +68,10 @@ function flatten(c: {
 }
 
 /**
- * 搜索规范案由库。
+ * Buscar规范案由库。
  *
  * - 必传 category
- * - 空 query 时返回该 category 下二级案由（让用户先看分类）+ 部分三级
+ * - 空 query 时Volver该 category 下二级案由（让用户先看分类）+ 部分三级
  * - 模糊匹配 name / shortName / keywords / pinyin
  * - 结果带 parent 链，UI 可显示"二级 / 三级"路径
  */
@@ -92,7 +92,7 @@ export async function searchCauses(params: {
   limit?: number;
 }): Promise<CauseSearchResult[]> {
   await requireSession();
-  // v0.16: cap 提到 2000 以支持级联 UI 一次性拉全（民事 1055 / 刑事 511）
+  // v0.16: cap 提到 2000 以支持级联 UI 一次性拉全（民事 1055 / Penal 511）
   const limit = Math.min(params.limit ?? 50, 2000);
   const q = params.query?.trim();
   const scope = causeScopeForSelection(params.category, params.procedureType);
@@ -102,7 +102,7 @@ export async function searchCauses(params: {
   };
 
   if (!q) {
-    // 空查询：返回该 category 下全部 4 级（级联 UI 需要 level=1）
+    // 空查询：Volver该 category 下Ver todos 4 级（级联 UI 需要 level=1）
     const list = await prisma.causeOfAction.findMany({
       where: {
         category: scope.dbCategory,

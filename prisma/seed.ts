@@ -33,7 +33,7 @@ type CauseSeed = {
 async function seedAdmin() {
   const email = process.env.SEED_ADMIN_EMAIL ?? "admin@lawlink.local";
   const password = process.env.SEED_ADMIN_PASSWORD ?? "ChangeMe!2026";
-  const name = process.env.SEED_ADMIN_NAME ?? "系统管理员";
+  const name = process.env.SEED_ADMIN_NAME ?? "Administrador";
 
   const passwordHash = await bcrypt.hash(password, 12);
 

@@ -35,7 +35,7 @@ export type AuditListResult = {
 async function requireAdmin() {
   const session = await requireSession();
   if (session.user.role !== "ADMIN" && session.user.role !== "PRINCIPAL_LAWYER") {
-    throw new Error("仅管理员 / 主任律师可访问审计日志");
+    throw new Error("仅Administrar员 / 主任Abogado可访问审计日志");
   }
   return session;
 }

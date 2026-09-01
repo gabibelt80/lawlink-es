@@ -87,7 +87,7 @@ export function AddProcedureSheet({
   category: MatterCategory;
   nextOrder: number;
   colleagues?: { id: string; name: string }[];
-  /** 已有的程序类型，防止重复添加 */
+  /** 已有的程序类型，防止重复Agregar */
   existingTypes?: string[];
 }) {
   const [isPending, startTransition] = useTransition();
@@ -161,11 +161,11 @@ export function AddProcedureSheet({
     startTransition(async () => {
       try {
         await addProcedure(values);
-        toast.success(`程序已添加（${procedureTypeLabel[values.type]}）`);
+        toast.success(`程序已Agregar（${procedureTypeLabel[values.type]}）`);
         reset();
         onOpenChange(false);
       } catch (err) {
-        toast.error("添加失败", {
+        toast.error("Agregar失败", {
           description: err instanceof Error ? err.message : ""
         });
       }
@@ -176,9 +176,9 @@ export function AddProcedureSheet({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-xl max-h-[85vh] flex flex-col gap-0 p-0">
         <DialogHeader className="border-b border-border px-6 py-4">
-          <DialogTitle>添加程序（第 {nextOrder} 个）</DialogTitle>
+          <DialogTitle>Agregar程序（第 {nextOrder} 个）</DialogTitle>
           <DialogDescription className="text-xs">
-            填写程序基本信息和主办律师
+            填写程序基本信息和主办Abogado
           </DialogDescription>
         </DialogHeader>
 
@@ -206,10 +206,10 @@ export function AddProcedureSheet({
               </div>
             </div>
 
-            {/* 主办律师 */}
+            {/* 主办Abogado */}
             {colleagues && colleagues.length > 0 && (
               <div className="space-y-2">
-                <Label className="text-xs">主办律师</Label>
+                <Label className="text-xs">主办Abogado</Label>
                 <div className="flex items-center gap-3">
                   <Select
                     value={isExternalLead ? "__external__" : (leadLawyerId ?? "__none__")}
@@ -227,7 +227,7 @@ export function AddProcedureSheet({
                     }}
                   >
                     <SelectTrigger className="h-9 text-xs">
-                      <SelectValue placeholder="选择主办律师" />
+                      <SelectValue placeholder="选择主办Abogado" />
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="__none__">未指定</SelectItem>
@@ -238,7 +238,7 @@ export function AddProcedureSheet({
                     </SelectContent>
                   </Select>
                   {isExternalLead && (
-                    <span className="text-xs text-muted-foreground">此程序由外部律师代理</span>
+                    <span className="text-xs text-muted-foreground">此程序由外部Abogado代理</span>
                   )}
                 </div>
               </div>
@@ -281,7 +281,7 @@ export function AddProcedureSheet({
                 <Input {...register("panel")} />
               </Field>
               <Field
-                label="立案 / 受理日期"
+                label="立案 / 受理Fecha"
                 error={errors.acceptedAt?.message as string | undefined}
               >
                 <Input
@@ -303,11 +303,11 @@ export function AddProcedureSheet({
               onClick={() => onOpenChange(false)}
               disabled={isPending}
             >
-              取消
+              Cancelar
             </Button>
             <Button type="submit" disabled={isPending} className="gap-1.5">
               {isPending && <Loader2 className="h-4 w-4 animate-spin" />}
-              添加程序
+              Agregar程序
             </Button>
           </DialogFooter>
         </form>
@@ -329,7 +329,7 @@ const deadlineCategoryLabel: Record<
   RESPONSE: "答辩期",
   ENFORCEMENT: "执行申请",
   ARBITRATION_SET_ASIDE: "撤销仲裁期",
-  PRESERVATION: "保全期限",
+  PRESERVATION: "Preservación期限",
   CUSTOM: "其他"
 };
 
@@ -341,7 +341,7 @@ export function AddDeadlineDialog({
 }: {
   open: boolean;
   onOpenChange: (o: boolean) => void;
-  /** v0.45：提醒全案聚合，新增期限需明确所处程序 */
+  /** v0.45：Recordatorios全案聚合，新增期限需明确所处程序 */
   procedures: { id: string; label: string }[];
   defaultProcedureId: string;
 }) {
@@ -368,7 +368,7 @@ export function AddDeadlineDialog({
   const procedureId = useWatch({ control, name: "procedureId" });
   const category = useWatch({ control, name: "category" });
 
-  // v0.49：法定期限规则（按当前程序类型 + 案件类别过滤，全部经元典核验）
+  // v0.49：法定期限规则（按当前程序类型 + Caso类别过滤，Ver todos经元典核验）
   type RuleOption = Awaited<ReturnType<typeof listDeadlineRulesForProcedure>>[number];
   const [rules, setRules] = useState<RuleOption[]>([]);
   const [rulesLoading, setRulesLoading] = useState(false);
@@ -408,8 +408,8 @@ export function AddDeadlineDialog({
     const trigger = new Date(`${triggerDate}T00:00:00`);
     setValue("title", selectedRule.name, { shouldDirty: true });
     setValue("category", selectedRule.category, { shouldDirty: true });
-    // date input 注册了 valueAsDate，程序化赋值需要 yyyy-MM-dd 字符串才能正确
-    // 回显；提交时 zod coerce.date() 会转回 Date
+    // date input Registrarse了 valueAsDate，程序化赋值需要 yyyy-MM-dd 字符串才能正确
+    // 回显；Enviar时 zod coerce.date() 会转回 Date
     setValue("dueAt", formatLocalDate(computedDue) as unknown as Date, {
       shouldDirty: true
     });
@@ -437,11 +437,11 @@ export function AddDeadlineDialog({
     startTransition(async () => {
       try {
         await addDeadline(values);
-        toast.success("期限已添加");
+        toast.success("期限已Agregar");
         reset();
         onOpenChange(false);
       } catch (err) {
-        toast.error("添加失败", {
+        toast.error("Agregar失败", {
           description: err instanceof Error ? err.message : ""
         });
       }
@@ -452,7 +452,7 @@ export function AddDeadlineDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="flex max-h-[85vh] max-w-md flex-col gap-0 p-0">
         <DialogHeader className="border-b border-border px-6 py-4">
-          <DialogTitle>添加期限</DialogTitle>
+          <DialogTitle>Agregar期限</DialogTitle>
         </DialogHeader>
 
         <form onSubmit={handleSubmit(onSubmit)} className="flex flex-1 flex-col overflow-hidden">
@@ -521,7 +521,7 @@ export function AddDeadlineDialog({
                             className="ml-1 inline-flex items-center gap-0.5 text-primary hover:underline"
                           >
                             <ExternalLink className="h-3 w-3" />
-                            查看法条
+                            Ver法条
                           </a>
                         )}
                         {selectedRule.verifiedAt && (
@@ -558,7 +558,7 @@ export function AddDeadlineDialog({
               </section>
             )}
 
-            <Field label="期限名称" required error={errors.title?.message}>
+            <Field label="期限Nombre" required error={errors.title?.message}>
               <Input
                 placeholder="如：举证截止 / 上诉到期日"
                 {...register("title")}
@@ -596,7 +596,7 @@ export function AddDeadlineDialog({
               />
             </Field>
 
-            <Field label="提前提醒（天）">
+            <Field label="提前Recordatorios（天）">
               <Input
                 type="number"
                 min={0}
@@ -614,11 +614,11 @@ export function AddDeadlineDialog({
               onClick={() => onOpenChange(false)}
               disabled={isPending}
             >
-              取消
+              Cancelar
             </Button>
             <Button type="submit" disabled={isPending} className="gap-1.5">
               {isPending && <Loader2 className="h-4 w-4 animate-spin" />}
-              添加期限
+              Agregar期限
             </Button>
           </DialogFooter>
         </form>
@@ -728,11 +728,11 @@ export function AddHearingDialog({
     startTransition(async () => {
       try {
         await addHearing(values);
-        toast.success("开庭已添加");
+        toast.success("开庭已Agregar");
         reset();
         onOpenChange(false);
       } catch (err) {
-        toast.error("添加失败", {
+        toast.error("Agregar失败", {
           description: err instanceof Error ? err.message : ""
         });
       }
@@ -743,7 +743,7 @@ export function AddHearingDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="flex max-h-[85vh] max-w-md flex-col gap-0 p-0">
         <DialogHeader className="border-b border-border px-6 py-4">
-          <DialogTitle>添加开庭</DialogTitle>
+          <DialogTitle>Agregar开庭</DialogTitle>
         </DialogHeader>
 
         <form onSubmit={handleSubmit(onSubmit)} className="flex flex-1 flex-col overflow-hidden">
@@ -839,7 +839,7 @@ export function AddHearingDialog({
               <Input placeholder="如：XX路XX号XX法院" {...register("address")} />
             </Field>
 
-            <Field label="备注">
+            <Field label="Observaciones">
               <Textarea rows={4} {...register("notes")} />
             </Field>
           </div>
@@ -851,11 +851,11 @@ export function AddHearingDialog({
               onClick={() => onOpenChange(false)}
               disabled={isPending}
             >
-              取消
+              Cancelar
             </Button>
             <Button type="submit" disabled={isPending} className="gap-1.5">
               {isPending && <Loader2 className="h-4 w-4 animate-spin" />}
-              添加开庭
+              Agregar开庭
             </Button>
           </DialogFooter>
         </form>

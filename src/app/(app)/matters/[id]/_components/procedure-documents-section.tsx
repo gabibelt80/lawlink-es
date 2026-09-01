@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * v0.27: 程序下"案件材料"区
+ * v0.27: 程序下"Caso材料"区
  * v0.42: 分类切换 tab + 来源方 + docx/xlsx 在线预览
  *
  * - 每个程序独立呈现自己关联的 Document
@@ -43,7 +43,7 @@ import { canPreview, officePreviewKind } from "@/lib/storage/mime-ext";
 import { cn, formatDate } from "@/lib/utils";
 import { litigationStandingLabel } from "@/lib/enums";
 
-// v0.42: 类别标签按律师习惯改名
+// v0.42: 类别标签按Abogado习惯改名
 const categoryLabel: Record<DocumentCategory, string> = {
   PLEADING: "诉辩文件",
   EVIDENCE: "证据",
@@ -175,10 +175,10 @@ export function ProcedureDocumentsSection({
   const [sourceParty, setSourceParty] = useState<string>("");
   const [customName, setCustomName] = useState("");
   const [isPending, startTransition] = useTransition();
-  // 当前分类筛选（全部 = null）
+  // 当前分类筛选（Ver todos = null）
   const [filter, setFilter] = useState<DocumentCategory | null>(null);
 
-  // 归属/来源选项：当前程序当事人（诉讼地位 + 名称）
+  // 归属/来源选项：当前程序当事人（诉讼地位 + Nombre）
   const sourceOptions = useMemo(
     () => {
       const seen = new Set<string>([COURT_PROCEDURE_SOURCE]);
@@ -237,14 +237,14 @@ export function ProcedureDocumentsSection({
   }
 
   function handleDelete(id: string, name: string) {
-    if (!confirm(`删除材料"${name}"？`)) return;
+    if (!confirm(`Eliminar材料"${name}"？`)) return;
     startTransition(async () => {
       try {
         await deleteDocument(id);
-        toast.success("已删除");
+        toast.success("已Eliminar");
         router.refresh();
       } catch (err) {
-        toast.error("删除失败", { description: err instanceof Error ? err.message : "" });
+        toast.error("Eliminar失败", { description: err instanceof Error ? err.message : "" });
       }
     });
   }
@@ -254,12 +254,12 @@ export function ProcedureDocumentsSection({
       <header className="flex flex-wrap items-center justify-between gap-2 border-b border-border px-4 py-2">
         <div className="flex min-w-0 flex-1 flex-wrap items-center gap-2">
           <span className="flex items-center gap-1.5 text-[13px] font-medium whitespace-nowrap">
-            案件材料
+            Caso材料
             <span className="ml-1 font-mono text-[11px] text-muted-foreground tabular">
               {documents.length}
             </span>
           </span>
-          {/* 分类按钮组（参考用印审批） */}
+          {/* 分类按钮组（参考用印Aprobación） */}
           <div className="flex min-w-0 max-w-full items-center gap-0.5 overflow-x-auto rounded-md border border-border bg-background p-0.5">
             <button
               type="button"
@@ -271,7 +271,7 @@ export function ProcedureDocumentsSection({
                   : "text-muted-foreground hover:text-foreground"
               )}
             >
-              全部
+              Ver todos
             </button>
             {CATEGORY_OPTIONS.map((c) => (
               <button
@@ -321,7 +321,7 @@ export function ProcedureDocumentsSection({
                       target="_blank"
                       rel="noreferrer"
                       className="truncate text-xs hover:text-primary hover:underline"
-                      title="点击打开查看"
+                      title="点击打开Ver"
                     >
                       {d.name}
                     </a>
@@ -362,7 +362,7 @@ export function ProcedureDocumentsSection({
                       type="button"
                       onClick={() => handleDelete(d.id, d.name)}
                       className="p-1 text-muted-foreground hover:text-destructive"
-                      title="删除"
+                      title="Eliminar"
                     >
                       <Trash2 className="h-3.5 w-3.5" />
                     </button>
@@ -378,7 +378,7 @@ export function ProcedureDocumentsSection({
         <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>上传案件材料</DialogTitle>
+            <DialogTitle>上传Caso材料</DialogTitle>
             <DialogDescription className="text-xs">
               文件 ≤ 20MB · 自动关联到当前程序
             </DialogDescription>
@@ -450,7 +450,7 @@ export function ProcedureDocumentsSection({
 
           <DialogFooter>
             <Button variant="outline" onClick={() => setOpen(false)} disabled={isPending}>
-              取消
+              Cancelar
             </Button>
             <Button onClick={handleSubmit} disabled={isPending || !picked}>
               {isPending && <Loader2 className="mr-1.5 h-4 w-4 animate-spin" />}

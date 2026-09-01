@@ -6,7 +6,7 @@ import { Scale } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { primaryNav, secondaryNav, type NavItem } from "./nav-config";
 
-/** v0.42 项1: 侧栏品牌（可在设置 → 律所信息配置） */
+/** v0.42 项1: 侧栏品牌（可在Configuración → 律所信息配置） */
 export type FirmBrand = {
   name: string;
   subtitle: string;

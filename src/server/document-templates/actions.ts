@@ -65,7 +65,7 @@ export async function getTemplate(id: string) {
 export async function toggleTemplate(input: z.infer<typeof templateToggleSchema>) {
   const session = await requireSession();
   if (session.user.role !== "ADMIN") {
-    throw new Error("仅管理员可启用/禁用模板");
+    throw new Error("仅Administrar员可启用/禁用模板");
   }
   const data = templateToggleSchema.parse(input);
 
@@ -92,14 +92,14 @@ export async function toggleTemplate(input: z.infer<typeof templateToggleSchema>
  *   2. 读取并解密模板 docx
  *   3. 拼装上下文（含行内补全 overrides 的回写）
  *   4. 渲染 → 加密入库 Document（关联 matter / folder / template / 上下文快照）
- *   5. 返回新 documentId，UI 拿去下载
+ *   5. Volver新 documentId，UI 拿去下载
  */
 export async function renderTemplate(input: z.infer<typeof templateRenderSchema>) {
   const session = await requireSession();
   const data = templateRenderSchema.parse(input);
 
   await assertMatterWritable(data.matterId);
-  await assertCanLeadMatter(session.user.id, data.matterId, "仅案件主办/协办可生成文书");
+  await assertCanLeadMatter(session.user.id, data.matterId, "仅Caso主办/协办可生成文书");
 
   // 取模板 + docxBlob
   const tmpl = await prisma.documentTemplate.findUnique({
@@ -109,23 +109,23 @@ export async function renderTemplate(input: z.infer<typeof templateRenderSchema>
   if (!tmpl || !tmpl.enabled) throw new Error("模板不存在或已禁用");
   if (!tmpl.docxBlob) throw new Error("模板源文件缺失");
 
-  // 校验 folder 同案件
+  // 校验 folder 同Caso
   if (data.folderId) {
     const folder = await prisma.documentFolder.findUnique({
       where: { id: data.folderId },
       select: { matterId: true }
     });
     if (!folder || folder.matterId !== data.matterId) {
-      throw new Error("目标卷宗与案件不匹配");
+      throw new Error("目标卷宗与Caso不匹配");
     }
   }
 
-  // 取案件 + 模板源文件
+  // 取Caso + 模板源文件
   const matter = await prisma.matter.findUnique({
     where: { id: data.matterId },
     select: { internalCode: true, category: true }
   });
-  if (!matter) throw new Error("案件不存在");
+  if (!matter) throw new Error("Caso不存在");
 
   const rawCt = await storage.readFile(tmpl.docxBlob.path);
   const templateBuffer = tmpl.docxBlob.encrypted

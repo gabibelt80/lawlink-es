@@ -5,7 +5,7 @@ import {
 } from "@/lib/cause-scope";
 
 describe("causeScopeForSelection", () => {
-  it("商事仲裁类别共用民商事案由库并限制财产权益类案由", () => {
+  it("商事仲裁类别共用Civil/Comercial案由库并限制财产权益类案由", () => {
     const scope = causeScopeForSelection("COMMERCIAL_ARBITRATION");
     expect(scope.dbCategory).toBe("CIVIL_COMMERCIAL");
     expect(scope.includeCodePrefixes).toContain("CC-4");
@@ -13,7 +13,7 @@ describe("causeScopeForSelection", () => {
     expect(scope.excludeCodePrefixes).toContain("CC-9-27");
   });
 
-  it("民商事类别下选择商事仲裁程序时也启用同一限制", () => {
+  it("Civil/Comercial类别下选择商事仲裁程序时也启用同一限制", () => {
     const scope = causeScopeForSelection("CIVIL_COMMERCIAL", "COMMERCIAL_ARBITRATION");
     expect(scope.dbCategory).toBe("CIVIL_COMMERCIAL");
     expect(scope.includeCodePrefixes).toContain("CC-4");
@@ -53,7 +53,7 @@ describe("isCauseAllowedForSelection", () => {
     }
   });
 
-  it("非商事仲裁的民商事案件仍可选择普通民事案由", () => {
+  it("非商事仲裁的Civil/ComercialCaso仍可选择普通民事案由", () => {
     expect(
       isCauseAllowedForSelection(
         { category: "CIVIL_COMMERCIAL", code: "CC-2-2-14", active: true },

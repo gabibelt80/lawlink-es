@@ -5,7 +5,7 @@ import { matterCategoryCode } from "@/lib/procedures-by-category";
 import { getFirmProfile, CATEGORY_ABBR } from "@/server/settings/firm-profile";
 import { renderCaseNoTemplate } from "@/lib/matters/firm-caseno";
 
-/** SystemSetting 原子计数器：key 自增并返回新值（serializable 防并发冲突） */
+/** SystemSetting 原子计数器：key 自增并Volver新值（serializable 防并发冲突） */
 async function nextCounter(key: string): Promise<number> {
   return prisma.$transaction(
     async (tx) => {
@@ -26,7 +26,7 @@ async function nextCounter(key: string): Promise<number> {
 /**
  * 原子生成 internalCode：{前缀}-{YYYY}-{CODE}-{4位流水}
  *
- * 前缀可在「设置 → 律所信息」配置（默认 LL）。计数器 key 形如 `code-counter-2026-CC`。
+ * 前缀可在「Configuración → 律所信息」配置（默认 LL）。计数器 key 形如 `code-counter-2026-CC`。
  */
 export async function generateInternalCode(category: MatterCategory): Promise<string> {
   const year = new Date().getFullYear();
@@ -38,7 +38,7 @@ export async function generateInternalCode(category: MatterCategory): Promise<st
 }
 
 /**
- * v0.42 生成所内案号（项 11）：按「设置 → 律所信息」的模板渲染。
+ * v0.42 生成所内案号（项 11）：按「Configuración → 律所信息」的模板渲染。
  * 计数器按 年 + 类别 独立自增，key 形如 `firm-caseno-2026-CC`。
  * 模板为空时回退默认；与 internalCode 计数器互不干扰。
  */

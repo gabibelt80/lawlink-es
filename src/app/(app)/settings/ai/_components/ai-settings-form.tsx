@@ -1,7 +1,14 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { Sparkles, CheckCircle2, AlertTriangle, Loader2, Trash2, ExternalLink } from "lucide-react";
+import {
+  Sparkles,
+  CheckCircle2,
+  AlertTriangle,
+  Loader2,
+  Trash2,
+  ExternalLink,
+} from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,7 +16,7 @@ import { Label } from "@/components/ui/label";
 import {
   saveAiSettingsAction,
   clearAiKeyAction,
-  testAiConnection
+  testAiConnection,
 } from "@/server/settings/ai-actions";
 
 type Initial = {
@@ -22,61 +29,68 @@ type Initial = {
 
 const PROVIDER_PRESETS = [
   {
-    name: "通义千问（推荐）",
+    name: "Tongyi Qianwen (recomendado)",
     baseUrl: "https://dashscope.aliyuncs.com/compatible-mode/v1",
     text: "qwen-turbo",
     vision: "qwen-vl-max",
-    apply: "阿里云百炼控制台获取 key",
-    link: "https://bailian.console.aliyun.com/"
+    apply: "Obtené la clave desde la consola de Alibaba Bailian",
+    link: "https://bailian.console.aliyun.com/",
   },
   {
     name: "DeepSeek",
     baseUrl: "https://api.deepseek.com/v1",
     text: "deepseek-v4-flash",
     vision: "deepseek-v4-flash",
-    apply: "DeepSeek 平台获取 key",
-    link: "https://platform.deepseek.com/api_keys"
+    apply: "Obtené la clave en la plataforma de DeepSeek",
+    link: "https://platform.deepseek.com/api_keys",
   },
   {
     name: "Moonshot Kimi",
     baseUrl: "https://api.moonshot.cn/v1",
     text: "moonshot-v1-8k",
     vision: "moonshot-v1-8k-vision-preview",
-    apply: "Moonshot 平台获取 key",
-    link: "https://platform.moonshot.cn/"
+    apply: "Obtené la clave en la plataforma de Moonshot",
+    link: "https://platform.moonshot.cn/",
   },
   {
-    name: "智谱 GLM",
+    name: "Zhipu GLM",
     baseUrl: "https://open.bigmodel.cn/api/paas/v4",
     text: "glm-4-flash",
     vision: "glm-4v",
-    apply: "智谱开放平台获取 key",
-    link: "https://open.bigmodel.cn/"
+    apply: "Obtené la clave en la plataforma abierta de Zhipu",
+    link: "https://open.bigmodel.cn/",
   },
   {
-    name: "本地 Ollama",
+    name: "Ollama local",
     baseUrl: "http://localhost:11434/v1",
     text: "qwen2.5:7b",
     vision: "llava:7b",
-    apply: "本机起 ollama 即用，无需 key",
-    link: "https://ollama.com/"
-  }
+    apply: "Iniciá Ollama en tu máquina y usalo directamente, sin clave",
+    link: "https://ollama.com/",
+  },
 ] as const;
 
 export function AiSettingsForm({
   initial,
-  defaults
+  defaults,
 }: {
   initial: Initial;
   defaults: { baseUrl: string; textModel: string; visionModel: string };
 }) {
   const [apiKey, setApiKey] = useState("");
   const [baseUrl, setBaseUrl] = useState(initial.baseUrl || defaults.baseUrl);
-  const [textModel, setTextModel] = useState(initial.textModel || defaults.textModel);
-  const [visionModel, setVisionModel] = useState(initial.visionModel || defaults.visionModel);
+  const [textModel, setTextModel] = useState(
+    initial.textModel || defaults.textModel,
+  );
+  const [visionModel, setVisionModel] = useState(
+    initial.visionModel || defaults.visionModel,
+  );
   const [pending, startTransition] = useTransition();
   const [testing, setTesting] = useState(false);
-  const [testResult, setTestResult] = useState<{ ok: boolean; msg: string } | null>(null);
+  const [testResult, setTestResult] = useState<{
+    ok: boolean;
+    msg: string;
+  } | null>(null);
 
   const applyPreset = (p: (typeof PROVIDER_PRESETS)[number]) => {
     setBaseUrl(p.baseUrl);
@@ -92,18 +106,19 @@ export function AiSettingsForm({
           apiKey,
           baseUrl,
           textModel,
-          visionModel
+          visionModel,
         });
-        toast.success("配置已保存");
+        toast.success("配置已Guardar");
         setApiKey(""); // 不在前端持久 key
       } catch (e) {
-        toast.error(e instanceof Error ? e.message : "保存失败");
+        toast.error(e instanceof Error ? e.message : "Guardar失败");
       }
     });
   };
 
   const clearKey = () => {
-    if (!confirm("确认清除已保存的 API key？所有依赖 AI 的功能将停止工作。")) return;
+    if (!confirm("确认清除已Guardar的 API key？所有依赖 AI 的功能将停止工作。"))
+      return;
     startTransition(async () => {
       try {
         await clearAiKeyAction({ confirm: true });
@@ -125,7 +140,10 @@ export function AiSettingsForm({
         setTestResult({ ok: false, msg: res.message ?? "未知错误" });
       }
     } catch (e) {
-      setTestResult({ ok: false, msg: e instanceof Error ? e.message : "网络错误" });
+      setTestResult({
+        ok: false,
+        msg: e instanceof Error ? e.message : "网络错误",
+      });
     } finally {
       setTesting(false);
     }
@@ -146,7 +164,10 @@ export function AiSettingsForm({
 
         <p className="mb-4 text-[12px] text-muted-foreground">
           走 OpenAI 兼容协议，支持任意兼容 endpoint。配置后可启用：
-          <span className="text-foreground/85"> 发票 OCR · 法院短信 AI 增强解析</span>
+          <span className="text-foreground/85">
+            {" "}
+            发票 OCR · 法院SMS AI 增强解析
+          </span>
           （后续模块也会复用同一组配置）
         </p>
 
@@ -181,7 +202,9 @@ export function AiSettingsForm({
               type="password"
               value={apiKey}
               onChange={(e) => setApiKey(e.target.value)}
-              placeholder={initial.configured ? "如需更换粘贴新 key" : "粘贴 API key"}
+              placeholder={
+                initial.configured ? "如需更换粘贴新 key" : "粘贴 API key"
+              }
               className="mt-1 font-mono"
               autoComplete="off"
             />
@@ -206,7 +229,9 @@ export function AiSettingsForm({
                 placeholder={defaults.textModel}
                 className="mt-1 font-mono text-[12px]"
               />
-              <p className="mt-1 text-[10px] text-muted-foreground">用于法院短信 AI 解析等</p>
+              <p className="mt-1 text-[10px] text-muted-foreground">
+                用于法院SMS AI 解析等
+              </p>
             </div>
             <div>
               <Label className="text-[11px]">视觉模型</Label>
@@ -216,7 +241,9 @@ export function AiSettingsForm({
                 placeholder={defaults.visionModel}
                 className="mt-1 font-mono text-[12px]"
               />
-              <p className="mt-1 text-[10px] text-muted-foreground">用于发票 OCR 等</p>
+              <p className="mt-1 text-[10px] text-muted-foreground">
+                用于发票 OCR 等
+              </p>
             </div>
           </div>
         </div>
@@ -224,7 +251,7 @@ export function AiSettingsForm({
         <div className="mt-4 flex items-center gap-2">
           <Button onClick={save} disabled={pending} className="gap-1.5">
             {pending && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
-            保存配置
+            Guardar配置
           </Button>
           <Button
             variant="outline"
@@ -288,7 +315,8 @@ export function AiSettingsForm({
         </ul>
         <p className="mt-3 text-[11px] text-muted-foreground">
           密钥使用 AES-256-GCM 加密存入 SystemSetting，与文档加密复用同一密钥（
-          <span className="font-mono">STORAGE_ENCRYPTION_KEY</span>）。前端永远不显示明文 key。
+          <span className="font-mono">STORAGE_ENCRYPTION_KEY</span>
+          ）。前端永远不显示明文 key。
         </p>
       </section>
     </div>

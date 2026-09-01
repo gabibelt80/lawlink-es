@@ -128,15 +128,15 @@ export function FirmFilesView({
   }
 
   function handleDelete(f: FileEntry) {
-    if (!confirm(`确认删除「${f.name}」？\n（软删除，可在数据库找回）`)) return;
+    if (!confirm(`确认Eliminar「${f.name}」？\n（软Eliminar，可在数据库找回）`)) return;
     setPendingId(f.id);
     startTransition(async () => {
       try {
         await deleteFirmFile({ id: f.id });
-        toast.success("已删除");
+        toast.success("已Eliminar");
         router.refresh();
       } catch (err) {
-        toast.error("删除失败", { description: err instanceof Error ? err.message : "" });
+        toast.error("Eliminar失败", { description: err instanceof Error ? err.message : "" });
       } finally {
         setPendingId(null);
       }
@@ -165,7 +165,7 @@ export function FirmFilesView({
               {headerSubtitle ?? (
                 <>
                   合同 · 函件 · 证照 · 其他。全所共享，
-                  {canUpload ? "管理员可上传与版本替代" : "管理员上传"}
+                  {canUpload ? "Administrar员可上传与版本替代" : "Administrar员上传"}
                 </>
               )}
             </p>
@@ -193,7 +193,7 @@ export function FirmFilesView({
         {!hideCategoryNav && (
         <div className="flex flex-wrap items-center gap-1.5">
           <CategoryChip
-            label="全部"
+            label="Ver todos"
             color="#5B8DEF"
             count={files.length}
             active={!currentCategory}
@@ -229,7 +229,7 @@ export function FirmFilesView({
             <Input
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              placeholder="按名称 / 描述 / 标签搜索"
+              placeholder="按Nombre / Descripción / 标签Buscar"
               className="pl-8 text-xs"
             />
             {currentSearch && (
@@ -246,7 +246,7 @@ export function FirmFilesView({
             )}
           </div>
           <Button type="submit" size="sm" variant="outline">
-            搜索
+            Buscar
           </Button>
         </form>
       </div>
@@ -353,7 +353,7 @@ export function FirmFilesView({
                         onClick={() => handleDelete(f)}
                         disabled={pendingId === f.id || isPending}
                         className="rounded-md p-1.5 text-muted-foreground opacity-0 transition-opacity hover:bg-popover hover:text-destructive group-hover:opacity-100"
-                        title="删除"
+                        title="Eliminar"
                       >
                         {pendingId === f.id ? (
                           <Loader2 className="h-3.5 w-3.5 animate-spin" />

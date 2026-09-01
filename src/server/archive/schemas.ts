@@ -15,9 +15,9 @@ export const archiveSubmitSchema = z.object({
   closedReason: archiveClosedReasonSchema,
   completedAt: z.coerce.date(),
   judgmentSummary: z.string().max(2000).optional().or(z.literal("")),
-  // checklist 勾选状态：{ itemId: true/false }
+  // checklist 勾选Estado：{ itemId: true/false }
   checklist: z.record(z.boolean()).default({}),
-  // 律师确认强制归档（缺必填项时需 true 才能提交）
+  // Abogado确认强制归档（缺必填项时需 true 才能Enviar）
   forceWithMissing: z.boolean().default(false)
 });
 

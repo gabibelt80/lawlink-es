@@ -1,13 +1,13 @@
 "use client";
 
 /**
- * 案件当事人表格行（intake-sheet 专用）
+ * Caso当事人表格行（intake-sheet 专用）
  *
- * 参考"案件云"建案表单的当事人表格：一行一当事人，列对齐，次要字段折叠。
- * 列：角色 | 类型 | 姓名/名称 | 诉讼地位 | 证件号/信用代码 | 操作
+ * 参考"Caso云"建案表单的当事人表格：一行一当事人，列对齐，次要字段折叠。
+ * 列：角色 | 类型 | 姓名/Nombre | 诉讼地位 | 证件号/信用代码 | Acciones
  * - 角色 / 诉讼地位两列由调用方注入（roleSlot / standingSlot），本组件不关心其取值逻辑
- * - 类型（自然人 / 单位）、证件（身份证号 / 统一社会信用代码 + AI 查找）、展开次要字段、删除由本组件负责
- * - 次要字段（法代 / 电话 / 联系人 / 地址 / 备注）默认折叠，点"更多"在行下方展开
+ * - 类型（自然人 / 单位）、证件（身份证号 / 统一社会信用代码 + AI 查找）、展开次要字段、Eliminar由本组件负责
+ * - 次要字段（法代 / 电话 / 联系人 / 地址 / Observaciones）默认折叠，点"更多"在行下方展开
  *
  * PARTY_GRID 同时给表头与每一行使用，保证列对齐。
  *
@@ -59,9 +59,9 @@ type Props = {
   standingSlot?: ReactNode;
   /** 是否显示「诉讼地位」列。诉讼/仲裁类 true，非诉/顾问/专项 false。默认 true */
   showStanding?: boolean;
-  /** false 时隐藏删除按钮（如委托方行恒存在）。默认 true */
+  /** false 时隐藏Eliminar按钮（如委托方行恒存在）。默认 true */
   removable?: boolean;
-  /** 提供时替换内置"姓名/名称"输入框（如委托方行注入客户选择器）。 */
+  /** 提供时替换内置"姓名/Nombre"输入框（如委托方行注入Cliente选择器）。 */
   nameSlot?: ReactNode;
 };
 
@@ -105,7 +105,7 @@ export function PartyCard({
     }
   }
 
-  // v0.43：输入单位名称时自动匹配元典企业（防抖），无需 AI 按钮
+  // v0.43：输入单位Nombre时自动匹配元典企业（防抖），无需 AI 按钮
   function scheduleSearch(value: string) {
     if (searchTimer.current) clearTimeout(searchTimer.current);
     const q = value.trim();
@@ -128,7 +128,7 @@ export function PartyCard({
 
   function handlePickCandidate(item: EnterpriseSearchItem) {
     startFill(async () => {
-      // 先回填 social code + 企业名称（搜索结果已有）
+      // 先回填 social code + 企业Nombre（Buscar结果已有）
       setValue(`${p}.enterpriseSocialCode`, item.creditCode, { shouldDirty: true, shouldValidate: true });
       setValue(`${p}.enterpriseName`, item.name, { shouldDirty: true });
       setValue(`${p}.name`, item.name, { shouldDirty: true });
@@ -179,7 +179,7 @@ export function PartyCard({
           </SelectContent>
         </Select>
 
-        {/* 姓名 / 名称（单位类型：输入自动匹配元典企业） */}
+        {/* 姓名 / Nombre（单位类型：输入自动匹配元典企业） */}
         <div className="min-w-0">
           {nameSlot ?? (
             !isOrg ? (
@@ -199,7 +199,7 @@ export function PartyCard({
                   <div className="relative">
                     <Input
                       className={cn(PARTY_CELL_CONTROL_CLASS, "pr-7", nameErr && "border-destructive")}
-                      placeholder="单位 / 组织名称（输入自动匹配）"
+                      placeholder="单位 / 组织Nombre（输入自动匹配）"
                       {...nameReg}
                       onChange={(e) => {
                         nameReg.onChange(e);
@@ -218,7 +218,7 @@ export function PartyCard({
                   onOpenAutoFocus={(e) => e.preventDefault()}
                 >
                   <div className="mb-1 flex items-center gap-1 px-1 text-[10px] text-muted-foreground">
-                    <Search className="h-3 w-3" />元典匹配，点击回填名称 + 信用代码
+                    <Search className="h-3 w-3" />元典匹配，点击回填Nombre + 信用代码
                   </div>
                   <ul className="max-h-64 space-y-1 overflow-y-auto">
                     {candidates?.map((c) => (
@@ -275,12 +275,12 @@ export function PartyCard({
           {...register(`${p}.phone`)}
         />
 
-        {/* 操作：更多 + 删除 */}
+        {/* Acciones：更多 + Eliminar */}
         <div className="flex items-center justify-end gap-0.5">
           <button
             type="button"
             onClick={() => setExpanded((v) => !v)}
-            title={expanded ? "收起" : "更多（法定代表人 / 地址 / 备注）"}
+            title={expanded ? "收起" : "更多（法定代表人 / 地址 / Observaciones）"}
             className={cn(
               "flex h-7 w-7 items-center justify-center rounded-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground",
               !expanded && secondaryFilled > 0 && "text-primary"
@@ -322,12 +322,12 @@ export function PartyCard({
           <div className="sm:col-span-2">
             <Input
               className="h-[34px] rounded-sm border-[#c6d0dd] bg-white text-[12.5px]"
-              placeholder={isOrg ? "注册地址（可选）" : "住址（可选）"}
+              placeholder={isOrg ? "Registrarse地址（可选）" : "住址（可选）"}
               {...register(`${p}.address`)}
             />
           </div>
           <div className="sm:col-span-2">
-            <Input className="h-[34px] rounded-sm border-[#c6d0dd] bg-white text-[12.5px]" placeholder="备注（可选）" {...register(`${p}.notes`)} />
+            <Input className="h-[34px] rounded-sm border-[#c6d0dd] bg-white text-[12.5px]" placeholder="Observaciones（可选）" {...register(`${p}.notes`)} />
           </div>
         </div>
       )}

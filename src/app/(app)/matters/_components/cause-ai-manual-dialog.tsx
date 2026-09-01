@@ -9,13 +9,13 @@ import {
   DialogHeader,
   DialogTitle,
   DialogDescription,
-  DialogFooter
+  DialogFooter,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import {
   recommendCause,
-  type CauseRecommendation
+  type CauseRecommendation,
 } from "@/server/ai/recommend-cause";
 import { cn } from "@/lib/utils";
 
@@ -32,9 +32,18 @@ type Props = {
 };
 
 const confidenceStyle = {
-  HIGH: { label: "高置信", cls: "bg-emerald-50 text-emerald-700 border-emerald-200" },
-  MEDIUM: { label: "中置信", cls: "bg-amber-50 text-amber-700 border-amber-200" },
-  LOW: { label: "低置信", cls: "bg-slate-50 text-slate-600 border-slate-200" }
+  HIGH: {
+    label: "Alta confianza",
+    cls: "bg-emerald-50 text-emerald-700 border-emerald-200",
+  },
+  MEDIUM: {
+    label: "Media confianza",
+    cls: "bg-amber-50 text-amber-700 border-amber-200",
+  },
+  LOW: {
+    label: "Baja confianza",
+    cls: "bg-slate-50 text-slate-600 border-slate-200",
+  },
 } as const;
 
 export function CauseAiManualDialog({
@@ -43,11 +52,13 @@ export function CauseAiManualDialog({
   category,
   procedureType,
   contextHints,
-  onSelect
+  onSelect,
 }: Props) {
   const hasHints = !!contextHints?.trim();
   const [tab, setTab] = useState<Tab>(hasHints ? "preset" : "free");
-  const [situation, setSituation] = useState(hasHints ? (contextHints ?? "") : "");
+  const [situation, setSituation] = useState(
+    hasHints ? (contextHints ?? "") : "",
+  );
   const [loading, setLoading] = useState(false);
   const [candidates, setCandidates] = useState<CauseRecommendation[]>([]);
   const [error, setError] = useState<string | null>(null);
@@ -94,7 +105,7 @@ export function CauseAiManualDialog({
             AI 案由推荐
           </DialogTitle>
           <DialogDescription className="text-xs">
-            描述案情后 AI 推荐 3 个候选案由，请人工核对后选用
+            Descripción案情后 AI 推荐 3 个候选案由，请人工核对后选用
           </DialogDescription>
         </DialogHeader>
 
@@ -102,7 +113,10 @@ export function CauseAiManualDialog({
           {/* Tab 切换（仅有 hints 时显示） */}
           {hasHints && (
             <div className="flex rounded-md border border-border bg-card p-0.5">
-              <TabBtn active={tab === "preset"} onClick={() => switchTab("preset")}>
+              <TabBtn
+                active={tab === "preset"}
+                onClick={() => switchTab("preset")}
+              >
                 用现有字段
               </TabBtn>
               <TabBtn active={tab === "free"} onClick={() => switchTab("free")}>
@@ -116,8 +130,8 @@ export function CauseAiManualDialog({
             onChange={(e) => setSituation(e.target.value)}
             placeholder={
               tab === "preset"
-                ? "已根据案件字段填入，可修改后再推荐"
-                : "描述案情：当事人是谁、做了什么、争议焦点、诉求"
+                ? "已根据Caso字段填入，可修改后再推荐"
+                : "Descripción案情：当事人是谁、做了什么、争议焦点、诉求"
             }
             rows={6}
             className="resize-none"
@@ -147,7 +161,9 @@ export function CauseAiManualDialog({
             <div className="space-y-2">
               {candidates.map((c) => {
                 const conf = confidenceStyle[c.confidence];
-                const path = [c.cause.l1Name, c.cause.l2Name].filter(Boolean).join(" / ");
+                const path = [c.cause.l1Name, c.cause.l2Name]
+                  .filter(Boolean)
+                  .join(" / ");
                 return (
                   <button
                     key={c.cause.id}
@@ -159,21 +175,27 @@ export function CauseAiManualDialog({
                     className="flex w-full flex-col items-start gap-1 rounded-sm border border-border bg-background px-3 py-2.5 text-left transition-colors hover:border-input hover:bg-muted hover:text-foreground"
                   >
                     <div className="flex w-full items-center justify-between gap-2">
-                      <span className="text-sm font-medium">{c.cause.name}</span>
+                      <span className="text-sm font-medium">
+                        {c.cause.name}
+                      </span>
                       <span
                         className={cn(
                           "shrink-0 rounded border px-1.5 py-0.5 text-[10px] leading-none",
-                          conf.cls
+                          conf.cls,
                         )}
                       >
                         {conf.label}
                       </span>
                     </div>
                     {path && (
-                      <span className="text-[11px] text-muted-foreground">{path}</span>
+                      <span className="text-[11px] text-muted-foreground">
+                        {path}
+                      </span>
                     )}
                     {c.reason && (
-                      <span className="text-xs text-foreground/70">{c.reason}</span>
+                      <span className="text-xs text-foreground/70">
+                        {c.reason}
+                      </span>
                     )}
                   </button>
                 );
@@ -183,9 +205,14 @@ export function CauseAiManualDialog({
         </div>
 
         <DialogFooter className="border-t border-border px-5 py-2.5">
-          <Button type="button" variant="ghost" size="sm" onClick={() => onOpenChange(false)}>
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            onClick={() => onOpenChange(false)}
+          >
             <X className="h-3.5 w-3.5" />
-            关闭
+            Cerrar
           </Button>
         </DialogFooter>
       </DialogContent>
@@ -196,7 +223,7 @@ export function CauseAiManualDialog({
 function TabBtn({
   active,
   onClick,
-  children
+  children,
 }: {
   active: boolean;
   onClick: () => void;
@@ -210,7 +237,7 @@ function TabBtn({
         "flex-1 rounded px-2 py-1 text-xs transition-colors",
         active
           ? "bg-primary/15 text-primary"
-          : "text-muted-foreground hover:text-foreground"
+          : "text-muted-foreground hover:text-foreground",
       )}
     >
       {children}

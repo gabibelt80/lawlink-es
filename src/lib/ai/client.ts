@@ -33,7 +33,7 @@ export interface AiChatResult {
 
 export class AiNotConfiguredError extends Error {
   constructor() {
-    super("AI 未配置，请先到 设置 → AI 接入 填写 API key");
+    super("AI 未配置，请先到 Configuración → AI 接入 填写 API key");
     this.name = "AiNotConfiguredError";
   }
 }
@@ -124,7 +124,7 @@ export async function aiVision(input: {
 }
 
 /**
- * 从 AI 返回文本中提取 JSON（容错：``` 包裹、前后有解释文字均能抽出）。
+ * 从 AI Volver文本中提取 JSON（容错：``` 包裹、前后有解释文字均能抽出）。
  */
 export function extractJson<T = unknown>(content: string): T | null {
   const fenced = content.match(/```(?:json)?\s*([\s\S]*?)```/);

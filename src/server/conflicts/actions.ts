@@ -98,7 +98,7 @@ export async function runCheckAndSave(input: z.infer<typeof runCheckSchema>) {
       conclusion: noHits ? "DIFFERENT" : "PENDING",
       decidedById: noHits ? session.user.id : null,
       decidedAt: noHits ? new Date() : null,
-      note: noHits ? "系统自动标记：未命中历史案件冲突。" : null,
+      note: noHits ? "Sistema自动标记：未命中历史Caso冲突。" : null,
       hits: {
         create: result.hits.map((h) => ({
           hitType: h.hitType,

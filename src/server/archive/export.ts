@@ -74,8 +74,8 @@ export async function buildArchiveZip(matterId: string): Promise<ZipResult> {
       owner: { select: { id: true, name: true } }
     }
   });
-  if (!matter) throw new Error("案件不存在");
-  if (matter.archiveRecords.length === 0) throw new Error("案件尚未归档，无法导出");
+  if (!matter) throw new Error("Caso不存在");
+  if (matter.archiveRecords.length === 0) throw new Error("Caso尚未归档，无法导出");
 
   const archive = matter.archiveRecords[0];
   const docs = await prisma.document.findMany({
@@ -99,7 +99,7 @@ export async function buildArchiveZip(matterId: string): Promise<ZipResult> {
   const zip = new PizZip();
   const root = safeName(archive.archiveNo);
 
-  // ===== manifest.json：结构化数据快照（脱敏：密码、apiKey、authTag 等不导出）
+  // ===== manifest.json：结构化数据快照（脱敏：Contraseña、apiKey、authTag 等不导出）
   const manifest = {
     archiveNo: archive.archiveNo,
     archivedAt: archive.archivedAt.toISOString(),
@@ -170,7 +170,7 @@ export async function buildArchiveZip(matterId: string): Promise<ZipResult> {
       refType: e.refType,
       refId: e.refId
     })),
-    // v0.48：保全改读三层模型，manifest 仍按"每项财产一条"扁平输出，字段与旧版兼容
+    // v0.48：Preservación改读三层模型，manifest 仍按"每项财产一条"扁平输出，字段与旧版兼容
     preservations: matter.preservationCases.flatMap((c) =>
       c.targets.flatMap((t) =>
         t.properties.map((p) => ({
@@ -225,10 +225,10 @@ export async function buildArchiveZip(matterId: string): Promise<ZipResult> {
     `# ${matter.title}`,
     "",
     `归档编号：**${archive.archiveNo}**  `,
-    `案件编号：${matter.internalCode}  `,
-    `归档日期：${archive.archivedAt.toISOString().slice(0, 10)}  `,
+    `Caso编号：${matter.internalCode}  `,
+    `归档Fecha：${archive.archivedAt.toISOString().slice(0, 10)}  `,
     `归档人：${archive.archivedBy}  `,
-    archive.completedAt ? `结案日期：${archive.completedAt.toISOString().slice(0, 10)}` : "",
+    archive.completedAt ? `结案Fecha：${archive.completedAt.toISOString().slice(0, 10)}` : "",
     "",
     "## 结案小结",
     "",
@@ -237,9 +237,9 @@ export async function buildArchiveZip(matterId: string): Promise<ZipResult> {
     archive.judgmentSummary ? "## 裁判结果\n\n" + archive.judgmentSummary + "\n" : "",
     "## 目录",
     "",
-    "- `manifest.json` — 案件全量结构化数据（JSON 格式）",
+    "- `manifest.json` — Caso全量结构化数据（JSON 格式）",
     "- `封皮和目录/` — 自动生成的卷宗封皮与卷宗目录",
-    "- `材料/` — 全部上传材料按类别分目录归档",
+    "- `材料/` — Ver todos上传材料按类别分目录归档",
     "",
     archive.missingItems.length > 0
       ? `⚠️ 归档时存在缺项：${archive.missingItems.length} 项（详见 manifest.json）`

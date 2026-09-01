@@ -17,12 +17,12 @@ import { revalidateMatter } from "@/server/matters/route";
 
 /**
  * v0.9.4 归档：完整流程
- *   1. 权限：本案主办 / 协办提交，ADMIN 审批
+ *   1. 权限：本案主办 / 协办Enviar，ADMIN Aprobación
  *   2. 校验 checklist 缺必填项 → 若有且未 forceWithMissing 则拒绝
  *   3. 生成 archiveNo
  *   4. 渲染卷宗封皮 → 入 ARCHIVE 卷宗
  *   5. 渲染卷宗目录（含已生成的封皮自身可选不入目录）
- *   6. 创建 ArchiveRecord
+ *   6. Crear ArchiveRecord
  *   7. Matter status=ARCHIVED + archivedAt + closedAt
  *   8. TimelineEvent + audit
  */
@@ -31,14 +31,14 @@ export async function archiveMatter(input: ArchiveSubmitInput) {
   const data = archiveSubmitSchema.parse(input);
 
   await assertMatterWritable(data.matterId);
-  await assertCanLeadMatter(session.user.id, data.matterId, "仅案件主办/协办可以提交归档申请");
+  await assertCanLeadMatter(session.user.id, data.matterId, "仅Caso主办/协办可以Enviar归档申请");
 
   const matter = await prisma.matter.findUnique({
     where: { id: data.matterId },
     select: { id: true, status: true, category: true, internalCode: true, title: true }
   });
-  if (!matter) throw new Error("案件不存在");
-  if (matter.status === "ARCHIVED") throw new Error("案件已归档");
+  if (!matter) throw new Error("Caso不存在");
+  if (matter.status === "ARCHIVED") throw new Error("Caso已归档");
 
   // checklist 缺项校验
   const checklist = checklistForCategory(matter.category);
@@ -50,7 +50,7 @@ export async function archiveMatter(input: ArchiveSubmitInput) {
   }
   const missingItems = missingRequired.map((x) => x.id);
 
-  // 渲染必须在事务外（涉及文件系统 + 加密）。先渲染再事务里建记录。
+  // 渲染必须在事务外（涉及文件Sistema + 加密）。先渲染再事务里建记录。
   const now = new Date();
   const archiveNo = await nextArchiveNo(prisma, matter.category, now);
 
@@ -82,7 +82,7 @@ export async function archiveMatter(input: ArchiveSubmitInput) {
       excludeDocIds: [coverDocId]
     });
   } catch (err) {
-    // 封皮已落库；目录失败时回滚封皮文档（标记软删）。律师重试可重新生成。
+    // 封皮已落库；目录失败时回滚封皮文档（标记软删）。Abogado重试可重新生成。
     await prisma.document.update({
       where: { id: coverDocId },
       data: { deletedAt: new Date() }
@@ -115,7 +115,7 @@ export async function archiveMatter(input: ArchiveSubmitInput) {
       data: {
         matterId: matter.id,
         eventType: "MATTER_ARCHIVE_REQUESTED",
-        title: `归档申请已提交（${archiveNo}，待审批）`,
+        title: `归档申请已Enviar（${archiveNo}，待Aprobación）`,
         content: `结案方式：${CLOSED_REASON_CN[data.closedReason]}。${data.summary}`,
         occurredAt: now
       }
@@ -142,12 +142,12 @@ export async function archiveMatter(input: ArchiveSubmitInput) {
 }
 
 /**
- * v0.16: 管理员审批通过归档申请（PENDING_REVIEW → APPROVED）
+ * v0.16: Administrar员Aprobación通过归档申请（PENDING_REVIEW → APPROVED）
  */
 export async function approveArchiveRecord(input: { archiveId: string; note?: string }) {
   const session = await requireSession();
   if (session.user.role !== "ADMIN") {
-    throw new Error("只有管理员可以审批归档申请");
+    throw new Error("只有Administrar员可以Aprobación归档申请");
   }
 
   const record = await prisma.archiveRecord.findUnique({
@@ -162,7 +162,7 @@ export async function approveArchiveRecord(input: { archiveId: string; note?: st
     }
   });
   if (!record) throw new Error("归档记录不存在");
-  if (record.status !== "PENDING_REVIEW") throw new Error("此归档申请已审批");
+  if (record.status !== "PENDING_REVIEW") throw new Error("此归档申请已Aprobación");
 
   const now = new Date();
   await prisma.$transaction(async (tx) => {
@@ -183,14 +183,14 @@ export async function approveArchiveRecord(input: { archiveId: string; note?: st
       data: {
         matterId: record.matterId,
         eventType: "MATTER_ARCHIVED",
-        title: `案件已归档（${record.archiveNo}）`,
-        content: input.note?.trim() ? `管理员审批：${input.note.trim()}` : "管理员审批通过",
+        title: `Caso已归档（${record.archiveNo}）`,
+        content: input.note?.trim() ? `Administrar员Aprobación：${input.note.trim()}` : "Administrar员Aprobación通过",
         occurredAt: now
       }
     });
   });
 
-  // v0.18: 通知申请人
+  // v0.18: Notificaciones申请人
   if (record.archivedById && record.archivedById !== session.user.id) {
     const matter = await prisma.matter.findUnique({
       where: { id: record.matterId },
@@ -201,7 +201,7 @@ export async function approveArchiveRecord(input: { archiveId: string; note?: st
       type: "ARCHIVE_APPROVED",
       priority: "NORMAL",
       title: `归档申请已通过（${record.archiveNo}）`,
-      content: `案件 ${matter?.internalCode ?? record.matterId}·${matter?.title ?? ""} 的归档申请已获管理员批准。`,
+      content: `Caso ${matter?.internalCode ?? record.matterId}·${matter?.title ?? ""} 的归档申请已获Administrar员批准。`,
       href: matterHref({ id: record.matterId, internalCode: matter?.internalCode ?? null }),
       refType: "ArchiveRecord",
       refId: record.id
@@ -223,12 +223,12 @@ export async function approveArchiveRecord(input: { archiveId: string; note?: st
 }
 
 /**
- * v0.16: 管理员驳回归档申请
+ * v0.16: Administrar员驳回归档申请
  */
 export async function rejectArchiveRecord(input: { archiveId: string; note: string }) {
   const session = await requireSession();
   if (session.user.role !== "ADMIN") {
-    throw new Error("只有管理员可以驳回归档申请");
+    throw new Error("只有Administrar员可以驳回归档申请");
   }
   if (!input.note.trim()) throw new Error("请填写驳回原因");
 
@@ -243,7 +243,7 @@ export async function rejectArchiveRecord(input: { archiveId: string; note: stri
     }
   });
   if (!record) throw new Error("归档记录不存在");
-  if (record.status !== "PENDING_REVIEW") throw new Error("此归档申请已审批");
+  if (record.status !== "PENDING_REVIEW") throw new Error("此归档申请已Aprobación");
 
   await prisma.archiveRecord.update({
     where: { id: record.id },
@@ -255,7 +255,7 @@ export async function rejectArchiveRecord(input: { archiveId: string; note: stri
     }
   });
 
-  // v0.18: 通知申请人
+  // v0.18: Notificaciones申请人
   if (record.archivedById && record.archivedById !== session.user.id) {
     const matter = await prisma.matter.findUnique({
       where: { id: record.matterId },
@@ -266,7 +266,7 @@ export async function rejectArchiveRecord(input: { archiveId: string; note: stri
       type: "ARCHIVE_REJECTED",
       priority: "HIGH",
       title: `归档申请被驳回（${record.archiveNo}）`,
-      content: `案件 ${matter?.internalCode ?? record.matterId}·${matter?.title ?? ""} 的归档申请被驳回。原因：${input.note.trim()}`,
+      content: `Caso ${matter?.internalCode ?? record.matterId}·${matter?.title ?? ""} 的归档申请被驳回。原因：${input.note.trim()}`,
       href: matterHref({ id: record.matterId, internalCode: matter?.internalCode ?? null }),
       refType: "ArchiveRecord",
       refId: record.id
@@ -287,11 +287,11 @@ export async function rejectArchiveRecord(input: { archiveId: string; note: stri
 }
 
 /**
- * 获取案件的归档准备数据：当前 checklist 模板 + 已有 ArchiveRecord（若有）
+ * 获取Caso的归档准备数据：当前 checklist 模板 + 已有 ArchiveRecord（若有）
  */
 export async function getArchivePrepData(matterId: string) {
   const session = await requireSession();
-  await assertCanLeadMatter(session.user.id, matterId, "仅案件主办/协办可以准备归档");
+  await assertCanLeadMatter(session.user.id, matterId, "仅Caso主办/协办可以准备归档");
   const matter = await prisma.matter.findUnique({
     where: { id: matterId },
     select: {
@@ -321,7 +321,7 @@ export async function getArchivePrepData(matterId: string) {
       }
     }
   });
-  if (!matter) throw new Error("案件不存在");
+  if (!matter) throw new Error("Caso不存在");
 
   const checklist = checklistForCategory(matter.category);
 
@@ -348,7 +348,7 @@ export async function getArchivePrepData(matterId: string) {
     orderBy: { createdAt: "desc" }
   });
 
-  // itemId → 关联材料列表（保留全部，UI 展示首条 + 余数）
+  // itemId → 关联材料列表（保留Ver todos，UI 展示首条 + 余数）
   const docsByItem: Record<string, { id: string; name: string }[]> = {};
   for (const d of linkedDocs) {
     const key = d.archiveChecklistItemId!;
@@ -364,7 +364,7 @@ export async function getArchivePrepData(matterId: string) {
 }
 
 /**
- * 已归档案件列表（/archive 总览页）—— 仅 status=APPROVED
+ * 已归档Caso列表（/archive Total览页）—— 仅 status=APPROVED
  */
 export async function listArchivedMatters() {
   await requireSession();
@@ -396,13 +396,13 @@ export async function listArchivedMatters() {
 }
 
 /**
- * v0.17: 待审批归档申请列表（仅 ADMIN）
- * /archive 待审批 tab 使用
+ * v0.17: 待Aprobación归档申请列表（仅 ADMIN）
+ * /archive 待Aprobación tab 使用
  */
 export async function listPendingArchiveRecords() {
   const session = await requireSession();
   if (session.user.role !== "ADMIN") {
-    throw new Error("仅管理员可查看待审批归档");
+    throw new Error("仅Administrar员可Ver待Aprobación归档");
   }
   return prisma.archiveRecord.findMany({
     where: { status: "PENDING_REVIEW" },
@@ -434,8 +434,8 @@ export async function listPendingArchiveRecords() {
 }
 
 /**
- * v0.18: 律师端查询自己的已驳回归档申请
- * 用于"我的已驳回归档"入口或案件详情页 banner
+ * v0.18: Abogado端查询自己的已驳回归档申请
+ * 用于"我的已驳回归档"入口或Caso详情页 banner
  */
 export async function listRejectedArchiveRecords() {
   const session = await requireSession();
@@ -467,8 +467,8 @@ export async function listRejectedArchiveRecords() {
 }
 
 /**
- * v0.18: 获取案件最新一条 ArchiveRecord（无论状态）
- * 案件详情页展示"归档中/已驳回"状态 banner 用
+ * v0.18: 获取Caso最新一条 ArchiveRecord（无论Estado）
+ * Caso详情页展示"归档中/已驳回"Estado banner 用
  */
 export async function getLatestArchiveRecord(matterId: string) {
   await requireSession();
@@ -489,10 +489,10 @@ export async function getLatestArchiveRecord(matterId: string) {
 }
 
 /**
- * v0.20: 批量审批 —— 通过
+ * v0.20: 批量Aprobación —— 通过
  *
  * 单条独立处理（不强求原子），逐条复用 approveArchiveRecord 的事务。
- * 返回 { succeeded, failed }，failed 含失败原因，前端展示部分失败的情况。
+ * Volver { succeeded, failed }，failed 含失败原因，前端展示部分失败的情况。
  */
 export async function batchApproveArchiveRecords(input: {
   archiveIds: string[];
@@ -503,7 +503,7 @@ export async function batchApproveArchiveRecords(input: {
 }> {
   const session = await requireSession();
   if (session.user.role !== "ADMIN") {
-    throw new Error("只有管理员可以审批归档申请");
+    throw new Error("只有Administrar员可以Aprobación归档申请");
   }
   if (!input.archiveIds.length) throw new Error("未选择任何归档申请");
   if (input.archiveIds.length > 100) throw new Error("单次批量不超过 100 条");
@@ -533,7 +533,7 @@ export async function batchApproveArchiveRecords(input: {
 }
 
 /**
- * v0.20: 批量审批 —— 驳回（统一原因）
+ * v0.20: 批量Aprobación —— 驳回（统一原因）
  */
 export async function batchRejectArchiveRecords(input: {
   archiveIds: string[];
@@ -544,7 +544,7 @@ export async function batchRejectArchiveRecords(input: {
 }> {
   const session = await requireSession();
   if (session.user.role !== "ADMIN") {
-    throw new Error("只有管理员可以驳回归档申请");
+    throw new Error("只有Administrar员可以驳回归档申请");
   }
   if (!input.archiveIds.length) throw new Error("未选择任何归档申请");
   if (input.archiveIds.length > 100) throw new Error("单次批量不超过 100 条");

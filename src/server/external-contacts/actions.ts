@@ -3,10 +3,10 @@
 /**
  * v0.27: 服务中心 - 外部联系人通讯录
  *
- * 范围：法院 / 检察院 / 公证 / 仲裁 / 他所律师 / 鉴定专家 / 其他外部联系
+ * 范围：法院 / 检察院 / 公证 / 仲裁 / 他所Abogado / 鉴定专家 / 其他外部联系
  * 同事用 User 表，不在此（前端可一并展示）。
  *
- * 权限：所有登录用户可看已通过联系人，可新建；普通成员新建后需管理层审核。
+ * 权限：所有Iniciar sesión用户可看已通过联系人，可新建；普通成员新建后需Administrar层审核。
  */
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
@@ -117,7 +117,7 @@ async function assertCanModify(id: string, sessionUserId: string, role: string) 
 export async function createExternalContact(input: z.infer<typeof externalContactSchema>) {
   const session = await requireSession();
   const data = externalContactSchema.parse(input);
-  // v1.0: 审核流默认关闭（小所信任环境，新增直接通过）；可在设置里打开
+  // v1.0: 审核流默认Cerrar（小所信任环境，新增直接通过）；可在Configuración里打开
   const { externalContactReview } = await getWorkflowToggles();
   const status =
     !externalContactReview || isManager(session.user.role) ? "APPROVED" : "PENDING_REVIEW";
@@ -192,14 +192,14 @@ export async function updateExternalContact(input: z.infer<typeof externalContac
 
 export async function approveExternalContact(input: z.infer<typeof externalContactReviewSchema>) {
   const session = await requireSession();
-  if (!isManager(session.user.role)) throw new Error("仅管理员可审核联系人");
+  if (!isManager(session.user.role)) throw new Error("仅Administrar员可审核联系人");
   const data = externalContactReviewSchema.parse(input);
   const current = await prisma.externalContact.findUnique({
     where: { id: data.id },
     select: { id: true, name: true, status: true, createdById: true }
   });
   if (!current) throw new Error("联系人不存在");
-  if (current.status !== "PENDING_REVIEW") throw new Error("该联系人当前不在待审核状态");
+  if (current.status !== "PENDING_REVIEW") throw new Error("该联系人当前不在待审核Estado");
 
   const approved = await prisma.externalContact.update({
     where: { id: data.id },
@@ -231,14 +231,14 @@ export async function approveExternalContact(input: z.infer<typeof externalConta
 
 export async function rejectExternalContact(input: z.infer<typeof externalContactReviewSchema>) {
   const session = await requireSession();
-  if (!isManager(session.user.role)) throw new Error("仅管理员可审核联系人");
+  if (!isManager(session.user.role)) throw new Error("仅Administrar员可审核联系人");
   const data = externalContactReviewSchema.parse(input);
   const current = await prisma.externalContact.findUnique({
     where: { id: data.id },
     select: { id: true, name: true, status: true, createdById: true }
   });
   if (!current) throw new Error("联系人不存在");
-  if (current.status !== "PENDING_REVIEW") throw new Error("该联系人当前不在待审核状态");
+  if (current.status !== "PENDING_REVIEW") throw new Error("该联系人当前不在待审核Estado");
 
   const rejected = await prisma.externalContact.update({
     where: { id: data.id },

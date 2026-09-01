@@ -69,7 +69,7 @@ export function InvoiceSection({ matterId }: { matterId: string }) {
         </p>
       ) : !requests || requests.length === 0 ? (
         <p className="py-10 text-center text-xs text-muted-foreground">
-          还没有开票申请。客户需要发票时点上方&ldquo;申请开票&rdquo;
+          还没有开票申请。Cliente需要发票时点上方&ldquo;申请开票&rdquo;
         </p>
       ) : (
         <ul className="divide-y divide-border">
@@ -125,11 +125,11 @@ function InvoiceItem({ row }: { row: InvoiceRow }) {
           )}
         </div>
         {row.requestNote && (
-          <div className="mt-1 text-[11px] text-foreground/80">备注：{row.requestNote}</div>
+          <div className="mt-1 text-[11px] text-foreground/80">Observaciones：{row.requestNote}</div>
         )}
         {row.processNote && (
           <div className="mt-1 text-[11px] text-destructive/80">
-            财务备注：{row.processNote}
+            FinanzasObservaciones：{row.processNote}
           </div>
         )}
       </div>
@@ -197,11 +197,11 @@ function CreateInvoiceDialog({
           title,
           requestNote: note
         });
-        toast.success("开票申请已提交，等待财务处理");
+        toast.success("开票申请已Enviar，等待Finanzas处理");
         reset();
         onOpenChange(false);
       } catch (err) {
-        toast.error("提交失败", {
+        toast.error("Enviar失败", {
           description: err instanceof Error ? err.message : ""
         });
       }
@@ -223,7 +223,7 @@ function CreateInvoiceDialog({
             申请开具发票
           </DialogTitle>
           <DialogDescription className="text-xs">
-            提交后由财务处理，财务会上传扫描件合同 + 电子发票
+            Enviar后由Finanzas处理，Finanzas会上传扫描件合同 + 电子发票
           </DialogDescription>
         </DialogHeader>
 
@@ -241,7 +241,7 @@ function CreateInvoiceDialog({
             />
           </div>
           <div className="space-y-1.5">
-            <Label className="text-xs">抬头 / 备注</Label>
+            <Label className="text-xs">抬头 / Observaciones</Label>
             <Input
               placeholder="如：某某公司 / 阶段款"
               value={title}
@@ -261,11 +261,11 @@ function CreateInvoiceDialog({
 
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)} disabled={isPending}>
-            取消
+            Cancelar
           </Button>
           <Button onClick={handleSubmit} disabled={isPending} className="gap-1.5">
             {isPending && <Loader2 className="h-4 w-4 animate-spin" />}
-            提交申请
+            Enviar申请
           </Button>
         </DialogFooter>
       </DialogContent>

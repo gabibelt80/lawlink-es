@@ -1,9 +1,9 @@
 /**
- * v0.50: 提醒 webhook 配置（企业微信 / 钉钉群机器人）。
+ * v0.50: Recordatorios webhook 配置（企业微信 / 钉钉群机器人）。
  *
  * 单 SystemSetting key `notifyWebhook`。两家的自定义机器人都接受
  * POST {"msgtype":"text","text":{"content":"..."}}，无需区分厂商；
- * 钉钉机器人若配置了「自定义关键词」安全设置，消息以「LawLink」开头即可命中。
+ * 钉钉机器人若配置了「自定义关键词」安全Configuración，消息以「LawLink」开头即可命中。
  * 沿用 firm-profile 的「单 key + 类型化读写」范式。
  */
 import { prisma } from "@/lib/prisma";
@@ -40,8 +40,8 @@ export async function saveWebhookSettings(next: WebhookSettings): Promise<void> 
 const WEBHOOK_TIMEOUT_MS = 8000;
 
 /**
- * 发送文本消息到已配置的 webhook。未启用/未配置时静默跳过（返回 skipped）。
- * 不抛异常：提醒推送失败不能影响主流程，失败原因返回给调用方记录。
+ * 发送文本消息到已配置的 webhook。未启用/未配置时静默跳过（Volver skipped）。
+ * 不抛异常：Recordatorios推送失败不能影响主流程，失败原因Volver给调用方记录。
  */
 export async function sendWebhookText(
   content: string
@@ -69,7 +69,7 @@ export async function sendWebhookText(
     if (!response.ok) {
       return { ok: false, error: `HTTP ${response.status}` };
     }
-    // 企微/钉钉都返回 {errcode:0,...} 表示成功
+    // 企微/钉钉都Volver {errcode:0,...} 表示成功
     const data = (await response.json().catch(() => null)) as { errcode?: number; errmsg?: string } | null;
     if (data && typeof data.errcode === "number" && data.errcode !== 0) {
       return { ok: false, error: `errcode ${data.errcode}: ${data.errmsg ?? ""}` };

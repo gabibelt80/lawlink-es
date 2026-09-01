@@ -22,14 +22,14 @@ describe("parseSms", () => {
     );
   });
 
-  it("识别电子送达链接、账号密码和人工登录状态", () => {
+  it("识别电子送达链接、账号Contraseña和人工Iniciar sesiónEstado", () => {
     const parsed = parseSms(
-      "【12368】你有法律文书待签收，案号（2026）浙0106民初888号，请登录https://songda.example.com/doc?id=abc，账号：lawyer001，密码：Abc12345，验证码：778899。"
+      "【12368】你有法律文书待签收，案号（2026）浙0106民初888号，请Iniciar sesiónhttps://songda.example.com/doc?id=abc，账号：lawyer001，Contraseña：Abc12345，验证码：778899。"
     );
 
     expect(parsed.smsType).toBe("SERVICE_NOTICE");
     expect(parsed.urls).toEqual(["https://songda.example.com/doc?id=abc"]);
-    expect(parsed.credentials.map((c) => c.label)).toEqual(["账号", "密码", "验证码"]);
+    expect(parsed.credentials.map((c) => c.label)).toEqual(["账号", "Contraseña", "验证码"]);
     expect(parsed.credentials[1].valuePreview).not.toBe("Abc12345");
     expect(parsed.documentLinks[0]).toMatchObject({
       url: "https://songda.example.com/doc?id=abc",
@@ -37,9 +37,9 @@ describe("parseSms", () => {
     });
   });
 
-  it("把举证、缴费等日期识别成待处理事项", () => {
+  it("把举证、缴费等Fecha识别成待处理事项", () => {
     const parsed = parseSms(
-      "【法院通知】请于2026年6月25日前提交证据材料，并于2026年6月20日前缴纳诉讼费500元。详情：https://court.example.com/pay。"
+      "【法院Notificaciones】请于2026年6月25日前Enviar证据材料，并于2026年6月20日前缴纳诉讼费500元。详情：https://court.example.com/pay。"
     );
 
     expect(parsed.smsType).toBe("FEE_NOTICE");

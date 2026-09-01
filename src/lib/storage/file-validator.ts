@@ -7,7 +7,7 @@
  *   3. 文件大小 ≤ maxBytes
  *
  * 故意不读 magic bytes：sniffing 增加复杂度但绕过门槛只是稍微提高，
- * 投入产出比不高。本系统假设是律所内部使用，主要防止意外（误传 .exe）
+ * 投入产出比不高。本Sistema假设是律所内部使用，主要防止意外（误传 .exe）
  * 而非对抗主动攻击。
  */
 
@@ -53,7 +53,7 @@ export interface FileValidationOptions {
 }
 
 /**
- * 抛中文异常（前端 toast 直接显示）；通过返回归一化的 ext 给上层用作存储路径或日志。
+ * 抛中文异常（前端 toast 直接显示）；通过Volver归一化的 ext 给上层用作存储路径或日志。
  */
 export function validateUploadedFile(
   file: File,

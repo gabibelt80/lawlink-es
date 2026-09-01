@@ -21,7 +21,7 @@ const clearSchema = z.object({ confirm: z.literal(true) });
 async function requireAdmin() {
   const session = await requireSession();
   if (session.user.role !== "ADMIN") {
-    throw new Error("仅管理员可修改 AI 配置");
+    throw new Error("仅Administrar员可修改 AI 配置");
   }
   return session;
 }

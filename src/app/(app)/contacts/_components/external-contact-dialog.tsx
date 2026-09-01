@@ -34,7 +34,7 @@ const CATEGORY_OPTIONS: { value: ExternalContactCategory; label: string }[] = [
   { value: "POLICE", label: "公安" },
   { value: "NOTARY", label: "公证处" },
   { value: "ARBITRATION", label: "仲裁" },
-  { value: "OTHER_FIRM", label: "他所律师" },
+  { value: "OTHER_FIRM", label: "他所Abogado" },
   { value: "EXPERT", label: "鉴定专家" },
   { value: "OTHER", label: "其他" },
 ];
@@ -139,7 +139,7 @@ export function ExternalContactDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
-          <DialogTitle>{editing ? "编辑联系人" : "新增外部联系人"}</DialogTitle>
+          <DialogTitle>{editing ? "Editar联系人" : "新增外部联系人"}</DialogTitle>
         </DialogHeader>
 
         <div className="space-y-3 py-2">
@@ -203,7 +203,7 @@ export function ExternalContactDialog({
               />
             </div>
             <div className="space-y-1.5">
-              <Label className="text-xs">邮箱</Label>
+              <Label className="text-xs">Email</Label>
               <Input
                 type="email"
                 value={form.email}
@@ -231,7 +231,7 @@ export function ExternalContactDialog({
           </div>
 
           <div className="space-y-1.5">
-            <Label className="text-xs">备注</Label>
+            <Label className="text-xs">Observaciones</Label>
             <Textarea
               rows={2}
               value={form.notes}
@@ -246,11 +246,11 @@ export function ExternalContactDialog({
             onClick={() => onOpenChange(false)}
             disabled={isPending}
           >
-            取消
+            Cancelar
           </Button>
           <Button onClick={handleSave} disabled={isPending}>
             {isPending && <Loader2 className="mr-1.5 h-4 w-4 animate-spin" />}
-            {editing ? "更新" : "保存"}
+            {editing ? "Actualizar" : "Guardar"}
           </Button>
         </DialogFooter>
       </DialogContent>

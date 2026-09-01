@@ -19,7 +19,7 @@ type Mode = "between" | "add";
 export function DaysCalc() {
   const [mode, setMode] = useState<Mode>("between");
 
-  // 模式 1：两日期之间
+  // 模式 1：两Fecha之间
   const today = new Date();
   const [dateA, setDateA] = useState(fmtDate(today));
   const [dateB, setDateB] = useState(fmtDate(today));
@@ -63,7 +63,7 @@ export function DaysCalc() {
       <RadioChips
         size="sm"
         items={[
-          { value: "between", label: "两日期之间" },
+          { value: "between", label: "两Fecha之间" },
           { value: "add", label: "加减天数" }
         ]}
         value={mode}

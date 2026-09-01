@@ -14,7 +14,7 @@ const STORAGE_ROOT = process.env.APP_STORAGE_DIR
 export class LocalStorageProvider implements StorageProvider {
   /**
    * 写入文件到 storage/<scope>/<yyyymm>/<uuid>.bin
-   * 返回相对 STORAGE_ROOT 的 path（存到数据库）
+   * Volver相对 STORAGE_ROOT 的 path（存到数据库）
    */
   async writeFile(scope: string, data: Buffer): Promise<string> {
     const now = new Date();

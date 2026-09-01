@@ -26,10 +26,10 @@ export function WorkflowTogglesCard({
     startTransition(async () => {
       try {
         await saveWorkflowTogglesAction({ externalContactReview: next });
-        toast.success(next ? "已开启联系人审核" : "已关闭联系人审核（新增直接通过）");
+        toast.success(next ? "已开启联系人审核" : "已Cerrar联系人审核（新增直接通过）");
       } catch (err) {
         setExternalContactReview(prev);
-        toast.error("保存失败", { description: err instanceof Error ? err.message : "" });
+        toast.error("Guardar失败", { description: err instanceof Error ? err.message : "" });
       }
     });
   }
@@ -51,10 +51,10 @@ export function WorkflowTogglesCard({
           className="mt-0.5"
         />
         <span>
-          <span className="font-medium">外部联系人需管理员审核</span>
+          <span className="font-medium">外部联系人需Administrar员审核</span>
           <span className="mt-0.5 block text-[12px] leading-5 text-muted-foreground">
-            关闭（默认）：任何人新增法院/仲裁机构等外部联系人后全所直接可见。
-            开启：普通律师新增的联系人需管理员/主任律师审核后展示。
+            Cerrar（默认）：任何人新增法院/仲裁机构等外部联系人后全所直接可见。
+            开启：普通Abogado新增的联系人需Administrar员/主任Abogado审核后展示。
           </span>
         </span>
       </label>

@@ -4,14 +4,14 @@
  * 在 next start 进程启动时通过 instrumentation.ts → register() 调用。
  *
  * 限制：
- * - **仅在 next start（生产）下生效**。dev 模式不跑（避免开发时误推通知）。
+ * - **仅在 next start（生产）下生效**。dev 模式不跑（避免开发时误推Notificaciones）。
  * - 不支持 serverless（Vercel Edge / Lambda）。LawLink 自部署场景默认是
  *   长驻 Node 进程，OK。
- * - 进程重启会重新注册定时作业；如果在触发时间点重启，可能错过本次。
+ * - 进程重启会重新Registrarse定时作业；如果在触发时间点重启，可能错过本次。
  *
  * 当前定时作业：
- * - 每周一 09:00 推送本周报告
- * - 每天 09:00 扫描归档逾期 30 天的案件
+ * - 每周一 09:00 推送本周Informe
+ * - 每天 09:00 扫描归档逾期 30 天的Caso
  * - 每天 03:00 清理超过 N 天的 AuditLog
  *
  * 时区：所有 cron 用 Asia/Shanghai（避免容器 UTC 跑出来 8 小时偏差）。
@@ -110,19 +110,19 @@ export function registerCronJobs() {
     "0 9 * * *",
     () =>
       runWithFailureAudit(
-        "到期提醒扫描",
+        "到期Recordatorios扫描",
         "DUE_REMINDER_SCAN_FAILED_CRON",
         () => scanDueReminders()
       ),
     { timezone: TIMEZONE }
   );
 
-  // 每天 09:10 扫描已审批但未回填盖章件的用章申请；同一申请 3 天内不重复提醒
+  // 每天 09:10 扫描已Aprobación但未回填盖章件的用章申请；同一申请 3 天内不重复Recordatorios
   cron.schedule(
     "10 9 * * *",
     () =>
       runWithFailureAudit(
-        "用章盖章件回填提醒扫描",
+        "用章盖章件回填Recordatorios扫描",
         "SEAL_BACKFILL_REMINDER_SCAN_FAILED_CRON",
         () => scanSealBackfillReminders()
       ),
@@ -144,6 +144,6 @@ export function registerCronJobs() {
   }
 
   console.log(
-    `[cron] 已注册 ${backupCronEnabled() ? 6 : 5} 个定时作业（周报推送 / 归档逾期扫描 / AuditLog 清理 / 到期提醒扫描 / 用章回填提醒扫描${backupCronEnabled() ? " / 数据库备份" : ""}），时区 Asia/Shanghai`
+    `[cron] 已Registrarse ${backupCronEnabled() ? 6 : 5} 个定时作业（周报推送 / 归档逾期扫描 / AuditLog 清理 / 到期Recordatorios扫描 / 用章回填Recordatorios扫描${backupCronEnabled() ? " / 数据库备份" : ""}），时区 Asia/Shanghai`
   );
 }

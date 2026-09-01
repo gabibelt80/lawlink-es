@@ -22,7 +22,7 @@ export function ReviewSummaryCard({
       <header className="mb-2 flex items-center justify-between">
         <h3 className="flex items-center gap-1.5 text-xs font-medium text-violet-700">
           <Sparkles className="h-3.5 w-3.5" />
-          AI 审查总览
+          AI 审查Total览
         </h3>
         <div className="flex items-center gap-3">
           <span className="font-mono text-[10px] text-muted-foreground">

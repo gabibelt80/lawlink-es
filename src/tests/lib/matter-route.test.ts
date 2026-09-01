@@ -23,7 +23,7 @@ describe("matterHref", () => {
     );
   });
 
-  it("对编号做 URL 编码，异常字符不会破坏地址", () => {
+  it("对编号做 URL Código，异常字符不会破坏地址", () => {
     expect(matterHref({ id: "x", internalCode: "M 2026/001" })).toBe("/matters/M%202026%2F001");
   });
 });

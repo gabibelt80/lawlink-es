@@ -3,8 +3,8 @@
 /**
  * v0.27: 快递单号 OCR
  *
- * 律师上传快递单照片 → aiVision 提取快递单号 + 公司名（如能识别）
- * 失败时返回空，让律师手动输入
+ * Abogado上传快递单照片 → aiVision 提取快递单号 + 公司名（如能识别）
+ * 失败时Volver空，让Abogado手动输入
  */
 import { requireSession } from "@/lib/auth/session";
 import { aiVision, extractJson, AiNotConfiguredError } from "@/lib/ai/client";
@@ -16,11 +16,11 @@ export type ParsedExpressLabel = {
 
 const SUPPORTED = new Set(["image/jpeg", "image/png", "image/webp", "image/heic"]);
 
-const PROMPT = `下方图片是一张快递面单 / 快递单照片。请严格返回 JSON：
+const PROMPT = `下方图片是一张快递面单 / 快递单照片。请严格Volver JSON：
 {"trackingNo": "单号", "companyCode": "中文快递公司名（如：顺丰速运 / 中通快递 / 京东快递）"}
 规则：
 - trackingNo 是面单上最显眼的运单号，10-30 位字母数字组合
-- 找不到任何一项返回 null，不要编造
+- 找不到任何一项Volver null，不要编造
 - 仅 JSON，不要解释`;
 
 export async function parseExpressLabel(form: FormData): Promise<ParsedExpressLabel> {

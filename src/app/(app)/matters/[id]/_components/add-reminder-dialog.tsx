@@ -19,7 +19,7 @@ import {
 import { createTask } from "@/server/tasks/actions";
 
 /**
- * v0.16: 案件详情"重要时限及提醒"卡内的新建 Dialog
+ * v0.16: Caso详情"重要时限及Recordatorios"卡内的新建 Dialog
  * 复用 Task 表（matterId + title + dueAt + description + priority）
  */
 export function AddReminderDialog({
@@ -52,11 +52,11 @@ export function AddReminderDialog({
 
   function submit() {
     if (!title.trim()) {
-      toast.warning("请填写提醒标题");
+      toast.warning("请填写Recordatorios标题");
       return;
     }
     if (!date) {
-      toast.warning("请选择日期");
+      toast.warning("请选择Fecha");
       return;
     }
 
@@ -81,11 +81,11 @@ export function AddReminderDialog({
           assigneeId: "",
           stageId: ""
         });
-        toast.success("已添加");
+        toast.success("已Agregar");
         onOpenChange(false);
         router.refresh();
       } catch (err) {
-        toast.error("添加失败", {
+        toast.error("Agregar失败", {
           description: err instanceof Error ? err.message : ""
         });
       }
@@ -98,10 +98,10 @@ export function AddReminderDialog({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Bell className="h-4 w-4 text-primary" />
-            添加重要时限 / 提醒
+            Agregar重要时限 / Recordatorios
           </DialogTitle>
           <DialogDescription className="text-xs">
-            可用作截止日期、关键节点或自定义提醒事项
+            可用作截止Fecha、关键节点或自定义Recordatorios事项
           </DialogDescription>
         </DialogHeader>
 
@@ -111,7 +111,7 @@ export function AddReminderDialog({
               标题 <span className="text-destructive">*</span>
             </Label>
             <Input
-              placeholder="如：提交答辩状 / 缴纳保全费 / 提交证据清单"
+              placeholder="如：Enviar答辩状 / 缴纳Preservación费 / Enviar证据清单"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
             />
@@ -120,7 +120,7 @@ export function AddReminderDialog({
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div className="space-y-1.5">
               <Label className="text-xs">
-                日期 <span className="text-destructive">*</span>
+                Fecha <span className="text-destructive">*</span>
               </Label>
               <Input type="date" value={date} onChange={(e) => setDate(e.target.value)} />
             </div>
@@ -173,7 +173,7 @@ export function AddReminderDialog({
           </div>
 
           <div className="space-y-1.5">
-            <Label className="text-xs">备注（可选）</Label>
+            <Label className="text-xs">Observaciones（可选）</Label>
             <Textarea
               rows={2}
               placeholder="补充说明、相关材料等"
@@ -185,11 +185,11 @@ export function AddReminderDialog({
 
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)} disabled={isPending}>
-            取消
+            Cancelar
           </Button>
           <Button onClick={submit} disabled={isPending} className="gap-1.5">
             {isPending && <Loader2 className="h-4 w-4 animate-spin" />}
-            添加
+            Agregar
           </Button>
         </DialogFooter>
       </DialogContent>

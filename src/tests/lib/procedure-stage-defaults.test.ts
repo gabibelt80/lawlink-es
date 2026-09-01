@@ -9,16 +9,16 @@ describe("defaultStageNamesForProcedure", () => {
   it("uses litigation workflow for first instance procedures", () => {
     expect(defaultStageNamesForProcedure("FIRST_INSTANCE")).toContain("起诉立案");
     expect(defaultStageNamesForProcedure("FIRST_INSTANCE")).toContain("裁判签收");
-    expect(defaultStageNamesForProcedure("FIRST_INSTANCE")).toContain("案件归档");
-    expect(defaultStageNamesForProcedure("FIRST_INSTANCE")).not.toContain("财产保全");
+    expect(defaultStageNamesForProcedure("FIRST_INSTANCE")).toContain("Caso归档");
+    expect(defaultStageNamesForProcedure("FIRST_INSTANCE")).not.toContain("财产Preservación");
     expect(optionalStagePresetsForProcedure("FIRST_INSTANCE").map((preset) => preset.name)).not.toContain("履行/执行衔接");
   });
 
   it("keeps optional litigation stages outside the default active workflow", () => {
     const optionalNames = optionalStagePresetsForProcedure("FIRST_INSTANCE").map((preset) => preset.name);
-    expect(optionalNames).toEqual(expect.arrayContaining(["财产保全", "管辖权异议", "司法鉴定", "模拟法庭", "庭后补充"]));
+    expect(optionalNames).toEqual(expect.arrayContaining(["财产Preservación", "管辖权异议", "司法鉴定", "模拟法庭", "庭后补充"]));
     expect(optionalNames.some((name) => name.includes("执行"))).toBe(false);
-    expect(stagePresetForName("FIRST_INSTANCE", "案件归档")?.kind).toBe("required");
+    expect(stagePresetForName("FIRST_INSTANCE", "Caso归档")?.kind).toBe("required");
     expect(stagePresetForName("FIRST_INSTANCE", "司法鉴定")?.kind).toBe("optional");
   });
 
@@ -28,7 +28,7 @@ describe("defaultStageNamesForProcedure", () => {
       "执行立案",
       "财产查控",
       "执行结案",
-      "案件归档"
+      "Caso归档"
     ]);
   });
 
@@ -38,7 +38,7 @@ describe("defaultStageNamesForProcedure", () => {
       "会见",
       "阅卷线索",
       "辩护意见",
-      "案件归档"
+      "Caso归档"
     ]);
   });
 });

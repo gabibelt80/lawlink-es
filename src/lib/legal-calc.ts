@@ -1,10 +1,10 @@
 /**
- * v0.9.2 律师常用速算
+ * v0.9.2 Abogado常用速算
  *
  * 三大场景：
  *  - 诉讼费：依据《诉讼费用交纳办法》全国统一分段累进 + 简易程序减半
  *  - 迟延履行金：判决金额 × (LPR + 5%) × 实际履行 - 应履行 天数 / 365
- *  - 天数：两日期间 / 加减 N 日
+ *  - 天数：两Fecha间 / 加减 N 日
  *
  * 大写金额：numberToChinese（万 / 亿 / 万亿 完整支持）
  *
@@ -16,14 +16,14 @@
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 export type CourtFeeCaseType =
-  | "PROPERTY"       // 财产案件
-  | "DIVORCE"        // 离婚案件
+  | "PROPERTY"       // 财产Caso
+  | "DIVORCE"        // 离婚Caso
   | "LABOR"          // 劳动争议
   | "IP"             // 知识产权（无争议金额）
-  | "OTHER";         // 其他非财产案件
+  | "OTHER";         // 其他非财产Caso
 
 /**
- * 财产案件分段累进（《诉讼费用交纳办法》第十三条）：
+ * 财产Caso分段累进（《诉讼费用交纳办法》第十三条）：
  *   ≤ 1 万                              50 元
  *   1 万 – 10 万         × 2.5%  - 200
  *   10 万 – 20 万        × 2%    + 300
@@ -67,7 +67,7 @@ export function calcCourtFee(input: { caseType: CourtFeeCaseType; amount?: numbe
         amount,
         fee,
         feeSimplified: Math.round(fee / 2),
-        note: "财产案件按分段累进，简易程序减半收取"
+        note: "财产Caso按分段累进，简易程序减半收取"
       };
     }
     case "DIVORCE": {
@@ -92,10 +92,10 @@ export function calcCourtFee(input: { caseType: CourtFeeCaseType; amount?: numbe
         amount,
         fee: 10,
         feeSimplified: 5,
-        note: "劳动争议案件每件 10 元（简易程序 5 元）"
+        note: "劳动争议Caso每件 10 元（简易程序 5 元）"
       };
     case "IP":
-      // 50 元 ≤ X ≤ 100 元；案件复杂 100-500 元；区间给中位
+      // 50 元 ≤ X ≤ 100 元；Caso复杂 100-500 元；区间给中位
       return {
         caseType: "IP",
         amount: 0,
@@ -109,7 +109,7 @@ export function calcCourtFee(input: { caseType: CourtFeeCaseType; amount?: numbe
         amount: 0,
         fee: 100,
         feeSimplified: 50,
-        note: "其他非财产案件每件 50–100 元，本结果取上限"
+        note: "其他非财产Caso每件 50–100 元，本结果取上限"
       };
   }
 }
@@ -191,7 +191,7 @@ export function addDays(base: Date, days: number): Date {
 }
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-// 4. 大写金额（取自旧系统 numToCn，整理后）
+// 4. 大写金额（取自旧Sistema numToCn，整理后）
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 const CN_DIGIT = "零壹贰叁肆伍陆柒捌玖";

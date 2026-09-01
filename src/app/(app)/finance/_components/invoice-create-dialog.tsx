@@ -221,7 +221,7 @@ export function InvoiceCreateDialog({
       try {
         const isSpecial = invoiceType === "SPECIAL";
         const docIds: string[] = [];
-        // 仅关联案件时上传依据（依据须绑定案件）
+        // 仅关联Caso时上传依据（依据须绑定Caso）
         if (!noMatter && selectedMatter) {
           for (const file of evidenceFiles) {
             const fd = new FormData();
@@ -277,7 +277,7 @@ export function InvoiceCreateDialog({
         </DialogHeader>
 
         <div className="flex-1 space-y-4 overflow-y-auto px-5 py-4">
-          {/* 关联案件 */}
+          {/* 关联Caso */}
           <Field label="Caso relacionado" required>
             <div className="space-y-2">
               {canCreateUnlinkedInvoice && (
@@ -481,7 +481,7 @@ export function InvoiceCreateDialog({
             </div>
           )}
 
-          {/* 依据：仅关联案件时必传 */}
+          {/* 依据：仅关联Caso时必传 */}
           {!noMatter && (
             <Field
               label="Base de la factura"

@@ -54,8 +54,8 @@ const EXPORT_TABS: MattersExportTab[] = [
 ];
 
 const TAB_LABEL: Record<MattersExportTab, string> = {
-  all: "全部案件",
-  intake: "待审批",
+  all: "Ver todosCaso",
+  intake: "待Aprobación",
   active: "进行中",
   revision: "待补正",
   archived: "已归档"
@@ -508,11 +508,11 @@ function intakeColumnsForKind(kind: MatterCategoryKind): Partial<ExcelJS.Column>
     { header: "收案ID", key: "id", width: 24 },
     { header: "标题", key: "title", width: 36 },
     { header: "收案分类", key: "category", width: 12 },
-    { header: "收案状态", key: "status", width: 12 },
+    { header: "收案Estado", key: "status", width: 12 },
     { header: "收案时间", key: "receivedAt", width: 12 },
     { header: "案由", key: "cause", width: 18 },
     { header: "自由案由", key: "causeFreeText", width: 18 },
-    { header: "案情描述", key: "description", width: 36 },
+    { header: "案情Descripción", key: "description", width: 36 },
     { header: "委托方", key: "client", width: 20 },
     { header: "委托方类型", key: "clientType", width: 12 },
     { header: "委托方证件/代码", key: "clientIdNumber", width: 22 },
@@ -520,9 +520,9 @@ function intakeColumnsForKind(kind: MatterCategoryKind): Partial<ExcelJS.Column>
     { header: "法定代表人", key: "clientLegalRep", width: 14 },
     { header: "联系人", key: "contactName", width: 14 },
     { header: "联系电话", key: "contactPhone", width: 16 },
-    { header: "客户档案联系人", key: "clientContacts", width: 28 },
-    { header: "主办律师", key: "owner", width: 12 },
-    { header: "共同律师", key: "coUsers", width: 24 }
+    { header: "Cliente档案联系人", key: "clientContacts", width: 28 },
+    { header: "主办Abogado", key: "owner", width: 12 },
+    { header: "共同Abogado", key: "coUsers", width: 24 }
   ];
   const litigationColumns: Partial<ExcelJS.Column>[] = [
     { header: "首次程序", key: "firstProcedureType", width: 14 },
@@ -530,7 +530,7 @@ function intakeColumnsForKind(kind: MatterCategoryKind): Partial<ExcelJS.Column>
     { header: "管辖地", key: "jurisdiction", width: 18 },
     { header: "我方地位", key: "ourStanding", width: 14 },
     { header: "标的金额", key: "money", width: 14 },
-    { header: "标的描述", key: "claimDescription", width: 24 },
+    { header: "标的Descripción", key: "claimDescription", width: 24 },
     { header: "律协备案", key: "barFiling", width: 18 },
     { header: "是否反诉", key: "counterclaim", width: 10 },
     { header: "当事人", key: "parties", width: 44 }
@@ -552,15 +552,15 @@ function intakeColumnsForKind(kind: MatterCategoryKind): Partial<ExcelJS.Column>
   ];
   const commonEnd: Partial<ExcelJS.Column>[] = [
     { header: "收费方式", key: "feeType", width: 14 },
-    { header: "律师费金额", key: "feeAmount", width: 14 },
+    { header: "Abogado费金额", key: "feeAmount", width: 14 },
     { header: "风险代理条款", key: "contingencyTerms", width: 26 },
     { header: "付款节点", key: "feeSchedule", width: 26 },
-    { header: "费用备注", key: "feeNote", width: 24 },
+    { header: "费用Observaciones", key: "feeNote", width: 24 },
     { header: "附件", key: "documents", width: 36 },
-    { header: "转化案件", key: "matter", width: 28 },
+    { header: "转化Caso", key: "matter", width: 28 },
     { header: "不接案/补正原因", key: "declinedReason", width: 30 },
-    { header: "创建时间", key: "createdAt", width: 18 },
-    { header: "更新时间", key: "updatedAt", width: 18 }
+    { header: "Crear时间", key: "createdAt", width: 18 },
+    { header: "Actualizar时间", key: "updatedAt", width: 18 }
   ];
   const typedColumns =
     kind === "litigation"
@@ -576,23 +576,23 @@ function matterColumnsForKind(
   maxProcedures: number
 ): Partial<ExcelJS.Column>[] {
   const commonStart: Partial<ExcelJS.Column>[] = [
-    { header: "系统编号", key: "internalCode", width: 16 },
+    { header: "Sistema编号", key: "internalCode", width: 16 },
     { header: "所内案号", key: "firmCaseNo", width: 18 },
-    { header: "案件名称", key: "title", width: 38 },
-    { header: "案件分类", key: "category", width: 12 },
-    { header: "案件状态", key: "status", width: 12 },
+    { header: "CasoNombre", key: "title", width: 38 },
+    { header: "Caso分类", key: "category", width: 12 },
+    { header: "CasoEstado", key: "status", width: 12 },
     { header: "收案时间", key: "intakeDate", width: 12 },
     { header: "首次立案/受理", key: "firstAcceptedAt", width: 12 },
     { header: "结案时间", key: "closedAt", width: 12 },
     { header: "归档时间", key: "archivedAt", width: 12 },
-    { header: "主客户", key: "primaryClient", width: 20 },
-    { header: "主客户类型", key: "primaryClientType", width: 12 },
-    { header: "主客户证件/代码", key: "primaryClientIdNumber", width: 22 },
-    { header: "主客户地址", key: "primaryClientAddress", width: 28 },
-    { header: "主客户法定代表人", key: "primaryClientLegalRep", width: 16 },
-    { header: "主客户联系人", key: "primaryClientContacts", width: 28 },
-    { header: "其他客户", key: "otherClients", width: 30 },
-    { header: "主办律师", key: "owner", width: 12 },
+    { header: "主Cliente", key: "primaryClient", width: 20 },
+    { header: "主Cliente类型", key: "primaryClientType", width: 12 },
+    { header: "主Cliente证件/代码", key: "primaryClientIdNumber", width: 22 },
+    { header: "主Cliente地址", key: "primaryClientAddress", width: 28 },
+    { header: "主Cliente法定代表人", key: "primaryClientLegalRep", width: 16 },
+    { header: "主Cliente联系人", key: "primaryClientContacts", width: 28 },
+    { header: "其他Cliente", key: "otherClients", width: 30 },
+    { header: "主办Abogado", key: "owner", width: 12 },
     { header: "团队成员", key: "members", width: 30 }
   ];
   const litigationColumns: Partial<ExcelJS.Column>[] = [
@@ -603,7 +603,7 @@ function matterColumnsForKind(
     { header: "反诉原告", key: "counterclaimAsPlaintiff", width: 10 },
     { header: "反诉被告", key: "counterclaimAsDefendant", width: 10 },
     { header: "律协备案", key: "barFiling", width: 18 },
-    { header: "案件当事人", key: "parties", width: 48 }
+    { header: "Caso当事人", key: "parties", width: 48 }
   ];
   const projectColumns: Partial<ExcelJS.Column>[] = [
     { header: "业务类型", key: "businessType", width: 16 },
@@ -624,21 +624,21 @@ function matterColumnsForKind(
   ];
   const commonEnd: Partial<ExcelJS.Column>[] = [
     { header: "关联实体", key: "relatedEntities", width: 36 },
-    { header: "关联案件", key: "relatedMatters", width: 36 },
-    { header: "案件附件", key: "documents", width: 36 },
+    { header: "关联Caso", key: "relatedMatters", width: 36 },
+    { header: "Caso附件", key: "documents", width: 36 },
     { header: "自定义字段", key: "customValues", width: 30 },
     { header: "来源收案标题", key: "intakeTitle", width: 34 },
-    { header: "来源收案状态", key: "intakeStatus", width: 12 },
+    { header: "来源收案Estado", key: "intakeStatus", width: 12 },
     { header: "来源收案时间", key: "sourceReceivedAt", width: 12 },
     { header: "来源收案案情", key: "sourceDescription", width: 34 },
     { header: "来源收费方式", key: "sourceFeeType", width: 14 },
-    { header: "来源律师费金额", key: "sourceFeeAmount", width: 14 },
+    { header: "来源Abogado费金额", key: "sourceFeeAmount", width: 14 },
     { header: "来源付款节点", key: "sourceFeeSchedule", width: 26 },
-    { header: "来源费用备注", key: "sourceFeeNote", width: 24 },
-    { header: "来源共同律师", key: "sourceCoUsers", width: 24 },
+    { header: "来源费用Observaciones", key: "sourceFeeNote", width: 24 },
+    { header: "来源共同Abogado", key: "sourceCoUsers", width: 24 },
     { header: "来源附件", key: "sourceDocuments", width: 36 },
-    { header: "创建时间", key: "createdAt", width: 18 },
-    { header: "更新时间", key: "updatedAt", width: 18 }
+    { header: "Crear时间", key: "createdAt", width: 18 },
+    { header: "Actualizar时间", key: "updatedAt", width: 18 }
   ];
   const litigationSourceColumns: Partial<ExcelJS.Column>[] = [
     { header: "来源收案首次程序", key: "sourceFirstProcedureType", width: 14 },
@@ -646,7 +646,7 @@ function matterColumnsForKind(
     { header: "来源管辖地", key: "sourceJurisdiction", width: 18 },
     { header: "来源我方地位", key: "sourceOurStanding", width: 14 },
     { header: "来源标的金额", key: "sourceClaimAmount", width: 14 },
-    { header: "来源标的描述", key: "sourceClaimDescription", width: 24 },
+    { header: "来源标的Descripción", key: "sourceClaimDescription", width: 24 },
     { header: "来源律协备案", key: "sourceBarFiling", width: 18 },
     { header: "来源是否反诉", key: "sourceCounterclaim", width: 12 }
   ];
@@ -681,14 +681,14 @@ function matterColumnsForKind(
       { header: `程序${i}-类型`, key: `procedure${i}Type`, width: 14 },
       { header: `程序${i}-标签`, key: `procedure${i}Label`, width: 16 },
       { header: `程序${i}-参与方式`, key: `procedure${i}Engagement`, width: 12 },
-      { header: `程序${i}-状态`, key: `procedure${i}Status`, width: 12 },
+      { header: `程序${i}-Estado`, key: `procedure${i}Status`, width: 12 },
       { header: `程序${i}-案号`, key: `procedure${i}CaseNumber`, width: 24 },
       { header: `程序${i}-管辖地`, key: `procedure${i}Jurisdiction`, width: 18 },
       { header: `程序${i}-办理机关`, key: `procedure${i}HandlingAgency`, width: 24 },
       { header: `程序${i}-合议庭/部门`, key: `procedure${i}Panel`, width: 20 },
       { header: `程序${i}-经办人`, key: `procedure${i}Handler`, width: 16 },
       { header: `程序${i}-我方地位`, key: `procedure${i}OurStanding`, width: 14 },
-      { header: `程序${i}-主办律师`, key: `procedure${i}LeadLawyer`, width: 14 },
+      { header: `程序${i}-主办Abogado`, key: `procedure${i}LeadLawyer`, width: 14 },
       { header: `程序${i}-外部代理`, key: `procedure${i}ExternalLead`, width: 10 },
       { header: `程序${i}-立案/受理`, key: `procedure${i}AcceptedAt`, width: 12 },
       { header: `程序${i}-裁决/结案`, key: `procedure${i}ConcludedAt`, width: 12 },
@@ -923,7 +923,7 @@ function formatParty(party: {
     party.legalRep ? `法定代表人:${party.legalRep}` : "",
     party.contactName ? `联系人:${party.contactName}` : "",
     party.address ? `地址:${party.address}` : "",
-    party.notes ? `备注:${party.notes}` : ""
+    party.notes ? `Observaciones:${party.notes}` : ""
   ].filter(Boolean);
   return detail.length > 0 ? `${party.name}（${detail.join("，")}）` : party.name;
 }

@@ -228,14 +228,14 @@ type WorkflowStage = {
   removable: boolean;
   status: WorkflowStageStatus;
   tasks: WorkflowTask[];
-  /** v1.1 UI（方案 E）：导航徽标——任务数 / 临期倒计时 / 开庭日期 */
+  /** v1.1 UI（方案 E）：导航徽标——任务数 / 临期倒计时 / 开庭Fecha */
   badge: { text: string; hot: boolean } | null;
 };
 
 type MatterInfoWorkflowItem = {
   key: "matter-info";
   id: null;
-  name: "信息总览";
+  name: "信息Total览";
   kind: "matter_info";
   status: "active";
   tasks: [];
@@ -258,21 +258,21 @@ type StageGuide = {
 const MATTER_INFO_ITEM: MatterInfoWorkflowItem = {
   key: "matter-info",
   id: null,
-  name: "信息总览",
+  name: "信息Total览",
   kind: "matter_info",
   status: "active",
   tasks: []
 };
 
 const PRESERVATION_ACTIONS = [
-  "财产保全申请书",
+  "财产Preservación申请书",
   "财产线索清单",
   "担保书/保函",
   "网络查控申请书",
-  "保全费缴费凭证",
+  "Preservación费缴费凭证",
   "续封申请书",
-  "解除保全申请书",
-  "保全复议申请书"
+  "解除Preservación申请书",
+  "Preservación复议申请书"
 ];
 
 const DEFAULT_STAGE_GUIDE: StageGuide = {
@@ -296,7 +296,7 @@ const STAGE_GUIDES: { keys: string[]; guide: StageGuide }[] = [
         "核对委托人身份和签章主体",
         "签署委托代理合同、授权委托书、所函",
         "完成风险告知、工作联系函和材料交接留痕",
-        "确认律师费到账、发票和原件移交记录"
+        "确认Abogado费到账、发票和原件移交记录"
       ],
       actions: ["委托代理合同", "授权委托书", "律所函", "风险告知书", "工作联系函", "证据原件交接单"],
       deadlineCategories: [],
@@ -306,20 +306,20 @@ const STAGE_GUIDES: { keys: string[]; guide: StageGuide }[] = [
     }
   },
   {
-    keys: ["财产保全"],
+    keys: ["财产Preservación"],
     guide: {
-      summary: "围绕保全申请、担保、缴费、裁定、续封和解除组织材料。",
-      checklistTitle: "保全事项",
+      summary: "围绕Preservación申请、担保、缴费、裁定、续封和解除组织材料。",
+      checklistTitle: "Preservación事项",
       checklist: [
-        "确认保全范围、财产线索和担保方式",
-        "提交保全申请、担保书/保函和财产线索",
+        "确认Preservación范围、财产线索和担保方式",
+        "EnviarPreservación申请、担保书/保函和财产线索",
         "跟进缴费、裁定、查封冻结结果和首封情况",
-        "记录保全期限并提前安排续保或解除"
+        "记录Preservación期限并提前安排续保或解除"
       ],
       actions: PRESERVATION_ACTIONS,
       deadlineCategories: ["PRESERVATION"],
       materialCategories: [],
-      materialPattern: /保全|财产线索|担保|保函|查封|冻结|续封|续保|解除|裁定|协助执行/,
+      materialPattern: /Preservación|财产线索|担保|保函|查封|冻结|续封|续保|解除|裁定|协助执行/,
       defaultCategory: "PROCEDURE"
     }
   },
@@ -329,12 +329,12 @@ const STAGE_GUIDES: { keys: string[]; guide: StageGuide }[] = [
       summary: "消化基础材料，形成事实摘要、证据缺口、法律检索和诉讼代理方案。",
       checklistTitle: "研判事项",
       checklist: [
-        "梳理案件事实、法律关系、争议焦点",
+        "梳理Caso事实、法律关系、争议焦点",
         "核对证据原件或扫描件，列出缺漏清单",
         "完成法律法规、案例和司法观点检索",
         "向当事人确认关键事实和诉讼方案"
       ],
-      actions: ["案件事实摘要", "法律关系图", "证据缺口清单", "法律检索报告", "诉讼代理方案"],
+      actions: ["Caso事实摘要", "法律关系图", "证据缺口清单", "法律检索Informe", "诉讼代理方案"],
       deadlineCategories: [],
       materialCategories: [],
       materialPattern: /摘要|法律关系|检索|方案|证据缺口|材料清单|事实梳理/,
@@ -367,7 +367,7 @@ const STAGE_GUIDES: { keys: string[]; guide: StageGuide }[] = [
       checklist: [
         "确认请求标的、管辖法院或仲裁机构",
         "整理起诉状/仲裁申请、身份材料、授权手续和证据目录",
-        "核对被告身份、送达信息、管辖材料和保全材料",
+        "核对被告身份、送达信息、管辖材料和Preservación材料",
         "跟进立案审查、诉调转立案和诉讼费/仲裁费缴纳"
       ],
       actions: ["民事起诉状", "仲裁申请书", "证据目录", "送达地址确认书", "诉讼费缴费凭证", "立案材料清单"],
@@ -384,7 +384,7 @@ const STAGE_GUIDES: { keys: string[]; guide: StageGuide }[] = [
       checklistTitle: "管辖事项",
       checklist: [
         "签收并研判对方管辖权异议理由",
-        "提交管辖权异议答辩意见及证据",
+        "Enviar管辖权异议答辩意见及证据",
         "跟进裁定结果并告知当事人",
         "在上诉期内处理异议上诉或二审答辩"
       ],
@@ -401,7 +401,7 @@ const STAGE_GUIDES: { keys: string[]; guide: StageGuide }[] = [
       summary: "围绕举证期限、补充证据、调查令、鉴定、证人出庭和对方证据质证组织工作。",
       checklistTitle: "举证事项",
       checklist: [
-        "记录举证通知签收日并计算举证期限",
+        "记录举证Notificaciones签收日并计算举证期限",
         "复核全案材料，确认补充证据和反驳证据",
         "评估调查令、法院调查取证、鉴定和证人出庭申请",
         "收到对方证据后与当事人核实真实性并形成质证意见"
@@ -434,7 +434,7 @@ const STAGE_GUIDES: { keys: string[]; guide: StageGuide }[] = [
   {
     keys: ["庭前会议"],
     guide: {
-      summary: "处理庭前会议通知、争点归纳、证据交换、程序事项和庭审安排。",
+      summary: "处理庭前会议Notificaciones、争点归纳、证据交换、程序事项和庭审安排。",
       checklistTitle: "庭前会议事项",
       checklist: [
         "确认庭前会议时间、地点、参加人员和会议目的",
@@ -453,7 +453,7 @@ const STAGE_GUIDES: { keys: string[]; guide: StageGuide }[] = [
   {
     keys: ["模拟法庭"],
     guide: {
-      summary: "围绕庭审争点、发问路径、攻防预案和客户出庭表现做正式开庭前演练。",
+      summary: "围绕庭审争点、发问路径、攻防预案和Cliente出庭表现做正式开庭前演练。",
       checklistTitle: "模拟事项",
       checklist: [
         "形成争点清单和证明责任分配表",
@@ -461,7 +461,7 @@ const STAGE_GUIDES: { keys: string[]; guide: StageGuide }[] = [
         "演练法庭调查、法庭辩论和最后陈述",
         "记录演练暴露的问题并修订庭审提纲"
       ],
-      actions: ["模拟法庭脚本", "争点攻防清单", "发问提纲", "客户庭前沟通记录", "庭审风险提示"],
+      actions: ["模拟法庭脚本", "争点攻防清单", "发问提纲", "Cliente庭前沟通记录", "庭审风险提示"],
       deadlineCategories: [],
       materialCategories: [],
       materialPattern: /模拟法庭|攻防|发问|反问|演练|庭审风险|庭前沟通/,
@@ -471,7 +471,7 @@ const STAGE_GUIDES: { keys: string[]; guide: StageGuide }[] = [
   {
     keys: ["开庭准备", "开庭/询问", "开庭审理"],
     guide: {
-      summary: "围绕开庭通知、证据原件、庭审提纲、质证意见、发问提纲和客户庭前沟通做准备。",
+      summary: "围绕开庭Notificaciones、证据原件、庭审提纲、质证意见、发问提纲和Cliente庭前沟通做准备。",
       checklistTitle: "庭前事项",
       checklist: [
         "确认开庭时间、地点、法庭和书记员联系方式",
@@ -490,18 +490,18 @@ const STAGE_GUIDES: { keys: string[]; guide: StageGuide }[] = [
   {
     keys: ["庭后工作", "庭后代理词", "庭后补充"],
     guide: {
-      summary: "庭后复盘并提交代理意见、补充材料，向客户汇报并持续跟进裁判进度。",
+      summary: "庭后复盘并Enviar代理意见、补充材料，向Cliente汇报并持续跟进裁判进度。",
       checklistTitle: "庭后事项",
       checklist: [
         "庭后向当事人汇报庭审情况并留痕",
-        "提交代理词、质证意见、法律检索报告或补充意见",
+        "Enviar代理词、质证意见、法律检索Informe或补充意见",
         "按庭审要求核实事实、补交材料或移交证据原件",
         "联系法官或书记员跟进裁判进度"
       ],
-      actions: ["开庭报告", "代理词", "庭后补充意见", "书面质证意见", "法律检索报告"],
+      actions: ["开庭Informe", "代理词", "庭后补充意见", "书面质证意见", "法律检索Informe"],
       deadlineCategories: ["EVIDENCE", "CUSTOM"],
       materialCategories: [],
-      materialPattern: /代理词|庭后|补充意见|开庭报告|质证意见|检索报告|笔录/,
+      materialPattern: /代理词|庭后|补充意见|开庭Informe|质证意见|检索Informe|笔录/,
       defaultCategory: "PLEADING"
     }
   },
@@ -513,10 +513,10 @@ const STAGE_GUIDES: { keys: string[]; guide: StageGuide }[] = [
       checklist: [
         "记录裁判文书签收日并计算上诉期或撤裁期限",
         "向当事人汇报裁判结果并确认是否上诉、撤裁或履行",
-        "处理文书更正、生效证明、诉讼费退费和保全解除",
+        "处理文书更正、生效证明、诉讼费退费和Preservación解除",
         "跟进对方履行并提示需要另行新建执行程序的情形"
       ],
-      actions: ["裁判结果报告", "上诉期告知函", "结案报告", "生效证明申请", "履行衔接清单"],
+      actions: ["裁判结果Informe", "上诉期告知函", "结案Informe", "生效证明申请", "履行衔接清单"],
       deadlineCategories: ["APPEAL", "PERFORMANCE", "ARBITRATION_SET_ASIDE", "ENFORCEMENT"],
       materialCategories: ["JUDGMENT"],
       materialPattern: /判决|裁定|裁决|调解书|上诉|生效|履行|退费|结案|后续程序/,
@@ -524,20 +524,20 @@ const STAGE_GUIDES: { keys: string[]; guide: StageGuide }[] = [
     }
   },
   {
-    keys: ["案件归档"],
+    keys: ["Caso归档"],
     guide: {
-      summary: "完成结案报告、材料完整性核对、原件退还、费用结清和归档申请。",
+      summary: "完成结案Informe、材料完整性核对、原件退还、费用结清和归档申请。",
       checklistTitle: "归档事项",
       checklist: [
         "确认裁判、裁决、调解或执行结果已形成最终留痕",
         "核对委托手续、程序材料、证据材料和往来记录是否完整",
-        "完成结案报告、客户交接、原件退还和费用结清",
-        "提交归档申请并处理补正意见"
+        "完成结案Informe、Cliente交接、原件退还和费用结清",
+        "Enviar归档申请并处理补正意见"
       ],
-      actions: ["结案报告", "归档材料清单", "原件退还确认书", "客户结案告知函", "归档申请"],
+      actions: ["结案Informe", "归档材料清单", "原件退还确认书", "Cliente结案告知函", "归档申请"],
       deadlineCategories: [],
       materialCategories: ["PROCEDURE", "JUDGMENT"],
-      materialPattern: /归档|结案报告|原件退还|材料清单|结案告知|费用结清/,
+      materialPattern: /归档|结案Informe|原件退还|材料清单|结案告知|费用结清/,
       defaultCategory: "PROCEDURE"
     }
   },
@@ -549,7 +549,7 @@ const STAGE_GUIDES: { keys: string[]; guide: StageGuide }[] = [
       checklist: [
         "签订二审委托手续并确认上诉期限",
         "递交上诉状或二审答辩意见、证据材料",
-        "提醒并核对上诉费缴纳",
+        "Recordatorios并核对上诉费缴纳",
         "梳理一审裁判争点和二审代理思路"
       ],
       actions: ["上诉状", "二审答辩状", "二审证据目录", "上诉费缴费凭证", "二审代理方案"],
@@ -562,13 +562,13 @@ const STAGE_GUIDES: { keys: string[]; guide: StageGuide }[] = [
   {
     keys: ["财产查控"],
     guide: {
-      summary: "梳理并提交被执行人财产线索，跟进网络查控、处置方案和续保。",
+      summary: "梳理并Enviar被执行人财产线索，跟进网络查控、处置方案和续保。",
       checklistTitle: "查控事项",
       checklist: [
         "梳理房产、车辆、银行账户、股权等财产线索",
-        "向执行法官提交财产线索和查控申请",
+        "向执行法官Enviar财产线索和查控申请",
         "跟进查封、冻结、扣押和评估拍卖进度",
-        "执行周期较长时同步检查已保全财产续保"
+        "执行周期较长时同步检查已Preservación财产续保"
       ],
       actions: ["财产线索清单", "网络查控申请书", "追加被执行人申请书", "续封申请书"],
       deadlineCategories: ["ENFORCEMENT", "PRESERVATION"],
@@ -586,7 +586,7 @@ const STAGE_GUIDES: { keys: string[]; guide: StageGuide }[] = [
         "确认异议主体、异议对象和法定期限",
         "准备执行异议申请或复议申请及证据",
         "跟进听证、裁定和后续异议之诉衔接",
-        "向当事人汇报风险和下一步策略"
+        "向当事人汇报风险和Siguiente策略"
       ],
       actions: ["执行异议申请书", "复议申请书", "不予执行申请书", "听证提纲"],
       deadlineCategories: ["ENFORCEMENT", "CUSTOM"],
@@ -598,12 +598,12 @@ const STAGE_GUIDES: { keys: string[]; guide: StageGuide }[] = [
   {
     keys: ["执行和解"],
     guide: {
-      summary: "推动执行和解方案、客户确认、协议签署、履行监督和恢复执行预案。",
+      summary: "推动执行和解方案、Cliente确认、协议签署、履行监督和恢复执行预案。",
       checklistTitle: "和解事项",
       checklist: [
         "核实对方履行能力和和解条件",
-        "形成和解方案并取得客户书面确认",
-        "签署执行和解协议并提交法院备案",
+        "形成和解方案并取得Cliente书面确认",
+        "签署执行和解协议并Enviar法院备案",
         "跟进分期履行、违约处理和恢复执行"
       ],
       actions: ["执行和解方案", "调解/和解方案确认函", "执行和解协议", "恢复执行申请书"],
@@ -616,8 +616,8 @@ const STAGE_GUIDES: { keys: string[]; guide: StageGuide }[] = [
   {
     keys: ["会见", "取保候审", "阅卷线索", "辩护意见"],
     guide: {
-      summary: "刑事程序内按会见、取保、阅卷、线索核实和辩护意见组织工作。",
-      checklistTitle: "刑事事项",
+      summary: "Penal程序内按会见、取保、阅卷、线索核实和辩护意见组织工作。",
+      checklistTitle: "Penal事项",
       checklist: [
         "核对委托手续、会见手续和办案机关要求",
         "记录会见情况、阅卷要点和补充线索",
@@ -694,11 +694,11 @@ export function ProcedureWorkflowPanel({
       toast.warning("必备环节不能移除");
       return;
     }
-    if (!confirm(`确定从当前程序移除「${stage.name}」？已有任务或材料的环节将被隐藏（数据保留，可重新添加恢复）。`)) return;
+    if (!confirm(`Aceptar从当前程序移除「${stage.name}」？已有任务或材料的环节将被隐藏（数据保留，可重新Agregar恢复）。`)) return;
     startStageRemovalTransition(async () => {
       try {
         const res = await removeProcedureStage({ id: stageId });
-        toast.success(res.hidden ? "环节已隐藏，数据保留（重新添加同名环节可恢复）" : "环节已移除");
+        toast.success(res.hidden ? "环节已隐藏，数据保留（重新Agregar同名环节可恢复）" : "环节已移除");
         setSelectedKey(null);
         router.refresh();
       } catch (err) {
@@ -713,16 +713,16 @@ export function ProcedureWorkflowPanel({
         <header className="border-b border-border px-4 py-3">
           <div className="flex items-center gap-2">
             <ListChecks className="h-4 w-4 text-primary" strokeWidth={1.8} />
-            <h2 className="text-[14px] font-medium">案件工作台</h2>
+            <h2 className="text-[14px] font-medium">Caso工作台</h2>
           </div>
           <p className="mt-0.5 text-[11px] text-muted-foreground">
-            添加程序后可继续生成办案环节。
+            Agregar程序后可继续生成办案环节。
           </p>
         </header>
         <div className="space-y-3 p-4">
           {matterInfoNode}
           <div className="rounded-md border border-dashed border-border bg-muted/30 p-6 text-center text-sm text-muted-foreground">
-            暂无在办程序，添加程序后可生成程序工作台。
+            暂无在办程序，Agregar程序后可生成程序工作台。
           </div>
         </div>
       </section>
@@ -785,7 +785,7 @@ export function ProcedureWorkflowPanel({
               <span className="flex h-4 w-4 shrink-0 items-center justify-center rounded-full border border-primary/30 bg-primary/10 text-primary">
                 <Plus className="h-2.5 w-2.5" />
               </span>
-              <span className="min-w-0 flex-1 truncate">添加环节</span>
+              <span className="min-w-0 flex-1 truncate">Agregar环节</span>
             </button>
           </div>
         </nav>
@@ -909,7 +909,7 @@ function NormalStageContent({
                   : "border-amber-500/30 bg-amber-500/10 text-amber-700"
               )}
             >
-              {nearestDue < 0 ? `逾期 ${-nearestDue} 天` : nearestDue === 0 ? "今天到期" : `剩 ${nearestDue} 天`}
+              {nearestDue < 0 ? `逾期 ${-nearestDue} 天` : nearestDue === 0 ? "Hoy到期" : `剩 ${nearestDue} 天`}
             </Badge>
           ) : (
             <StageStatusBadge status={stage.status} />
@@ -962,7 +962,7 @@ function NormalStageContent({
               <div className="flex items-center gap-2">
                 <Button size="sm" onClick={onAddTask} className="h-7 gap-1 px-2.5 text-[11px]">
                   <Plus className="h-3 w-3" />
-                  添加任务
+                  Agregar任务
                 </Button>
                 <Button
                   size="sm"
@@ -1125,10 +1125,10 @@ function PreservationWorkflowContent({
     startTransition(async () => {
       try {
         await liftProperty(propertyId);
-        toast.success("已解除保全");
+        toast.success("已解除Preservación");
         router.refresh();
       } catch (err) {
-        toast.error("操作失败", { description: err instanceof Error ? err.message : "" });
+        toast.error("Operación fallida", { description: err instanceof Error ? err.message : "" });
       }
     });
   }
@@ -1139,7 +1139,7 @@ function PreservationWorkflowContent({
         <div>
           <div className="flex items-center gap-2">
             <Shield className="h-4 w-4 text-primary" />
-            <h3 className="text-[15px] font-medium">财产保全</h3>
+            <h3 className="text-[15px] font-medium">财产Preservación</h3>
             {expiringCount > 0 ? (
               <Badge variant="outline" className="border-amber-500/30 bg-amber-500/10 text-amber-700">
                 30天内到期 {expiringCount} 项
@@ -1171,7 +1171,7 @@ function PreservationWorkflowContent({
               </Button>
               <Button size="sm" onClick={() => setCreateOpen(true)} className="h-7 gap-1 px-2 text-[11px]">
                 <Plus className="h-3 w-3" />
-                新建保全
+                新建Preservación
               </Button>
             </>
           )}
@@ -1181,11 +1181,11 @@ function PreservationWorkflowContent({
       {cases.length === 0 ? (
         <div className="rounded-md border border-dashed border-border bg-background/60 px-4 py-8 text-center">
           <Shield className="mx-auto mb-2 h-6 w-6 text-muted-foreground/40" />
-          <p className="text-sm text-muted-foreground">该程序尚无财产保全记录</p>
+          <p className="text-sm text-muted-foreground">该程序尚无财产Preservación记录</p>
           {canManage && (
             <Button size="sm" onClick={() => setCreateOpen(true)} className="mt-3 h-8 gap-1.5 text-xs">
               <Plus className="h-3.5 w-3.5" />
-              新建保全
+              新建Preservación
             </Button>
           )}
         </div>
@@ -1215,14 +1215,14 @@ function PreservationWorkflowContent({
                     className="h-7 gap-1 px-2 text-[11px]"
                   >
                     <Plus className="h-3 w-3" />
-                    被保全人
+                    被Preservación人
                   </Button>
                 )}
               </div>
 
               <div className="space-y-3 p-3">
                 {item.targets.length === 0 ? (
-                  <p className="py-3 text-center text-xs text-muted-foreground">暂无被保全人</p>
+                  <p className="py-3 text-center text-xs text-muted-foreground">暂无被Preservación人</p>
                 ) : (
                   item.targets.map((target) => (
                     <div key={target.id} className="space-y-2">
@@ -1235,7 +1235,7 @@ function PreservationWorkflowContent({
                             onClick={() => setAddPropertyTargetId(target.id)}
                             className="ml-auto text-[11px] text-primary hover:underline"
                           >
-                            + 添加财产
+                            + Agregar财产
                           </button>
                         )}
                       </div>
@@ -1272,7 +1272,7 @@ function PreservationWorkflowContent({
         onOpenTemplate={onOpenTemplate}
       />
 
-      <StageGuideDisclosure guide={stageGuideFor("财产保全")} />
+      <StageGuideDisclosure guide={stageGuideFor("财产Preservación")} />
 
       <PreservationCaseDialog
         open={createOpen}
@@ -1622,7 +1622,7 @@ function StageMaterialsPanel({
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setOpen(false)} disabled={isPending}>
-              取消
+              Cancelar
             </Button>
             <Button onClick={submitUpload} disabled={isPending || !picked} className="gap-1.5">
               {isPending && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
@@ -1683,11 +1683,11 @@ function TaskQuickDialog({
           assigneeId: "",
           stageId
         });
-        toast.success("任务已添加");
+        toast.success("任务已Agregar");
         onOpenChange(false);
         router.refresh();
       } catch (err) {
-        toast.error("添加失败", { description: err instanceof Error ? err.message : "" });
+        toast.error("Agregar失败", { description: err instanceof Error ? err.message : "" });
       }
     });
   }
@@ -1696,7 +1696,7 @@ function TaskQuickDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-md">
         <DialogHeader>
-          <DialogTitle>添加任务 · {stage.name}</DialogTitle>
+          <DialogTitle>Agregar任务 · {stage.name}</DialogTitle>
         </DialogHeader>
         <div className="space-y-3">
           <div className="space-y-1.5">
@@ -1704,11 +1704,11 @@ function TaskQuickDialog({
             <Input
               value={title}
               onChange={(event) => setTitle(event.target.value)}
-              placeholder="如：准备财产线索 / 提交续封申请"
+              placeholder="如：准备财产线索 / Enviar续封申请"
             />
           </div>
           <div className="space-y-1.5">
-            <Label className="text-xs">截止日期</Label>
+            <Label className="text-xs">截止Fecha</Label>
             <Input type="date" value={dueAt} onChange={(event) => setDueAt(event.target.value)} />
           </div>
           <div className="space-y-1.5">
@@ -1722,11 +1722,11 @@ function TaskQuickDialog({
         </div>
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)} disabled={isPending}>
-            取消
+            Cancelar
           </Button>
           <Button onClick={submit} disabled={isPending} className="gap-1.5">
             {isPending && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
-            添加
+            Agregar
           </Button>
         </DialogFooter>
       </DialogContent>
@@ -1786,7 +1786,7 @@ function StageCreateDialog({
 
   function submit() {
     if (!stageName) {
-      toast.warning("请填写环节名称");
+      toast.warning("请填写环节Nombre");
       return;
     }
     if (duplicate) {
@@ -1804,12 +1804,12 @@ function StageCreateDialog({
           insertAfterStageId: insert.afterStageId,
           insertAfterStageName: insert.afterStageName
         });
-        toast.success("环节已添加");
+        toast.success("环节已Agregar");
         onCreated(created.id);
         onOpenChange(false);
         router.refresh();
       } catch (err) {
-        toast.error("添加失败", { description: err instanceof Error ? err.message : "" });
+        toast.error("Agregar失败", { description: err instanceof Error ? err.message : "" });
       }
     });
   }
@@ -1818,7 +1818,7 @@ function StageCreateDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-lg">
         <DialogHeader>
-          <DialogTitle>添加环节</DialogTitle>
+          <DialogTitle>Agregar环节</DialogTitle>
           <DialogDescription className="text-xs">
             优先选择预设环节；确实覆盖不到时再使用自定义。
           </DialogDescription>
@@ -1842,7 +1842,7 @@ function StageCreateDialog({
                 </Select>
               ) : (
                 <p className="rounded-md border border-dashed border-border px-3 py-3 text-xs text-muted-foreground">
-                  预设环节已全部加入当前程序。
+                  预设环节已Ver todos加入当前程序。
                 </p>
               )}
               {selectedPreset && (
@@ -1851,7 +1851,7 @@ function StageCreateDialog({
             </div>
           ) : (
             <div className="space-y-1.5">
-              <Label className="text-xs">自定义环节名称 *</Label>
+              <Label className="text-xs">自定义环节Nombre *</Label>
               <Input
                 value={customName}
                 onChange={(event) => setCustomName(event.target.value)}
@@ -1893,12 +1893,12 @@ function StageCreateDialog({
             onClick={() => setCustomMode((value) => !value)}
             className="text-[11px] text-primary hover:underline"
           >
-            {customMode ? "返回预设环节" : "预设没有覆盖，添加自定义环节"}
+            {customMode ? "Volver预设环节" : "预设没有覆盖，Agregar自定义环节"}
           </button>
         </div>
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)} disabled={isPending}>
-            取消
+            Cancelar
           </Button>
           <Button
             onClick={submit}
@@ -1906,7 +1906,7 @@ function StageCreateDialog({
             className="gap-1.5"
           >
             {isPending && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
-            添加
+            Agregar
           </Button>
         </DialogFooter>
       </DialogContent>
@@ -1946,7 +1946,7 @@ function buildWorkflowStages(
   preservationCases: WorkflowPreservationCase[]
 ): WorkflowStage[] {
   if (!procedure) return [];
-  // v0.48: HIDDEN 环节不进工作台（数据保留，可重新添加恢复）
+  // v0.48: HIDDEN 环节不进工作台（数据保留，可重新Agregar恢复）
   const visibleStages = procedure.stages.filter((stage) => stage.status !== "HIDDEN");
   const context = { procedure, preservationCases };
   const realStages: WorkflowStage[] = visibleStages.map((stage) => ({
@@ -1979,20 +1979,20 @@ function buildWorkflowStages(
         )
       }));
 
-  // 已有保全记录时必须能在工作台看到"财产保全"环节——即使真实环节已物化且未包含它，
-  // 否则物化必备环节后保全数据会从案件详情页消失
+  // 已有Preservación记录时必须能在工作台看到"财产Preservación"环节——即使真实环节已物化且未包含它，
+  // 否则物化必备环节后Preservación数据会从Caso详情页消失
   if (
     preservationCases.length > 0 &&
-    !source.some((stage) => stage.name.includes("保全"))
+    !source.some((stage) => stage.name.includes("Preservación"))
   ) {
     const insertAt = Math.min(2, source.length);
     const preservationStage = workflowStageFromName(
       procedure.type,
-      "财产保全",
+      "财产Preservación",
       {
         key: "default-preservation",
         id: null,
-        status: statusForStage("财产保全", null, procedure, preservationCases),
+        status: statusForStage("财产Preservación", null, procedure, preservationCases),
         tasks: []
       },
       context
@@ -2010,7 +2010,7 @@ function workflowStageFromName(
 ): WorkflowStage {
   const preset = stagePresetForName(procedureType, name);
   const presetKind = preset?.kind ?? "custom";
-  const kind: WorkflowStage["kind"] = name.includes("保全") ? "preservation" : "normal";
+  const kind: WorkflowStage["kind"] = name.includes("Preservación") ? "preservation" : "normal";
   return {
     ...meta,
     name,
@@ -2026,7 +2026,7 @@ function shortDay(date: Date): string {
   return `${`${d.getMonth() + 1}`.padStart(2, "0")}-${`${d.getDate()}`.padStart(2, "0")}`;
 }
 
-/** 导航徽标：临期期限（含任务数）> 未完成任务数 > 开庭日期，无则不显示 */
+/** 导航徽标：临期期限（含任务数）> 未完成任务数 > 开庭Fecha，无则不显示 */
 function stageBadge(
   name: string,
   kind: WorkflowStage["kind"],
@@ -2074,7 +2074,7 @@ function statusForStage(
   procedure: WorkflowProcedure,
   preservationCases: WorkflowPreservationCase[]
 ): WorkflowStageStatus {
-  if (name.includes("保全")) {
+  if (name.includes("Preservación")) {
     const properties = preservationCases.flatMap((item) => item.targets.flatMap((target) => target.properties));
     const active = properties.filter((property) => property.status === "ACTIVE" || property.status === "RENEWED");
     if (active.some((property) => daysUntil(property.expiryDate) <= 30)) return "risk";

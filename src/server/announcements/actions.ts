@@ -3,8 +3,8 @@
 /**
  * v0.27: 服务中心 - 律所公告
  *
- * - ADMIN / 主任律师 可发布、编辑、置顶、归档
- * - 所有登录用户可读
+ * - ADMIN / 主任Abogado 可发布、Editar、置顶、归档
+ * - 所有Iniciar sesión用户可读
  * - pinned + 未过期 + 未归档的公告显示为顶部 banner
  */
 import { z } from "zod";
@@ -15,7 +15,7 @@ import { audit } from "@/server/audit";
 
 function assertCanManage(role: string) {
   if (role !== "ADMIN" && role !== "PRINCIPAL_LAWYER") {
-    throw new Error("仅管理员 / 主任律师可发布公告");
+    throw new Error("仅Administrar员 / 主任Abogado可发布公告");
   }
 }
 

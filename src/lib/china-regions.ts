@@ -1,5 +1,5 @@
 // v0.30 管辖地数据 + 争议解决机构匹配
-// 数据来自 china-division（全国省/市/区县），法院/仲裁机构名称按命名规则生成。
+// 数据来自 china-division（全国省/市/区县），法院/仲裁机构Nombre按命名规则生成。
 import type { ProcedureType } from "@prisma/client";
 import pca from "china-division/dist/pca.json";
 
@@ -72,7 +72,7 @@ export function normalizeJurisdictionForAgency(
   return jurisdiction?.trim() || null;
 }
 
-// 直辖市 / 地级市占位项「市辖区」「县」不作为机构名，回退到省级名称
+// 直辖市 / 地级市占位项「市辖区」「县」不作为机构名，回退到省级Nombre
 function effectiveCityName(province: string, city: string): string {
   if (!city || city === "市辖区" || city === "县") return province;
   return city;
@@ -88,7 +88,7 @@ function arbitrationCityName(cityName: string): string {
  * - 未选管辖地：全国级机构
  * - 选到区县：本区县基层法院 + 本市中院 + 本省高院 + 本市仲裁委
  * - 只选到市：本市中院 + 本市各区县基层法院 + 本省高院 + 本市仲裁委
- * 返回去重后的字符串列表。
+ * Volver去重后的字符串列表。
  */
 export function agencyOptions(value?: string | null): string[] {
   const { province, city, area } = parseJurisdiction(value);

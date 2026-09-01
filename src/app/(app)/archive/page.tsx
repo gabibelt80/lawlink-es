@@ -13,8 +13,8 @@ import { matterHref } from "@/lib/matters/route";
 
 const CATEGORY_CN: Record<string, string> = {
   CIVIL_COMMERCIAL: "民商",
-  CRIMINAL: "刑事",
-  ADMINISTRATIVE: "行政",
+  CRIMINAL: "Penal",
+  ADMINISTRATIVE: "Administrativo",
   NON_LITIGATION: "非诉",
   LEGAL_COUNSEL: "顾问",
   SPECIAL_PROJECT: "专项"
@@ -41,17 +41,17 @@ export default async function ArchivePage({
         <div>
           <h1 className="text-xl font-medium flex items-center gap-2">
             <Lock className="h-5 w-5 text-[#9B7BF7]" />
-            归档管理
+            归档Administrar
           </h1>
           <p className="text-xs text-muted-foreground mt-1">
             {isAdmin
-              ? "管理员视角：审批待归档申请 + 查看已归档案件。"
-              : "已归档案件按归档日期降序排列。点击进入案件详情可查看卷宗封皮与目录，或导出归档包。"}
+              ? "Administrar员视角：Aprobación待归档申请 + Ver已归档Caso。"
+              : "已归档Caso按归档Fecha降序排列。点击进入Caso详情可Ver卷宗封皮与目录，或导出归档包。"}
           </p>
         </div>
         <span className="text-xs text-muted-foreground">
           {activeTab === "pending"
-            ? `待审批 ${pending.length} 件`
+            ? `待Aprobación ${pending.length} 件`
             : `已归档 ${items.length} 件`}
         </span>
       </header>
@@ -64,7 +64,7 @@ export default async function ArchivePage({
         <PendingArchiveTable records={pending} />
       ) : items.length === 0 ? (
         <div className="rounded-lg border border-dashed border-border/60 py-16 text-center text-sm text-muted-foreground">
-          暂无已归档案件。在案件详情顶部&ldquo;状态 → 归档&rdquo;完成归档流程后，会出现在这里。
+          暂无已归档Caso。在Caso详情顶部&ldquo;Estado → 归档&rdquo;完成归档流程后，会出现在这里。
         </div>
       ) : (
         <div className="rounded-lg border border-border/60 overflow-hidden">
@@ -72,12 +72,12 @@ export default async function ArchivePage({
             <thead className="bg-muted/30 text-xs text-muted-foreground">
               <tr>
                 <th className="px-3 py-2 text-left font-normal w-32">所内案号</th>
-                <th className="px-3 py-2 text-left font-normal">案件</th>
+                <th className="px-3 py-2 text-left font-normal">Caso</th>
                 <th className="px-3 py-2 text-left font-normal w-20">类别</th>
                 <th className="px-3 py-2 text-left font-normal w-24">委托方</th>
                 <th className="px-3 py-2 text-left font-normal w-20">结案方式</th>
-                <th className="px-3 py-2 text-left font-normal w-28">结案日期</th>
-                <th className="px-3 py-2 text-left font-normal w-28">归档日期</th>
+                <th className="px-3 py-2 text-left font-normal w-28">结案Fecha</th>
+                <th className="px-3 py-2 text-left font-normal w-28">归档Fecha</th>
                 <th className="px-3 py-2 text-left font-normal w-20">归档人</th>
                 <th className="px-3 py-2 text-left font-normal w-16">缺项</th>
                 <th className="px-3 py-2 text-left font-normal w-16">导出</th>

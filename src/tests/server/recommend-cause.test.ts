@@ -43,7 +43,7 @@ beforeEach(() => {
 });
 
 describe("recommendCause", () => {
-  it("LLM 返回 3 条全部命中 → 返回 3 条", async () => {
+  it("LLM Volver 3 条Ver todos命中 → Volver 3 条", async () => {
     aiChatMock.mockResolvedValue({
       content: JSON.stringify([
         { name: "民间借贷纠纷", reason: "借款关系明确", confidence: "HIGH" },
@@ -81,7 +81,7 @@ describe("recommendCause", () => {
 
     const res = await recommendCause({
       category: "CIVIL_COMMERCIAL",
-      situation: "测试用案情描述"
+      situation: "测试用案情Descripción"
     });
     expect(res).toHaveLength(2);
     expect(res.map((r) => r.cause.name)).toEqual(["民间借贷纠纷", "保证合同纠纷"]);
@@ -102,13 +102,13 @@ describe("recommendCause", () => {
 
     const res = await recommendCause({
       category: "CIVIL_COMMERCIAL",
-      situation: "测试用案情描述"
+      situation: "测试用案情Descripción"
     });
     expect(res).toHaveLength(1);
     expect(res[0].cause.name).toBe("民间借贷纠纷");
   });
 
-  it("全部反查失败 → 抛错", async () => {
+  it("Ver todos反查失败 → 抛错", async () => {
     aiChatMock.mockResolvedValue({
       content: JSON.stringify([
         { name: "案由甲", reason: "x", confidence: "HIGH" },
@@ -119,17 +119,17 @@ describe("recommendCause", () => {
     searchCausesMock.mockResolvedValue([]);
 
     await expect(
-      recommendCause({ category: "CIVIL_COMMERCIAL", situation: "测试用案情描述" })
+      recommendCause({ category: "CIVIL_COMMERCIAL", situation: "测试用案情Descripción" })
     ).rejects.toThrow(/案由库/);
   });
 
-  it("LLM 返回非 JSON → 抛错", async () => {
+  it("LLM Volver非 JSON → 抛错", async () => {
     aiChatMock.mockResolvedValue({
       content: "抱歉，我无法回答这个问题",
       raw: {}
     });
     await expect(
-      recommendCause({ category: "CIVIL_COMMERCIAL", situation: "测试用案情描述" })
+      recommendCause({ category: "CIVIL_COMMERCIAL", situation: "测试用案情Descripción" })
     ).rejects.toThrow(/无法解析/);
   });
 
@@ -155,7 +155,7 @@ describe("recommendCause", () => {
 
     const res = await recommendCause({
       category: "CIVIL_COMMERCIAL",
-      situation: "测试用案情描述"
+      situation: "测试用案情Descripción"
     });
     expect(res[0].confidence).toBe("HIGH");
     expect(res[1].confidence).toBe("MEDIUM"); // fallback

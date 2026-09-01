@@ -1,8 +1,8 @@
 import type { MatterCategory, ProcedureType, LitigationStanding } from "@prisma/client";
 
 /**
- * 各案件类别下可选的程序类型。
- * UI 上"新建案件"和"添加程序"按此表过滤可选项。
+ * 各Caso类别下可选的程序类型。
+ * UI 上"新建Caso"和"Agregar程序"按此表过滤可选项。
  */
 export const proceduresByCategory: Record<MatterCategory, ProcedureType[]> = {
   CIVIL_COMMERCIAL: [
@@ -69,7 +69,7 @@ export const proceduresByCategory: Record<MatterCategory, ProcedureType[]> = {
 };
 
 /**
- * 各案件类别下可选的诉讼地位（我方角色）。
+ * 各Caso类别下可选的诉讼地位（我方角色）。
  */
 export const standingsByCategory: Record<MatterCategory, LitigationStanding[]> = {
   CIVIL_COMMERCIAL: [

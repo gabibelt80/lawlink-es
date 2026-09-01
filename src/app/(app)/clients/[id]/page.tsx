@@ -59,10 +59,10 @@ export default async function ClientDetailPage({ params }: { params: { id: strin
 
   const isIndividual = client.type === "INDIVIDUAL";
   const TypeIcon = isIndividual ? User : client.type === "COMPANY" ? Building2 : Briefcase;
-  // 企业客户：主要联系人（contacts 已按 isPrimary desc 排序）
+  // 企业Cliente：主要联系人（contacts 已按 isPrimary desc 排序）
   const primaryContact = client.contacts[0] ?? null;
 
-  // 按案件分组合同，关联案件与签约合同合并展示（左案件 / 右合同）
+  // 按Caso分组合同，关联Caso与签约合同合并展示（左Caso / 右合同）
   const billingsByMatter = new Map<string, typeof finance.billings>();
   for (const b of finance.billings) {
     const arr = billingsByMatter.get(b.matter.id) ?? [];
@@ -87,7 +87,7 @@ export default async function ClientDetailPage({ params }: { params: { id: strin
         className="inline-flex items-center gap-1 text-[13px] text-muted-foreground transition-colors hover:text-foreground"
       >
         <ArrowLeft className="h-3.5 w-3.5" />
-        返回客户列表
+        VolverCliente列表
       </Link>
 
       <section className="ll-hero-surface px-5 py-5">
@@ -120,7 +120,7 @@ export default async function ClientDetailPage({ params }: { params: { id: strin
                 {client.name}
               </h1>
               <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-muted-foreground">
-                <span className="font-mono">{client.internalCode || "暂无客户编号"}</span>
+                <span className="font-mono">{client.internalCode || "暂无Cliente编号"}</span>
                 <span>首次合作 {dateText(client.createdAt)}</span>
                 {primaryContact ? <span>主要联系人：{primaryContact.name}</span> : null}
               </div>
@@ -143,7 +143,7 @@ export default async function ClientDetailPage({ params }: { params: { id: strin
             <header className="ll-panel-head">
               <h2 className="ll-panel-title">
                 <Briefcase className="h-4 w-4 text-primary" />
-                关联案件
+                关联Caso
                 <span className="font-mono text-xs text-muted-foreground tabular">
                   {client.matters.length}
                 </span>
@@ -154,7 +154,7 @@ export default async function ClientDetailPage({ params }: { params: { id: strin
             </header>
 
             {client.matters.length === 0 ? (
-              <p className="py-10 text-center text-xs text-muted-foreground">暂无关联案件</p>
+              <p className="py-10 text-center text-xs text-muted-foreground">暂无关联Caso</p>
             ) : (
               <ul className="divide-y divide-border px-4">
                 {client.matters.map((m) => {
@@ -175,7 +175,7 @@ export default async function ClientDetailPage({ params }: { params: { id: strin
                           <Badge variant="outline" className="rounded-full text-[10px]">
                             {matterStatusLabel[m.status]}
                           </Badge>
-                          <span>更新 {dateText(m.updatedAt)}</span>
+                          <span>Actualizar {dateText(m.updatedAt)}</span>
                         </div>
                       </Link>
 
@@ -224,9 +224,9 @@ export default async function ClientDetailPage({ params }: { params: { id: strin
               </h2>
             </header>
             <dl className="grid grid-cols-[80px_minmax(0,1fr)] gap-px overflow-hidden rounded-md border border-border bg-border text-[12.5px] sm:grid-cols-[84px_minmax(0,1fr)_84px_minmax(0,1fr)]">
-              <L>客户编号</L>
+              <L>Cliente编号</L>
               <V mono title={client.internalCode ?? undefined}>{client.internalCode || dash}</V>
-              <L>客户来源</L>
+              <L>Cliente来源</L>
               <V title={client.source ?? undefined}>{client.source || dash}</V>
 
               {isIndividual ? (
@@ -248,7 +248,7 @@ export default async function ClientDetailPage({ params }: { params: { id: strin
                   <V title={client.legalRep ?? undefined}>{client.legalRep || dash}</V>
                   <L>所属行业</L>
                   <V title={client.industry ?? undefined}>{client.industry || dash}</V>
-                  <L>邮箱</L>
+                  <L>Email</L>
                   <V title={client.email ?? undefined}>{client.email || dash}</V>
                 </>
               )}
@@ -257,7 +257,7 @@ export default async function ClientDetailPage({ params }: { params: { id: strin
               <V mono title={primaryContact?.phone ?? client.phone ?? undefined}>
                 {primaryContact?.phone || client.phone || dash}
               </V>
-              <L>邮箱</L>
+              <L>Email</L>
               <V title={client.email ?? undefined}>{client.email || dash}</V>
 
               <L>住所地</L>
@@ -279,7 +279,7 @@ export default async function ClientDetailPage({ params }: { params: { id: strin
               )}
               {client.notes && (
                 <>
-                  <L>备注</L>
+                  <L>Observaciones</L>
                   <V wide nowrap={false}>
                     <span className="whitespace-pre-wrap">{client.notes}</span>
                   </V>
@@ -348,7 +348,7 @@ export default async function ClientDetailPage({ params }: { params: { id: strin
             <header className="mb-3 flex items-center justify-between">
               <h2 className="ll-panel-title">
                 <Wallet className="h-4 w-4 text-primary" />
-                财务汇总
+                Finanzas汇Total
               </h2>
               <span className="font-mono text-xs text-muted-foreground">{paidRate}%</span>
             </header>
@@ -375,13 +375,13 @@ export default async function ClientDetailPage({ params }: { params: { id: strin
           <section className="ll-surface p-4">
             <h2 className="ll-panel-title mb-3">
               <MapPin className="h-4 w-4 text-primary" />
-              客户概况
+              Cliente概况
             </h2>
             <div className="space-y-2 text-[12px]">
-              <SummaryField label="合作状态" value={cooperationStatusLabel[client.cooperationStatus]} />
-              <SummaryField label="客户类型" value={clientTypeLabel[client.type]} />
+              <SummaryField label="合作Estado" value={cooperationStatusLabel[client.cooperationStatus]} />
+              <SummaryField label="Cliente类型" value={clientTypeLabel[client.type]} />
               <SummaryField label="首次合作" value={dateText(client.createdAt)} />
-              <SummaryField label="最近更新" value={dateText(client.updatedAt)} />
+              <SummaryField label="最近Actualizar" value={dateText(client.updatedAt)} />
             </div>
           </section>
         </aside>
@@ -447,7 +447,7 @@ function SummaryField({
   );
 }
 
-// 客户信息表：标签格（灰底）
+// Cliente信息表：标签格（灰底）
 function L({ children }: { children: React.ReactNode }) {
   return (
     <dt className="bg-muted/50 px-2.5 py-2 text-[11.5px] leading-snug text-muted-foreground">
@@ -456,7 +456,7 @@ function L({ children }: { children: React.ReactNode }) {
   );
 }
 
-// 客户信息表：取值格（白底）。默认单行截断；wide 跨整行；nowrap=false 允许换行（标签/备注）
+// Cliente信息表：取值格（白底）。默认单行截断；wide 跨整行；nowrap=false 允许换行（标签/Observaciones）
 function V({
   children,
   mono,

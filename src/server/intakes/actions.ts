@@ -30,7 +30,7 @@ function emptyToNull<T extends Record<string, unknown>>(obj: T): T {
 
 function requireApprover(role: string) {
   if (role !== "ADMIN" && role !== "PRINCIPAL_LAWYER") {
-    throw new Error("仅管理员或主任律师可审批收案");
+    throw new Error("仅Administrar员或主任Abogado可Aprobación收案");
   }
 }
 
@@ -42,8 +42,8 @@ function generateTitle(
 ): string {
   const left = clientName || "待补充委托方";
   const right = opposingNames.length > 0 ? opposingNames.join("、") : "待补充对方";
-  const cause = causeName ?? "案件";
-  // 案件名称不含空格（产品要求，与 matterCreateSchema 去空白一致）
+  const cause = causeName ?? "Caso";
+  // CasoNombre不含空格（产品要求，与 matterCreateSchema 去空白一致）
   return `${left}与${right}${cause}`.replace(/\s+/g, "");
 }
 
@@ -146,7 +146,7 @@ function assertConflictReviewAllowsConversion(intake: IntakeConflictGateInput) {
 
   const latestCheck = intake.conflictChecks[0];
   if (!latestCheck) {
-    throw new Error("转为正式案件前必须先运行利益冲突检索");
+    throw new Error("转为正式Caso前必须先运行利益冲突检索");
   }
 
   const checkedKeys = new Set(
@@ -165,20 +165,20 @@ function assertConflictReviewAllowsConversion(intake: IntakeConflictGateInput) {
     throw new Error("利益冲突检索还没有结论，请先标记是否可承接");
   }
   if (latestCheck.conclusion === "NEED_INFO") {
-    throw new Error("利益冲突检索结论为信息不足，不能转为正式案件");
+    throw new Error("利益冲突检索结论为信息不足，不能转为正式Caso");
   }
   if (latestCheck.conclusion === "SAME_SUBJECT") {
-    throw new Error("已确认存在利益冲突，不能直接转为正式案件");
+    throw new Error("已确认存在利益冲突，不能直接转为正式Caso");
   }
   if (latestCheck.conclusion !== "DIFFERENT") {
-    throw new Error("利益冲突检索结论异常，请重新检索后再转为正式案件");
+    throw new Error("利益冲突检索结论异常，请重新检索后再转为正式Caso");
   }
 
   const hasHighRiskHit = latestCheck.hits.some(
     (h) => h.severity === "HIGH" || h.severity === "BLOCKING"
   );
   if (hasHighRiskHit && !latestCheck.note?.trim()) {
-    throw new Error("存在高风险或阻塞命中，请在冲突结论备注中写明排除理由或书面同意留痕");
+    throw new Error("存在高风险或阻塞命中，请在冲突结论Observaciones中写明排除理由或书面同意留痕");
   }
 }
 
@@ -248,7 +248,7 @@ export async function listIntakes(input: Partial<IntakeListQuery> = {}) {
 
 export async function getIntakeById(id: string) {
   const session = await requireSession();
-  // 单条收案权限检查：manager 看全部，其他人只能看自己参与或创建的
+  // 单条收案权限检查：manager 看Ver todos，其他人只能看自己参与或Crear的
   if (session.user.role !== "ADMIN" && session.user.role !== "PRINCIPAL_LAWYER") {
     const owned = await prisma.intake.findFirst({
       where: {
@@ -303,7 +303,7 @@ export async function createIntake(input: IntakeCreateInput) {
     procedureType: data.firstProcedureType
   });
 
-  // ----- 解析客户：已选 / 自由输入新建 -----
+  // ----- 解析Cliente：已选 / 自由输入新建 -----
   let resolvedClientId: string | null = data.clientId || null;
   let resolvedClientName: string | null = null;
 
@@ -346,7 +346,7 @@ export async function createIntake(input: IntakeCreateInput) {
     });
     resolvedClientName = c?.name ?? null;
 
-    // 已有客户也补一条联系人（如果填了且现有不存在同名联系人）
+    // 已有Cliente也补一条联系人（如果填了且现有不存在同名联系人）
     if (data.contactName?.trim() || data.contactPhone?.trim()) {
       const existing = await prisma.contact.findFirst({
         where: {
@@ -466,8 +466,8 @@ export async function createIntake(input: IntakeCreateInput) {
   await notifyRoleApprovers({
     roles: ["ADMIN", "PRINCIPAL_LAWYER"],
     excludeUserId: session.user.id,
-    title: "新的案件审批待处理",
-    content: `${session.user.name ?? "有用户"} 提交了案件审批：${created.title}`,
+    title: "新的CasoAprobación待处理",
+    content: `${session.user.name ?? "有用户"} Enviar了CasoAprobación：${created.title}`,
     href: `/intakes/${created.id}`,
     refType: "Intake",
     refId: created.id,
@@ -506,7 +506,7 @@ export async function declineIntake(input: DeclineIntakeInput) {
   return { ok: true };
 }
 
-/** v0.14: 标记需补正 — 让律师补充材料后可再次提交（区别于 DECLINED 终态） */
+/** v0.14: 标记需补正 — 让Abogado补充材料后可再次Enviar（区别于 DECLINED 终态） */
 export async function markIntakeNeedsRevision(input: { id: string; reason: string }) {
   const session = await requireSession();
   requireApprover(session.user.role);
@@ -534,7 +534,7 @@ export async function markIntakeNeedsRevision(input: { id: string; reason: strin
   return { ok: true };
 }
 
-/** v0.14: 律师补完材料后重新提交（NEEDS_REVISION → PENDING_CONFIRMATION） */
+/** v0.14: Abogado补完材料后重新Enviar（NEEDS_REVISION → PENDING_CONFIRMATION） */
 export async function resubmitIntake(id: string) {
   const session = await requireSession();
 
@@ -543,7 +543,7 @@ export async function resubmitIntake(id: string) {
     select: { status: true, title: true, createdById: true, ownerUserId: true }
   });
   if (!intake) throw new Error("收案不存在");
-  if (intake.status !== "NEEDS_REVISION") throw new Error("只有待补正状态可重新提交");
+  if (intake.status !== "NEEDS_REVISION") throw new Error("只有待补正Estado可重新Enviar");
 
   await prisma.intake.update({
     where: { id },
@@ -564,8 +564,8 @@ export async function resubmitIntake(id: string) {
   await notifyRoleApprovers({
     roles: ["ADMIN", "PRINCIPAL_LAWYER"],
     excludeUserId: session.user.id,
-    title: "案件审批已重新提交",
-    content: `${session.user.name ?? "有用户"} 重新提交了案件审批：${intake.title}`,
+    title: "CasoAprobación已重新Enviar",
+    content: `${session.user.name ?? "有用户"} 重新Enviar了CasoAprobación：${intake.title}`,
     href: `/intakes/${id}`,
     refType: "Intake",
     refId: id,
@@ -578,7 +578,7 @@ export async function resubmitIntake(id: string) {
   return { ok: true };
 }
 
-/** 转 Matter：把 intake 上的全部字段铺到 Matter / 首程序 / 程序当事人 / Billing / MatterMember / Document */
+/** 转 Matter：把 intake 上的Ver todos字段铺到 Matter / 首程序 / 程序当事人 / Billing / MatterMember / Document */
 export async function convertIntakeToMatter(intakeId: string) {
   const session = await requireSession();
   requireApprover(session.user.role);
@@ -608,7 +608,7 @@ export async function convertIntakeToMatter(intakeId: string) {
   const internalCode = await generateInternalCode(intake.category);
   const firmCaseNo = await generateFirmCaseNo(intake.category);
 
-  // 首程序类型：优先用 intake 选的，缺失按案件类别推断
+  // 首程序类型：优先用 intake 选的，缺失按Caso类别推断
   const firstProcedureType =
     intake.firstProcedureType ??
     (intake.category === "CIVIL_COMMERCIAL" ||
@@ -756,7 +756,7 @@ export async function convertIntakeToMatter(intakeId: string) {
       });
     }
 
-    // 律师费 → Billing
+    // Abogado费 → Billing
     if (intake.feeAmount && intake.feeType) {
       const feeTypeLabel: Record<string, string> = {
         FIXED: "固定收费",
@@ -790,7 +790,7 @@ export async function convertIntakeToMatter(intakeId: string) {
       data: {
         matterId: m.id,
         eventType: "MATTER_CREATED",
-        title: `案件已创建（来自 Intake）`,
+        title: `Caso已Crear（来自 Intake）`,
         occurredAt: new Date()
       }
     });

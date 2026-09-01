@@ -2,10 +2,10 @@
  * v0.20: 律所报表数据聚合（纯 read-only，无 use server）
  *
  * 4 个口径（来自 PRD 后续规划）：
- *  - 案件量：本期新收 / 在办 / 已结案 / 已归档
+ *  - Caso量：本期新收 / 在办 / 已结案 / 已归档
  *  - 类别分布：按 MatterCategory
- *  - 律师产出：每个律师承办案件数 / 已结案数 / 收款金额
- *  - 客户应收：按客户聚合 应收 - 已收
+ *  - Abogado产出：每个Abogado承办Caso数 / 已结案数 / 收款金额
+ *  - Cliente应收：按Cliente聚合 应收 - 已收
  *
  * 时间范围：调用方传 [start, end]，按 Matter.createdAt 落入本期为「新收」。
  */
@@ -55,7 +55,7 @@ export function periodPresets(now = new Date()): Record<"month" | "quarter" | "y
 export function customPeriod(startStr: string, endStr: string): ReportPeriod {
   const re = /^\d{4}-\d{2}-\d{2}$/;
   if (!re.test(startStr) || !re.test(endStr)) {
-    throw new Error("日期格式不合法，需要 yyyy-MM-dd");
+    throw new Error("Fecha格式不合法，需要 yyyy-MM-dd");
   }
   const [sy, sm, sd] = startStr.split("-").map(Number);
   const [ey, em, ed] = endStr.split("-").map(Number);
@@ -63,7 +63,7 @@ export function customPeriod(startStr: string, endStr: string): ReportPeriod {
   // end 解释为"含当天"，转半开区间需 +1 天
   const end = new Date(ey, em - 1, ed + 1);
   if (end.getTime() <= start.getTime()) {
-    throw new Error("结束日期必须晚于起始日期");
+    throw new Error("结束Fecha必须晚于起始Fecha");
   }
   const days = (end.getTime() - start.getTime()) / 86400_000;
   if (days > 5 * 366) {
@@ -81,7 +81,7 @@ export type ReportKpis = {
   inProgress: number;
   closed: number;
   archived: number;
-  archiveRate: number; // 已归档 / 已结案；0 时返回 0
+  archiveRate: number; // 已归档 / 已结案；0 时Volver 0
 };
 
 export type CategoryBreakdown = {
@@ -92,7 +92,7 @@ export type CategoryBreakdown = {
 export type LawyerOutput = {
   userId: string;
   name: string;
-  ownedCount: number; // owner = userId 的案件数
+  ownedCount: number; // owner = userId 的Caso数
   closedCount: number;
   receivedAmount: number; // 收款金额
 };
@@ -145,7 +145,7 @@ export async function getReportData(period: ReportPeriod): Promise<ReportData> {
 
   const archiveRate = closed > 0 ? archived / closed : 0;
 
-  // 类别分布（按本期新收的案件分类）
+  // 类别分布（按本期新收的Caso分类）
   const cats = await prisma.matter.groupBy({
     by: ["category"],
     where: {
@@ -159,7 +159,7 @@ export async function getReportData(period: ReportPeriod): Promise<ReportData> {
     count: c._count._all
   }));
 
-  // 律师产出（按 owner 聚合，本期新收 + 本期已结 + 本期收款）
+  // Abogado产出（按 owner 聚合，本期新收 + 本期已结 + 本期收款）
   const lawyerOwnedRaw = await prisma.matter.groupBy({
     by: ["ownerId"],
     where: {
@@ -177,7 +177,7 @@ export async function getReportData(period: ReportPeriod): Promise<ReportData> {
     _count: { _all: true }
   });
 
-  // 律师本期收款：FeeEntry.type=RECEIVED + occurredAt 在本期 + matter.ownerId
+  // Abogado本期收款：FeeEntry.type=RECEIVED + occurredAt 在本期 + matter.ownerId
   const feeReceivedRaw = await prisma.feeEntry.findMany({
     where: {
       type: "RECEIVED",
@@ -214,7 +214,7 @@ export async function getReportData(period: ReportPeriod): Promise<ReportData> {
     }))
     .sort((a, b) => b.receivedAmount - a.receivedAmount || b.ownedCount - a.ownedCount);
 
-  // 客户应收：FeeEntry RECEIVABLE / RECEIVED 按 matter.primaryClient 聚合
+  // Cliente应收：FeeEntry RECEIVABLE / RECEIVED 按 matter.primaryClient 聚合
   const fees = await prisma.feeEntry.findMany({
     where: {
       type: { in: ["RECEIVABLE", "RECEIVED"] },

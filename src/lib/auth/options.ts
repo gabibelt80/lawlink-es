@@ -17,10 +17,10 @@ export const authOptions: NextAuthOptions = {
   },
   providers: [
     CredentialsProvider({
-      name: "邮箱密码",
+      name: "EmailContraseña",
       credentials: {
-        email: { label: "邮箱", type: "email" },
-        password: { label: "密码", type: "password" }
+        email: { label: "Email", type: "email" },
+        password: { label: "Contraseña", type: "password" }
       },
       async authorize(credentials) {
         const parsed = credentialsSchema.safeParse(credentials);
@@ -53,12 +53,12 @@ export const authOptions: NextAuthOptions = {
           return null;
         }
 
-        // 更新最后登录时间（异步，不阻塞）
+        // Actualizar最后Iniciar sesión时间（异步，不阻塞）
         prisma.user.update({
           where: { id: user.id },
           data: { lastLoginAt: new Date() }
         }).catch(() => {
-          // 忽略更新失败
+          // 忽略Actualizar失败
         });
 
         return {
@@ -89,7 +89,7 @@ export const authOptions: NextAuthOptions = {
       return session;
     }
   },
-  // AGENTS.md §六：AuditLog 必须记录登录/登出
+  // AGENTS.md §六：AuditLog 必须记录Iniciar sesión/登出
   events: {
     async signIn({ user }) {
       await audit({

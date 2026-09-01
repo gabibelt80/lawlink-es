@@ -41,7 +41,7 @@ vi.mock("@/lib/prisma", () => ({
 
 vi.mock("@/lib/auth/session", () => ({
   requireSession: vi.fn().mockResolvedValue({
-    user: { id: "approver-1", role: "ADMIN", name: "审批人" }
+    user: { id: "approver-1", role: "ADMIN", name: "Aprobación人" }
   })
 }));
 
@@ -68,7 +68,7 @@ function validConflictChecks() {
   return [
     {
       conclusion: "DIFFERENT",
-      note: "未命中历史案件冲突",
+      note: "未命中历史Caso冲突",
       queryPayload: {
         queries: [
           { role: "CLIENT_PARTY", name: "甲公司", idNumber: "91330000123456789X" },
@@ -94,7 +94,7 @@ beforeEach(() => {
 });
 
 describe("convertIntakeToMatter", () => {
-  it("按收案当前程序创建首程序，并同步当事人诉讼地位为程序当事人", async () => {
+  it("按收案当前程序Crear首程序，并同步当事人诉讼地位为程序当事人", async () => {
     prismaMock.intake.findUnique.mockResolvedValue({
       id: "intake-1",
       status: "PENDING_CONFIRMATION",
@@ -206,7 +206,7 @@ describe("convertIntakeToMatter", () => {
     });
   });
 
-  it("未运行利益冲突检索时拒绝转正式案件", async () => {
+  it("未运行利益冲突检索时拒绝转正式Caso", async () => {
     prismaMock.intake.findUnique.mockResolvedValue({
       id: "intake-1",
       status: "PENDING_CONFIRMATION",
@@ -217,12 +217,12 @@ describe("convertIntakeToMatter", () => {
     });
 
     await expect(convertIntakeToMatter("intake-1")).rejects.toThrow(
-      "转为正式案件前必须先运行利益冲突检索"
+      "转为正式Caso前必须先运行利益冲突检索"
     );
     expect(prismaMock.$transaction).not.toHaveBeenCalled();
   });
 
-  it("高风险命中没有备注排除理由时拒绝转正式案件", async () => {
+  it("高风险命中没有Observaciones排除理由时拒绝转正式Caso", async () => {
     prismaMock.intake.findUnique.mockResolvedValue({
       id: "intake-1",
       status: "PENDING_CONFIRMATION",

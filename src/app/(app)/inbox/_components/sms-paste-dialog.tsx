@@ -87,11 +87,11 @@ export function SmsPasteDialog({
         <DialogHeader className="border-b border-border px-6 py-4">
           <DialogTitle className="flex items-center gap-2">
             <Inbox className="h-4 w-4 text-primary" />
-            粘贴法院短信
+            粘贴法院SMS
           </DialogTitle>
           <DialogDescription className="text-xs">
             将 12368 / 法院 /
-            电子送达短信粘贴进来。多条短信用空行分隔，勾选&ldquo;批量&rdquo;逐条解析。
+            电子送达SMS粘贴进来。多条SMS用空行分隔，勾选&ldquo;批量&rdquo;逐条解析。
           </DialogDescription>
         </DialogHeader>
 
@@ -111,7 +111,7 @@ export function SmsPasteDialog({
                 checked={batch}
                 onCheckedChange={(v) => setBatch(v === true)}
               />
-              <span>多条短信（按空行分隔）—— 一次提交，逐条解析与匹配</span>
+              <span>多条SMS（按空行分隔）—— 一次Enviar，逐条解析与匹配</span>
             </label>
             <label className="flex items-center gap-2 text-[12px] text-muted-foreground">
               <Checkbox
@@ -122,9 +122,9 @@ export function SmsPasteDialog({
                 用 AI 增强解析{" "}
                 <Sparkles className="inline h-3 w-3 text-primary" /> —— 补{" "}
                 <span className="text-foreground/80">
-                  摘要 / 律师动作 / 紧急程度
+                  摘要 / Abogado动作 / 紧急程度
                 </span>
-                （需先到 设置 → AI 接入 配置）
+                （需先到 Configuración → AI 接入 配置）
               </span>
             </label>
             <label className="flex items-center gap-2 text-[12px] text-muted-foreground">
@@ -135,7 +135,7 @@ export function SmsPasteDialog({
               <span>
                 尝试提取电子送达附件{" "}
                 <FileDown className="inline h-3 w-3 text-primary" /> ——
-                已匹配案件时保存为案件材料；需登录或验证码的平台会标记待处理
+                已匹配Caso时Guardar为Caso材料；需Iniciar sesión或验证码的平台会标记待处理
               </span>
             </label>
           </div>
@@ -217,11 +217,11 @@ export function SmsPasteDialog({
             onClick={() => onOpenChange(false)}
             disabled={pending}
           >
-            取消
+            Cancelar
           </Button>
           <Button onClick={submit} disabled={pending || !text.trim()}>
             {pending && <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />}
-            解析并保存
+            解析并Guardar
           </Button>
         </DialogFooter>
       </DialogContent>

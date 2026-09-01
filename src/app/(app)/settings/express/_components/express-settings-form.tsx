@@ -29,7 +29,7 @@ export function ExpressSettingsForm({ initial }: { initial: Initial }) {
           kuaidi100Customer: k100Customer,
           kuaidi100Key: k100Key
         });
-        toast.success("配置已保存");
+        toast.success("配置已Guardar");
         setKdAppKey("");
         setK100Key("");
       } catch (e) {
@@ -203,7 +203,7 @@ export function ExpressSettingsForm({ initial }: { initial: Initial }) {
         <div className="mt-4 flex justify-end">
           <Button onClick={save} disabled={pending} className="gap-1.5">
             {pending && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
-            保存配置
+            Guardar配置
           </Button>
         </div>
 

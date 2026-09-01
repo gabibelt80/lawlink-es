@@ -33,7 +33,7 @@ export const templateToggleSchema = z.object({
 
 /**
  * 渲染模板生成文书并归档（段 3 模板引擎实现）。
- * - matterId: 目标案件
+ * - matterId: 目标Caso
  * - templateId: 选定模板
  * - folderId: 目标卷宗（可空 = 散件）
  * - overrides: 行内补全的变量（路径化键值，如 {"client.idNumber": "320..."})；行内补全会回写源表

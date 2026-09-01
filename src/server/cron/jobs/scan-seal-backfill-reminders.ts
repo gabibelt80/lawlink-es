@@ -53,8 +53,8 @@ export async function scanSealBackfillReminders(): Promise<SealBackfillReminderS
     }
 
     const matterText = seal.matter
-      ? `案件 ${seal.matter.internalCode}·${seal.matter.title}`
-      : "未关联案件";
+      ? `Caso ${seal.matter.internalCode}·${seal.matter.title}`
+      : "未关联Caso";
 
     await createNotification({
       userId: seal.requestedById,

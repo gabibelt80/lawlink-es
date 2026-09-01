@@ -27,7 +27,7 @@ const baseLitigationIntake = {
 };
 
 describe("intakeCreateSchema", () => {
-  it("诉讼/仲裁类收案必须填写委托方和案件当事人的诉讼地位", () => {
+  it("诉讼/仲裁类收案必须填写委托方和Caso当事人的诉讼地位", () => {
     const result = intakeCreateSchema.safeParse(baseLitigationIntake);
 
     expect(result.success).toBe(false);
@@ -72,7 +72,7 @@ describe("intakeCreateSchema", () => {
     expect(result.success).toBe(true);
   });
 
-  it("可选金额留空时不因 HTML number 输入产生的 NaN 阻断提交", () => {
+  it("可选金额留空时不因 HTML number 输入产生的 NaN 阻断Enviar", () => {
     const result = intakeCreateSchema.safeParse({
       ...baseLitigationIntake,
       ourStanding: "PLAINTIFF",

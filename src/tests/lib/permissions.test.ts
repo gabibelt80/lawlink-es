@@ -12,15 +12,15 @@ describe("isManager", () => {
 describe("matterVisibilityFilter", () => {
   const userId = "user-1";
 
-  it("ADMIN 看全部（返回空 where）", () => {
+  it("ADMIN 看Ver todos（Volver空 where）", () => {
     expect(matterVisibilityFilter(userId, "ADMIN")).toEqual({});
   });
 
-  it("FINANCE 看全部", () => {
+  it("FINANCE 看Ver todos", () => {
     expect(matterVisibilityFilter(userId, "FINANCE")).toEqual({});
   });
 
-  it("LAWYER 看自己拥有或参与的案件", () => {
+  it("LAWYER 看自己拥有或参与的Caso", () => {
     const filter = matterVisibilityFilter(userId, "LAWYER");
     expect(filter).toHaveProperty("OR");
     const or = (filter as { OR: unknown[] }).OR;
@@ -29,7 +29,7 @@ describe("matterVisibilityFilter", () => {
     expect(or[1]).toEqual({ members: { some: { userId } } });
   });
 
-  it("ASSISTANT 只看自己参与的案件", () => {
+  it("ASSISTANT 只看自己参与的Caso", () => {
     const filter = matterVisibilityFilter(userId, "ASSISTANT");
     expect(filter).toEqual({ members: { some: { userId } } });
   });
@@ -38,11 +38,11 @@ describe("matterVisibilityFilter", () => {
 describe("intakeVisibilityFilter", () => {
   const userId = "user-1";
 
-  it("ADMIN 看全部", () => {
+  it("ADMIN 看Ver todos", () => {
     expect(intakeVisibilityFilter(userId, "ADMIN")).toEqual({});
   });
 
-  it("LAWYER 看自己创建或参与的", () => {
+  it("LAWYER 看自己Crear或参与的", () => {
     const filter = intakeVisibilityFilter(userId, "LAWYER");
     expect(filter).toHaveProperty("OR");
     const or = (filter as { OR: unknown[] }).OR;

@@ -87,7 +87,7 @@ export function UsersView({
       <header className="flex items-center justify-between">
         <h2 className="flex items-center gap-2 text-base font-semibold">
           <UsersIcon className="h-4 w-4 text-primary" />
-          用户管理 <span className="text-muted-foreground">({users.length})</span>
+          用户Administrar <span className="text-muted-foreground">({users.length})</span>
         </h2>
         <Button onClick={() => setSheetOpen(true)} size="sm" className="gap-1.5">
           <Plus className="h-4 w-4" />
@@ -99,12 +99,12 @@ export function UsersView({
         <table className="w-full text-sm">
           <thead className="border-b border-border bg-popover">
             <tr className="text-left text-xs uppercase tracking-wider text-muted-foreground">
-              <th className="px-5 py-3 font-medium">姓名 / 邮箱</th>
+              <th className="px-5 py-3 font-medium">姓名 / Email</th>
               <th className="px-5 py-3 font-medium">角色</th>
-              <th className="px-5 py-3 font-medium">案件</th>
-              <th className="px-5 py-3 font-medium">最近登录</th>
-              <th className="px-5 py-3 font-medium">状态</th>
-              <th className="px-5 py-3 font-medium">操作</th>
+              <th className="px-5 py-3 font-medium">Caso</th>
+              <th className="px-5 py-3 font-medium">最近Iniciar sesión</th>
+              <th className="px-5 py-3 font-medium">Estado</th>
+              <th className="px-5 py-3 font-medium">Acciones</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-border">
@@ -145,16 +145,16 @@ function UserRow({
     startTransition(async () => {
       try {
         await updateUserRole({ id: user.id, role });
-        toast.success("角色已更新");
+        toast.success("角色已Actualizar");
       } catch (err) {
-        toast.error("更新失败", { description: err instanceof Error ? err.message : "" });
+        toast.error("Actualizar失败", { description: err instanceof Error ? err.message : "" });
       }
     });
   }
 
   function handleToggleActive() {
     if (
-      !confirm(user.active ? `禁用 ${user.name}？禁用后该用户无法登录。` : `重新激活 ${user.name}？`)
+      !confirm(user.active ? `禁用 ${user.name}？禁用后该用户无法Iniciar sesión。` : `重新激活 ${user.name}？`)
     )
       return;
     startTransition(async () => {
@@ -162,7 +162,7 @@ function UserRow({
         const res = await toggleUserActive(user.id);
         toast.success(res.active ? "已激活" : "已禁用");
       } catch (err) {
-        toast.error("操作失败", { description: err instanceof Error ? err.message : "" });
+        toast.error("Operación fallida", { description: err instanceof Error ? err.message : "" });
       }
     });
   }
@@ -203,7 +203,7 @@ function UserRow({
       <td className="px-5 py-3 font-mono text-xs text-muted-foreground tabular">
         {user.lastLoginAt
           ? new Date(user.lastLoginAt).toLocaleDateString("zh-CN")
-          : "从未登录"}
+          : "从未Iniciar sesión"}
       </td>
       <td className="px-5 py-3">
         <Badge
@@ -223,7 +223,7 @@ function UserRow({
             className="h-7 gap-1 text-xs"
           >
             <KeyRound className="h-3.5 w-3.5" />
-            改密码
+            改Contraseña
           </Button>
           {!isSelf && (
             <Button
@@ -283,11 +283,11 @@ function CreateUserSheet({
     startTransition(async () => {
       try {
         await createUser(values);
-        toast.success("用户已创建");
+        toast.success("用户已Crear");
         reset();
         onOpenChange(false);
       } catch (err) {
-        toast.error("创建失败", { description: err instanceof Error ? err.message : "" });
+        toast.error("Crear失败", { description: err instanceof Error ? err.message : "" });
       }
     });
   }
@@ -298,7 +298,7 @@ function CreateUserSheet({
         <SheetHeader className="border-b border-border bg-background px-6 py-4">
           <SheetTitle>新增用户</SheetTitle>
           <SheetDescription className="text-xs">
-            初始密码可让用户登录后自行修改
+            初始Contraseña可让用户Iniciar sesión后自行修改
           </SheetDescription>
         </SheetHeader>
 
@@ -307,10 +307,10 @@ function CreateUserSheet({
             <SheetField label="姓名" required error={errors.name?.message}>
               <Input {...register("name")} />
             </SheetField>
-            <SheetField label="邮箱" required error={errors.email?.message}>
+            <SheetField label="Email" required error={errors.email?.message}>
               <Input type="email" className="font-mono" {...register("email")} />
             </SheetField>
-            <SheetField label="初始密码（至少 8 位）" required error={errors.password?.message}>
+            <SheetField label="初始Contraseña（至少 8 位）" required error={errors.password?.message}>
               <Input type="text" className="font-mono" {...register("password")} />
             </SheetField>
             <SheetField label="角色" required>
@@ -344,11 +344,11 @@ function CreateUserSheet({
               onClick={() => onOpenChange(false)}
               disabled={isPending}
             >
-              取消
+              Cancelar
             </Button>
             <Button type="submit" disabled={isPending} className="gap-1.5">
               {isPending && <Loader2 className="h-4 w-4 animate-spin" />}
-              创建
+              Crear
             </Button>
           </SheetFooter>
         </form>
@@ -370,13 +370,13 @@ function ResetPasswordDialog({
   function handleReset() {
     if (!user) return;
     if (pwd.length < 8) {
-      toast.warning("密码至少 8 位");
+      toast.warning("Contraseña至少 8 位");
       return;
     }
     startTransition(async () => {
       try {
         await resetUserPassword({ id: user.id, newPassword: pwd });
-        toast.success(`已重置 ${user.name} 的密码`);
+        toast.success(`已重置 ${user.name} 的Contraseña`);
         setPwd("");
         onClose();
       } catch (err) {
@@ -389,13 +389,13 @@ function ResetPasswordDialog({
     <Dialog open={!!user} onOpenChange={(o) => !o && onClose()}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>重置 {user?.name} 的密码</DialogTitle>
+          <DialogTitle>重置 {user?.name} 的Contraseña</DialogTitle>
           <DialogDescription>
-            管理员重置后，用户使用新密码登录。建议线下告知用户。
+            Administrar员重置后，用户使用新ContraseñaIniciar sesión。建议线下告知用户。
           </DialogDescription>
         </DialogHeader>
         <div className="space-y-2">
-          <Label className="text-xs">新密码（至少 8 位）</Label>
+          <Label className="text-xs">新Contraseña（至少 8 位）</Label>
           <Input
             type="text"
             className="font-mono"
@@ -405,7 +405,7 @@ function ResetPasswordDialog({
         </div>
         <DialogFooter>
           <Button variant="outline" onClick={onClose} disabled={isPending}>
-            取消
+            Cancelar
           </Button>
           <Button onClick={handleReset} disabled={isPending}>
             {isPending && <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />}

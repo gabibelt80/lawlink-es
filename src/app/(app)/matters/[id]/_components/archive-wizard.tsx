@@ -112,7 +112,7 @@ export function ArchiveWizardDialog({ matterId, open, onOpenChange }: Props) {
     setSummaryFromClose(false);
     refreshPrep()
       .catch((err) => {
-        toast.error("加载归档数据失败", { description: err instanceof Error ? err.message : "" });
+        toast.error("Cargar归档数据失败", { description: err instanceof Error ? err.message : "" });
         onOpenChange(false);
       })
       .finally(() => setLoading(false));
@@ -178,8 +178,8 @@ export function ArchiveWizardDialog({ matterId, open, onOpenChange }: Props) {
         });
         toast.success(
           result.status === "APPROVED"
-            ? `案件已归档（${result.archiveNo}）`
-            : `归档申请已提交（${result.archiveNo}），等待管理员审批`,
+            ? `Caso已归档（${result.archiveNo}）`
+            : `归档申请已Enviar（${result.archiveNo}），等待Administrar员Aprobación`,
           {
             description: "卷宗封皮 + 目录已自动生成至归档卷宗"
           }
@@ -198,10 +198,10 @@ export function ArchiveWizardDialog({ matterId, open, onOpenChange }: Props) {
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <FileCheck2 className="h-5 w-5 text-[#9B7BF7]" />
-            归档案件
+            归档Caso
           </DialogTitle>
           <DialogDescription>
-            提交后进入管理员审批；审批通过后案件转为只读，并生成卷宗封皮和卷宗目录入归档卷宗。
+            Enviar后进入Administrar员Aprobación；Aprobación通过后Caso转为只读，并生成卷宗封皮和卷宗目录入归档卷宗。
           </DialogDescription>
         </DialogHeader>
 
@@ -235,7 +235,7 @@ export function ArchiveWizardDialog({ matterId, open, onOpenChange }: Props) {
                     </Select>
                   </div>
                   <div className="space-y-1.5">
-                    <Label className="text-xs">结案日期 *</Label>
+                    <Label className="text-xs">结案Fecha *</Label>
                     <Input
                       type="date"
                       value={completedAt}
@@ -259,7 +259,7 @@ export function ArchiveWizardDialog({ matterId, open, onOpenChange }: Props) {
                     {summaryFromClose && (
                       <span className="inline-flex items-center gap-1 text-[10px] text-primary">
                         <Sparkles className="h-3 w-3" />
-                        已引用结案时填写的小结，可直接编辑
+                        已引用结案时填写的小结，可直接Editar
                       </span>
                     )}
                   </div>
@@ -269,7 +269,7 @@ export function ArchiveWizardDialog({ matterId, open, onOpenChange }: Props) {
                       setSummary(e.target.value);
                       setSummaryFromClose(false);
                     }}
-                    placeholder="案件办理过程概述、关键节点、得失复盘等"
+                    placeholder="Caso办理过程概述、关键节点、得失复盘等"
                     rows={3}
                   />
                 </div>
@@ -394,19 +394,19 @@ export function ArchiveWizardDialog({ matterId, open, onOpenChange }: Props) {
                       onCheckedChange={(v) => setForceWithMissing(!!v)}
                     />
                     <span className="text-xs text-destructive">
-                      强制归档（缺项 ID 会记入档案，可在归档详情查看）
+                      强制归档（缺项 ID 会记入档案，可在归档详情Ver）
                     </span>
                   </label>
                 </Alert>
               )}
 
-              {/* v0.16: 审批流提示 */}
+              {/* v0.16: Aprobación流提示 */}
               <Alert className="border-primary/30 bg-primary/5">
                 <AlertTitle className="text-xs font-medium text-primary">
-                  归档审批流程
+                  归档Aprobación流程
                 </AlertTitle>
                 <AlertDescription className="mt-0.5 text-[11.5px] text-muted-foreground">
-                  提交后状态为「归档中」，需管理员审批通过才正式归档。
+                  Enviar后Estado为「归档中」，需Administrar员Aprobación通过才正式归档。
                 </AlertDescription>
               </Alert>
             </div>
@@ -415,7 +415,7 @@ export function ArchiveWizardDialog({ matterId, open, onOpenChange }: Props) {
 
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)} disabled={isPending}>
-            取消
+            Cancelar
           </Button>
           <Button
             onClick={handleSubmit}

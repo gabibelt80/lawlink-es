@@ -31,7 +31,7 @@ export type ScheduleItem = {
   matterId: string | null;
   matterCode: string | null; // internalCode，详情页路由键
   procedure?: string;
-  daysUntil: number; // 距今天数（0=今天）
+  daysUntil: number; // 距Hoy数（0=Hoy）
 };
 
 export type HeroData = {
@@ -97,7 +97,7 @@ export async function getDashboardKpis(): Promise<KpiItem[]> {
   return [
     {
       key: "in_progress",
-      label: "办理中案件",
+      label: "办理中Caso",
       value: inProgress,
       trend: { direction: "up", text: `${inProgress} 件` },
       sparkline: spark(inProgress)

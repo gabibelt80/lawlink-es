@@ -22,7 +22,7 @@ const saveSchema = z.object({
 async function requireManager() {
   const session = await requireSession();
   if (session.user.role !== "ADMIN" && session.user.role !== "PRINCIPAL_LAWYER") {
-    throw new Error("仅管理员 / 主任律师可配置提醒推送");
+    throw new Error("仅Administrar员 / 主任Abogado可配置Recordatorios推送");
   }
   return session;
 }
@@ -52,7 +52,7 @@ export async function saveWebhookSettingsAction(input: z.infer<typeof saveSchema
 export async function sendTestWebhookAction() {
   const session = await requireManager();
   const result = await sendWebhookText(
-    `LawLink 测试消息：提醒推送配置成功（发起人：${session.user.name ?? session.user.email}）`
+    `LawLink 测试消息：Recordatorios推送配置成功（发起人：${session.user.name ?? session.user.email}）`
   );
   if (result.skipped) throw new Error("推送未启用或未配置机器人地址");
   if (!result.ok) throw new Error(`发送失败：${result.error ?? "未知错误"}`);

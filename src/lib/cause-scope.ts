@@ -7,7 +7,7 @@ export type CauseScope = {
 };
 
 // 现行《仲裁法》(2025 修订，2026-03-01 施行)第三条：
-// 平等主体之间的合同纠纷和其他财产权益纠纷可以仲裁；身份关系纠纷和行政争议不能仲裁。
+// 平等主体之间的合同纠纷和其他财产权益纠纷可以仲裁；身份关系纠纷和Administrativo争议不能仲裁。
 export const COMMERCIAL_ARBITRATION_CAUSE_INCLUDE_PREFIXES = [
   "CC-3", // 物权纠纷
   "CC-4", // 合同、准合同纠纷

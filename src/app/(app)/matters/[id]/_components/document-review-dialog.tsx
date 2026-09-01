@@ -122,7 +122,7 @@ export function DocumentReviewDialog({
     try {
       const rec = await getReviewRecord({ recordId: entry.id });
       if (!rec) {
-        toast.error("记录不存在或已删除");
+        toast.error("记录不存在或已Eliminar");
         return;
       }
       setView({
@@ -133,7 +133,7 @@ export function DocumentReviewDialog({
       });
       setSaved(false);
     } catch (err) {
-      toast.error("加载历史详情失败", {
+      toast.error("Cargar历史详情失败", {
         description: err instanceof Error ? err.message : ""
       });
     }
@@ -150,9 +150,9 @@ export function DocumentReviewDialog({
         items: view.result.items
       });
       setSaved(true);
-      toast.success("已保存审查结果到本案", { description: res.documentName });
+      toast.success("已Guardar审查结果到本案", { description: res.documentName });
     } catch (err) {
-      toast.error("保存失败", {
+      toast.error("Guardar失败", {
         description: err instanceof Error ? err.message : ""
       });
     } finally {
@@ -188,7 +188,7 @@ export function DocumentReviewDialog({
                 type="button"
                 onClick={() => setView({ kind: "list" })}
                 className="text-muted-foreground hover:text-foreground"
-                title="返回列表"
+                title="Volver列表"
               >
                 <ChevronLeft className="h-4 w-4" />
               </button>
@@ -197,7 +197,7 @@ export function DocumentReviewDialog({
             AI 文书审查
           </DialogTitle>
           <DialogDescription className="text-xs">
-            {view.kind === "list" && "查看历史或发起新审查"}
+            {view.kind === "list" && "Ver历史或发起新审查"}
             {view.kind === "result" &&
               `${view.result.documentName}${view.result.truncated ? "（已截断前 6000 字）" : ""}`}
             {view.kind === "history-detail" &&
@@ -238,7 +238,7 @@ export function DocumentReviewDialog({
                   </span>
                 </h4>
                 {loadingHistory ? (
-                  <p className="py-6 text-center text-xs text-muted-foreground">加载中…</p>
+                  <p className="py-6 text-center text-xs text-muted-foreground">Cargar中…</p>
                 ) : history.length === 0 ? (
                   <p className="py-6 text-center text-xs text-muted-foreground">
                     还没有 AI 审查记录
@@ -286,7 +286,7 @@ export function DocumentReviewDialog({
             (currentItems.length === 0 ? (
               <div className="py-10 text-center text-sm text-muted-foreground">
                 {view.kind === "result" && view.isNew
-                  ? "AI 未发现明显问题（不代表无瑕疵，请律师人工复核）"
+                  ? "AI 未发现明显问题（不代表无瑕疵，请Abogado人工复核）"
                   : "本次审查无条目"}
               </div>
             ) : (
@@ -354,7 +354,7 @@ export function DocumentReviewDialog({
               )
             )}
             <Button type="button" variant="ghost" size="sm" onClick={() => onOpenChange(false)}>
-              关闭
+              Cerrar
             </Button>
           </div>
         </div>

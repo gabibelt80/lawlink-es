@@ -100,7 +100,7 @@ export function TemplatesView({ templates }: { templates: StageTemplate[] }) {
           </div>
           <Button size="sm" onClick={() => setEditing(true)} className="gap-1.5">
             <Pencil className="h-3.5 w-3.5" />
-            {current ? "编辑" : "新建模板"}
+            {current ? "Editar" : "新建模板"}
           </Button>
         </div>
 
@@ -192,10 +192,10 @@ function EditTemplateDialog({
           name,
           steps: cleaned
         });
-        toast.success("模板已保存");
+        toast.success("模板已Guardar");
         onClose();
       } catch (err) {
-        toast.error("保存失败", { description: err instanceof Error ? err.message : "" });
+        toast.error("Guardar失败", { description: err instanceof Error ? err.message : "" });
       }
     });
   }
@@ -204,14 +204,14 @@ function EditTemplateDialog({
     <Dialog open onOpenChange={(o) => !o && onClose()}>
       <DialogContent className="max-w-3xl">
         <DialogHeader>
-          <DialogTitle>编辑模板 — {procedureTypeLabel[procedureType]}</DialogTitle>
+          <DialogTitle>Editar模板 — {procedureTypeLabel[procedureType]}</DialogTitle>
           <DialogDescription>
-            修改后只影响 <span className="text-foreground">新创建</span> 的程序，已有程序的阶段不受影响
+            修改后只影响 <span className="text-foreground">新Crear</span> 的程序，已有程序的阶段不受影响
           </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-1.5">
-          <Label className="text-xs">模板名称</Label>
+          <Label className="text-xs">模板Nombre</Label>
           <Input value={name} onChange={(e) => setName(e.target.value)} />
         </div>
 
@@ -220,7 +220,7 @@ function EditTemplateDialog({
             <Label className="text-xs">阶段流程</Label>
             <Button variant="outline" size="sm" onClick={addStep} className="h-7 gap-1">
               <Plus className="h-3.5 w-3.5" />
-              添加阶段
+              Agregar阶段
             </Button>
           </div>
           <ol className="space-y-2 max-h-96 overflow-y-auto pr-1">
@@ -233,7 +233,7 @@ function EditTemplateDialog({
                   <Input
                     value={s.name}
                     onChange={(e) => updateStep(idx, { name: e.target.value })}
-                    placeholder="阶段名称"
+                    placeholder="阶段Nombre"
                     className="h-8 flex-1"
                   />
                   <Button
@@ -252,11 +252,11 @@ function EditTemplateDialog({
 
         <DialogFooter>
           <Button variant="outline" onClick={onClose} disabled={isPending}>
-            取消
+            Cancelar
           </Button>
           <Button onClick={handleSave} disabled={isPending} className="gap-1.5">
             {isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
-            保存模板
+            Guardar模板
           </Button>
         </DialogFooter>
       </DialogContent>

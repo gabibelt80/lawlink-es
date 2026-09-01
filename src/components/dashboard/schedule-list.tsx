@@ -73,9 +73,9 @@ function ScheduleRow({ item }: { item: ScheduleItem }) {
   const subject = item.clientName ?? item.matter;
   const countdown =
     item.daysUntil <= 0
-      ? "今天"
+      ? "Hoy"
       : item.daysUntil === 1
-        ? "明天"
+        ? "Mañana"
         : `${item.daysUntil}天后`;
   const urgent = item.daysUntil <= 3;
 

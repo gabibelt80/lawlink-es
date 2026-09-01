@@ -85,7 +85,7 @@ export function UploadDialog({
       return;
     }
     if (!name.trim()) {
-      toast.warning("名称必填");
+      toast.warning("Nombre必填");
       return;
     }
     startTransition(async () => {
@@ -114,7 +114,7 @@ export function UploadDialog({
     });
   }
 
-  // 可被替代的旧版：仅显示同分类且没有更新版本的
+  // 可被替代的旧版：仅显示同分类且没有Actualizar版本的
   const replaceableFiles = existingFiles.filter(
     (f) => !f.hasNewerVersion
   );
@@ -150,7 +150,7 @@ export function UploadDialog({
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
-              <Label className="text-[11px]">名称 *</Label>
+              <Label className="text-[11px]">Nombre *</Label>
               <Input
                 value={name}
                 onChange={(e) => setName(e.target.value)}
@@ -179,7 +179,7 @@ export function UploadDialog({
           </div>
 
           <div>
-            <Label className="text-[11px]">描述（可选）</Label>
+            <Label className="text-[11px]">Descripción（可选）</Label>
             <Textarea
               value={description}
               onChange={(e) => setDescription(e.target.value)}
@@ -221,7 +221,7 @@ export function UploadDialog({
 
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)} disabled={isPending}>
-            取消
+            Cancelar
           </Button>
           <Button onClick={submit} disabled={isPending || !file}>
             {isPending && <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />}
