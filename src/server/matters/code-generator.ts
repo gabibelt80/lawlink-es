@@ -38,9 +38,9 @@ export async function generateInternalCode(category: MatterCategory): Promise<st
 }
 
 /**
- * v0.42 生成所内案号（项 11）：按「Configuración → 律所信息」的模板渲染。
+ * v0.42 生成所内案号（ítems 11）：按「Configuración → 律所信息」的模板渲染。
  * 计数器按 年 + 类别 独立自增，key 形如 `firm-caseno-2026-CC`。
- * 模板为空时回退默认；与 internalCode 计数器互不干扰。
+ * 模板为空时回退默认；y internalCode 计数器互不干扰。
  */
 export async function generateFirmCaseNo(category: MatterCategory): Promise<string> {
   const year = new Date().getFullYear();

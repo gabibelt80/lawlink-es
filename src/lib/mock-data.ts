@@ -1,5 +1,5 @@
 /**
- * 工作台 mock 数据。Stage 1 用来打磨 UI，Stage 2 替换为 Prisma 查询。
+ * Panel de trabajo mock 数据。Stage 1 用来打磨 UI，Stage 2 替换为 Prisma 查询。
  */
 
 export type TrendDirection = "up" | "down" | "warn";
@@ -23,14 +23,14 @@ export const dashboardKpis: KpiItem[] = [
   },
   {
     key: "pending",
-    label: "待确认收案",
+    label: "待Confirmar收案",
     value: 5,
     trend: { direction: "warn", text: "2 待处理" },
     sparkline: [2, 3, 3, 4, 4, 3, 5, 5, 4, 5, 5, 5, 5, 5]
   },
   {
     key: "deadline",
-    label: "近 7 天期限",
+    label: "近 7 díasPlazo",
     value: 7,
     trend: { direction: "warn", text: "2 临近" },
     sparkline: [4, 5, 5, 6, 5, 6, 6, 7, 7, 8, 7, 7, 7, 7]
@@ -99,7 +99,7 @@ export const scheduleItems: ScheduleItem[] = [
     weekday: "周六",
     time: "23:59",
     type: "deadline",
-    title: "上诉期限",
+    title: "上诉Plazo",
     matter: "明远科技股权转让"
   }
 ];
@@ -123,7 +123,7 @@ export const todoItems: TodoItem[] = [
   {
     id: "t2",
     severity: "urgent",
-    title: "拟答辩状（已逾期 1 天）",
+    title: "拟答辩状（已Vencido 1 días）",
     detail: "LL-2026-CC-0015",
     href: "/matters/m-0015"
   },
@@ -158,5 +158,5 @@ export const categoryDistribution = [
   { name: "顾问", value: 8, code: "GC", color: "#9B7BF7" },
   { name: "Penal", value: 2, code: "CR", color: "#FB923C" },
   { name: "Administrativo", value: 1, code: "AD", color: "#FBBF24" },
-  { name: "专项", value: 1, code: "SP", color: "#60A5FA" }
+  { name: "专ítems", value: 1, code: "SP", color: "#60A5FA" }
 ];

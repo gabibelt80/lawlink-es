@@ -165,7 +165,7 @@ export function AddProcedureSheet({
         reset();
         onOpenChange(false);
       } catch (err) {
-        toast.error("Agregar失败", {
+        toast.error("AgregarError", {
           description: err instanceof Error ? err.message : ""
         });
       }
@@ -323,13 +323,13 @@ const deadlineCategoryLabel: Record<
   string
 > = {
   LIMITATION: "诉讼时效",
-  EVIDENCE: "举证期限",
+  EVIDENCE: "举证Plazo",
   APPEAL: "上诉期",
   PERFORMANCE: "履行期",
   RESPONSE: "答辩期",
   ENFORCEMENT: "执行申请",
   ARBITRATION_SET_ASIDE: "撤销仲裁期",
-  PRESERVATION: "Preservación期限",
+  PRESERVATION: "PreservaciónPlazo",
   CUSTOM: "其他"
 };
 
@@ -341,7 +341,7 @@ export function AddDeadlineDialog({
 }: {
   open: boolean;
   onOpenChange: (o: boolean) => void;
-  /** v0.45：Recordatorios全案聚合，新增期限需明确所处程序 */
+  /** v0.45：Recordatorios全案聚合，新增Plazo需明确所处程序 */
   procedures: { id: string; label: string }[];
   defaultProcedureId: string;
 }) {
@@ -368,7 +368,7 @@ export function AddDeadlineDialog({
   const procedureId = useWatch({ control, name: "procedureId" });
   const category = useWatch({ control, name: "category" });
 
-  // v0.49：法定期限规则（按当前程序类型 + Caso类别过滤，Ver todos经元典核验）
+  // v0.49：法定Plazo规则（按当前程序类型 + Caso类别过滤，Ver todos经pesos典核验）
   type RuleOption = Awaited<ReturnType<typeof listDeadlineRulesForProcedure>>[number];
   const [rules, setRules] = useState<RuleOption[]>([]);
   const [rulesLoading, setRulesLoading] = useState(false);
@@ -425,7 +425,7 @@ export function AddDeadlineDialog({
       { shouldDirty: true }
     );
     setValue("remindDays", selectedRule.remindDays, { shouldDirty: true });
-    toast.success("已按法定期限填入，可再人工调整", { description: HOLIDAY_NOTE });
+    toast.success("已按法定Plazo填入，可再人工调整", { description: HOLIDAY_NOTE });
   }
 
   // 打开时把所处程序默认值同步为当前选中程序
@@ -437,11 +437,11 @@ export function AddDeadlineDialog({
     startTransition(async () => {
       try {
         await addDeadline(values);
-        toast.success("期限已Agregar");
+        toast.success("Plazo已Agregar");
         reset();
         onOpenChange(false);
       } catch (err) {
-        toast.error("Agregar失败", {
+        toast.error("AgregarError", {
           description: err instanceof Error ? err.message : ""
         });
       }
@@ -452,7 +452,7 @@ export function AddDeadlineDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="flex max-h-[85vh] max-w-md flex-col gap-0 p-0">
         <DialogHeader className="border-b border-border px-6 py-4">
-          <DialogTitle>Agregar期限</DialogTitle>
+          <DialogTitle>AgregarPlazo</DialogTitle>
         </DialogHeader>
 
         <form onSubmit={handleSubmit(onSubmit)} className="flex flex-1 flex-col overflow-hidden">
@@ -479,14 +479,14 @@ export function AddDeadlineDialog({
               <section className="space-y-2.5 rounded-md border border-primary/25 bg-primary/[0.04] p-3">
                 <div className="flex items-center gap-1.5 text-[12px] font-medium text-foreground/85">
                   <Scale className="h-3.5 w-3.5 text-primary" strokeWidth={1.8} />
-                  按法定期限生成
+                  按法定Plazo生成
                   {rulesLoading && <Loader2 className="h-3 w-3 animate-spin text-muted-foreground" />}
                 </div>
                 <div className="space-y-1.5">
-                  <Label className="text-xs text-muted-foreground">法定期限规则</Label>
+                  <Label className="text-xs text-muted-foreground">法定Plazo规则</Label>
                   <Select value={selectedRuleId || undefined} onValueChange={setSelectedRuleId}>
                     <SelectTrigger className="bg-background">
-                      <SelectValue placeholder="选择适用的法定期限" />
+                      <SelectValue placeholder="选择适用的法定Plazo" />
                     </SelectTrigger>
                     <SelectContent>
                       {rules.map((rule) => (
@@ -533,7 +533,7 @@ export function AddDeadlineDialog({
                       {selectedRule.description && <p>{selectedRule.description}</p>}
                       {computedDue && (
                         <p className="font-medium text-foreground/85">
-                          到期日：
+                          Fecha de vencimiento：
                           <span className="font-mono tabular">
                             {formatLocalDate(computedDue)}
                           </span>
@@ -558,14 +558,14 @@ export function AddDeadlineDialog({
               </section>
             )}
 
-            <Field label="期限Nombre" required error={errors.title?.message}>
+            <Field label="PlazoNombre" required error={errors.title?.message}>
               <Input
-                placeholder="如：举证截止 / 上诉到期日"
+                placeholder="如：举证截止 / 上诉Fecha de vencimiento"
                 {...register("title")}
               />
             </Field>
 
-            <Field label="期限类型">
+            <Field label="Plazo类型">
               <Select
                 value={category}
                 onValueChange={(v) =>
@@ -585,7 +585,7 @@ export function AddDeadlineDialog({
               </Select>
             </Field>
 
-            <Field label="到期日" required>
+            <Field label="Fecha de vencimiento" required>
               <Input type="date" {...register("dueAt", { valueAsDate: true })} />
             </Field>
 
@@ -596,7 +596,7 @@ export function AddDeadlineDialog({
               />
             </Field>
 
-            <Field label="提前Recordatorios（天）">
+            <Field label="提前Recordatorios（días）">
               <Input
                 type="number"
                 min={0}
@@ -618,7 +618,7 @@ export function AddDeadlineDialog({
             </Button>
             <Button type="submit" disabled={isPending} className="gap-1.5">
               {isPending && <Loader2 className="h-4 w-4 animate-spin" />}
-              Agregar期限
+              AgregarPlazo
             </Button>
           </DialogFooter>
         </form>
@@ -642,7 +642,7 @@ export function AddHearingDialog({
   procedures: { id: string; label: string }[];
   defaultProcedureId: string;
   hearingCounts?: Record<string, number>;
-  /** 各程序附加信息（审理法院等），用于预填 */
+  /** 各程序附加信息（审理法院etc.），用于预填 */
   proceduresDetail?: Record<string, { handlingAgency?: string | null; panel?: string | null; jurisdiction?: string | null }>;
 }) {
   const [isPending, startTransition] = useTransition();
@@ -713,7 +713,7 @@ export function AddHearingDialog({
         }
         toast.success("传票识别完成，请核对信息");
       } catch (err) {
-        toast.error("传票识别失败", {
+        toast.error("传票识别Error", {
           description: err instanceof Error ? err.message : "请手动填写"
         });
       } finally {
@@ -732,7 +732,7 @@ export function AddHearingDialog({
         reset();
         onOpenChange(false);
       } catch (err) {
-        toast.error("Agregar失败", {
+        toast.error("AgregarError", {
           description: err instanceof Error ? err.message : ""
         });
       }

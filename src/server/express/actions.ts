@@ -112,7 +112,7 @@ export async function createExpress(input: z.infer<typeof expressCreateSchema>) 
     await assertMatterWritable(data.matterId);
   }
 
-  // 先尝试一次跟踪（失败不阻塞）
+  // 先尝试一次跟踪（Error不阻塞）
   let lastState: string | null = null;
   let tracesJson: Prisma.InputJsonValue | undefined = undefined;
   let lastUpdateAt: Date | null = null;

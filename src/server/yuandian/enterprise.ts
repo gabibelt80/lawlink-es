@@ -104,7 +104,7 @@ async function loadPartyWithMatter(partyId: string) {
 }
 
 /**
- * 把某个对方 Party 绑定到元典企业（写入企业 ID、统一社会信用代码、企业名）
+ * 把某个对方 Party 绑定到pesos典企业（写入企业 ID、统一社会信用代码、企业名）
  *
  * 权限：当前用户对该 Matter 有修改权限（owner 或 manager）
  */
@@ -151,7 +151,7 @@ export async function bindPartyToEnterprise(input: {
 }
 
 /**
- * 解绑 Party 与元典企业。
+ * 解绑 Party ypesos典企业。
  *
  * 权限：当前用户对该 Matter 有修改权限。
  */
@@ -205,7 +205,7 @@ export async function getEnterpriseSummaryByParty(
   );
 
   if (!party.enterpriseId && !party.enterpriseSocialCode) {
-    throw new Error("此当事人尚未绑定元典企业");
+    throw new Error("此当事人尚未绑定pesos典企业");
   }
 
   const settings = await getYuandianSettings();

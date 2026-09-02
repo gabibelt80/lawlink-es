@@ -15,10 +15,10 @@ export function ReminderScanButton() {
         const r = await triggerDueReminderScan();
         const total = r.deadlineNotified + r.hearingNotified;
         toast.success(`扫描完成：新推送 ${total} 条`, {
-          description: `期限 ${r.deadlineNotified}·开庭 ${r.hearingNotified}（去重跳过 ${r.suppressed}）`
+          description: `Plazo ${r.deadlineNotified}·开庭 ${r.hearingNotified}（去重跳过 ${r.suppressed}）`
         });
       } catch (err) {
-        toast.error("扫描失败", { description: err instanceof Error ? err.message : "" });
+        toast.error("扫描Error", { description: err instanceof Error ? err.message : "" });
       }
     });
   }

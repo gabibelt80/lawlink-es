@@ -2,9 +2,9 @@
  * v0.20: 律所报表数据聚合（纯 read-only，无 use server）
  *
  * 4 个口径（来自 PRD 后续规划）：
- *  - Caso量：本期新收 / 在办 / 已结案 / 已归档
+ *  - Caso量：本期新收 / 在办 / 已Cerrar caso / 已归档
  *  - 类别分布：按 MatterCategory
- *  - Abogado产出：每个Abogado承办Caso数 / 已结案数 / 收款金额
+ *  - Abogado产出：每个Abogado承办Caso数 / 已Cerrar caso数 / 收款Monto
  *  - Cliente应收：按Cliente聚合 应收 - 已收
  *
  * 时间范围：调用方传 [start, end]，按 Matter.createdAt 落入本期为「新收」。
@@ -60,7 +60,7 @@ export function customPeriod(startStr: string, endStr: string): ReportPeriod {
   const [sy, sm, sd] = startStr.split("-").map(Number);
   const [ey, em, ed] = endStr.split("-").map(Number);
   const start = new Date(sy, sm - 1, sd);
-  // end 解释为"含当天"，转半开区间需 +1 天
+  // end 解释为"含当días"，转半开区间需 +1 días
   const end = new Date(ey, em - 1, ed + 1);
   if (end.getTime() <= start.getTime()) {
     throw new Error("结束Fecha必须晚于起始Fecha");
@@ -81,7 +81,7 @@ export type ReportKpis = {
   inProgress: number;
   closed: number;
   archived: number;
-  archiveRate: number; // 已归档 / 已结案；0 时Volver 0
+  archiveRate: number; // 已归档 / 已Cerrar caso；0 时Volver 0
 };
 
 export type CategoryBreakdown = {
@@ -94,7 +94,7 @@ export type LawyerOutput = {
   name: string;
   ownedCount: number; // owner = userId 的Caso数
   closedCount: number;
-  receivedAmount: number; // 收款金额
+  receivedAmount: number; // 收款Monto
 };
 
 export type ClientReceivable = {

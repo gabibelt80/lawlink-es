@@ -1,7 +1,7 @@
 "use server";
 
 /**
- * v0.20: 把检索到的元典类案Guardar为Caso Document（category=JUDGMENT）
+ * v0.20: 把检索到的pesos典类案Guardar为Caso Document（category=JUDGMENT）
  *
  * 跳过 uploadDocument 的 file validation —— 这是 LawLink 内部生成的 md 文本，
  * 不走"用户上传"路径。
@@ -34,7 +34,7 @@ export type SaveCaseInput = {
 };
 
 function safeFileName(ah: string): string {
-  // 案号含特殊字符（）等，做最小清理用于文件名
+  // 案号含特殊字符（）etc.，做最小清理用于文件名
   return ah.replace(/[\\/:*?"<>|]/g, "").slice(0, 80);
 }
 
@@ -46,11 +46,11 @@ function buildMarkdown(c: SaveCaseInput["caseHit"]): string {
     `- **案号**：${c.ah}`,
     `- **法院**：${c.jbdw}`,
     `- **裁判Fecha**：${c.cprq}`,
-    `- **案由**：${c.ay.join("、")}`,
+    `- **Causa**：${c.ay.join("、")}`,
     `- **Caso类别**：${c.ajlb}`,
     `- **地区**：${c.xzqh_p}`,
     `- **文书种类**：${c.wszl}`,
-    `- **元典链接**：${c.detailUrl}`,
+    `- **pesos典Enlace**：${c.detailUrl}`,
     `- **Guardar时间**：${now}`,
     "",
     "---",
@@ -93,7 +93,7 @@ export async function saveCaseToMatter(input: SaveCaseInput): Promise<{
       size: buf.byteLength,
       sha256: hash,
       encrypted: false,
-      tags: ["类案", "元典"]
+      tags: ["类案", "pesos典"]
     },
     select: { id: true, name: true }
   });
@@ -140,7 +140,7 @@ export type SaveVectorCaseInput = {
 };
 
 function formatJaDate(n: number | undefined | null): string {
-  if (!n) return "未知";
+  if (!n) return "Desconocido";
   const s = String(n);
   if (s.length !== 8) return s;
   return `${s.slice(0, 4)}-${s.slice(4, 6)}-${s.slice(6, 8)}`;
@@ -148,21 +148,21 @@ function formatJaDate(n: number | undefined | null): string {
 
 function buildVectorMarkdown(c: SaveVectorCaseInput["caseHit"]): string {
   const now = new Date().toLocaleString("zh-CN");
-  // 案由：优先 anyou（名字），否则 ay code 兜底
+  // Causa：优先 anyou（名字），否则 ay code 兜底
   const ay =
-    (c.anyou && c.anyou.length ? c.anyou : c.ay)?.join("、") || "（无案由信息）";
+    (c.anyou && c.anyou.length ? c.anyou : c.ay)?.join("、") || "（无Causa信息）";
   return [
     `# 类案存档（语义检索）：${c.title}`,
     "",
     `- **案号**：${c.ah || "—"}`,
     `- **法院**：${c.jbdw || "—"}`,
     `- **裁判Fecha**：${formatJaDate(c.jaDate)}`,
-    `- **案由**：${ay}`,
+    `- **Causa**：${ay}`,
     `- **Caso类别**：${c.ajlb}`,
     `- **地区**：${c.xzqh_p}`,
     `- **文书种类**：${c.wszl}`,
     `- **相似度评分**：${c.score.toFixed(4)}`,
-    `- **元典链接**：${c.detailUrl}`,
+    `- **pesos典Enlace**：${c.detailUrl}`,
     `- **Guardar时间**：${now}`,
     "",
     "---",
@@ -207,7 +207,7 @@ export async function saveVectorCaseToMatter(input: SaveVectorCaseInput): Promis
       size: buf.byteLength,
       sha256: hash,
       encrypted: false,
-      tags: ["类案", "元典", "语义"]
+      tags: ["类案", "pesos典", "语义"]
     },
     select: { id: true, name: true }
   });

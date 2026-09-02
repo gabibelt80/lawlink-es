@@ -1,10 +1,10 @@
 /**
- * v0.42 律所信息 / 编号体系配置（项 1 + 项 11）
+ * v0.42 律所信息 / 编号体系配置（ítems 1 + ítems 11）
  *
  * 单 SystemSetting key `firmProfile`，value 为 JSON：
- *   - firmName / firmSubtitle / logoDataUrl：侧栏品牌（默认 LawLink / Abogado工作台）
+ *   - firmName / firmSubtitle / logoDataUrl：侧栏品牌（默认 LawLink / AbogadoPanel de trabajo）
  *   - matterCodePrefix：内部编号前缀（internalCode 的 LL 段，默认 LL）
- *   - firmShortName / caseNoTemplate / categoryWords：所内案号模板与各段映射
+ *   - firmShortName / caseNoTemplate / categoryWords：所内案号模板y各段映射
  *
  * 沿用 src/lib/ai/settings.ts 的「单 key + 类型化读写」范式。logo 直接以
  * base64 data URL 内联存储（律所 logo 体积小），避免引入额外存储/服务路由。
@@ -24,7 +24,7 @@ export const CATEGORY_WORD_DEFAULTS: Record<MatterCategory, string> = {
   ADMINISTRATIVE: "行诉",
   NON_LITIGATION: "非诉",
   LEGAL_COUNSEL: "顾问",
-  SPECIAL_PROJECT: "专项"
+  SPECIAL_PROJECT: "专ítems"
 };
 
 /** {类} 单字简称（固定，不可Editar） */
@@ -51,7 +51,7 @@ export interface FirmProfile {
 
 export const FIRM_PROFILE_DEFAULTS: FirmProfile = {
   firmName: "LawLink",
-  firmSubtitle: "Abogado工作台",
+  firmSubtitle: "AbogadoPanel de trabajo",
   logoDataUrl: null,
   matterCodePrefix: "LL",
   firmShortName: "",

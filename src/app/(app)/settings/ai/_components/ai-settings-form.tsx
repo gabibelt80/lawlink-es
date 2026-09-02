@@ -111,20 +111,20 @@ export function AiSettingsForm({
         toast.success("配置已Guardar");
         setApiKey(""); // 不在前端持久 key
       } catch (e) {
-        toast.error(e instanceof Error ? e.message : "Guardar失败");
+        toast.error(e instanceof Error ? e.message : "GuardarError");
       }
     });
   };
 
   const clearKey = () => {
-    if (!confirm("确认清除已Guardar的 API key？所有依赖 AI 的功能将停止工作。"))
+    if (!confirm("Confirmar清除已Guardar的 API key？所有依赖 AI 的功能将停止工作。"))
       return;
     startTransition(async () => {
       try {
         await clearAiKeyAction({ confirm: true });
         toast.success("API key 已清除");
       } catch (e) {
-        toast.error(e instanceof Error ? e.message : "失败");
+        toast.error(e instanceof Error ? e.message : "Error");
       }
     });
   };
@@ -137,7 +137,7 @@ export function AiSettingsForm({
       if (res.ok) {
         setTestResult({ ok: true, msg: `连接成功，模型回复："${res.reply}"` });
       } else {
-        setTestResult({ ok: false, msg: res.message ?? "未知错误" });
+        setTestResult({ ok: false, msg: res.message ?? "Desconocido错误" });
       }
     } catch (e) {
       setTestResult({
@@ -166,7 +166,7 @@ export function AiSettingsForm({
           走 OpenAI 兼容协议，支持任意兼容 endpoint。配置后可启用：
           <span className="text-foreground/85">
             {" "}
-            发票 OCR · 法院SMS AI 增强解析
+            Factura OCR · 法院SMS AI 增强解析
           </span>
           （后续模块也会复用同一组配置）
         </p>
@@ -230,7 +230,7 @@ export function AiSettingsForm({
                 className="mt-1 font-mono text-[12px]"
               />
               <p className="mt-1 text-[10px] text-muted-foreground">
-                用于法院SMS AI 解析等
+                用于法院SMS AI 解析etc.
               </p>
             </div>
             <div>
@@ -242,7 +242,7 @@ export function AiSettingsForm({
                 className="mt-1 font-mono text-[12px]"
               />
               <p className="mt-1 text-[10px] text-muted-foreground">
-                用于发票 OCR 等
+                用于Factura OCR etc.
               </p>
             </div>
           </div>
@@ -314,7 +314,7 @@ export function AiSettingsForm({
           ))}
         </ul>
         <p className="mt-3 text-[11px] text-muted-foreground">
-          密钥使用 AES-256-GCM 加密存入 SystemSetting，与文档加密复用同一密钥（
+          密钥使用 AES-256-GCM 加密存入 SystemSetting，y文档加密复用同一密钥（
           <span className="font-mono">STORAGE_ENCRYPTION_KEY</span>
           ）。前端永远不显示明文 key。
         </p>

@@ -3,7 +3,7 @@ import { intakeCreateSchema } from "@/server/intakes/schemas";
 
 const baseLitigationIntake = {
   category: "CIVIL_COMMERCIAL",
-  title: "甲与乙合同纠纷",
+  title: "甲y乙合同纠纷",
   firstProcedureType: "FIRST_INSTANCE",
   clientName: "甲",
   clientType: "INDIVIDUAL",
@@ -47,7 +47,7 @@ describe("intakeCreateSchema", () => {
     }
   });
 
-  it("诉讼/仲裁类收案填写诉讼地位后通过", () => {
+  it("诉讼/仲裁类收案填写诉讼地位后Aprobar", () => {
     const result = intakeCreateSchema.safeParse({
       ...baseLitigationIntake,
       ourStanding: "PLAINTIFF",
@@ -62,7 +62,7 @@ describe("intakeCreateSchema", () => {
     expect(result.success).toBe(true);
   });
 
-  it("非诉/顾问/专项不强制诉讼地位", () => {
+  it("非诉/顾问/专ítems不强制诉讼地位", () => {
     const result = intakeCreateSchema.safeParse({
       ...baseLitigationIntake,
       category: "NON_LITIGATION",
@@ -72,7 +72,7 @@ describe("intakeCreateSchema", () => {
     expect(result.success).toBe(true);
   });
 
-  it("可选金额留空时不因 HTML number 输入产生的 NaN 阻断Enviar", () => {
+  it("可选Monto留空时不因 HTML number 输入产生的 NaN 阻断Enviar", () => {
     const result = intakeCreateSchema.safeParse({
       ...baseLitigationIntake,
       ourStanding: "PLAINTIFF",

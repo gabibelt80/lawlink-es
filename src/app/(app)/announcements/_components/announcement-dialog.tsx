@@ -105,9 +105,9 @@ export function AnnouncementDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
-          <DialogTitle>{editing ? "Editar公告" : "发布公告"}</DialogTitle>
+          <DialogTitle>{editing ? "EditarAnuncio" : "PublicarAnuncio"}</DialogTitle>
           <DialogDescription className="text-xs">
-            置顶公告会显示在全站顶部 banner，Configuración过期Fecha后 banner
+            置顶Anuncio会显示在全站顶部 banner，Configuración过期Fecha后 banner
             自动消失（列表仍保留）。
           </DialogDescription>
         </DialogHeader>
@@ -161,7 +161,7 @@ export function AnnouncementDialog({
           </Button>
           <Button onClick={handleSave} disabled={isPending}>
             {isPending && <Loader2 className="mr-1.5 h-4 w-4 animate-spin" />}
-            {editing ? "Actualizar" : "发布"}
+            {editing ? "Actualizar" : "Publicar"}
           </Button>
         </DialogFooter>
       </DialogContent>

@@ -1,5 +1,5 @@
 // 内部 helper：仅供 server action / cron 调用，不做鉴权。
-// 不能标 "use server"，否则任何Cliente端可直接调用给Aprobación角色伪造Notificaciones。
+// 不能标 "use server"，否则任何Cliente端可直接调用给AprobaciónRol伪造Notificaciones。
 import type { NotificationPriority, UserRole } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { createNotification } from "@/server/notifications/create";

@@ -145,7 +145,7 @@ export function ExternalContactDialog({
         <div className="space-y-3 py-2">
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
-              <Label className="text-xs">姓名 *</Label>
+              <Label className="text-xs">Nombre y apellido *</Label>
               <Input
                 value={form.name}
                 onChange={(e) => setForm({ ...form, name: e.target.value })}

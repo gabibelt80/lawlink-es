@@ -24,7 +24,7 @@ import type { SmsRow, MatterOption, ParsedJson } from "./sms-types";
 import { toDate } from "@/lib/sms-parser";
 import { procedureTypeLabel } from "@/lib/enums";
 
-// v0.51: 程序默认选中——优先取案号与SMS解析案号一致的程序
+// v0.51: 程序默认选中——优先取案号ySMS解析案号一致的程序
 function preferredProcedureId(
   procedures: NonNullable<SmsRow["matchedMatter"]>["procedures"],
   parsed: ParsedJson,
@@ -88,7 +88,7 @@ export function GenerateHearingDialog({
         toast.success("已生成开庭并标记此SMS处理完成");
         onOpenChange(false);
       } catch (e) {
-        toast.error(e instanceof Error ? e.message : "失败");
+        toast.error(e instanceof Error ? e.message : "Error");
       }
     });
   };
@@ -201,7 +201,7 @@ const DEADLINE_CATEGORIES = [
 ] as const;
 type DeadlineCategory = (typeof DEADLINE_CATEGORIES)[number]["value"];
 
-// v0.51: 重要事项分类 → 期限类别（importantItems 比 smsType 更细）
+// v0.51: Elementos importantes分类 → Plazo类别（importantItems 比 smsType 更细）
 const ITEM_KIND_TO_CATEGORY: Partial<Record<string, DeadlineCategory>> = {
   EVIDENCE_DEADLINE: "EVIDENCE",
   FEE_DEADLINE: "PERFORMANCE",
@@ -230,16 +230,16 @@ function pickDefaultDeadlineTitle(parsed: ParsedJson): {
   if (parsed.appealDeadline)
     return { title: `上诉期 ${parsed.appealDeadline}`, category: "APPEAL" };
   if (parsed.smsType === "EVIDENCE_SUBMIT")
-    return { title: "举证期限", category: "EVIDENCE" };
+    return { title: "举证Plazo", category: "EVIDENCE" };
   if (parsed.smsType === "FEE_NOTICE")
     return { title: "诉讼费缴纳", category: "PERFORMANCE" };
   if (parsed.smsType === "JUDGMENT_NOTICE")
     return { title: "判决书生效 / 履行期", category: "PERFORMANCE" };
-  return { title: parsed.summary.slice(0, 30) || "期限", category: "CUSTOM" };
+  return { title: parsed.summary.slice(0, 30) || "Plazo", category: "CUSTOM" };
 }
 
 function pickDefaultDueDate(parsed: ParsedJson): Date | null {
-  // v0.51: 优先用重要事项自带的Fecha
+  // v0.51: 优先用Elementos importantes自带的Fecha
   const item = firstDeadlineItem(parsed);
   if (item?.dateText) {
     const d = toDate(item.dateText);
@@ -305,16 +305,16 @@ export function GenerateDeadlineDialog({
         await generateDeadlineFromSms({
           smsId: sms.id,
           procedureId,
-          title: title.trim() || "期限",
+          title: title.trim() || "Plazo",
           category,
           dueAt: d,
           basis: basis.trim(),
           remindDays,
         });
-        toast.success("已生成期限并标记此SMS处理完成");
+        toast.success("已生成Plazo并标记此SMS处理完成");
         onOpenChange(false);
       } catch (e) {
-        toast.error(e instanceof Error ? e.message : "失败");
+        toast.error(e instanceof Error ? e.message : "Error");
       }
     });
   };
@@ -325,7 +325,7 @@ export function GenerateDeadlineDialog({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Clock className="h-4 w-4 text-primary" />
-            生成期限 · {matter.internalCode} {matter.title}
+            生成Plazo · {matter.internalCode} {matter.title}
           </DialogTitle>
         </DialogHeader>
 
@@ -345,7 +345,7 @@ export function GenerateDeadlineDialog({
           </div>
 
           <div className="md:col-span-2">
-            <Label className="text-[11px]">期限类别 *</Label>
+            <Label className="text-[11px]">Plazo类别 *</Label>
             <RadioChips
               size="sm"
               className="mt-2"
@@ -363,7 +363,7 @@ export function GenerateDeadlineDialog({
             <Input
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              placeholder="上诉期 15 日 / 举证期限 30 日"
+              placeholder="上诉期 15 日 / 举证Plazo 30 日"
               className="mt-1"
             />
           </div>
@@ -379,7 +379,7 @@ export function GenerateDeadlineDialog({
           </div>
 
           <div>
-            <Label className="text-[11px]">提前Recordatorios（天）</Label>
+            <Label className="text-[11px]">提前Recordatorios（días）</Label>
             <Input
               type="number"
               min={1}
@@ -393,7 +393,7 @@ export function GenerateDeadlineDialog({
           </div>
 
           <div className="md:col-span-2">
-            <Label className="text-[11px]">期限依据</Label>
+            <Label className="text-[11px]">Plazo依据</Label>
             <Textarea
               value={basis}
               onChange={(e) => setBasis(e.target.value)}
@@ -413,7 +413,7 @@ export function GenerateDeadlineDialog({
           </Button>
           <Button onClick={submit} disabled={pending}>
             {pending && <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />}
-            生成期限
+            生成Plazo
           </Button>
         </DialogFooter>
       </DialogContent>
@@ -464,7 +464,7 @@ export function BackfillCaseNumberDialog({
         toast.success(`案号已回填：${caseNumber}`);
         onOpenChange(false);
       } catch (e) {
-        toast.error(e instanceof Error ? e.message : "回填失败");
+        toast.error(e instanceof Error ? e.message : "回填Error");
       }
     });
   };

@@ -12,7 +12,7 @@ function newToken() {
 /**
  * v0.50: 获取（没有则生成）当前用户的日历订阅 token。
  * URL 即凭证：任何拿到 URL 的日历Cliente端都能读到该用户可见的Calendario，
- * 泄露时用 regenerateCalendarToken 作废旧链接。
+ * 泄露时用 regenerateCalendarToken 作废旧Enlace。
  */
 export async function getCalendarToken() {
   const session = await requireSession();

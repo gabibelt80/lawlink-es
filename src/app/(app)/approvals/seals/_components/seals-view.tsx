@@ -304,7 +304,7 @@ function emptyText(tab: Tab, firmTabLabel: string) {
   if (tab === "processed") return "暂无已Aprobación申请";
   if (tab === "toApprove") return "暂无待你Aprobación的申请";
   if (tab === "firm") return `暂无${firmTabLabel}记录`;
-  return "你还没有用章申请";
+  return "你还没有Solicitud de sello";
 }
 
 function SealRow({
@@ -337,7 +337,7 @@ function SealRow({
           type="button"
           onClick={() => onAction("detail")}
           className="font-mono text-[11px] text-primary hover:underline"
-          title="Ver用章申请详情"
+          title="VerSolicitud de sello详情"
         >
           {row.code}
         </button>
@@ -424,7 +424,7 @@ function SealRow({
           </a>
         )}
         {row.status === "REJECTED" && isAdmin && (
-          <span className="text-[10px] text-muted-foreground">已驳回</span>
+          <span className="text-[10px] text-muted-foreground">Rechazado</span>
         )}
       </td>
     </tr>

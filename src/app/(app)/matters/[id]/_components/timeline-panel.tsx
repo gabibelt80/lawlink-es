@@ -8,7 +8,7 @@ const iconByType: Record<string, React.ComponentType<React.SVGProps<SVGSVGElemen
   PROCEDURE_ADDED: FileText,
   HEARING_SCHEDULED: Gavel,
   FEE_RECEIVED: Coins,
-  // v0.43 项4：补齐Caso动态
+  // v0.43 ítems4：补齐Caso动态
   DEADLINE_ADDED: CalendarClock,
   STAGE_ADDED: ListChecks,
   STAGE_REMOVED: ListChecks,

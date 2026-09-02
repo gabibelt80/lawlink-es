@@ -145,7 +145,7 @@ export function ClientCombobox({
       >
         <Command shouldFilter={false}>
           <CommandInput
-            placeholder="输入姓名 / 公司名"
+            placeholder="输入Nombre y apellido / 公司名"
             value={query}
             onValueChange={setQuery}
           />
@@ -194,7 +194,7 @@ export function ClientCombobox({
 
             {(yuandianLoading || yuandianResults.length > 0) &&
               yuandianConfigured && (
-                <CommandGroup heading="企业信息库（元典）">
+                <CommandGroup heading="企业信息库（pesos典）">
                   {yuandianLoading && yuandianResults.length === 0 && (
                     <div className="flex items-center gap-2 px-2 py-3 text-xs text-muted-foreground">
                       <Loader2 className="h-3 w-3 animate-spin" />

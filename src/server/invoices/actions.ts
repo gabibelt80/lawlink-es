@@ -54,7 +54,7 @@ function invoiceRequestVisibilityWhere(
 /** Abogado在Caso详情Enviar开票申请 */
 const createSchema = z.object({
   matterId: z.string().cuid(),
-  amount: z.coerce.number().positive("金额需大于 0"),
+  amount: z.coerce.number().positive("Monto需大于 0"),
   title: z.string().max(120).optional().or(z.literal("")),
   requestNote: z.string().max(500).optional().or(z.literal(""))
 });
@@ -94,10 +94,10 @@ export async function createInvoiceRequest(input: z.infer<typeof createSchema>) 
   await notifyRoleApprovers({
     roles: ["ADMIN", "PRINCIPAL_LAWYER", "FINANCE"],
     excludeUserId: session.user.id,
-    title: "新的发票Aprobación待处理",
+    title: "新的FacturaAprobación待处理",
     content: `${session.user.name ?? "有用户"} Enviar了开票申请：${
       matter ? `${matter.internalCode} ${matter.title}` : "关联Caso"
-    }，金额 ${data.amount.toLocaleString("zh-CN")} 元`,
+    }，Monto ${data.amount.toLocaleString("zh-CN")} pesos`,
     href: "/finance",
     refType: "InvoiceRequest",
     refId: created.id,
@@ -162,7 +162,7 @@ export async function listInvoiceRequestsByMatter(matterId: string) {
 }
 
 /**
- * Finanzas批准 + 上传电子发票。FormData：
+ * Finanzas批准 + 上传电子Factura。FormData：
  *   requestId, processNote?, contractScan(File?), invoiceFile(File?)
  * - 不传 invoiceFile：Estado APPROVED
  * - 传 invoiceFile：Estado ISSUED
@@ -182,12 +182,12 @@ export async function approveInvoiceRequest(formData: FormData) {
   });
   if (!existing) throw new Error("申请不存在");
   if (existing.status === "ISSUED") throw new Error("此申请已开具");
-  if (existing.status === "REJECTED") throw new Error("此申请已驳回");
+  if (existing.status === "REJECTED") throw new Error("此申请Rechazado");
 
   const processNote = formData.get("processNote");
   const contractScan = formData.get("contractScan");
   const invoiceFile = formData.get("invoiceFile");
-  // v0.14: 真实发票号（Finanzas批准/开具时回填）
+  // v0.14: 真实Factura号（Finanzas批准/开具时回填）
   const invoiceNo = formData.get("invoiceNo");
 
   let contractScanDocId: string | undefined;
@@ -212,14 +212,14 @@ export async function approveInvoiceRequest(formData: FormData) {
         algorithm: enc.algorithm,
         iv: enc.iv.toString("base64"),
         authTag: enc.authTag.toString("base64"),
-        tags: ["发票申请"],
+        tags: ["Factura申请"],
         uploadedById: session.user.id
       }
     });
     contractScanDocId = doc.id;
   }
 
-  // 上传电子发票
+  // 上传电子Factura
   if (invoiceFile instanceof File && invoiceFile.size > 0) {
     validateUploadedFile(invoiceFile, { purpose: "invoice", maxBytes: MAX_FILE_SIZE });
     const raw = Buffer.from(await invoiceFile.arrayBuffer());
@@ -238,7 +238,7 @@ export async function approveInvoiceRequest(formData: FormData) {
         algorithm: enc.algorithm,
         iv: enc.iv.toString("base64"),
         authTag: enc.authTag.toString("base64"),
-        tags: ["电子发票"],
+        tags: ["电子Factura"],
         uploadedById: session.user.id
       }
     });
@@ -263,7 +263,7 @@ export async function approveInvoiceRequest(formData: FormData) {
       processedAt: new Date(),
       ...(contractScanDocId ? { contractScanId: contractScanDocId } : {}),
       ...(invoiceFileDocId ? { invoiceFileId: invoiceFileDocId } : {}),
-      // v0.14: 开票完成（ISSUED）时回填真实发票号 + 时间
+      // v0.14: 开票完成（ISSUED）时回填真实Factura号 + 时间
       ...(finalStatus === "ISSUED" && invoiceNoStr
         ? { invoiceNo: invoiceNoStr, issuedAt: new Date() }
         : {})
@@ -293,7 +293,7 @@ function storageScope(matterId: string | null, requestId: string) {
 
 const rejectSchema = z.object({
   requestId: z.string().cuid(),
-  reason: z.string().min(1, "请说明驳回原因").max(500)
+  reason: z.string().min(1, "请说明RechazarMotivo").max(500)
 });
 
 export async function rejectInvoiceRequest(input: z.infer<typeof rejectSchema>) {
@@ -306,7 +306,7 @@ export async function rejectInvoiceRequest(input: z.infer<typeof rejectSchema>) 
     select: { matterId: true, status: true }
   });
   if (!existing) throw new Error("申请不存在");
-  if (existing.status === "ISSUED") throw new Error("已开具的申请不可驳回");
+  if (existing.status === "ISSUED") throw new Error("已开具的申请不可Rechazar");
 
   await prisma.invoiceRequest.update({
     where: { id: data.requestId },

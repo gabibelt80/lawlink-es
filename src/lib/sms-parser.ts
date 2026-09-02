@@ -125,7 +125,7 @@ export interface SmsAttachmentResult {
   checkedAt?: string;
 }
 
-// ━━━ 正则模式（与旧Sistema SMS_PATTERNS 对齐）━━━
+// ━━━ 正则模式（y旧Sistema SMS_PATTERNS 对齐）━━━
 const PAT_CASE_NUMBER = [/[（(]\d{4}[)）][一-龥]{1,4}\d{0,4}[一-龥]{1,4}\d+号/g];
 
 const PAT_COURT = [
@@ -174,13 +174,13 @@ const PAT_JUDGMENT_DATE = [
 ];
 
 const PAT_APPEAL_DEADLINE = [
-  /(\d{1,2})\s*(?:日|天)\s*内[^。]*?(?:上诉|提出上诉)/,
-  /上诉(?:期(?:限)?)?[:：\s]*(\d{1,2})\s*(?:日|天)/
+  /(\d{1,2})\s*(?:日|días)\s*内[^。]*?(?:上诉|提出上诉)/,
+  /上诉(?:期(?:限)?)?[:：\s]*(\d{1,2})\s*(?:日|días)/
 ];
 
-const PAT_AMOUNT = [/(?:人民币|金额|标的)\s*(\d[\d,]*\.?\d*)\s*元/g, /(\d[\d,]*\.?\d*)\s*元/g];
+const PAT_AMOUNT = [/(?:人民币|Monto|标的)\s*(\d[\d,]*\.?\d*)\s*pesos/g, /(\d[\d,]*\.?\d*)\s*pesos/g];
 
-// 法院前缀噪声词（"日内向 XX 法院" 等剥离）
+// 法院前缀噪声词（"日内向 XX 法院" etc.剥离）
 const PREFIX_NOISE = [
   "日内",
   "可向",
@@ -295,8 +295,8 @@ function classifyImportantItem(context: string, smsType: SmsType): Omit<SmsImpor
   if (/举证|证据|补充材料|Enviar材料|质证/.test(context)) {
     return { kind: "EVIDENCE_DEADLINE", title: "举证 / Enviar材料", category: "DEADLINE" };
   }
-  if (/缴费|交费|诉讼费|受理费|Preservación费|公告费/.test(context)) {
-    return { kind: "FEE_DEADLINE", title: "缴费期限", category: "DEADLINE" };
+  if (/缴费|交费|诉讼费|受理费|Preservación费|Anuncio费/.test(context)) {
+    return { kind: "FEE_DEADLINE", title: "缴费Plazo", category: "DEADLINE" };
   }
   if (/调解|和解|谈话/.test(context)) {
     return { kind: "MEDIATION", title: "调解 / 谈话", category: "ACTION" };
@@ -308,13 +308,13 @@ function classifyImportantItem(context: string, smsType: SmsType): Omit<SmsImpor
     return { kind: "JUDGMENT", title: "裁判文书 / 宣判", category: "DOCUMENT" };
   }
   if (/上诉|再审|复议/.test(context)) {
-    return { kind: "APPEAL", title: "上诉 / 救济期限", category: "DEADLINE" };
+    return { kind: "APPEAL", title: "上诉 / 救济Plazo", category: "DEADLINE" };
   }
   if (/履行|付款|支付|腾退|交付/.test(context)) {
-    return { kind: "PERFORMANCE", title: "履行期限", category: "DEADLINE" };
+    return { kind: "PERFORMANCE", title: "履行Plazo", category: "DEADLINE" };
   }
   if (/执行|查封|冻结|扣划|拍卖/.test(context)) {
-    return { kind: "ENFORCEMENT", title: "执行事项", category: "ACTION" };
+    return { kind: "ENFORCEMENT", title: "执行事ítems", category: "ACTION" };
   }
   if (/立案|受理|Caso编号/.test(context) || smsType === "FILING_NOTICE") {
     return { kind: "FILING", title: "立案 / 受理", category: "INFO" };
@@ -339,7 +339,7 @@ function extractImportantItems(text: string, dates: string[], smsType: SmsType, 
     const sourceText = contextAround(text, appealDeadline, 28);
     items.push({
       kind: "APPEAL",
-      title: `上诉期限 ${appealDeadline}`,
+      title: `上诉Plazo ${appealDeadline}`,
       dateText: null,
       sourceText,
       category: "DEADLINE"
@@ -433,7 +433,7 @@ export function parseSms(text: string): ParsedSms {
   }
   result.caseNumbers = uniq(result.caseNumbers);
 
-  // 法院（按优先级匹配第一个有效）
+  // 法院（按优先级Coincidencia第一个有效）
   for (const pat of PAT_COURT) {
     const m = text.match(pat);
     if (m) {
@@ -536,7 +536,7 @@ export function parseSms(text: string): ParsedSms {
   result.credentials = extractCredentials(text);
   result.documentLinks = buildDocumentLinks(text, result.urls, result.credentials);
 
-  // 金额
+  // Monto
   for (const pat of PAT_AMOUNT) {
     const ms = text.match(pat);
     if (ms) result.amounts.push(...ms);
@@ -578,5 +578,5 @@ export function toDate(s: string): Date | null {
 export { CN_DIGIT };
 
 // AI 增强（enrichWithAi）已迁移至 sms-parser-ai.ts（server-only）
-// 该文件保持 client-safe（无 node:* 依赖），sms-paste-dialog 等 client
+// 该文件保持 client-safe（无 node:* 依赖），sms-paste-dialog etc. client
 // 组件可直接 import 这里的 parseSms / splitSmsBatch / toDate。

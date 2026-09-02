@@ -28,7 +28,7 @@ export const sealApproveSchema = z.object({
 
 export const sealRejectSchema = z.object({
   id: z.string().cuid(),
-  reason: z.string().min(1, "请说明驳回原因").max(500)
+  reason: z.string().min(1, "请说明RechazarMotivo").max(500)
 });
 
 export const sealCancelSchema = z.object({

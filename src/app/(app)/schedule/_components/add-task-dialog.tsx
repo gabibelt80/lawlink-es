@@ -110,7 +110,7 @@ export function AddTaskDialog({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Plus className="h-4 w-4 text-primary" />
-            Agregar事项
+            Agregar事ítems
           </DialogTitle>
           <DialogDescription className="text-xs">
             {date
@@ -148,7 +148,7 @@ export function AddTaskDialog({
 
           <div className="space-y-1.5">
             <Label className="text-xs">
-              事项标题 <span className="text-destructive">*</span>
+              事ítems标题 <span className="text-destructive">*</span>
             </Label>
             <Input
               placeholder="如：起草起诉状 / Enviar证据清单"
@@ -178,7 +178,7 @@ export function AddTaskDialog({
                   onChange={(e) => setAllDay(e.target.checked)}
                   className="h-3.5 w-3.5"
                 />
-                全天
+                全días
               </label>
             </div>
           </div>
@@ -187,7 +187,7 @@ export function AddTaskDialog({
             <Label className="text-xs">Descripción（可选）</Label>
             <Textarea
               rows={2}
-              placeholder="事项详情、相关材料等"
+              placeholder="事ítems详情、相关材料etc."
               value={description}
               onChange={(e) => setDescription(e.target.value)}
             />
@@ -199,7 +199,7 @@ export function AddTaskDialog({
               {[
                 { value: 0, label: "普通" },
                 { value: 1, label: "高" },
-                { value: 2, label: "紧急" },
+                { value: 2, label: "Urgente" },
               ].map((p) => (
                 <button
                   key={p.value}

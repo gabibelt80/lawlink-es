@@ -32,8 +32,8 @@ export async function GET(req: Request) {
   try {
     buf = await buildReportWorkbook(period);
   } catch (err) {
-    console.error("[reports/export] 生成失败：", err);
-    return NextResponse.json({ error: "导出失败" }, { status: 500 });
+    console.error("[reports/export] 生成Error：", err);
+    return NextResponse.json({ error: "导出Error" }, { status: 500 });
   }
 
   await audit({

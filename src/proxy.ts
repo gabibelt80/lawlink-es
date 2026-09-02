@@ -2,7 +2,7 @@ import { withAuth } from "next-auth/middleware";
 
 /**
  * 全站默认要求Iniciar sesión。
- * `matcher` 显式排除 /login、/api/auth/*、静态资源等公开路径。
+ * `matcher` 显式排除 /login、/api/auth/*、静态资源etc.公开路径。
  */
 export default withAuth({
   pages: {
@@ -13,13 +13,13 @@ export default withAuth({
 export const config = {
   matcher: [
     /*
-     * 匹配所有路径，但排除：
+     * Coincidencia所有路径，但排除：
      *   /login            Iniciar sesión页本身
      *   /api/auth         NextAuth 路由
      *   /api/health       健康检查
      *   /api/calendar     v0.50 ICS 日历订阅（token 即凭证，日历Cliente端无 cookie）
      *   /_next/*          Next 内部资源（含 HMR websocket）
-     *   静态文件（.png .ico .svg 等）
+     *   静态文件（.png .ico .svg etc.）
      */
     "/((?!login|api/auth|api/health|api/calendar|_next|favicon.ico|.*\\.(?:png|jpg|jpeg|svg|gif|webp|ico)).*)"
   ]

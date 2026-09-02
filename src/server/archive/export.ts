@@ -30,7 +30,7 @@ const CATEGORY_DIR: Record<string, string> = {
   PROCEDURE: "程序文书",
   JUDGMENT: "裁判文书",
   CONTRACT: "合同",
-  OTHER: "其他"
+  OTHER: "其他",
 };
 
 function safeName(s: string): string {
@@ -45,7 +45,7 @@ async function readDocumentBuffer(doc: {
 }): Promise<Buffer> {
   const raw = await storage.readFile(doc.path);
   if (!doc.encrypted) return raw;
-  if (!doc.iv || !doc.authTag) throw new Error("加密元数据损坏");
+  if (!doc.iv || !doc.authTag) throw new Error("加密pesos数据损坏");
   return decryptBuffer(raw, doc.iv, doc.authTag);
 }
 
@@ -63,19 +63,20 @@ export async function buildArchiveZip(matterId: string): Promise<ZipResult> {
         include: {
           targets: {
             orderBy: { createdAt: "asc" },
-            include: { properties: { orderBy: { startDate: "asc" } } }
-          }
-        }
+            include: { properties: { orderBy: { startDate: "asc" } } },
+          },
+        },
       },
       notes: { where: { deletedAt: null }, orderBy: { occurredAt: "asc" } },
       billings: true,
       feeEntries: { orderBy: { occurredAt: "asc" } },
       archiveRecords: { orderBy: { archivedAt: "desc" }, take: 1 },
-      owner: { select: { id: true, name: true } }
-    }
+      owner: { select: { id: true, name: true } },
+    },
   });
-  if (!matter) throw new Error("Caso不存在");
-  if (matter.archiveRecords.length === 0) throw new Error("Caso尚未归档，无法导出");
+  if (!matter) throw new Error("No existe el caso");
+  if (matter.archiveRecords.length === 0)
+    throw new Error("El caso aún no está archivado y no se puede exportar");
 
   const archive = matter.archiveRecords[0];
   const docs = await prisma.document.findMany({
@@ -91,15 +92,15 @@ export async function buildArchiveZip(matterId: string): Promise<ZipResult> {
       mimeType: true,
       size: true,
       createdAt: true,
-      tags: true
+      tags: true,
     },
-    orderBy: { createdAt: "asc" }
+    orderBy: { createdAt: "asc" },
   });
 
   const zip = new PizZip();
   const root = safeName(archive.archiveNo);
 
-  // ===== manifest.json：结构化数据快照（脱敏：Contraseña、apiKey、authTag 等不导出）
+  // ===== manifest.json：结构化数据快照（脱敏：Contraseña、apiKey、authTag etc.不导出）
   const manifest = {
     archiveNo: archive.archiveNo,
     archivedAt: archive.archivedAt.toISOString(),
@@ -133,9 +134,9 @@ export async function buildArchiveZip(matterId: string): Promise<ZipResult> {
             idNumber: matter.primaryClient.idNumber,
             phone: matter.primaryClient.phone,
             email: matter.primaryClient.email,
-            address: matter.primaryClient.address
+            address: matter.primaryClient.address,
           }
-        : null
+        : null,
     },
     parties: matter.parties.map((p) => ({
       role: p.role,
@@ -146,7 +147,7 @@ export async function buildArchiveZip(matterId: string): Promise<ZipResult> {
       phone: p.phone,
       address: p.address,
       legalRep: p.legalRep,
-      notes: p.notes
+      notes: p.notes,
     })),
     procedures: matter.procedures.map((p) => ({
       order: p.order,
@@ -160,7 +161,7 @@ export async function buildArchiveZip(matterId: string): Promise<ZipResult> {
       acceptedAt: p.acceptedAt?.toISOString() ?? null,
       status: p.status,
       outcome: p.outcome,
-      concludedAt: p.concludedAt?.toISOString() ?? null
+      concludedAt: p.concludedAt?.toISOString() ?? null,
     })),
     timelineEvents: matter.timelineEvents.map((e) => ({
       occurredAt: e.occurredAt.toISOString(),
@@ -168,9 +169,9 @@ export async function buildArchiveZip(matterId: string): Promise<ZipResult> {
       title: e.title,
       content: e.content,
       refType: e.refType,
-      refId: e.refId
+      refId: e.refId,
     })),
-    // v0.48：Preservación改读三层模型，manifest 仍按"每项财产一条"扁平输出，字段与旧版兼容
+    // v0.48：Preservación改读三层模型，manifest 仍按"每ítems财产一条"扁平输出，字段y旧版兼容
     preservations: matter.preservationCases.flatMap((c) =>
       c.targets.flatMap((t) =>
         t.properties.map((p) => ({
@@ -183,22 +184,22 @@ export async function buildArchiveZip(matterId: string): Promise<ZipResult> {
           startDate: p.startDate.toISOString(),
           expiryDate: p.expiryDate.toISOString(),
           status: p.status,
-          note: c.note
-        }))
-      )
+          note: c.note,
+        })),
+      ),
     ),
     notes: matter.notes.map((n) => ({
       channel: n.channel,
       withWhom: n.withWhom,
       occurredAt: n.occurredAt.toISOString(),
       content: n.content,
-      tags: n.tags
+      tags: n.tags,
     })),
     billings: matter.billings.map((b) => ({
       title: b.title,
       contractAmount: b.contractAmount.toString(),
       status: b.status,
-      signedAt: b.signedAt?.toISOString() ?? null
+      signedAt: b.signedAt?.toISOString() ?? null,
     })),
     feeEntries: matter.feeEntries.map((f) => ({
       type: f.type,
@@ -207,7 +208,7 @@ export async function buildArchiveZip(matterId: string): Promise<ZipResult> {
       invoiceNo: f.invoiceNo,
       payerOrPayee: f.payerOrPayee,
       method: f.method,
-      note: f.note
+      note: f.note,
     })),
     documents: docs.map((d) => ({
       id: d.id,
@@ -215,8 +216,8 @@ export async function buildArchiveZip(matterId: string): Promise<ZipResult> {
       category: d.category,
       size: d.size,
       createdAt: d.createdAt.toISOString(),
-      tags: d.tags
-    }))
+      tags: d.tags,
+    })),
   };
   zip.file(`${root}/manifest.json`, JSON.stringify(manifest, null, 2));
 
@@ -228,22 +229,26 @@ export async function buildArchiveZip(matterId: string): Promise<ZipResult> {
     `Caso编号：${matter.internalCode}  `,
     `归档Fecha：${archive.archivedAt.toISOString().slice(0, 10)}  `,
     `归档人：${archive.archivedBy}  `,
-    archive.completedAt ? `结案Fecha：${archive.completedAt.toISOString().slice(0, 10)}` : "",
+    archive.completedAt
+      ? `Cerrar casoFecha：${archive.completedAt.toISOString().slice(0, 10)}`
+      : "",
     "",
-    "## 结案小结",
+    "## Cerrar caso小结",
     "",
     archive.summary,
     "",
-    archive.judgmentSummary ? "## 裁判结果\n\n" + archive.judgmentSummary + "\n" : "",
+    archive.judgmentSummary
+      ? "## 裁判结果\n\n" + archive.judgmentSummary + "\n"
+      : "",
     "## 目录",
     "",
     "- `manifest.json` — Caso全量结构化数据（JSON 格式）",
-    "- `封皮和目录/` — 自动生成的卷宗封皮与卷宗目录",
+    "- `封皮和目录/` — 自动生成的卷宗封皮y卷宗目录",
     "- `材料/` — Ver todos上传材料按类别分目录归档",
     "",
     archive.missingItems.length > 0
-      ? `⚠️ 归档时存在缺项：${archive.missingItems.length} 项（详见 manifest.json）`
-      : ""
+      ? `⚠️ 归档时存在缺ítems：${archive.missingItems.length} ítems（详见 manifest.json）`
+      : "",
   ]
     .filter(Boolean)
     .join("\n");
@@ -267,7 +272,7 @@ export async function buildArchiveZip(matterId: string): Promise<ZipResult> {
 
   // ===== 材料：跳过已经放进"封皮和目录"的两份
   const skipIds = new Set(
-    [archive.coverDocId, archive.catalogDocId].filter((x): x is string => !!x)
+    [archive.coverDocId, archive.catalogDocId].filter((x): x is string => !!x),
   );
   const seqByCategory: Record<string, number> = {};
   for (const d of docs) {
@@ -280,11 +285,11 @@ export async function buildArchiveZip(matterId: string): Promise<ZipResult> {
       const seq = String(n).padStart(3, "0");
       zip.file(`${root}/材料/${dir}/${seq}_${safeName(d.name)}`, buf);
     } catch (err) {
-      console.error(`[archive-export] 材料读取失败：${d.id}`, err);
-      // 单文件失败不阻断；写一条说明
+      console.error(`[archive-export] 材料读取Error：${d.id}`, err);
+      // 单文件Error不阻断；写一条说明
       zip.file(
-        `${root}/材料/${dir}/_读取失败_${safeName(d.name)}.txt`,
-        `该文件读取失败：${err instanceof Error ? err.message : String(err)}`
+        `${root}/材料/${dir}/_读取Error_${safeName(d.name)}.txt`,
+        `该文件读取Error：${err instanceof Error ? err.message : String(err)}`,
       );
     }
   }
@@ -294,6 +299,6 @@ export async function buildArchiveZip(matterId: string): Promise<ZipResult> {
     buffer,
     fileName: `${root}.zip`,
     checksum: sha256(buffer),
-    size: buffer.length
+    size: buffer.length,
   };
 }

@@ -27,7 +27,7 @@ export async function listTemplates(input?: z.input<typeof templateListFilterSch
   if (filter.onlyEnabled) where.enabled = true;
   if (filter.category) where.category = filter.category;
   if (filter.matterCategory) {
-    // applicableCategories 为空数组 = 全适用；包含目标也匹配
+    // applicableCategories 为空数组 = 全适用；包含目标也Coincidencia
     where.OR = [
       { applicableCategories: { isEmpty: true } },
       { applicableCategories: { has: filter.matterCategory } }
@@ -65,7 +65,7 @@ export async function getTemplate(id: string) {
 export async function toggleTemplate(input: z.infer<typeof templateToggleSchema>) {
   const session = await requireSession();
   if (session.user.role !== "ADMIN") {
-    throw new Error("仅Administrar员可启用/禁用模板");
+    throw new Error("仅Administrar员可启用/Deshabilitar模板");
   }
   const data = templateToggleSchema.parse(input);
 
@@ -88,7 +88,7 @@ export async function toggleTemplate(input: z.infer<typeof templateToggleSchema>
 
 /**
  * 模板渲染 + 归档
- *   1. 校验输入与权限
+ *   1. 校验输入y权限
  *   2. 读取并解密模板 docx
  *   3. 拼装上下文（含行内补全 overrides 的回写）
  *   4. 渲染 → 加密入库 Document（关联 matter / folder / template / 上下文快照）
@@ -106,7 +106,7 @@ export async function renderTemplate(input: z.infer<typeof templateRenderSchema>
     where: { id: data.templateId },
     include: { docxBlob: true }
   });
-  if (!tmpl || !tmpl.enabled) throw new Error("模板不存在或已禁用");
+  if (!tmpl || !tmpl.enabled) throw new Error("模板不存在或已Deshabilitar");
   if (!tmpl.docxBlob) throw new Error("模板源文件缺失");
 
   // 校验 folder 同Caso
@@ -116,7 +116,7 @@ export async function renderTemplate(input: z.infer<typeof templateRenderSchema>
       select: { matterId: true }
     });
     if (!folder || folder.matterId !== data.matterId) {
-      throw new Error("目标卷宗与Caso不匹配");
+      throw new Error("目标卷宗yCaso不Coincidencia");
     }
   }
 
@@ -139,7 +139,7 @@ export async function renderTemplate(input: z.infer<typeof templateRenderSchema>
     overrides: data.overrides
   });
 
-  // 检测未填变量（行内补全已落库 → buildContext 会读到；剩下的是真缺）
+  // 检测未填变量（行内补全已落库 → buildContext 会读到；Restan下的是真缺）
   const required = Array.isArray(tmpl.variables) ? (tmpl.variables as string[]) : [];
   const missing = detectMissing(required, context);
 

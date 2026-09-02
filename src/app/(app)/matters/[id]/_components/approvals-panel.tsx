@@ -73,7 +73,7 @@ export function ApprovalsPanel({
         <div className="flex items-center gap-3">
           <span className="flex items-center gap-1.5 text-[13px] font-medium">
             <Stamp className="h-3.5 w-3.5 text-primary" />
-            用印Aprobación
+            Aprobación de sello
             <span className="ml-1 font-mono text-[11px] text-muted-foreground tabular">
               {sealContracts.length}
             </span>
@@ -171,7 +171,7 @@ const SEAL_STATUS_LABEL: Record<string, string> = {
   PENDING: "待Aprobación",
   APPROVED: "已批准",
   STAMPED: "已盖章",
-  REJECTED: "驳回",
+  REJECTED: "Rechazar",
   CANCELLED: "撤销",
 };
 

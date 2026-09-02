@@ -1,4 +1,4 @@
-// 内部 helper：仅供 server action 调用，调用方负责 session 与权限校验。
+// 内部 helper：仅供 server action 调用，调用方负责 session y权限校验。
 // 不能标 "use server"：这里接受 userId/matterId 参数且不做鉴权，
 // 一旦成为 server action 端点会被Cliente端直接伪造调用。
 import { lookup } from "node:dns/promises";
@@ -133,7 +133,7 @@ async function downloadFromDocumentLink(
     return {
       url: link.url,
       status: "FAILED",
-      message: err instanceof Error ? err.message : "附件提取失败",
+      message: err instanceof Error ? err.message : "Adjunto提取Error",
       checkedAt: new Date().toISOString()
     };
   }
@@ -148,7 +148,7 @@ async function downloadFromUrl(
     return {
       url,
       status: "FAILED",
-      message: "链接跳转循环，已停止",
+      message: "Enlace跳转循环，已停止",
       checkedAt: new Date().toISOString()
     };
   }
@@ -159,7 +159,7 @@ async function downloadFromUrl(
     return {
       url,
       status: "FAILED",
-      message: `访问失败：HTTP ${response.status}`,
+      message: `访问Error：HTTP ${response.status}`,
       checkedAt: new Date().toISOString()
     };
   }
@@ -171,7 +171,7 @@ async function downloadFromUrl(
       return {
         url,
         status: "NO_FILE_FOUND",
-        message: "送达页面过大，未自动解析页面内附件",
+        message: "送达页面过大，未自动解析页面内Adjunto",
         checkedAt: new Date().toISOString()
       };
     }
@@ -187,8 +187,8 @@ async function downloadFromUrl(
       url,
       status: htmlLooksLikeLogin(html) ? "LOGIN_REQUIRED" : "NO_FILE_FOUND",
       message: htmlLooksLikeLogin(html)
-        ? "页面需要Iniciar sesión、验证码或确认签收，未自动下载"
-        : "页面内未发现可直接下载的文书附件",
+        ? "页面需要Iniciar sesión、验证码或Confirmar签收，未自动下载"
+        : "页面内未发现可直接下载的文书Adjunto",
       checkedAt: new Date().toISOString()
     };
   }
@@ -197,7 +197,7 @@ async function downloadFromUrl(
     return {
       url,
       status: "UNSUPPORTED_TYPE",
-      message: contentType ? `链接不是支持的文书文件：${contentType}` : "链接不是可识别的文书文件",
+      message: contentType ? `Enlace不是支持的文书文件：${contentType}` : "Enlace不是可识别的文书文件",
       checkedAt: new Date().toISOString()
     };
   }
@@ -205,7 +205,7 @@ async function downloadFromUrl(
     return {
       url,
       status: "FAILED",
-      message: "附件超过 20MB 限制",
+      message: "Adjunto超过 20MB 限制",
       checkedAt: new Date().toISOString()
     };
   }
@@ -215,7 +215,7 @@ async function downloadFromUrl(
     return {
       url,
       status: "FAILED",
-      message: "附件超过 20MB 限制",
+      message: "Adjunto超过 20MB 限制",
       checkedAt: new Date().toISOString()
     };
   }
@@ -223,7 +223,7 @@ async function downloadFromUrl(
     return {
       url,
       status: "FAILED",
-      message: "附件为空",
+      message: "Adjunto为空",
       checkedAt: new Date().toISOString()
     };
   }
@@ -241,7 +241,7 @@ async function downloadFromUrl(
     return {
       url,
       status: "ALREADY_DOWNLOADED",
-      message: "该附件已在本案材料中",
+      message: "该Adjunto已在本案材料中",
       documentId: existing.id,
       documentName: existing.name,
       mimeType: existing.mimeType,
@@ -297,7 +297,7 @@ async function fetchWithRedirects(url: string): Promise<{ response: Response; fi
       clearTimeout(timer);
     }
   }
-  throw new Error("链接重定向次数过多");
+  throw new Error("Enlace重定向次数过多");
 }
 
 async function assertSafeHttpUrl(input: string): Promise<URL> {
@@ -305,10 +305,10 @@ async function assertSafeHttpUrl(input: string): Promise<URL> {
   try {
     url = new URL(input);
   } catch {
-    throw new Error("链接格式不正确");
+    throw new Error("Enlace格式不正确");
   }
   if (url.protocol !== "http:" && url.protocol !== "https:") {
-    throw new Error("仅支持 HTTP/HTTPS 链接");
+    throw new Error("仅支持 HTTP/HTTPS Enlace");
   }
   if (isLocalHostname(url.hostname)) {
     throw new Error("不允许访问本机或内网地址");
@@ -362,7 +362,7 @@ function extractFileLinksFromHtml(html: string, baseUrl: string): string[] {
 }
 
 function htmlLooksLikeLogin(html: string): boolean {
-  return /Iniciar sesión|账号|Contraseña|验证码|签收|确认送达|提取码|取件码|人机|captcha/i.test(html);
+  return /Iniciar sesión|账号|Contraseña|验证码|签收|Confirmar送达|提取码|取件码|人机|captcha/i.test(html);
 }
 
 function baseMime(mime: string | null): string | null {
@@ -470,7 +470,7 @@ async function saveAttachmentDocument({
     data: {
       matterId: ctx.matterId,
       eventType: "DOCUMENT_UPLOADED",
-      title: `提取法院SMS附件：${filename}`,
+      title: `提取法院SMSAdjunto：${filename}`,
       occurredAt: new Date(),
       refType: "Document",
       refId: doc.id

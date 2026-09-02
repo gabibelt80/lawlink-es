@@ -19,10 +19,10 @@ describe("批量导入 — 文本映射", () => {
     expect(parseCategoryLabel("不存在")).toBeNull();
   });
 
-  it("CasoEstado反查（兼容「结案」）", () => {
+  it("CasoEstado反查（兼容「Cerrar caso」）", () => {
     expect(parseStatusLabel("办理中")).toBe("IN_PROGRESS");
-    expect(parseStatusLabel("已结案")).toBe("CLOSED");
-    expect(parseStatusLabel("结案")).toBe("CLOSED");
+    expect(parseStatusLabel("已Cerrar caso")).toBe("CLOSED");
+    expect(parseStatusLabel("Cerrar caso")).toBe("CLOSED");
     expect(parseStatusLabel("已归档")).toBe("ARCHIVED");
     expect(parseStatusLabel("乱填")).toBeNull();
   });
@@ -35,7 +35,7 @@ describe("批量导入 — 文本映射", () => {
     expect(parseClientType(undefined)).toBe("INDIVIDUAL");
   });
 
-  it("Fecha / 金额解析", () => {
+  it("Fecha / Monto解析", () => {
     expect(parseImportDate("2026-05-30")?.getFullYear()).toBe(2026);
     expect(parseImportDate("2026/5/3")?.getMonth()).toBe(4);
     expect(parseImportDate("无效")).toBeNull();
@@ -45,11 +45,11 @@ describe("批量导入 — 文本映射", () => {
   });
 
   it("标题生成无重复空格", () => {
-    expect(buildMatterTitle("张三", "某公司", "买卖合同纠纷")).toBe("张三 与 某公司 买卖合同纠纷");
-    expect(buildMatterTitle("张三", "某公司", null)).toBe("张三 与 某公司");
+    expect(buildMatterTitle("张三", "某公司", "买卖合同纠纷")).toBe("张三 y 某公司 买卖合同纠纷");
+    expect(buildMatterTitle("张三", "某公司", null)).toBe("张三 y 某公司");
   });
 
-  it("首程序类型推断与收案转化一致", () => {
+  it("首程序类型推断y收案转化一致", () => {
     expect(firstProcedureTypeFor("CIVIL_COMMERCIAL")).toBe("FIRST_INSTANCE");
     expect(firstProcedureTypeFor("CRIMINAL")).toBe("FIRST_INSTANCE");
     expect(firstProcedureTypeFor("NON_LITIGATION")).toBe("NON_LITIGATION_PHASE");
@@ -69,7 +69,7 @@ describe("批量导入 — 单行校验", () => {
     claimAmount: "120000"
   };
 
-  it("合法行通过并归一化", () => {
+  it("合法行Aprobar并归一化", () => {
     const { errors, normalized } = validateRow(okRow);
     expect(errors).toHaveLength(0);
     expect(normalized).not.toBeNull();
@@ -79,7 +79,7 @@ describe("批量导入 — 单行校验", () => {
     expect(normalized?.claimAmount).toBe(120000);
   });
 
-  it("缺必填项报错且 normalized 为 null", () => {
+  it("缺必填ítems报错且 normalized 为 null", () => {
     const { errors, normalized } = validateRow({ ...okRow, clientName: "", category: "瞎填" });
     expect(normalized).toBeNull();
     expect(errors.some((e) => e.includes("ClienteNombre"))).toBe(true);

@@ -21,8 +21,8 @@ type PageProps = {
 export default async function MatterDetailPage({ params }: PageProps) {
   const { id: param } = await params;
 
-  // 路由键是 internalCode（`LL-2026-CC-0001`），但历史书签、Notificaciones与审计日志里
-  // 存的是 cuid 地址，两者都要认；命中 cuid 时在鉴权通过后再跳规范地址。
+  // 路由键是 internalCode（`LL-2026-CC-0001`），但历史书签、Notificacionesy审计日志里
+  // 存的是 cuid 地址，两者都要认；命中 cuid 时在鉴权Aprobar后再跳规范地址。
   const route = await resolveMatterRoute(param);
   if (!route) notFound();
 
@@ -93,7 +93,7 @@ export default async function MatterDetailPage({ params }: PageProps) {
       }
     }),
     listActiveColleagues(),
-    // v0.11: Caso下用印申请关联的合同附件（待盖章稿 + 盖章后扫描件）
+    // v0.11: Caso下用印申请关联的合同Adjunto（待盖章稿 + 盖章后扫描件）
     prisma.sealRequest.findMany({
       where: { matterId: matter.id },
       orderBy: { createdAt: "desc" },
@@ -122,9 +122,9 @@ export default async function MatterDetailPage({ params }: PageProps) {
         createdAt: true
       }
     }),
-    // v0.18: 最新归档申请Estado（用于显示"归档中"/"已驳回" banner）
+    // v0.18: 最新归档申请Estado（用于显示"归档中"/"Rechazado" banner）
     getLatestArchiveRecord(matter.id),
-    // v0.28: Caso自定义字段定义（启用项）
+    // v0.28: Caso自定义字段定义（启用ítems）
     prisma.customFieldDef.findMany({
       where: { entityType: "MATTER", enabled: true },
       orderBy: [{ order: "asc" }, { createdAt: "asc" }],

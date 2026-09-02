@@ -1,10 +1,10 @@
 "use client";
 
 /**
- * v0.27: 顶部公告 banner
+ * v0.27: 顶部Anuncio banner
  *
- * 显示 pinned + 未归档 + 未过期 的公告。多条时用左右切换。
- * Cerrar只对当前 tab session 生效（不持久化，避免错过新公告）。
+ * 显示 pinned + 未归档 + 未过期 的Anuncio。多条时用左右切换。
+ * Cerrar只对当前 tab session 生效（不持久化，避免错过新Anuncio）。
  */
 import { useState } from "react";
 import Link from "next/link";

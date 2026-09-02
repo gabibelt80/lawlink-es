@@ -19,7 +19,7 @@ import {
 import { createTask } from "@/server/tasks/actions";
 
 /**
- * v0.16: Caso详情"重要时限及Recordatorios"卡内的新建 Dialog
+ * v0.16: Caso详情"重要时限yRecordatorios"卡内的新建 Dialog
  * 复用 Task 表（matterId + title + dueAt + description + priority）
  */
 export function AddReminderDialog({

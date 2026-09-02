@@ -18,14 +18,22 @@ const VALID_TYPES: ReadonlySet<ReviewType> = new Set([
   "MISSING",
   "RISK",
   "ISSUE",
-  "SUGGESTION"
+  "SUGGESTION",
 ]);
-const VALID_SEV: ReadonlySet<ReviewSeverity> = new Set(["HIGH", "MEDIUM", "LOW"]);
-const SEV_ORDER: Record<ReviewSeverity, number> = { HIGH: 0, MEDIUM: 1, LOW: 2 };
+const VALID_SEV: ReadonlySet<ReviewSeverity> = new Set([
+  "HIGH",
+  "MEDIUM",
+  "LOW",
+]);
+const SEV_ORDER: Record<ReviewSeverity, number> = {
+  HIGH: 0,
+  MEDIUM: 1,
+  LOW: 2,
+};
 
 /**
  * 把 AI Volver文本解析为规范化 ReviewItem 数组。
- * - JSON 解析失败抛错（调用方决定怎么处理）
+ * - JSON 解析Error抛错（调用方决定怎么处理）
  * - 非法 type/severity 回退为 ISSUE/MEDIUM
  * - title/detail 任一为空的条目丢弃
  * - 按 severity HIGH→LOW 排序
@@ -33,11 +41,16 @@ const SEV_ORDER: Record<ReviewSeverity, number> = { HIGH: 0, MEDIUM: 1, LOW: 2 }
 export function parseReviewItems(content: string): ReviewItem[] {
   const parsed = extractJson<unknown>(content);
   if (!Array.isArray(parsed)) {
-    throw new Error("AI Volver内容无法解析为审查清单");
+    throw new Error(
+      "No se pudo analizar el contenido de AI Volver como una lista de revisión",
+    );
   }
   const items: ReviewItem[] = [];
   for (const raw of parsed as Array<Record<string, unknown>>) {
-    const type = typeof raw.type === "string" ? (raw.type.toUpperCase() as ReviewType) : "ISSUE";
+    const type =
+      typeof raw.type === "string"
+        ? (raw.type.toUpperCase() as ReviewType)
+        : "ISSUE";
     const severity =
       typeof raw.severity === "string"
         ? (raw.severity.toUpperCase() as ReviewSeverity)
@@ -49,7 +62,7 @@ export function parseReviewItems(content: string): ReviewItem[] {
       type: VALID_TYPES.has(type) ? type : "ISSUE",
       severity: VALID_SEV.has(severity) ? severity : "MEDIUM",
       title,
-      detail
+      detail,
     });
   }
   items.sort((a, b) => SEV_ORDER[a.severity] - SEV_ORDER[b.severity]);

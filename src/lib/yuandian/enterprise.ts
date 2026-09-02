@@ -1,5 +1,5 @@
 /**
- * 元典开放平台 — 企业信息 API（server-side only）
+ * pesos典开放平台 — 企业信息 API（server-side only）
  *
  * 入口：GET {baseUrl}/{routeKey}?param=value，header X-API-Key。
  * 复用 settings.ts 的加密密钥读取。
@@ -7,7 +7,7 @@
 import { getYuandianSettings, type ResolvedYuandianSettings } from "./settings";
 import { YuandianNotConfiguredError, YuandianApiError } from "./client";
 
-// 元典企业Buscar候选
+// pesos典企业Buscar候选
 export type EnterpriseCandidate = {
   id: string;
   企业Nombre: string;
@@ -27,7 +27,7 @@ export type MappedEnterpriseInfo = {
   establishedDate: string;
 };
 
-// 元典企业基本信息原始响应（中文 key）
+// pesos典企业基本信息原始响应（中文 key）
 type RawEnterpriseBaseInfo = Record<string, unknown> & {
   id?: string;
 };
@@ -43,7 +43,7 @@ function getStr(obj: Record<string, unknown>, key: string): string {
 export async function searchEnterpriseCandidates(
   name: string,
   topK = 10,
-  resolved?: ResolvedYuandianSettings
+  resolved?: ResolvedYuandianSettings,
 ): Promise<EnterpriseCandidate[]> {
   const s = resolved ?? (await getYuandianSettings());
   if (!s.configured) throw new YuandianNotConfiguredError();
@@ -66,9 +66,9 @@ export async function searchEnterpriseCandidates(
       method: "GET",
       headers: {
         "X-API-Key": s.apiKey,
-        Accept: "application/json"
+        Accept: "application/json",
       },
-      signal: ctrl.signal
+      signal: ctrl.signal,
     });
     if (!res.ok) throw new YuandianApiError(`HTTP ${res.status}`, res.status);
     json = await res.json();
@@ -77,7 +77,10 @@ export async function searchEnterpriseCandidates(
   }
 
   if (json.status !== "success") {
-    throw new YuandianApiError(json.message ?? "元典企业Buscar失败", json.code ?? 500);
+    throw new YuandianApiError(
+      json.message ?? "Error al buscar la empresa en Yuandian",
+      json.code ?? 500,
+    );
   }
   return json.data ?? [];
 }
@@ -87,7 +90,7 @@ export async function searchEnterpriseCandidates(
  */
 export async function getEnterpriseBaseInfo(
   id: string,
-  resolved?: ResolvedYuandianSettings
+  resolved?: ResolvedYuandianSettings,
 ): Promise<MappedEnterpriseInfo | null> {
   const s = resolved ?? (await getYuandianSettings());
   if (!s.configured) throw new YuandianNotConfiguredError();
@@ -107,9 +110,9 @@ export async function getEnterpriseBaseInfo(
       method: "GET",
       headers: {
         "X-API-Key": s.apiKey,
-        Accept: "application/json"
+        Accept: "application/json",
       },
-      signal: ctrl.signal
+      signal: ctrl.signal,
     });
     if (!res.ok) throw new YuandianApiError(`HTTP ${res.status}`, res.status);
     json = await res.json();
@@ -118,7 +121,10 @@ export async function getEnterpriseBaseInfo(
   }
 
   if (json.status !== "success") {
-    throw new YuandianApiError(json.message ?? "元典企业详情查询失败", json.code ?? 500);
+    throw new YuandianApiError(
+      json.message ?? "pesos典企业详情查询Error",
+      json.code ?? 500,
+    );
   }
   if (!json.data) return null;
 
@@ -132,7 +138,7 @@ export async function getEnterpriseBaseInfo(
     address: getStr(d, "Registrarse地址"),
     status: getStr(d, "经营Estado"),
     businessScope: getStr(d, "经营范围"),
-    establishedDate: getStr(d, "成立Fecha")
+    establishedDate: getStr(d, "成立Fecha"),
   };
 }
 
@@ -142,7 +148,7 @@ export async function getEnterpriseBaseInfo(
 
 /** 聚合接口Volver各模块统计的通用结构。Abogado视角主要看「Total数」。 */
 export type EnterpriseStat = {
-  /** 模块名（"失信被执行人统计" 等，去掉"统计"后缀） */
+  /** 模块名（"失信被执行人统计" etc.，去掉"统计"后缀） */
   category: string;
   /** 该模块Total记录数 */
   total: number;
@@ -150,7 +156,7 @@ export type EnterpriseStat = {
   asPlaintiff?: number;
   /** 应诉方计数（仅涉诉相关模块） */
   asDefendant?: number;
-  /** Top 维度摘要（如年份/法院/类型分布），最多 5 项 */
+  /** Top 维度摘要（如年份/法院/类型分布），最多 5 ítems */
   top?: { key: string; count: number }[];
 };
 
@@ -163,9 +169,9 @@ export type EnterpriseSummary = {
   coreRisks: EnterpriseStat[];
   /** 涉诉概况 */
   litigation: EnterpriseStat[];
-  /** 辅助信息（变更/担保/股权出质/IP 等） */
+  /** 辅助信息（变更/担保/股权出质/IP etc.） */
   auxiliary: EnterpriseStat[];
-  /** 整体风险等级 — 用于 UI 顶部红绿灯 */
+  /** 整体风险etc.级 — 用于 UI 顶部红绿灯 */
   level: EnterpriseRiskLevel;
 };
 
@@ -175,15 +181,15 @@ const CORE_RISK_KEYS = [
   "被执行人统计",
   "股权冻结统计",
   "严重违法统计",
-  "经营异常统计"
+  "经营异常统计",
 ] as const;
 
 // 涉诉相关
 const LITIGATION_KEYS = [
-  "法院公告统计",
-  "开庭公告统计",
+  "法院Anuncio统计",
+  "开庭Anuncio统计",
   "Administrativo处罚统计",
-  "欠税公告统计"
+  "欠税Anuncio统计",
 ] as const;
 
 // 辅助维度
@@ -196,7 +202,7 @@ const AUXILIARY_KEYS = [
   "专利统计",
   "软件著作权统计",
   "作品著作权统计",
-  "网站备案统计"
+  "网站备案统计",
 ] as const;
 
 // 每个统计模块 top 维度对应的 key 名（聚合接口字段名不一致）
@@ -205,12 +211,12 @@ const TOP_FIELD_BY_CATEGORY: Record<string, string> = {
   被执行人统计: "执行法院",
   股权冻结统计: "执行法院",
   严重违法统计: "类别",
-  经营异常统计: "列入经营异常名录原因",
-  法院公告统计: "法院",
-  开庭公告统计: "审理法院",
+  经营异常统计: "列入经营异常名录Motivo",
+  法院Anuncio统计: "法院",
+  开庭Anuncio统计: "审理法院",
   Administrativo处罚统计: "决定机关",
-  欠税公告统计: "欠税税种",
-  变更记录统计: "变更项目",
+  欠税Anuncio统计: "欠税税种",
+  变更记录统计: "变更ítems目",
   对外担保统计: "主债权种类",
   股权出质统计: "Estado",
   对外投资统计: "投资经营Estado",
@@ -218,17 +224,18 @@ const TOP_FIELD_BY_CATEGORY: Record<string, string> = {
   专利统计: "申请公布年份",
   软件著作权统计: "批准年份",
   作品著作权统计: "类别",
-  网站备案统计: "单位性质"
+  网站备案统计: "单位性质",
 };
 
 function pickStat(
   raw: Record<string, unknown>,
-  rawKey: string
+  rawKey: string,
 ): EnterpriseStat | null {
   const node = raw[rawKey];
   if (!node || typeof node !== "object") return null;
   const obj = node as Record<string, unknown>;
-  const total = typeof obj["Total数"] === "number" ? (obj["Total数"] as number) : 0;
+  const total =
+    typeof obj["Total数"] === "number" ? (obj["Total数"] as number) : 0;
   const asPlaintiff =
     typeof obj["起诉方"] === "number" ? (obj["起诉方"] as number) : undefined;
   const asDefendant =
@@ -245,7 +252,7 @@ function pickStat(
             !!x &&
             typeof x === "object" &&
             typeof (x as { key?: unknown }).key === "string" &&
-            typeof (x as { count?: unknown }).count === "number"
+            typeof (x as { count?: unknown }).count === "number",
         )
         .map((x) => ({ key: x.key, count: x.count }));
     }
@@ -255,7 +262,7 @@ function pickStat(
     total,
     asPlaintiff,
     asDefendant,
-    top
+    top,
   };
 }
 
@@ -271,7 +278,7 @@ function computeRiskLevel(coreRisks: EnterpriseStat[]): EnterpriseRiskLevel {
   ) {
     return "MEDIUM";
   }
-  // LOW：仅经营异常（多为年报/地址等非诚信问题）
+  // LOW：仅经营异常（多为年报/地址etc.非诚信问题）
   if ((m.get("经营异常") ?? 0) > 0) return "LOW";
   return "NONE";
 }
@@ -283,10 +290,10 @@ function computeRiskLevel(coreRisks: EnterpriseStat[]): EnterpriseRiskLevel {
  */
 export async function getEnterpriseSummary(
   identifier: { id?: string; socialCode?: string },
-  resolved?: ResolvedYuandianSettings
+  resolved?: ResolvedYuandianSettings,
 ): Promise<EnterpriseSummary | null> {
   if (!identifier.id && !identifier.socialCode) {
-    throw new Error("企业 ID 与统一社会信用代码至少传一个");
+    throw new Error("企业 ID y统一社会信用代码至少传一个");
   }
   const s = resolved ?? (await getYuandianSettings());
   if (!s.configured) throw new YuandianNotConfiguredError();
@@ -308,7 +315,7 @@ export async function getEnterpriseSummary(
     const res = await fetch(url, {
       method: "GET",
       headers: { "X-API-Key": s.apiKey, Accept: "application/json" },
-      signal: ctrl.signal
+      signal: ctrl.signal,
     });
     if (!res.ok) throw new YuandianApiError(`HTTP ${res.status}`, res.status);
     json = await res.json();
@@ -318,21 +325,21 @@ export async function getEnterpriseSummary(
 
   if (json.status !== "success") {
     throw new YuandianApiError(
-      json.message ?? "元典企业聚合查询失败",
-      json.code ?? 500
+      json.message ?? "pesos典企业聚合查询Error",
+      json.code ?? 500,
     );
   }
   if (!json.data) return null;
 
   const d = json.data;
   const coreRisks = CORE_RISK_KEYS.map((k) => pickStat(d, k)).filter(
-    (x): x is EnterpriseStat => !!x
+    (x): x is EnterpriseStat => !!x,
   );
   const litigation = LITIGATION_KEYS.map((k) => pickStat(d, k)).filter(
-    (x): x is EnterpriseStat => !!x
+    (x): x is EnterpriseStat => !!x,
   );
   const auxiliary = AUXILIARY_KEYS.map((k) => pickStat(d, k)).filter(
-    (x): x is EnterpriseStat => !!x
+    (x): x is EnterpriseStat => !!x,
   );
 
   return {
@@ -341,6 +348,6 @@ export async function getEnterpriseSummary(
     coreRisks,
     litigation,
     auxiliary,
-    level: computeRiskLevel(coreRisks)
+    level: computeRiskLevel(coreRisks),
   };
 }

@@ -33,8 +33,8 @@ export const SEAL_TYPE_CN: Record<string, string> = {
 export const SEAL_STATUS_CN: Record<string, string> = {
   PENDING: "待Aprobación",
   APPROVED: "待盖章",
-  STAMPED: "已完成",
-  REJECTED: "已驳回",
+  STAMPED: "Completado",
+  REJECTED: "Rechazado",
   CANCELLED: "已撤销",
 };
 

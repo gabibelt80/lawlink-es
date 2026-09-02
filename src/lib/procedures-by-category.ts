@@ -2,7 +2,7 @@ import type { MatterCategory, ProcedureType, LitigationStanding } from "@prisma/
 
 /**
  * 各Caso类别下可选的程序类型。
- * UI 上"新建Caso"和"Agregar程序"按此表过滤可选项。
+ * UI 上"新建Caso"和"Agregar程序"按此表过滤可选ítems。
  */
 export const proceduresByCategory: Record<MatterCategory, ProcedureType[]> = {
   CIVIL_COMMERCIAL: [
@@ -54,7 +54,7 @@ export const proceduresByCategory: Record<MatterCategory, ProcedureType[]> = {
     "ENFORCEMENT",
     "CUSTOM"
   ],
-  // 商事仲裁一裁终局，但裁后仍可进入撤裁、不予执行审查、执行等程序
+  // 商事仲裁一裁终局，但裁后仍可进入撤裁、不予执行审查、执行etc.程序
   COMMERCIAL_ARBITRATION: [
     "COMMERCIAL_ARBITRATION",
     "ARBITRATION_SET_ASIDE",
@@ -69,7 +69,7 @@ export const proceduresByCategory: Record<MatterCategory, ProcedureType[]> = {
 };
 
 /**
- * 各Caso类别下可选的诉讼地位（我方角色）。
+ * 各Caso类别下可选的诉讼地位（我方Rol）。
  */
 export const standingsByCategory: Record<MatterCategory, LitigationStanding[]> = {
   CIVIL_COMMERCIAL: [
@@ -115,7 +115,7 @@ export function suggestHandlingAgency(type: ProcedureType): string {
     return "中级人民法院";
   if (type === "ENFORCEMENT" || type === "ENFORCEMENT_OBJECTION") return "法院（执行局）";
   if (type === "ADMIN_NON_LITIGATION_ENFORCEMENT") return "法院";
-  // 一审/二审/再审 等审判类
+  // 一审/二审/再审 etc.审判类
   return "法院";
 }
 

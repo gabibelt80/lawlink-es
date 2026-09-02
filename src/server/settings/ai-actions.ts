@@ -94,7 +94,7 @@ export async function testAiConnection() {
     }
     return {
       ok: false,
-      message: e instanceof Error ? e.message : "未知错误"
+      message: e instanceof Error ? e.message : "Desconocido错误"
     };
   }
 }

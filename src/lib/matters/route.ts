@@ -6,8 +6,8 @@
  * 因此可以安全地当作 URL 的稳定标识。
  *
  * 不用 `firmCaseNo`（所内案号）：它含中文和括号，进 URL 要百分号Código；
- * 且按「Configuración → 律所信息」的模板渲染，模板可配置 = 可变，会让旧链接失效。
- * 也不把Caso标题做成 slug：标题含当事人姓名，属 PII，不进 URL（见 AGENTS.md §八）。
+ * 且按「Configuración → 律所信息」的模板渲染，模板可配置 = 可变，会让旧Enlace失效。
+ * 也不把Caso标题做成 slug：标题含当事人Nombre y apellido，属 PII，不进 URL（见 AGENTS.md §八）。
  */
 
 /**
@@ -19,7 +19,7 @@ type MatterRouteKey = {
   internalCode: string | null;
 };
 
-/** Caso详情页地址。没有 internalCode 时回退到 id，保证链接始终可用。 */
+/** Caso详情页地址。没有 internalCode 时回退到 id，保证Enlace始终可用。 */
 export function matterHref(matter: MatterRouteKey, suffix = ""): string {
   const key = matter.internalCode?.trim() || matter.id;
   return `/matters/${encodeURIComponent(key)}${suffix}`;

@@ -290,6 +290,6 @@ function formatTime(date: Date | string): string {
   const diffHr = Math.floor(diffMin / 60);
   if (diffHr < 24) return `${diffHr}小时前`;
   const diffDay = Math.floor(diffHr / 24);
-  if (diffDay < 7) return `${diffDay}天前`;
+  if (diffDay < 7) return `${diffDay}días前`;
   return d.toLocaleDateString("zh-CN", { month: "short", day: "numeric" });
 }

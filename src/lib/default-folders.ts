@@ -6,14 +6,14 @@ import type { Prisma } from "@prisma/client";
  * 新建 Matter 时自动 seed；isDefault=true 不可删，可改名。
  */
 export const DEFAULT_FOLDERS_BY_CATEGORY: Record<MatterCategory, readonly string[]> = {
-  CIVIL_COMMERCIAL: ["收案", "立案", "委托手续", "证据", "程序文书", "庭审", "裁判", "结案"],
-  LABOR_ARBITRATION: ["收案", "委托手续", "证据", "仲裁文书", "开庭", "裁决", "诉讼", "结案"],
-  COMMERCIAL_ARBITRATION: ["收案", "委托手续", "证据", "仲裁文书", "开庭", "裁决", "结案"],
-  ADMINISTRATIVE: ["收案", "立案", "委托手续", "证据", "程序文书", "庭审", "裁判", "结案"],
-  CRIMINAL: ["收案", "委托手续", "阅卷", "会见", "取证", "庭前", "庭审", "判决与上诉", "结案"],
-  NON_LITIGATION: ["立项", "调研", "工作底稿", "出具文件", "归档"],
-  LEGAL_COUNSEL: ["立项", "调研", "工作底稿", "出具文件", "归档"],
-  SPECIAL_PROJECT: ["立项", "调研", "工作底稿", "出具文件", "归档"]
+  CIVIL_COMMERCIAL: ["收案", "立案", "委托手续", "证据", "程序文书", "庭审", "裁判", "Cerrar caso"],
+  LABOR_ARBITRATION: ["收案", "委托手续", "证据", "仲裁文书", "开庭", "裁决", "诉讼", "Cerrar caso"],
+  COMMERCIAL_ARBITRATION: ["收案", "委托手续", "证据", "仲裁文书", "开庭", "裁决", "Cerrar caso"],
+  ADMINISTRATIVE: ["收案", "立案", "委托手续", "证据", "程序文书", "庭审", "裁判", "Cerrar caso"],
+  CRIMINAL: ["收案", "委托手续", "阅卷", "会见", "取证", "庭前", "庭审", "判决y上诉", "Cerrar caso"],
+  NON_LITIGATION: ["立ítems", "调研", "工作底稿", "出具文件", "归档"],
+  LEGAL_COUNSEL: ["立ítems", "调研", "工作底稿", "出具文件", "归档"],
+  SPECIAL_PROJECT: ["立ítems", "调研", "工作底稿", "出具文件", "归档"]
 } as const;
 
 /**
@@ -56,14 +56,14 @@ export function suggestFolderByTemplateCategory(
     LITIGATION: matterCategory === "CRIMINAL" ? "庭前" : "程序文书",
     HEARING: matterCategory === "CRIMINAL" ? "庭审" : "庭审",
     WORK_PRODUCT: matterCategory === "CRIMINAL" ? "取证" : "证据",
-    ARCHIVE: matterCategory === "CRIMINAL" ? "结案" : "结案",
-    CLOSING: "结案",
+    ARCHIVE: matterCategory === "CRIMINAL" ? "Cerrar caso" : "Cerrar caso",
+    CLOSING: "Cerrar caso",
     BLANK: matterCategory === "CRIMINAL" ? "收案" : "收案"
   };
 
   const mapNonLitigation: Record<string, string> = {
-    INTAKE: "立项",
-    RETAINER: "立项",
+    INTAKE: "立ítems",
+    RETAINER: "立ítems",
     LITIGATION: "出具文件",
     HEARING: "工作底稿",
     WORK_PRODUCT: "出具文件",

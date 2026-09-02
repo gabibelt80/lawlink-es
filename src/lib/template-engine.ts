@@ -35,7 +35,7 @@ export interface RenderContext {
     category: string;
     causeText: string;
     intakeDate: string;
-    claimAmount: string; // 中文金额 / "—"
+    claimAmount: string; // 中文Monto / "—"
     ourStanding: string;
   };
   client: PartySnapshot;
@@ -81,7 +81,7 @@ const STANDING_CN: Record<string, string> = {
   ADMIN_DEFENDANT: "Administrativo诉讼被告",
   ADMIN_RECONSIDERATION_APPLICANT: "Administrativo复议申请人",
   ADMIN_RECONSIDERATION_RESPONDENT: "Administrativo复议被申请人",
-  NON_LITIGATION_PARTY: "项目当事人"
+  NON_LITIGATION_PARTY: "ítems目当事人"
 };
 
 const CATEGORY_CN: Record<string, string> = {
@@ -90,7 +90,7 @@ const CATEGORY_CN: Record<string, string> = {
   ADMINISTRATIVE: "Administrativo",
   NON_LITIGATION: "非诉",
   LEGAL_COUNSEL: "法律顾问",
-  SPECIAL_PROJECT: "专项法律服务"
+  SPECIAL_PROJECT: "专ítems法律服务"
 };
 
 function toCNDate(d: Date): string {
@@ -137,7 +137,7 @@ async function getFirmInfo(): Promise<{ name: string; address: string; phone: st
 
 /**
  * 应用 overrides（来自 UI 的行内补全），路径键如 "client.idNumber" 写回源表。
- * 注意：只回写 v0.8 高频缺失字段（client.idNumber / client.address / opposing.idNumber 等）。
+ * 注意：只回写 v0.8 高频缺失字段（client.idNumber / client.address / opposing.idNumber etc.）。
  * 其他字段一律忽略，避免误Acciones。
  */
 async function applyOverrides(matterId: string | undefined, overrides: Record<string, string>) {
@@ -269,7 +269,7 @@ export async function buildContext(opts: {
       category: CATEGORY_CN[matter.category] ?? matter.category,
       causeText,
       intakeDate: matter.intakeDate ? matter.intakeDate.toISOString().slice(0, 10) : "",
-      claimAmount: matter.claimAmount ? `${matter.claimAmount} 元` : "—",
+      claimAmount: matter.claimAmount ? `${matter.claimAmount} pesos` : "—",
       ourStanding: matter.ourStanding ? STANDING_CN[matter.ourStanding] ?? matter.ourStanding : ""
     },
     client: clientParty,
@@ -315,7 +315,7 @@ function formatDocxError(err: unknown): string {
   const lines: string[] = [];
   for (const it of items) {
     const tag = it.properties?.xtag ?? it.properties?.id ?? "?";
-    const reason = it.properties?.explanation ?? it.message ?? "未知";
+    const reason = it.properties?.explanation ?? it.message ?? "Desconocido";
     lines.push(`[${tag}] ${reason}`);
   }
   return lines.join("\n");
@@ -323,9 +323,9 @@ function formatDocxError(err: unknown): string {
 
 /**
  * 渲染 docx：传入模板 Buffer + 上下文 → Volver填充后的 Buffer。
- * 模板用 {{var}} 语法（双大括号），避免与 docx 内嵌 "{" 冲突。
+ * 模板用 {{var}} 语法（双大括号），避免y docx 内嵌 "{" 冲突。
  *
- * 出错时抛出含具体 tag / 原因的中文异常，方便Abogado定位是哪个模板字段坏了。
+ * 出错时抛出含具体 tag / Motivo的中文异常，方便Abogado定位是哪个模板字段坏了。
  */
 export function renderDocxBuffer(
   templateBuffer: Buffer,
@@ -347,7 +347,7 @@ export function renderDocxBuffer(
   try {
     doc.render(context as unknown as Record<string, unknown>);
   } catch (err) {
-    throw new Error(`模板渲染失败：\n${formatDocxError(err)}`);
+    throw new Error(`模板渲染Error：\n${formatDocxError(err)}`);
   }
 
   return doc.getZip().generate({ type: "nodebuffer" }) as Buffer;

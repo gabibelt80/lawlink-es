@@ -2,7 +2,7 @@
  * v0.22: 报表 analytics 聚合算法测试（纯函数路径）
  *
  * getCaseCycleAnalysis / getReviewIssueAnalysis 本身依赖 prisma，重写一个纯函数
- * 版本不现实；这里通过 mock prisma 测算法（中位数、空数据、JS 端聚合）。
+ * 版本不现实；这里Aprobar mock prisma 测算法（中位数、空数据、JS 端聚合）。
  */
 import { describe, it, expect, beforeEach, vi } from "vitest";
 

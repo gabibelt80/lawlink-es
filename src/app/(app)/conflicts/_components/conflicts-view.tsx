@@ -134,7 +134,7 @@ export function ConflictsView() {
       }))
       .filter((q) => q.name || q.idNumber);
     if (cleaned.length === 0) {
-      toast.warning("请至少填写一个姓名或证件号");
+      toast.warning("请至少填写一个Nombre y apellido或证件号");
       return;
     }
 
@@ -145,7 +145,7 @@ export function ConflictsView() {
         setHasRun(true);
         toast.success(`检索完成，命中 ${res.hits.length} 条`);
       } catch (err) {
-        toast.error("检索失败", {
+        toast.error("检索Error", {
           description: err instanceof Error ? err.message : "",
         });
       }
@@ -160,13 +160,13 @@ export function ConflictsView() {
           冲突检索
         </h1>
         <p className="relative z-[1] mt-2 max-w-2xl text-[13px] text-muted-foreground">
-          拟代理的委托方、相对方或第三人，必须先与历史Cliente和Caso主体比对。命中阻塞冲突时，建议停止收案并形成留痕结论。
+          拟代理的委托方、相对方或第三人，必须先y历史Cliente和Caso主体比对。命中阻塞冲突时，建议停止收案并形成留痕结论。
         </p>
       </header>
 
       <section className="ll-surface p-4">
         <div className="mb-3 flex items-center justify-between">
-          <h2 className="ll-panel-title">检索项</h2>
+          <h2 className="ll-panel-title">检索ítems</h2>
           <Button
             variant="outline"
             size="sm"
@@ -174,7 +174,7 @@ export function ConflictsView() {
             className="h-7 gap-1"
           >
             <Plus className="h-3.5 w-3.5" />
-            Agregar检索项
+            Agregar检索ítems
           </Button>
         </div>
 
@@ -208,7 +208,7 @@ export function ConflictsView() {
               </div>
               <div className="col-span-4">
                 <Label className="text-[10px] uppercase tracking-wider text-muted-foreground">
-                  姓名 / Nombre
+                  Nombre y apellido / Nombre
                 </Label>
                 <Input
                   value={q.name}
@@ -226,7 +226,7 @@ export function ConflictsView() {
                   onChange={(e) =>
                     updateQuery(idx, { idNumber: e.target.value })
                   }
-                  placeholder="与姓名至少填一项"
+                  placeholder="yNombre y apellido至少填一ítems"
                   className="mt-1 h-[34px] bg-card font-mono"
                 />
               </div>
@@ -325,7 +325,7 @@ export function ConflictsView() {
                           <MatterContext info={h.matterInfo} hit={h} />
                         )}
                         <div className="mt-1 font-mono text-[11px] text-muted-foreground">
-                          匹配字段：{h.matchedField} = {h.matchedValue}
+                          Coincidencia字段：{h.matchedField} = {h.matchedValue}
                           {h.matchedRatio !== null && h.matchedRatio < 1 && (
                             <span className="ml-2">
                               相似度 {(h.matchedRatio * 100).toFixed(0)}%
@@ -441,9 +441,9 @@ function MatterContext({
       <div className="grid grid-cols-2 gap-x-4 gap-y-1.5 text-muted-foreground md:grid-cols-3">
         <Field label="Sistema收案">{formatDate(info.intakeDate)}</Field>
         <Field label="当前Estado">{matterStatusLabel[info.status]}</Field>
-        <Field label="案由/类型">{causeOrCategory}</Field>
+        <Field label="Causa/类型">{causeOrCategory}</Field>
         <Field label="主办Abogado">{info.ownerName ?? "—"}</Field>
-        <Field label="命中角色">
+        <Field label="命中Rol">
           {partyRoleLabel[info.partyRole]}
           {info.partyStanding
             ? ` · ${litigationStandingLabel[info.partyStanding]}`

@@ -4,14 +4,14 @@
  * v0.27: 快递单号 OCR
  *
  * Abogado上传快递单照片 → aiVision 提取快递单号 + 公司名（如能识别）
- * 失败时Volver空，让Abogado手动输入
+ * Error时Volver空，让Abogado手动输入
  */
 import { requireSession } from "@/lib/auth/session";
 import { aiVision, extractJson, AiNotConfiguredError } from "@/lib/ai/client";
 
 export type ParsedExpressLabel = {
   trackingNo: string | null;
-  companyCode: string | null; // 中文公司名（顺丰速运 / 中通快递 等）
+  companyCode: string | null; // 中文公司名（顺丰速运 / 中通快递 etc.）
 };
 
 const SUPPORTED = new Set([
@@ -25,7 +25,7 @@ const PROMPT = `下方图片是一张快递面单 / 快递单照片。请严格V
 {"trackingNo": "单号", "companyCode": "中文快递公司名（如：顺丰速运 / 中通快递 / 京东快递）"}
 规则：
 - trackingNo 是面单上最显眼的运单号，10-30 位字母数字组合
-- 找不到任何一项Volver null，不要编造
+- 找不到任何一ítemsVolver null，不要编造
 - 仅 JSON，不要解释`;
 
 export async function parseExpressLabel(
@@ -57,6 +57,10 @@ export async function parseExpressLabel(
     };
   } catch (err) {
     if (err instanceof AiNotConfiguredError) throw err;
-    throw new Error(err instanceof Error ? err.message : "快递单识别失败");
+    throw new Error(
+      err instanceof Error
+        ? err.message
+        : "No se pudo reconocer la etiqueta de envío",
+    );
   }
 }

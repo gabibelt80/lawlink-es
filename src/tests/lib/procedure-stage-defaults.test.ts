@@ -27,7 +27,7 @@ describe("defaultStageNamesForProcedure", () => {
       "代理授权",
       "执行立案",
       "财产查控",
-      "执行结案",
+      "执行Cerrar caso",
       "Caso归档"
     ]);
   });

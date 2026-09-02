@@ -12,7 +12,7 @@ export function nullableDecimalToNumber(value: DecimalLike | number | null | und
 
 /**
  * server action Volver值里的 Prisma.Decimal 深度转 number 后的类型。
- * Date / 基本类型保持不变，数组与嵌套对象递归处理。
+ * Date / 基本类型保持不变，数组y嵌套对象递归处理。
  */
 export type Serialized<T> = T extends Prisma.Decimal
   ? number

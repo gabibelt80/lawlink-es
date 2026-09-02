@@ -98,7 +98,7 @@ function skippedNoMatterResults(parsed: ParsedSms): ParsedSms["attachmentResults
   return parsed.urls.map((url) => ({
     url,
     status: "SKIPPED_NO_MATTER",
-    message: "请先关联Caso，再提取送达附件",
+    message: "请先关联Caso，再提取送达Adjunto",
     checkedAt: new Date().toISOString()
   }));
 }
@@ -123,7 +123,7 @@ async function tryExtractAttachments({
     return parsed.urls.map((url) => ({
       url,
       status: "FAILED" as const,
-      message: err instanceof Error ? err.message : "附件提取失败",
+      message: err instanceof Error ? err.message : "Adjunto提取Error",
       checkedAt: new Date().toISOString()
     }));
   }
@@ -193,7 +193,7 @@ export async function parseAndSaveSms(input: z.infer<typeof smsParseAndSaveSchem
           userId: matter.ownerId,
           type: "SMS_ARRIVAL",
           title: "收到新法院SMS",
-          content: `Caso收到新的法院SMS，类型：${parsed.smsType ?? "未知"}`,
+          content: `Caso收到新的法院SMS，类型：${parsed.smsType ?? "Desconocido"}`,
           href: "/inbox",
           refType: "SmsMessage",
           refId: created.id
@@ -252,7 +252,7 @@ export async function extractSmsAttachments(input: z.infer<typeof smsIdSchema>) 
 
   await assertCanAccessMatter(session.user.id, session.user.role, sms.matchedMatterId);
   const parsed = normalizeStoredParsed(sms.rawText, sms.parsedJson);
-  if (parsed.urls.length === 0) throw new Error("SMS中没有可提取的链接");
+  if (parsed.urls.length === 0) throw new Error("SMS中没有可提取的Enlace");
 
   const attachmentResults = await tryExtractAttachments({
     smsId: sms.id,
@@ -508,7 +508,7 @@ export async function deleteSms(input: z.infer<typeof smsIdSchema>) {
   });
   if (!sms) throw new Error("SMS不存在");
   if (sms.receivedById !== session.user.id && session.user.role !== "ADMIN") {
-    throw new Error("仅收件人或Administrar员可Eliminar");
+    throw new Error("仅Recibido人或Administrar员可Eliminar");
   }
 
   await prisma.smsMessage.delete({ where: { id: data.id } });
@@ -532,7 +532,7 @@ export async function parseDateString(s: string) {
 }
 
 /**
- * v0.51: 立案/受理SMS解析出的案号回填到程序（收件箱闭环）。
+ * v0.51: 立案/受理SMS解析出的案号回填到程序（Recibido箱闭环）。
  * 只允许回填SMS里真实解析出的案号；只填空案号的程序，已有案号不覆盖
  * （更正走程序信息Editar，留痕清晰）。
  */
@@ -561,7 +561,7 @@ export async function backfillCaseNumberFromSms(
     select: { id: true, matterId: true, caseNumber: true, type: true, customLabel: true }
   });
   if (!procedure || procedure.matterId !== sms.matchedMatterId) {
-    throw new Error("程序与SMS关联的Caso不匹配");
+    throw new Error("程序ySMS关联的Caso不Coincidencia");
   }
   if (procedure.caseNumber === data.caseNumber) {
     return { ok: true, unchanged: true };

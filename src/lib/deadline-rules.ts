@@ -1,18 +1,21 @@
 /**
- * v0.49 法定期限计算（PRD §二十）。
+ * v0.49 Cálculo de plazos procesales (adaptado a Argentina)
  *
- * 期间计算依据《中华人民共和国民事诉讼法（2023修正）》第八十五条（已核验）：
- * - 期间以时、日、月、年计算；期间开始的时和日不计算在期间内
- *   → 按日的期限：到期日 = 触发日 + N 日（即从次日起算第 N 日）
- * - 期间届满的最后一日是法定休假日的，以其后第一日为届满日
- *   → Sistema不内置节假日表（每年国务院调整），由 UI 提示人工核对顺延
- * 按月/年的期间取到期月对应日；到期月无对应日的取该月最后一日。
+ * Base legal: Código Procesal Civil y Comercial de la Nación (Ley 17.454)
+ * - Los plazos se computan en días hábiles (no se cuentan los feriados ni sábados y domingos)
+ * - El plazo comienza a correr al día siguiente de la notificación o del hecho que lo genera
+ * - Los plazos que vencen en día inhábil se prorrogan al día hábil siguiente
+ * - Los plazos se cuentan por días corridos o hábiles según lo disponga la ley
+ *
+ * Esta implementación calcula fechas de vencimiento de plazos procesales.
+ * NOTA: Esta versión NO incluye feriados automáticos (se deben verificar manualmente).
  */
 import type { DeadlinePeriodUnit } from "@prisma/client";
 
-export const HOLIDAY_NOTE = "如届满日为法定休假日，以其后第一个工作日为届满日，请人工核对顺延";
+export const HOLIDAY_NOTE =
+  "Si el vencimiento cae en feriado o día inhábil, se prorroga al día hábil siguiente. Verificar con el calendario judicial correspondiente.";
 
-/** 去掉时间部分，按本地Fecha归一到当天 00:00 */
+/** Eliminar la hora y normalizar a las 00:00 de la fecha local */
 function startOfDay(date: Date): Date {
   return new Date(date.getFullYear(), date.getMonth(), date.getDate());
 }
@@ -23,29 +26,32 @@ function addDays(date: Date, days: number): Date {
   return out;
 }
 
-/** 到期月对应日；无对应日（如 1/31 + 1 月）取到期月最后一日 */
 function addMonthsClamped(date: Date, months: number): Date {
   const base = startOfDay(date);
-  const targetMonthFirst = new Date(base.getFullYear(), base.getMonth() + months, 1);
+  const targetMonthFirst = new Date(
+    base.getFullYear(),
+    base.getMonth() + months,
+    1,
+  );
   const lastDayOfTargetMonth = new Date(
     targetMonthFirst.getFullYear(),
     targetMonthFirst.getMonth() + 1,
-    0
+    0,
   ).getDate();
   return new Date(
     targetMonthFirst.getFullYear(),
     targetMonthFirst.getMonth(),
-    Math.min(base.getDate(), lastDayOfTargetMonth)
+    Math.min(base.getDate(), lastDayOfTargetMonth),
   );
 }
 
 export function computeDeadlineDate(
   triggerDate: Date,
   periodValue: number,
-  periodUnit: DeadlinePeriodUnit
+  periodUnit: DeadlinePeriodUnit,
 ): Date {
   if (!Number.isInteger(periodValue) || periodValue <= 0) {
-    throw new Error("期限数值必须为正整数");
+    throw new Error("El valor del plazo debe ser un número entero positivo");
   }
   switch (periodUnit) {
     case "DAYS":
@@ -57,12 +63,16 @@ export function computeDeadlineDate(
   }
 }
 
-export function periodLabel(periodValue: number, periodUnit: DeadlinePeriodUnit): string {
-  const unit = periodUnit === "DAYS" ? "日" : periodUnit === "MONTHS" ? "个月" : "年";
+export function periodLabel(
+  periodValue: number,
+  periodUnit: DeadlinePeriodUnit,
+): string {
+  const unit =
+    periodUnit === "DAYS" ? "días" : periodUnit === "MONTHS" ? "meses" : "años";
   return `${periodValue} ${unit}`;
 }
 
-/** 本地时区 yyyy-MM-dd。不能用 toISOString（UTC+8 下会把本地Fecha偏移一天） */
+/** Formato yyyy-MM-dd en hora local */
 export function formatLocalDate(date: Date): string {
   const y = date.getFullYear();
   const m = `${date.getMonth() + 1}`.padStart(2, "0");
@@ -70,7 +80,7 @@ export function formatLocalDate(date: Date): string {
   return `${y}-${m}-${d}`;
 }
 
-/** 生成 Deadline.basis 文本：法条 + 计算过程 + 顺延提示 */
+/** Generar texto de fundamento del plazo: fundamento legal + cálculo + advertencia de prórroga */
 export function buildDeadlineBasis(input: {
   legalBasis: string;
   triggerLabel: string;
@@ -80,7 +90,7 @@ export function buildDeadlineBasis(input: {
 }): string {
   return [
     input.legalBasis,
-    `自${input.triggerLabel}（${formatLocalDate(input.triggerDate)}）起 ${periodLabel(input.periodValue, input.periodUnit)}`,
-    HOLIDAY_NOTE
+    `Desde ${input.triggerLabel} (${formatLocalDate(input.triggerDate)}) plazo de ${periodLabel(input.periodValue, input.periodUnit)}`,
+    HOLIDAY_NOTE,
   ].join("；");
 }

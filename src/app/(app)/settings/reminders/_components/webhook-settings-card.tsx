@@ -34,7 +34,7 @@ export function WebhookSettingsCard({
         await saveWebhookSettingsAction({ enabled, url: url.trim() });
         toast.success("推送配置已Guardar");
       } catch (err) {
-        toast.error("Guardar失败", { description: err instanceof Error ? err.message : "" });
+        toast.error("GuardarError", { description: err instanceof Error ? err.message : "" });
       }
     });
   }
@@ -43,9 +43,9 @@ export function WebhookSettingsCard({
     startTesting(async () => {
       try {
         await sendTestWebhookAction();
-        toast.success("测试消息已发送，请到群里确认");
+        toast.success("测试消息已发送，请到群里Confirmar");
       } catch (err) {
-        toast.error("测试失败", { description: err instanceof Error ? err.message : "" });
+        toast.error("测试Error", { description: err instanceof Error ? err.message : "" });
       }
     });
   }
@@ -57,7 +57,7 @@ export function WebhookSettingsCard({
         <div className="text-sm font-medium">群机器人推送（企业微信 / 钉钉）</div>
       </div>
       <p className="mt-1 text-[12px] leading-5 text-muted-foreground">
-        每日到期扫描发现新Recordatorios时，向群机器人推送一条汇Total（只含事项标题与Caso编号，不含当事人详情）。
+        每日到期扫描发现新Recordatorios时，向群机器人推送一条汇Total（只含事ítems标题yCaso编号，不含当事人详情）。
         在企业微信 / 钉钉群里Agregar「自定义机器人」，把 Webhook 地址粘贴到下方；
         钉钉机器人建议用「自定义关键词」安全Configuración并填 <code className="font-mono">LawLink</code>。
       </p>

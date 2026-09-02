@@ -25,7 +25,7 @@ const DOC_EXT = [
   "mp4", "mov", "avi"
 ];
 
-// 发票 / 用章场景更窄：仅图片或 PDF
+// Factura / 用章场景更窄：仅图片或 PDF
 const NARROW_EXT = ["pdf", "jpg", "jpeg", "png", "gif", "webp", "bmp", "tiff"];
 
 const ALLOWED: Record<UploadPurpose, Set<string>> = {
@@ -53,7 +53,7 @@ export interface FileValidationOptions {
 }
 
 /**
- * 抛中文异常（前端 toast 直接显示）；通过Volver归一化的 ext 给上层用作存储路径或日志。
+ * 抛中文异常（前端 toast 直接显示）；AprobarVolver归一化的 ext 给上层用作存储路径或日志。
  */
 export function validateUploadedFile(
   file: File,
@@ -74,7 +74,7 @@ export function validateUploadedFile(
   }
   if (file.type && !MIME_PREFIX_OK[opts.purpose].test(file.type)) {
     throw new Error(
-      `MIME 类型与扩展名不一致或不在白名单：${file.type}`
+      `MIME 类型y扩展名不一致或不在白名单：${file.type}`
     );
   }
   return { ext };

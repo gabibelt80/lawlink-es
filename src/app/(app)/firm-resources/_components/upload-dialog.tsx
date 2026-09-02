@@ -107,7 +107,7 @@ export function UploadDialog({
         onOpenChange(false);
         router.refresh();
       } catch (err) {
-        toast.error("上传失败", {
+        toast.error("上传Error", {
           description: err instanceof Error ? err.message : ""
         });
       }
@@ -125,7 +125,7 @@ export function UploadDialog({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-base">
             <Upload className="h-4 w-4 text-primary" />
-            上传律所资料
+            上传律所Material
           </DialogTitle>
           <DialogDescription className="text-xs">
             单文件 ≤ 50MB；全所共享可见

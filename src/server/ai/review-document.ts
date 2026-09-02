@@ -4,7 +4,7 @@
  * v0.19: 文书智能审查
  *
  * 从存储读文档 → 抽文本（PDF/DOCX/纯文本）→ 喂 AI → 结构化审查清单。
- * 目前覆盖通用文书（合同、起诉状、申请书、协议、书证等），不分文书类型走同一 prompt。
+ * 目前覆盖通用文书（合同、起诉状、申请书、协议、书证etc.），不分文书类型走同一 prompt。
  */
 import { prisma } from "@/lib/prisma";
 import { requireSession } from "@/lib/auth/session";
@@ -12,10 +12,7 @@ import { assertCanAccessMatter } from "@/lib/permissions";
 import { storage } from "@/lib/storage";
 import { decryptBuffer } from "@/lib/storage/crypto";
 import { aiChat, AiNotConfiguredError } from "@/lib/ai/client";
-import {
-  parseReviewItems,
-  type ReviewItem
-} from "@/lib/ai/review-parser";
+import { parseReviewItems, type ReviewItem } from "@/lib/ai/review-parser";
 import { selectReviewPrompt, reviewPromptLabel } from "@/lib/ai/review-prompts";
 import { extractText, getDocumentProxy } from "unpdf";
 import mammoth from "mammoth";
@@ -35,7 +32,7 @@ const MAX_CHARS_FOR_AI = 6000;
 
 async function extractDocumentText(
   buf: Buffer,
-  mimeType: string | null
+  mimeType: string | null,
 ): Promise<string> {
   const mt = (mimeType ?? "").toLowerCase();
   if (mt === "application/pdf") {
@@ -44,20 +41,23 @@ async function extractDocumentText(
     return Array.isArray(text) ? text.join("\n") : text;
   }
   if (
-    mt === "application/vnd.openxmlformats-officedocument.wordprocessingml.document" ||
+    mt ===
+      "application/vnd.openxmlformats-officedocument.wordprocessingml.document" ||
     mt === "application/docx"
   ) {
     const { value } = await mammoth.extractRawText({ buffer: buf });
     return value;
   }
   if (mt === "application/msword") {
-    throw new Error("不支持老 .doc 格式，请另存为 .docx 后重新上传");
+    throw new Error(
+      "No se admite el formato .doc antiguo; guardá el archivo como .docx y volvelo a subir",
+    );
   }
   if (mt.startsWith("text/")) {
     return buf.toString("utf8");
   }
   throw new Error(
-    `不支持的文档类型 (${mimeType ?? "未知"})，目前仅支持 PDF / DOCX / 纯文本`
+    `Tipo de documento no compatible (${mimeType ?? "desconocido"}), actualmente solo se admiten PDF / DOCX / texto plano`,
   );
 }
 
@@ -67,19 +67,24 @@ export async function reviewDocument(input: {
   const session = await requireSession();
 
   const doc = await prisma.document.findFirst({
-    where: { id: input.documentId, deletedAt: null }
+    where: { id: input.documentId, deletedAt: null },
   });
-  if (!doc) throw new Error("材料不存在");
+  if (!doc) throw new Error("El material no existe");
 
   if (doc.matterId) {
-    await assertCanAccessMatter(session.user.id, session.user.role, doc.matterId);
+    await assertCanAccessMatter(
+      session.user.id,
+      session.user.role,
+      doc.matterId,
+    );
   }
 
   // 读取 + 解密
   const stored = await storage.readFile(doc.path);
   let buf: Buffer;
   if (doc.encrypted) {
-    if (!doc.iv || !doc.authTag) throw new Error("加密元数据损坏");
+    if (!doc.iv || !doc.authTag)
+      throw new Error("Los metadatos cifrados están dañados");
     buf = decryptBuffer(stored, doc.iv, doc.authTag);
   } else {
     buf = stored;
@@ -87,13 +92,15 @@ export async function reviewDocument(input: {
 
   const raw = (await extractDocumentText(buf, doc.mimeType)).trim();
   if (raw.length < 20) {
-    throw new Error("无可分析文本（可能是扫描件 PDF / 空文档），请用文本层 PDF 或 DOCX");
+    throw new Error(
+      "No hay texto analizable (puede ser un PDF escaneado o un documento vacío). Usá un PDF con capa de texto o un DOCX",
+    );
   }
 
   const truncated = raw.length > MAX_CHARS_FOR_AI;
   const text = truncated ? raw.slice(0, MAX_CHARS_FOR_AI) : raw;
 
-  // v0.26: 按 Document.category 选 prompt（合同/诉状/证据/裁判 4 套专项 + 通用兜底）
+  // v0.26: 按 Document.category 选 prompt（合同/诉状/证据/裁判 4 套专ítems + 通用兜底）
   const systemPrompt = selectReviewPrompt(doc.category);
   const promptLabel = reviewPromptLabel(doc.category);
 
@@ -104,17 +111,17 @@ export async function reviewDocument(input: {
         { role: "system", content: systemPrompt },
         {
           role: "user",
-          content: `文书Nombre：${doc.name}\n审查类型：${promptLabel}\n\n文书正文：\n${text}${truncated ? "\n\n（注：原文较长，已截断前部分内容供审查）" : ""}`
-        }
+          content: `文书Nombre：${doc.name}\n审查类型：${promptLabel}\n\n文书正文：\n${text}${truncated ? "\n\n（注：原文较长，已截断前部分内容供审查）" : ""}`,
+        },
       ],
       maxTokens: 2000,
       temperature: 0.2,
-      timeoutMs: 45_000
+      timeoutMs: 45_000,
     });
     content = res.content;
   } catch (err) {
     if (err instanceof AiNotConfiguredError) throw err;
-    throw new Error(err instanceof Error ? err.message : "AI 审查请求失败");
+    throw new Error(err instanceof Error ? err.message : "AI 审查请求Error");
   }
 
   const items = parseReviewItems(content);
@@ -130,9 +137,9 @@ export async function reviewDocument(input: {
         itemCount: items.length,
         itemsJson: items as unknown as object,
         textPreviewChars: text.length,
-        truncated
+        truncated,
       },
-      select: { id: true }
+      select: { id: true },
     });
     recordId = rec.id;
   }
@@ -142,6 +149,6 @@ export async function reviewDocument(input: {
     textPreviewChars: text.length,
     truncated,
     items,
-    recordId
+    recordId,
   };
 }

@@ -26,15 +26,15 @@ export function OverviewPanel({ matter }: { matter: MatterPayload }) {
 
   return (
     <div className="grid grid-cols-1 gap-5 lg:grid-cols-3">
-      {/* 近期期限 */}
+      {/* 近期Plazo */}
       <section className="rounded-xl border border-border bg-card p-5 lg:col-span-2">
         <h2 className="mb-4 flex items-center gap-2 text-base font-semibold">
           <Briefcase className="h-4 w-4 text-primary" />
-          近期期限
+          近期Plazo
         </h2>
         {upcomingDeadlines.length === 0 ? (
           <p className="py-6 text-center text-xs text-muted-foreground">
-            暂无未完成的期限
+            暂无未完成的Plazo
           </p>
         ) : (
           <ul className="space-y-2">
@@ -63,7 +63,7 @@ export function OverviewPanel({ matter }: { matter: MatterPayload }) {
                             : "text-foreground"
                       }`}
                     >
-                      {isOverdue ? `逾期 ${-days} 天` : days === 0 ? "Hoy" : `${days} 天`}
+                      {isOverdue ? `Vencido ${-days} días` : days === 0 ? "Hoy" : `${days} días`}
                     </div>
                     <div className="font-mono text-[10px] text-muted-foreground tabular">
                       {new Date(d.dueAt).toLocaleDateString("zh-CN")}

@@ -40,7 +40,7 @@ async function getOpenableMatterIds(userId: string, matterIds: string[]) {
 
 const queryItemSchema = z
   .object({
-    // v0.4: 角色可选（顶栏快查不需要），server 端默认 OPPOSING_PARTY
+    // v0.4: Rol可选（顶栏快查不需要），server 端默认 OPPOSING_PARTY
     role: z
       .enum([
         "CLIENT_PARTY",
@@ -56,7 +56,7 @@ const queryItemSchema = z
     idNumber: z.string().max(50).optional().or(z.literal(""))
   })
   .refine((q) => (q.name && q.name.trim()) || (q.idNumber && q.idNumber.trim()), {
-    message: "姓名或证件号至少填写一项"
+    message: "Nombre y apellido或证件号至少填写一ítems"
   });
 
 const runCheckSchema = z.object({

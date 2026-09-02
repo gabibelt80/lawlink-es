@@ -102,7 +102,7 @@ export default async function MattersPage({ searchParams }: Props) {
   ]);
 
   if (tab === "intake" || tab === "revision") {
-    // 待Aprobación / 待补正：从 Intake 表筛
+    // 待Aprobación / Pendiente de corrección：从 Intake 表筛
     const intakeSortBy = sortBy === "claimAmount" ? "claimAmount" : "intakeDate";
     const intakes = await listIntakes({
       search: params.search,
@@ -166,7 +166,7 @@ export default async function MattersPage({ searchParams }: Props) {
   } else if (tab === "active") {
     statusGroup = { statusNotIn: ["CLOSED", "ARCHIVED"] };
   } else if (tab === "all") {
-    // Ver todosCaso：通过收案Aprobación的（排除 PENDING_ACCEPTANCE — 那是收案阶段）
+    // Ver todosCaso：Aprobar收案Aprobación的（排除 PENDING_ACCEPTANCE — 那是收案阶段）
     // 可被 searchParams.status 进一步筛选
     if (params.status === "active") {
       statusGroup = { statusIn: ["IN_PROGRESS", "ON_HOLD"] };

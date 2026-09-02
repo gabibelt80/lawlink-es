@@ -63,14 +63,14 @@ export function LifecycleActions({
 
   function handleSubmit() {
     if (dialog === "close" && !text.trim()) {
-      toast.warning("请填写结案小结");
+      toast.warning("请填写Cerrar caso小结");
       return;
     }
     startTransition(async () => {
       try {
         if (dialog === "close") {
           await closeMatter({ id: matterId, summary: text });
-          toast.success("Caso已结案");
+          toast.success("Caso已Cerrar caso");
         } else if (dialog === "hold") {
           await holdMatter({ id: matterId, reason: text });
           toast.success("Caso已暂停");
@@ -140,7 +140,7 @@ export function LifecycleActions({
           {status !== "CLOSED" && (
             <DropdownMenuItem onSelect={() => open("close")}>
               <CheckCircle2 className="mr-2 h-4 w-4 text-[#4ADE80]" />
-              结案
+              Cerrar caso
             </DropdownMenuItem>
           )}
           {canArchive && (
@@ -161,17 +161,17 @@ export function LifecycleActions({
       <Dialog open={dialog !== null} onOpenChange={(o) => !o && setDialog(null)}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>{dialog === "close" ? "结案" : "暂停Caso"}</DialogTitle>
+            <DialogTitle>{dialog === "close" ? "Cerrar caso" : "暂停Caso"}</DialogTitle>
             <DialogDescription>
               {dialog === "close" &&
-                "结案后CasoEstado为'已结案'，仍可Editar。结案小结会进入时间线。"}
+                "Cerrar caso后CasoEstado为'已Cerrar caso'，仍可Editar。Cerrar caso小结会进入时间线。"}
               {dialog === "hold" && "暂停后Caso不再显示在'办理中'筛选。"}
             </DialogDescription>
           </DialogHeader>
 
           <div className="space-y-1.5">
             <Label className="text-xs">
-              {dialog === "close" ? "结案小结" : "暂停原因"}
+              {dialog === "close" ? "Cerrar caso小结" : "Motivo de suspensión"}
               {dialog === "close" && <span className="ml-1 text-destructive">*</span>}
             </Label>
             <Textarea
@@ -180,7 +180,7 @@ export function LifecycleActions({
               placeholder={
                 dialog === "close"
                   ? "如：经一审判决支持原告诉请，对方未上诉，判决已生效"
-                  : "如：等待Cliente补充证据材料"
+                  : "如：etc.待Cliente补充证据材料"
               }
               rows={5}
             />
@@ -192,7 +192,7 @@ export function LifecycleActions({
             </Button>
             <Button onClick={handleSubmit} disabled={isPending}>
               {isPending && <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />}
-              {dialog === "close" ? "确认结案" : "确认暂停"}
+              {dialog === "close" ? "ConfirmarCerrar caso" : "Confirmar暂停"}
             </Button>
           </DialogFooter>
         </DialogContent>

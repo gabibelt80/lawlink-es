@@ -1,9 +1,9 @@
 "use server";
 
 /**
- * v0.19: 案由 AI 推荐
+ * v0.19: Causa AI 推荐
  *
- * 输入案情Descripción → LLM 吐 3 个 4 级案由名 + 推荐理由 + 置信度
+ * 输入案情Descripción → LLM 吐 3 个 4 级Causa名 + 推荐理由 + 置信度
  * → 用 searchCauses 反查库内 id（找不到的丢弃）
  * → Volver带库内 cause 对象的候选列表
  */
@@ -26,21 +26,21 @@ type LlmCandidate = {
   confidence?: unknown;
 };
 
-const SYSTEM_PROMPT = `你是中国法律案由分类助手。
-基于用户给出的Caso类别和案情Descripción，从《民事Caso案由规定》/《AdministrativoCaso案由规定》/Penal罪名体系中
-选出最贴近的 3 个**最末级**（三级或四级）案由。
+const SYSTEM_PROMPT = `你是中国法律Causa分类助手。
+基于用户给出的Caso类别和案情Descripción，从《民事CasoCausa规定》/《AdministrativoCasoCausa规定》/Penal罪名体系中
+选出最贴近的 3 个**最末级**（三级或四级）Causa。
 
 严格按下方 JSON 数组Volver（仅 JSON，不要任何解释文字）：
 [
-  {"name": "案由全名（如：民间借贷纠纷）", "reason": "为什么贴合本案，30 字内", "confidence": "HIGH" | "MEDIUM" | "LOW"},
+  {"name": "Causa全名（如：民间借贷纠纷）", "reason": "为什么贴合本案，30 字内", "confidence": "HIGH" | "MEDIUM" | "LOW"},
   ...
 ]
 
 规则：
 - 必须Volver 3 条；按相关度从高到低排序
-- 案由名必须使用规范全称（如「民间借贷纠纷」而非「借贷」「借贷纠纷」）
-- 优先选最末级具体案由，避免「合同纠纷」这种二级笼统分类
-- confidence 自评：HIGH=案情要素完全对应；MEDIUM=主要要素匹配但有歧义；LOW=信息不足只能猜测`;
+- Causa名必须使用规范全称（如「民间借贷纠纷」而非「借贷」「借贷纠纷」）
+- 优先选最末级具体Causa，避免「合同纠纷」这种二级笼统分类
+- confidence 自评：HIGH=案情要素完全对应；MEDIUM=主要要素Coincidencia但有歧义；LOW=信息不足只能猜测`;
 
 function categoryHint(category: MatterCategory): string {
   switch (category) {
@@ -55,7 +55,7 @@ function categoryHint(category: MatterCategory): string {
     case "LEGAL_COUNSEL":
       return "常年法律顾问";
     case "SPECIAL_PROJECT":
-      return "专项";
+      return "专ítems";
     default:
       return category;
   }
@@ -68,19 +68,24 @@ function normalizeConfidence(v: unknown): CauseConfidence {
 }
 
 /**
- * 反查：把 LLM 给的案由名映射到库内记录。
- * - 优先精确匹配 name
+ * 反查：把 LLM 给的Causa名映射到库内记录。
+ * - 优先精确Coincidencia name
  * - 否则取 searchCauses Volver的第一条
  * - 过滤掉 level < 3 的（二级太笼统，宁可不推）
  */
 async function resolveCauseId(
   category: MatterCategory,
   procedureType: ProcedureType | null | undefined,
-  rawName: string
+  rawName: string,
 ): Promise<CauseSearchResult | null> {
   const name = rawName.trim();
   if (!name) return null;
-  const hits = await searchCauses({ category, procedureType, query: name, limit: 10 });
+  const hits = await searchCauses({
+    category,
+    procedureType,
+    query: name,
+    limit: 10,
+  });
   if (hits.length === 0) return null;
   const exact = hits.find((h) => h.name === name && h.level >= 3);
   if (exact) return exact;
@@ -97,7 +102,9 @@ export async function recommendCause(input: {
 
   const situation = input.situation.trim();
   if (situation.length < 5) {
-    throw new Error("案情Descripción太短，至少 5 个字");
+    throw new Error(
+      "La descripción del caso es demasiado corta; debe tener al menos 5 caracteres.",
+    );
   }
 
   let content = "";
@@ -107,16 +114,16 @@ export async function recommendCause(input: {
         { role: "system", content: SYSTEM_PROMPT },
         {
           role: "user",
-          content: `Caso类别：${categoryHint(input.category)}\n\n案情：\n${situation.slice(0, 4000)}`
-        }
+          content: `Caso类别：${categoryHint(input.category)}\n\n案情：\n${situation.slice(0, 4000)}`,
+        },
       ],
       maxTokens: 800,
-      temperature: 0.1
+      temperature: 0.1,
     });
     content = res.content;
   } catch (err) {
     if (err instanceof AiNotConfiguredError) throw err;
-    throw new Error(err instanceof Error ? err.message : "AI 请求失败");
+    throw new Error(err instanceof Error ? err.message : "AI 请求Error");
   }
 
   const parsed = extractJson<LlmCandidate[]>(content);
@@ -129,7 +136,11 @@ export async function recommendCause(input: {
     const name = typeof item.name === "string" ? item.name : "";
     const reason = typeof item.reason === "string" ? item.reason : "";
     const confidence = normalizeConfidence(item.confidence);
-    const cause = await resolveCauseId(input.category, input.procedureType, name);
+    const cause = await resolveCauseId(
+      input.category,
+      input.procedureType,
+      name,
+    );
     if (!cause) continue;
     if (results.some((r) => r.cause.id === cause.id)) continue;
     results.push({ cause, reason, confidence });
@@ -137,7 +148,7 @@ export async function recommendCause(input: {
   }
 
   if (results.length === 0) {
-    throw new Error("AI 推荐的案由都不在案由库中，请手动选择");
+    throw new Error("AI 推荐的Causa都不在Causa库中，请手动选择");
   }
 
   return results;

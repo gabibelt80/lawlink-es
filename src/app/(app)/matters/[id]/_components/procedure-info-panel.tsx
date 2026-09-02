@@ -163,9 +163,9 @@ const PROCEDURE_OUTCOME_LABEL: Record<ProcedureOutcome, string> = {
   PARTIAL_WON: "部分胜诉",
   LOST: "败诉",
   MEDIATED: "调解",
-  WITHDRAWN: "撤回",
-  DISMISSED: "驳回",
-  COMPLETED: "已完成",
+  WITHDRAWN: "Retirar",
+  DISMISSED: "Rechazar",
+  COMPLETED: "Completado",
   TRANSFERRED: "移送",
   OTHER: "其他"
 };
@@ -882,7 +882,7 @@ function EditDialog({
     }
     if (!isAgencyAllowedForProcedure(form.handlingAgency, proc.type)) {
       toast.error("商事仲裁程序不能选择法院作为管辖机构", {
-        description: "撤裁、强制执行、不予执行审查等后续程序仍可选择法院。"
+        description: "撤裁、强制执行、不予执行审查etc.后续程序仍可选择法院。"
       });
       return;
     }
@@ -922,7 +922,7 @@ function EditDialog({
         toast.success("已Guardar");
         onSaved();
       } catch (err) {
-        toast.error("Guardar失败", { description: err instanceof Error ? err.message : "" });
+        toast.error("GuardarError", { description: err instanceof Error ? err.message : "" });
       }
     });
   }
@@ -949,7 +949,7 @@ function EditDialog({
                   list={`proc-agency-${proc.id}`}
                   value={form.handlingAgency}
                   onChange={(e) => handleHandlingAgencyChange(e.target.value)}
-                  placeholder="如：最高人民法院 / 广州市天河区人民法院"
+                  placeholder="如：最高人民法院 / 广州市días河区人民法院"
                   className={editorControlClass}
                 />
                 <datalist id={`proc-agency-${proc.id}`}>
@@ -1001,7 +1001,7 @@ function EditDialog({
                   className={editorControlClass}
                 />
               </FieldRow>
-              <FieldRow label="裁决 / 结案时间">
+              <FieldRow label="裁决 / Cerrar caso时间">
                 <Input
                   type="date"
                   value={form.concludedAt}
@@ -1079,7 +1079,7 @@ function EditDialog({
                               className={editorControlClass}
                             />
                           </FieldRow>
-                          <FieldRow label="当事人角色">
+                          <FieldRow label="当事人Rol">
                             <Select
                               value={draft.role}
                               onValueChange={(v) => setPartyEditValue(party.id, "role", v as PartyRole)}
@@ -1283,7 +1283,7 @@ function EditDialog({
                     onClick={addNewProcedureParty}
                     className="h-8 px-2 text-xs"
                   >
-                    确认Agregar
+                    ConfirmarAgregar
                   </Button>
                 </div>
                 <div className="mt-2 flex flex-wrap gap-x-3 gap-y-2">

@@ -1,11 +1,11 @@
 "use server";
 
 /**
- * v0.27: 服务中心 - 律所公告
+ * v0.27: 服务中心 - 律所Anuncio
  *
- * - ADMIN / 主任Abogado 可发布、Editar、置顶、归档
+ * - ADMIN / 主任Abogado 可Publicar、Editar、置顶、归档
  * - 所有Iniciar sesión用户可读
- * - pinned + 未过期 + 未归档的公告显示为顶部 banner
+ * - pinned + 未过期 + 未归档的Anuncio显示为顶部 banner
  */
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
@@ -15,31 +15,33 @@ import { audit } from "@/server/audit";
 
 function assertCanManage(role: string) {
   if (role !== "ADMIN" && role !== "PRINCIPAL_LAWYER") {
-    throw new Error("仅Administrar员 / 主任Abogado可发布公告");
+    throw new Error(
+      "Solo el Administrador / Abogado Principal puede publicar anuncios",
+    );
   }
 }
 
 const announcementCreateSchema = z.object({
-  title: z.string().min(1, "标题必填").max(120),
-  content: z.string().min(1, "内容必填").max(20000),
+  title: z.string().min(1, "El título es obligatorio").max(120),
+  content: z.string().min(1, "El contenido es obligatorio").max(20000),
   pinned: z.boolean().default(false),
-  expiresAt: z.coerce.date().optional().nullable()
+  expiresAt: z.coerce.date().optional().nullable(),
 });
 
 const announcementUpdateSchema = announcementCreateSchema.extend({
-  id: z.string().cuid()
+  id: z.string().cuid(),
 });
 
 export async function listAnnouncements({
-  includeArchived = false
+  includeArchived = false,
 }: { includeArchived?: boolean } = {}) {
   await requireSession();
   return prisma.announcement.findMany({
     where: includeArchived ? {} : { archivedAt: null },
     orderBy: [{ pinned: "desc" }, { publishedAt: "desc" }],
     include: {
-      author: { select: { id: true, name: true } }
-    }
+      author: { select: { id: true, name: true } },
+    },
   });
 }
 
@@ -53,14 +55,16 @@ export async function listActiveBanners() {
     where: {
       pinned: true,
       archivedAt: null,
-      OR: [{ expiresAt: null }, { expiresAt: { gt: now } }]
+      OR: [{ expiresAt: null }, { expiresAt: { gt: now } }],
     },
     orderBy: { publishedAt: "desc" },
-    select: { id: true, title: true, content: true, publishedAt: true }
+    select: { id: true, title: true, content: true, publishedAt: true },
   });
 }
 
-export async function createAnnouncement(input: z.infer<typeof announcementCreateSchema>) {
+export async function createAnnouncement(
+  input: z.infer<typeof announcementCreateSchema>,
+) {
   const session = await requireSession();
   assertCanManage(session.user.role);
   const data = announcementCreateSchema.parse(input);
@@ -71,8 +75,8 @@ export async function createAnnouncement(input: z.infer<typeof announcementCreat
       content: data.content,
       pinned: data.pinned,
       expiresAt: data.expiresAt ?? null,
-      authorId: session.user.id
-    }
+      authorId: session.user.id,
+    },
   });
 
   await audit({
@@ -80,7 +84,7 @@ export async function createAnnouncement(input: z.infer<typeof announcementCreat
     action: "ANNOUNCEMENT_CREATE",
     targetType: "Announcement",
     targetId: created.id,
-    detail: { title: created.title, pinned: created.pinned }
+    detail: { title: created.title, pinned: created.pinned },
   });
 
   revalidatePath("/announcements");
@@ -88,7 +92,9 @@ export async function createAnnouncement(input: z.infer<typeof announcementCreat
   return created;
 }
 
-export async function updateAnnouncement(input: z.infer<typeof announcementUpdateSchema>) {
+export async function updateAnnouncement(
+  input: z.infer<typeof announcementUpdateSchema>,
+) {
   const session = await requireSession();
   assertCanManage(session.user.role);
   const data = announcementUpdateSchema.parse(input);
@@ -99,8 +105,8 @@ export async function updateAnnouncement(input: z.infer<typeof announcementUpdat
       title: data.title.trim(),
       content: data.content,
       pinned: data.pinned,
-      expiresAt: data.expiresAt ?? null
-    }
+      expiresAt: data.expiresAt ?? null,
+    },
   });
 
   await audit({
@@ -108,7 +114,7 @@ export async function updateAnnouncement(input: z.infer<typeof announcementUpdat
     action: "ANNOUNCEMENT_UPDATE",
     targetType: "Announcement",
     targetId: data.id,
-    detail: { title: updated.title, pinned: updated.pinned }
+    detail: { title: updated.title, pinned: updated.pinned },
   });
 
   revalidatePath("/announcements");
@@ -122,14 +128,14 @@ export async function archiveAnnouncement(id: string) {
 
   await prisma.announcement.update({
     where: { id },
-    data: { archivedAt: new Date() }
+    data: { archivedAt: new Date() },
   });
 
   await audit({
     userId: session.user.id,
     action: "ANNOUNCEMENT_ARCHIVE",
     targetType: "Announcement",
-    targetId: id
+    targetId: id,
   });
 
   revalidatePath("/announcements");

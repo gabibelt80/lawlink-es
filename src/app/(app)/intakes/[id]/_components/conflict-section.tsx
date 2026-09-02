@@ -245,7 +245,7 @@ export function ConflictSection({
         </div>
       ) : (
         <div className="space-y-3">
-          {/* 概览 */}
+          {/* Vista general */}
           <div className="flex flex-wrap items-center gap-2 rounded-md border border-border bg-muted/20 p-2.5 text-[12px]">
             <span className="font-mono text-[11px] text-muted-foreground">
               {new Date(latestCheck.checkedAt).toLocaleString("zh-CN")}

@@ -3,7 +3,7 @@
 /**
  * v0.27: 由"Editar团队"扩展为"EditarCaso"。
  *
- * - 基本信息：title / 案由 / 标的额 / 我方地位（收案Fecha readonly）
+ * - 基本信息：title / Causa / 标的额 / 我方地位（收案Fecha readonly）
  * - 团队：主办 / 协办 / 助理（沿用 v0.22 实现）
  *
  * Guardar时按需触发两个 server action（基本信息 + 团队）。
@@ -629,7 +629,7 @@ export function TeamEditorDialog({
           }
           if (!isAgencyAllowedForProcedure(procedureForm.handlingAgency, currentProcedure.type)) {
             toast.error("商事仲裁程序不能选择法院作为管辖机构", {
-              description: "撤裁、强制执行、不予执行审查等后续程序仍可选择法院。"
+              description: "撤裁、强制执行、不予执行审查etc.后续程序仍可选择法院。"
             });
             return;
           }
@@ -678,7 +678,7 @@ export function TeamEditorDialog({
         onOpenChange(false);
         router.refresh();
       } catch (err) {
-        toast.error("Actualizar失败", {
+        toast.error("ActualizarError", {
           description: err instanceof Error ? err.message : ""
         });
       }
@@ -724,7 +724,7 @@ export function TeamEditorDialog({
 
               <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                 <div className="space-y-1.5">
-                  <Label className={formLabelClass}>案由</Label>
+                  <Label className={formLabelClass}>Causa</Label>
                   <CauseCombobox
                     category={matterMeta.category}
                     procedureType={currentProcedure?.type}
@@ -734,7 +734,7 @@ export function TeamEditorDialog({
                   />
                 </div>
                 <div className="space-y-1.5">
-                  <Label className={formLabelClass}>自由文本案由（不在标准库时填）</Label>
+                  <Label className={formLabelClass}>自由文本Causa（不在标准库时填）</Label>
                   <Input
                     value={causeFreeText}
                     onChange={(e) => setCauseFreeText(e.target.value)}
@@ -745,7 +745,7 @@ export function TeamEditorDialog({
 
               <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                 <div className="space-y-1.5">
-                  <Label className={formLabelClass}>标的额（元）</Label>
+                  <Label className={formLabelClass}>标的额（pesos）</Label>
                   <Input
                     type="number"
                     inputMode="decimal"
@@ -802,7 +802,7 @@ export function TeamEditorDialog({
                     list={`matter-info-agency-${currentProcedure.id}`}
                     value={procedureForm.handlingAgency}
                     onChange={(e) => handleHandlingAgencyChange(e.target.value)}
-                    placeholder="如：最高人民法院 / 广州市天河区人民法院"
+                    placeholder="如：最高人民法院 / 广州市días河区人民法院"
                     className={formControlClass}
                   />
                   <datalist id={`matter-info-agency-${currentProcedure.id}`}>
@@ -879,7 +879,7 @@ export function TeamEditorDialog({
                   />
                 </div>
                 <div className="space-y-1.5">
-                  <Label className={formLabelClass}>裁决 / 结案时间</Label>
+                  <Label className={formLabelClass}>裁决 / Cerrar caso时间</Label>
                   <Input
                     type="date"
                     value={procedureForm.concludedAt}
@@ -967,7 +967,7 @@ export function TeamEditorDialog({
                               />
                             </div>
                             <div className="space-y-1.5">
-                              <Label className={formLabelClass}>当事人角色</Label>
+                              <Label className={formLabelClass}>当事人Rol</Label>
                               <Select
                                 value={draft.role}
                                 onValueChange={(v) => setPartyEditValue(party.id, "role", v as PartyRole)}
@@ -1179,7 +1179,7 @@ export function TeamEditorDialog({
                       onClick={addNewProcedureParty}
                       className="h-8 px-2 text-xs"
                     >
-                      确认Agregar
+                      ConfirmarAgregar
                     </Button>
                   </div>
                   <div className="mt-2 flex flex-wrap gap-x-3 gap-y-2">

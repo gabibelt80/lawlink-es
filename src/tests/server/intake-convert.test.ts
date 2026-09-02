@@ -98,7 +98,7 @@ describe("convertIntakeToMatter", () => {
     prismaMock.intake.findUnique.mockResolvedValue({
       id: "intake-1",
       status: "PENDING_CONFIRMATION",
-      title: "甲与乙合同纠纷",
+      title: "甲y乙合同纠纷",
       category: "CIVIL_COMMERCIAL",
       causeId: null,
       causeFreeText: null,

@@ -59,10 +59,10 @@ export default async function ClientDetailPage({ params }: { params: { id: strin
 
   const isIndividual = client.type === "INDIVIDUAL";
   const TypeIcon = isIndividual ? User : client.type === "COMPANY" ? Building2 : Briefcase;
-  // 企业Cliente：主要联系人（contacts 已按 isPrimary desc 排序）
+  // 企业Cliente：Contacto principal（contacts 已按 isPrimary desc 排序）
   const primaryContact = client.contacts[0] ?? null;
 
-  // 按Caso分组合同，关联Caso与签约合同合并展示（左Caso / 右合同）
+  // 按Caso分组合同，关联Casoy签约合同合并展示（左Caso / 右合同）
   const billingsByMatter = new Map<string, typeof finance.billings>();
   for (const b of finance.billings) {
     const arr = billingsByMatter.get(b.matter.id) ?? [];
@@ -122,7 +122,7 @@ export default async function ClientDetailPage({ params }: { params: { id: strin
               <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-muted-foreground">
                 <span className="font-mono">{client.internalCode || "暂无Cliente编号"}</span>
                 <span>首次合作 {dateText(client.createdAt)}</span>
-                {primaryContact ? <span>主要联系人：{primaryContact.name}</span> : null}
+                {primaryContact ? <span>Contacto principal：{primaryContact.name}</span> : null}
               </div>
             </div>
           </div>
@@ -220,7 +220,7 @@ export default async function ClientDetailPage({ params }: { params: { id: strin
             <header className="mb-3 flex items-center justify-between">
               <h2 className="ll-panel-title">
                 <TypeIcon className="h-4 w-4 text-primary" />
-                {isIndividual ? "个人信息" : "工商信息"}
+                {isIndividual ? "Información personal" : "Información comercial"}
               </h2>
             </header>
             <dl className="grid grid-cols-[80px_minmax(0,1fr)] gap-px overflow-hidden rounded-md border border-border bg-border text-[12.5px] sm:grid-cols-[84px_minmax(0,1fr)_84px_minmax(0,1fr)]">

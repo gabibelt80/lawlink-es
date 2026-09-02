@@ -5,7 +5,7 @@ import {
 } from "@/lib/cause-scope";
 
 describe("causeScopeForSelection", () => {
-  it("商事仲裁类别共用Civil/Comercial案由库并限制财产权益类案由", () => {
+  it("商事仲裁类别共用Civil/ComercialCausa库并限制财产权益类Causa", () => {
     const scope = causeScopeForSelection("COMMERCIAL_ARBITRATION");
     expect(scope.dbCategory).toBe("CIVIL_COMMERCIAL");
     expect(scope.includeCodePrefixes).toContain("CC-4");
@@ -19,7 +19,7 @@ describe("causeScopeForSelection", () => {
     expect(scope.includeCodePrefixes).toContain("CC-4");
   });
 
-  it("劳动仲裁只使用劳动争议案由段", () => {
+  it("劳动仲裁只使用劳动争议Causa段", () => {
     const scope = causeScopeForSelection("LABOR_ARBITRATION");
     expect(scope.dbCategory).toBe("CIVIL_COMMERCIAL");
     expect(scope.includeCodePrefixes).toEqual(["CC-7"]);
@@ -27,7 +27,7 @@ describe("causeScopeForSelection", () => {
 });
 
 describe("isCauseAllowedForSelection", () => {
-  it("允许商事仲裁选择合同类案由", () => {
+  it("允许商事仲裁选择合同类Causa", () => {
     expect(
       isCauseAllowedForSelection(
         { category: "CIVIL_COMMERCIAL", code: "CC-4-10-108-3", active: true },
@@ -36,7 +36,7 @@ describe("isCauseAllowedForSelection", () => {
     ).toBe(true);
   });
 
-  it("拒绝商事仲裁选择婚姻继承、劳动、破产和人身损害类案由", () => {
+  it("拒绝商事仲裁选择婚姻继承、劳动、破产和人身损害类Causa", () => {
     const rejectedCodes = [
       "CC-2-2-14",
       "CC-7-19-205",
@@ -53,7 +53,7 @@ describe("isCauseAllowedForSelection", () => {
     }
   });
 
-  it("非商事仲裁的Civil/ComercialCaso仍可选择普通民事案由", () => {
+  it("非商事仲裁的Civil/ComercialCaso仍可选择普通民事Causa", () => {
     expect(
       isCauseAllowedForSelection(
         { category: "CIVIL_COMMERCIAL", code: "CC-2-2-14", active: true },

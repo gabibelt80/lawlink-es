@@ -178,7 +178,7 @@ export function ProcedureDocumentsSection({
   // 当前分类筛选（Ver todos = null）
   const [filter, setFilter] = useState<DocumentCategory | null>(null);
 
-  // 归属/来源选项：当前程序当事人（诉讼地位 + Nombre）
+  // 归属/来源选ítems：当前程序当事人（诉讼地位 + Nombre）
   const sourceOptions = useMemo(
     () => {
       const seen = new Set<string>([COURT_PROCEDURE_SOURCE]);
@@ -229,7 +229,7 @@ export function ProcedureDocumentsSection({
         if (fileRef.current) fileRef.current.value = "";
         router.refresh();
       } catch (err) {
-        toast.error("上传失败", {
+        toast.error("上传Error", {
           description: err instanceof Error ? err.message : ""
         });
       }
@@ -244,7 +244,7 @@ export function ProcedureDocumentsSection({
         toast.success("已Eliminar");
         router.refresh();
       } catch (err) {
-        toast.error("Eliminar失败", { description: err instanceof Error ? err.message : "" });
+        toast.error("EliminarError", { description: err instanceof Error ? err.message : "" });
       }
     });
   }
@@ -401,7 +401,7 @@ export function ProcedureDocumentsSection({
               </Select>
             </div>
 
-            {/* v0.42 归属/来源：诉辩/证据类才出现，选项=当前程序当事人 */}
+            {/* v0.42 归属/来源：诉辩/证据类才出现，选ítems=当前程序当事人 */}
             {SOURCE_CATEGORIES.includes(category) && sourceOptions.length > 0 && (
               <div className="space-y-1.5">
                 <Label className="text-xs">归属/来源（可选）</Label>

@@ -1,8 +1,9 @@
 /**
- * v0.19: 元典开放平台（chineselaw.com）API 配置读写
+ * v0.19: Configuración de la API de Yuandian (chineselaw.com)
  *
- * 复用 AI Configuración同一加密机制（STORAGE_ENCRYPTION_KEY），独立的 SystemSetting key。
- * 元典提供法律法规 / 案例 / 企业三类 API；本期接入"案例检索"。
+ * Utiliza el mismo mecanismo de encriptación de AI Configuración (STORAGE_ENCRYPTION_KEY)
+ * con una clave independiente de SystemSetting.
+ * Yuandian ofrece APIs de legislación / casos / empresas; en esta versión se integra la "búsqueda de casos".
  */
 import { prisma } from "@/lib/prisma";
 import { encryptBuffer, decryptBuffer } from "@/lib/storage/crypto";
@@ -11,7 +12,6 @@ const YUANDIAN_SETTINGS_KEY = "yuandianSettings";
 
 export const YUANDIAN_DEFAULTS = {
   baseUrl: "https://open.chineselaw.com/open",
-  // 案例详情前端域名（用于列表"Ver全文"外跳）
   caseDetailHost: "https://www.chineselaw.com"
 } as const;
 

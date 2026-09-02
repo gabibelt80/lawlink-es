@@ -1,7 +1,7 @@
 /**
  * v0.9.3 ICS 日历文件生成（RFC 5545 简化版）
  *
- * 用于：Preservación到期 / 开庭 / 期限 一键导出 .ics，拖进 Apple 日历 / Google
+ * 用于：Preservación到期 / 开庭 / Plazo 一键导出 .ics，拖进 Apple 日历 / Google
  * Calendar / Outlook 即可在手机原生日历看到Recordatorios。
  *
  * 不依赖第三方库；纯字符串拼接。

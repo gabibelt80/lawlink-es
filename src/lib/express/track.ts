@@ -1,14 +1,21 @@
 /**
- * v0.9.3 快递追踪：双 provider 调用（快递鸟主 + 快递100 备）
+ * v0.9.3 Seguimiento de envíos (adaptado para Argentina)
  *
- * server-only（用了 node:crypto + getExpressSettings 读 SystemSetting）。
- * client 端需要的常量/纯函数请 import "./companies"。
+ * Servicios de mensajería disponibles:
+ * - Andreani
+ * - Correo Argentino
+ * - OCA
+ * - DHL Argentina
+ * - FedEx Argentina
+ * - UPS Argentina
+ *
+ * Esta es una versión preparada para integrar con APIs de mensajería locales.
+ * Actualmente funciona con datos de ejemplo, pero la estructura está lista para
+ * conectar con servicios reales.
  */
-import { createHash } from "node:crypto";
 import { getExpressSettings } from "./settings";
 import { COMPANY_CODES, detectCompany } from "./companies";
 
-// 给 server-only 调用者继续 import 自此处
 export { COMPANY_CODES, SUPPORTED_COMPANIES, detectCompany } from "./companies";
 
 export interface TrackTrace {
@@ -17,195 +24,119 @@ export interface TrackTrace {
 }
 
 export interface TrackResult {
-  provider: "快递鸟" | "快递100";
+  provider: string; // ej. "Andreani", "Correo Argentino"
   companyName: string;
   trackingNo: string;
-  state: string; // 中文Estado
+  state: string; // Estado en español
   traces: TrackTrace[];
 }
 
-const KDNIAO_STATE: Record<string, string> = {
-  "0": "暂无信息",
-  "1": "已揽件",
-  "2": "在途中",
-  "201": "到达派件城市",
-  "3": "已签收",
-  "301": "疑难件",
-  "4": "退签"
+// Estados para mensajería argentina (estandarizados)
+const ARGENTINA_STATES: Record<string, string> = {
+  "0": "Sin información",
+  "1": "Recibido por el correo",
+  "2": "En tránsito",
+  "3": "En reparto",
+  "4": "Entregado",
+  "5": "Rechazado / devuelto",
+  "6": "En sucursal para retiro",
 };
 
-const KD100_STATE: Record<string, string> = {
-  "0": "在途",
-  "1": "揽收",
-  "2": "疑难",
-  "3": "已签收",
-  "4": "退签",
-  "5": "派件中",
-  "6": "退回",
-  "7": "转投"
-};
-
-async function callKdniao(opts: {
-  ebusinessId: string;
-  appKey: string;
+/**
+ * Función de ejemplo para llamar a la API de Andreani
+ * Reemplazar con la integración real
+ */
+async function callAndreani(opts: {
   trackingNo: string;
-  shipperCode: string;
+  apiKey?: string;
 }): Promise<TrackResult> {
-  const requestData = JSON.stringify({
-    OrderCode: "",
-    ShipperCode: opts.shipperCode,
-    LogisticCode: opts.trackingNo
-  });
-  const md5 = createHash("md5")
-    .update(requestData + opts.appKey)
-    .digest("hex");
-  const dataSign = Buffer.from(md5, "utf-8").toString("base64");
-  const params = new URLSearchParams({
-    RequestData: requestData,
-    EBusinessID: opts.ebusinessId,
-    RequestType: "1002",
-    DataSign: dataSign,
-    DataType: "2"
-  });
+  // Simulación de respuesta (reemplazar con llamada real)
+  const mockTraces = [
+    { time: new Date().toISOString(), desc: "Envío registrado en sistema" },
+    { time: new Date(Date.now() - 3600000).toISOString(), desc: "En tránsito hacia centro de distribución" }
+  ];
 
-  const ctrl = new AbortController();
-  const timer = setTimeout(() => ctrl.abort(), 10_000);
-  try {
-    const res = await fetch("http://api.kdniao.com/Ebusiness/EbusinessOrderHandle.aspx", {
-      method: "POST",
-      headers: { "Content-Type": "application/x-www-form-urlencoded" },
-      body: params,
-      signal: ctrl.signal
-    });
-    const json = (await res.json()) as {
-      Success?: boolean | string;
-      State?: string | number;
-      Reason?: string;
-      Traces?: { AcceptTime?: string; AcceptStation?: string }[];
-    };
-    const success = json.Success === true || json.Success === "true";
-    if (!success) {
-      throw new Error(json.Reason || "快递鸟查询失败");
-    }
-    const traces = (json.Traces ?? []).map((t) => ({
-      time: t.AcceptTime ?? "",
-      desc: t.AcceptStation ?? ""
-    }));
-    // 取该 shipperCode 对应的中文名
-    const cnName = Object.entries(COMPANY_CODES).find(
-      ([, v]) => v[1] === opts.shipperCode
-    )?.[0] ?? opts.shipperCode;
-    return {
-      provider: "快递鸟",
-      companyName: cnName,
-      trackingNo: opts.trackingNo,
-      state: KDNIAO_STATE[String(json.State ?? "0")] ?? "未知",
-      traces
-    };
-  } finally {
-    clearTimeout(timer);
-  }
+  return {
+    provider: "Andreani",
+    companyName: "Andreani",
+    trackingNo: opts.trackingNo,
+    state: ARGENTINA_STATES["2"] ?? "En tránsito",
+    traces: mockTraces
+  };
 }
 
-async function callKuaidi100(opts: {
-  customer: string;
-  key: string;
+/**
+ * Función de ejemplo para llamar a la API de Correo Argentino
+ * Reemplazar con la integración real
+ */
+async function callCorreoArgentino(opts: {
   trackingNo: string;
-  comCode: string;
+  apiKey?: string;
 }): Promise<TrackResult> {
-  const param = JSON.stringify({
-    com: opts.comCode,
-    num: opts.trackingNo,
-    phone: "",
-    from: "",
-    to: "",
-    resultv2: "4"
-  });
-  const sign = createHash("md5")
-    .update(param + opts.key + opts.customer)
-    .digest("hex")
-    .toUpperCase();
-  const body = new URLSearchParams({
-    customer: opts.customer,
-    sign,
-    param
-  });
+  const mockTraces = [
+    { time: new Date().toISOString(), desc: "Envío recibido en el centro de procesamiento" }
+  ];
 
-  const ctrl = new AbortController();
-  const timer = setTimeout(() => ctrl.abort(), 10_000);
-  try {
-    const res = await fetch("https://poll.kuaidi100.com/poll/query.do", {
-      method: "POST",
-      headers: { "Content-Type": "application/x-www-form-urlencoded" },
-      body,
-      signal: ctrl.signal
-    });
-    const json = (await res.json()) as {
-      status?: string;
-      message?: string;
-      state?: string;
-      data?: { time?: string; context?: string }[];
-    };
-    if (json.status !== "200" && json.message !== "ok") {
-      throw new Error(json.message || "快递100 查询失败");
-    }
-    const cnName = Object.entries(COMPANY_CODES).find(
-      ([, v]) => v[0] === opts.comCode
-    )?.[0] ?? opts.comCode;
-    return {
-      provider: "快递100",
-      companyName: cnName,
-      trackingNo: opts.trackingNo,
-      state: KD100_STATE[String(json.state ?? "0")] ?? "未知",
-      traces: (json.data ?? []).map((t) => ({
-        time: t.time ?? "",
-        desc: t.context ?? ""
-      }))
-    };
-  } finally {
-    clearTimeout(timer);
-  }
+  return {
+    provider: "Correo Argentino",
+    companyName: "Correo Argentino",
+    trackingNo: opts.trackingNo,
+    state: ARGENTINA_STATES["1"] ?? "Recibido",
+    traces: mockTraces
+  };
 }
 
+/**
+ * Función principal de seguimiento de envíos
+ * Por defecto usa Andreani. Se puede configurar para usar otros servicios.
+ */
 export async function trackExpress(input: {
   trackingNo: string;
-  companyCode?: string; // 中文公司名（可空，自动识别）
+  companyCode?: string; // Código de la empresa de mensajería
 }): Promise<TrackResult> {
+  // Obtener configuración del servicio (desde SystemSetting)
   const s = await getExpressSettings();
-  if (!s.kdniao.configured && !s.kuaidi100.configured) {
-    throw new Error("请先到 Configuración → 快递接入 配置 快递鸟 或 快递100");
+  
+  // Detectar empresa automáticamente si no se especifica
+  const company = input.companyCode 
+    ? input.companyCode 
+    : detectCompany(input.trackingNo) || "Andreani";
+
+  // Si no hay configuración, usar valores por defecto (modo demo)
+  if (!s.andreaConfigured && !s.correoConfigured) {
+    // Modo demo: devolver datos de ejemplo
+    return {
+      provider: "Demo (Andreani)",
+      companyName: company || "Andreani",
+      trackingNo: input.trackingNo,
+      state: ARGENTINA_STATES["2"] ?? "En tránsito",
+      traces: [
+        { time: new Date().toISOString(), desc: "Envío registrado en modo demo" },
+        { time: new Date(Date.now() - 3600000).toISOString(), desc: "Simulación de seguimiento" }
+      ]
+    };
   }
 
-  const cnName =
-    input.companyCode && COMPANY_CODES[input.companyCode]
-      ? input.companyCode
-      : detectCompany(input.trackingNo);
-  if (!cnName) {
-    throw new Error("无法自动识别快递公司，请手动选择");
-  }
-  const [kd100Code, kdniaoCode] = COMPANY_CODES[cnName];
-
-  // 优先快递鸟
-  if (s.kdniao.configured) {
+  // Aquí va la lógica real según la empresa configurada
+  // Ejemplo: si está configurado Andreani
+  if (s.andreaConfigured) {
     try {
-      return await callKdniao({
-        ebusinessId: s.kdniao.ebusinessId,
-        appKey: s.kdniao.appKey,
+      return await callAndreani({
         trackingNo: input.trackingNo,
-        shipperCode: kdniaoCode
+        apiKey: s.andreaApiKey
       });
     } catch (e) {
-      if (!s.kuaidi100.configured) {
-        throw e;
-      }
-      // 降级
+      // Fallback a Correo Argentino si falla
+      if (!s.correoConfigured) throw e;
     }
   }
-  // 降级快递100
-  return callKuaidi100({
-    customer: s.kuaidi100.customer,
-    key: s.kuaidi100.key,
-    trackingNo: input.trackingNo,
-    comCode: kd100Code
-  });
+
+  if (s.correoConfigured) {
+    return await callCorreoArgentino({
+      trackingNo: input.trackingNo,
+      apiKey: s.correoApiKey
+    });
+  }
+
+  throw new Error("No hay servicio de mensajería configurado. Configurar en Ajustes → Mensajería");
 }

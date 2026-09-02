@@ -32,11 +32,11 @@ import {
 function describeMissing(paths: string[]): string {
   if (paths.length === 0) return "";
   const labels = paths.slice(0, 4).map((p) => VARIABLE_LABEL_CN[p] ?? p);
-  const more = paths.length > 4 ? ` 等 ${paths.length} 项` : "";
+  const more = paths.length > 4 ? ` etc. ${paths.length} ítems` : "";
   return labels.join("、") + more;
 }
 
-// 哪些变量允许行内补全（即写即存源表）—— 与 template-engine.ts applyOverrides 对齐
+// 哪些变量允许行内补全（即写即存源表）—— y template-engine.ts applyOverrides 对齐
 const EDITABLE_OVERRIDES = new Set([
   "client.idNumber",
   "client.address",
@@ -119,7 +119,7 @@ export function TemplatePickerDialog({
         reset();
         onOpenChange(false);
       } catch (e) {
-        toast.error(e instanceof Error ? e.message : "生成失败");
+        toast.error(e instanceof Error ? e.message : "生成Error");
       }
     });
   };
@@ -202,7 +202,7 @@ export function TemplatePickerDialog({
               </Label>
               <p className="mt-1 flex items-start gap-1.5 text-[11px] text-muted-foreground">
                 <AlertCircle className="mt-0.5 h-3 w-3 shrink-0" />
-                这些字段会即时写入源表（委托人/对方资料），下次自动带出
+                这些字段会即时写入源表（委托人/对方Material），下次自动带出
               </p>
               <div className="mt-2 grid grid-cols-2 gap-2">
                 {editableVars.map((path) => (

@@ -353,7 +353,7 @@ function CategoryChip({
   );
 }
 
-const ARCHIVE_FOLDER_NAMES = new Set(["结案", "归档"]);
+const ARCHIVE_FOLDER_NAMES = new Set(["Cerrar caso", "归档"]);
 
 function UploadSheet({
   matterId,

@@ -23,7 +23,7 @@ describe("serializeDecimals", () => {
           name: "被Preservación人",
           properties: [
             { amount: new Prisma.Decimal("1200000.55"), detail: null },
-            { amount: null, detail: "无金额" }
+            { amount: null, detail: "无Monto" }
           ]
         }
       ]

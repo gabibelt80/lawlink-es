@@ -24,7 +24,7 @@ const clearSchema = z.object({ confirm: z.literal(true) });
 async function requireAdmin() {
   const session = await requireSession();
   if (session.user.role !== "ADMIN") {
-    throw new Error("仅Administrar员可修改元典配置");
+    throw new Error("仅Administrar员可修改pesos典配置");
   }
   return session;
 }
@@ -84,8 +84,8 @@ export async function testYuandianConnection(): Promise<{
       return { ok: false, message: err.message };
     }
     if (err instanceof YuandianApiError) {
-      return { ok: false, message: `元典Volver错误：${err.message}` };
+      return { ok: false, message: `pesos典Volver错误：${err.message}` };
     }
-    return { ok: false, message: err instanceof Error ? err.message : "未知错误" };
+    return { ok: false, message: err instanceof Error ? err.message : "Desconocido错误" };
   }
 }

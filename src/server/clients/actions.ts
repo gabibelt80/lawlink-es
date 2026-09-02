@@ -15,7 +15,7 @@ import {
   type ClientCreateInput,
   type ClientUpdateInput,
   type ContactInput,
-  type ClientListQuery
+  type ClientListQuery,
 } from "./schemas";
 
 // 空字符串归 null（Prisma 不接受 "" 给可空字段）
@@ -42,10 +42,10 @@ export async function listClients(input: Partial<ClientListQuery> = {}) {
             { name: { contains: query.search, mode: "insensitive" } },
             { idNumber: { contains: query.search } },
             { phone: { contains: query.search } },
-            { email: { contains: query.search, mode: "insensitive" } }
-          ]
+            { email: { contains: query.search, mode: "insensitive" } },
+          ],
         }
-      : {})
+      : {}),
   };
 
   const [items, total] = await Promise.all([
@@ -56,10 +56,10 @@ export async function listClients(input: Partial<ClientListQuery> = {}) {
       take: query.pageSize,
       include: {
         contacts: { where: { isPrimary: true }, take: 1 },
-        _count: { select: { matters: true, intakes: true } }
-      }
+        _count: { select: { matters: true, intakes: true } },
+      },
     }),
-    prisma.client.count({ where })
+    prisma.client.count({ where }),
   ]);
 
   return { items, total, page: query.page, pageSize: query.pageSize };
@@ -73,11 +73,11 @@ export async function getClientById(id: string) {
       where: {
         id,
         deletedAt: null,
-        ...clientVisibilityFilter(session.user.id, session.user.role)
+        ...clientVisibilityFilter(session.user.id, session.user.role),
       },
-      select: { id: true }
+      select: { id: true },
     });
-    if (!accessible) throw new Error("Cliente不存在");
+    if (!accessible) throw new Error("Cliente no existe");
   }
   const client = await prisma.client.findFirst({
     where: { id, deletedAt: null },
@@ -93,10 +93,10 @@ export async function getClientById(id: string) {
           title: true,
           category: true,
           status: true,
-          updatedAt: true
-        }
-      }
-    }
+          updatedAt: true,
+        },
+      },
+    },
   });
 
   if (client) {
@@ -104,7 +104,7 @@ export async function getClientById(id: string) {
       userId: session.user.id,
       action: "CLIENT_VIEW",
       targetType: "Client",
-      targetId: id
+      targetId: id,
     });
   }
   return client;
@@ -113,34 +113,39 @@ export async function getClientById(id: string) {
 // v0.37: ClienteFinanzas汇Total —— 跨该Cliente名下所有Caso聚合合同/应收/已收
 export async function getClientFinanceSummary(clientId: string) {
   const session = await requireSession();
-  // 权限：与 getClientById 一致
+  // 权限：y getClientById 一致
   if (!isManager(session.user.role) && session.user.role !== "FINANCE") {
     const accessible = await prisma.client.findFirst({
       where: {
         id: clientId,
         deletedAt: null,
-        ...clientVisibilityFilter(session.user.id, session.user.role)
+        ...clientVisibilityFilter(session.user.id, session.user.role),
       },
-      select: { id: true }
+      select: { id: true },
     });
-    if (!accessible) throw new Error("Cliente不存在");
+    if (!accessible) throw new Error("Cliente no existe");
   }
 
   const matterWhere = { primaryClientId: clientId, deletedAt: null };
   const [billings, fees, matterCount] = await Promise.all([
     prisma.billing.findMany({
       where: { matter: matterWhere },
-      include: { matter: { select: { id: true, internalCode: true, title: true } } },
-      orderBy: { createdAt: "desc" }
+      include: {
+        matter: { select: { id: true, internalCode: true, title: true } },
+      },
+      orderBy: { createdAt: "desc" },
     }),
     prisma.feeEntry.findMany({
       where: { type: { in: ["RECEIVABLE", "RECEIVED"] }, matter: matterWhere },
-      select: { type: true, amount: true }
+      select: { type: true, amount: true },
     }),
-    prisma.matter.count({ where: matterWhere })
+    prisma.matter.count({ where: matterWhere }),
   ]);
 
-  const contractTotal = billings.reduce((s, b) => s + Number(b.contractAmount), 0);
+  const contractTotal = billings.reduce(
+    (s, b) => s + Number(b.contractAmount),
+    0,
+  );
   const receivable = fees
     .filter((f) => f.type === "RECEIVABLE")
     .reduce((s, f) => s + Number(f.amount), 0);
@@ -160,8 +165,8 @@ export async function getClientFinanceSummary(clientId: string) {
       status: b.status,
       contractAmount: Number(b.contractAmount),
       signedAt: b.signedAt,
-      matter: b.matter
-    }))
+      matter: b.matter,
+    })),
   };
 }
 
@@ -182,7 +187,7 @@ export async function createClient(input: ClientCreateInput) {
         source: data.source,
         notes: data.notes,
         industry: data.industry,
-        ethnicity: data.ethnicity
+        ethnicity: data.ethnicity,
       }),
       internalCode,
       cooperationStatus: data.cooperationStatus,
@@ -197,11 +202,11 @@ export async function createClient(input: ClientCreateInput) {
             email: c.email,
             wechat: c.wechat,
             isPrimary: c.isPrimary,
-            notes: c.notes
-          })
-        )
-      }
-    }
+            notes: c.notes,
+          }),
+        ),
+      },
+    },
   });
 
   await audit({
@@ -209,7 +214,7 @@ export async function createClient(input: ClientCreateInput) {
     action: "CLIENT_CREATE",
     targetType: "Client",
     targetId: created.id,
-    detail: { name: created.name, type: created.type }
+    detail: { name: created.name, type: created.type },
   });
 
   revalidatePath("/clients");
@@ -219,7 +224,9 @@ export async function createClient(input: ClientCreateInput) {
 export async function updateClient(input: ClientUpdateInput) {
   const session = await requireSession();
   if (!isManager(session.user.role)) {
-    throw new Error("仅Administrar员或主办Abogado可EditarCliente信息");
+    throw new Error(
+      "Solo el Administrador o el Abogado Principal puede editar la información del cliente",
+    );
   }
   const data = clientUpdateSchema.parse(input);
   const { id, contacts, gender, ...rest } = data;
@@ -242,19 +249,19 @@ export async function updateClient(input: ClientUpdateInput) {
               email: c.email,
               wechat: c.wechat,
               isPrimary: c.isPrimary,
-              notes: c.notes
-            })
-          )
-        }
-      }
-    })
+              notes: c.notes,
+            }),
+          ),
+        },
+      },
+    }),
   ]);
 
   await audit({
     userId: session.user.id,
     action: "CLIENT_UPDATE",
     targetType: "Client",
-    targetId: id
+    targetId: id,
   });
 
   revalidatePath("/clients");
@@ -264,42 +271,49 @@ export async function updateClient(input: ClientUpdateInput) {
 
 export async function softDeleteClient(id: string) {
   const session = await requireSession();
-  if (session.user.role !== "ADMIN" && session.user.role !== "PRINCIPAL_LAWYER") {
-    throw new Error("只有Administrar员或主办Abogado可以EliminarCliente");
+  if (
+    session.user.role !== "ADMIN" &&
+    session.user.role !== "PRINCIPAL_LAWYER"
+  ) {
+    throw new Error(
+      "Solo el Administrador o el Abogado Principal puede eliminar el cliente",
+    );
   }
 
   await prisma.client.update({
     where: { id },
-    data: { deletedAt: new Date() }
+    data: { deletedAt: new Date() },
   });
 
   await audit({
     userId: session.user.id,
     action: "CLIENT_DELETE",
     targetType: "Client",
-    targetId: id
+    targetId: id,
   });
 
   revalidatePath("/clients");
   return { ok: true };
 }
 
-// 单独的 contact Acciones（用于详情页快速Editar联系人，不通过整 client 重写）
+// 单独的 contact Acciones（用于详情页快速Editar联系人，不Aprobar整 client 重写）
 export async function addContact(clientId: string, input: ContactInput) {
   const session = await requireSession();
   if (!isManager(session.user.role)) {
-    throw new Error("仅Administrar员或主办Abogado可Editar联系人");
+    throw new Error(
+      "Solo el Administrador o el Abogado Principal puede editar contactos",
+    );
   }
   const data = contactInputSchema.parse(input);
   const created = await prisma.contact.create({
-    data: { clientId, ...emptyToNull(data) }
+    data: { clientId, ...emptyToNull(data) },
   });
   await audit({
     userId: session.user.id,
     action: "CONTACT_CREATE",
     targetType: "Contact",
     targetId: created.id,
-    detail: { clientId }
+    detail: { clientId },
   });
   revalidatePath(`/clients/${clientId}`);
   return { ok: true, id: created.id };
@@ -308,7 +322,9 @@ export async function addContact(clientId: string, input: ContactInput) {
 export async function deleteContact(id: string) {
   const session = await requireSession();
   if (!isManager(session.user.role)) {
-    throw new Error("仅Administrar员或主办Abogado可Eliminar联系人");
+    throw new Error(
+      "Solo el Administrador o el Abogado Principal puede eliminar contactos",
+    );
   }
   const contact = await prisma.contact.findUnique({ where: { id } });
   if (!contact) return { ok: false };
@@ -318,7 +334,7 @@ export async function deleteContact(id: string) {
     action: "CONTACT_DELETE",
     targetType: "Contact",
     targetId: id,
-    detail: { clientId: contact.clientId }
+    detail: { clientId: contact.clientId },
   });
   revalidatePath(`/clients/${contact.clientId}`);
   return { ok: true };

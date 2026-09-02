@@ -13,7 +13,7 @@ import type { ParsedSms } from "./sms-parser";
 /**
  * 调用 AI 抽正则做不好的字段：summary 改写 / action Abogado动作 / urgency。
  * 不覆盖正则已抽出的硬字段（案号 / 法院 / Fecha / 法庭 / 法官 / 书记员 / 电话 / 上诉期）。
- * AI 失败 / 未配置 / 超时 → 静默Volver原 parsed（不抛错）。
+ * AI Error / 未配置 / 超时 → 静默Volver原 parsed（不抛错）。
  */
 export async function enrichWithAi(rawText: string, base: ParsedSms): Promise<ParsedSms> {
   const prompt = `下面是Abogado收到的一条法院/12368/电子送达SMS。请输出 JSON，**只填 3 个字段**：

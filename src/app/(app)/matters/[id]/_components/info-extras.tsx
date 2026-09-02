@@ -11,7 +11,7 @@ import {
   ArrowUpFromLine,
   Plus,
   Loader2,
-  ScanLine
+  ScanLine,
 } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
@@ -24,19 +24,24 @@ import {
   DialogDescription,
   DialogFooter,
   DialogHeader,
-  DialogTitle
+  DialogTitle,
 } from "@/components/ui/dialog";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
-  SelectValue
+  SelectValue,
 } from "@/components/ui/select";
 import { createExpress } from "@/server/express/actions";
 import { parseExpressLabel } from "@/server/ai/parse-express";
 
-type DocLite = { id: string; name: string; size: number | null; createdAt: Date };
+type DocLite = {
+  id: string;
+  name: string;
+  size: number | null;
+  createdAt: Date;
+};
 
 export type SealContractItem = {
   id: string;
@@ -57,7 +62,7 @@ type ContractRow = {
 
 export function ContractsCard({
   intakeContracts,
-  sealContracts
+  sealContracts,
 }: {
   intakeContracts: DocLite[];
   sealContracts: SealContractItem[];
@@ -65,42 +70,42 @@ export function ContractsCard({
   const rows: ContractRow[] = [
     ...intakeContracts.map((d) => ({
       kind: "intake" as const,
-      label: "收案时上传",
-      doc: d
+      label: "Subida al momento de ingreso",
+      doc: d,
     })),
     ...sealContracts.flatMap((sr): ContractRow[] => {
       const arr: ContractRow[] = [
         {
           kind: "draft",
-          label: "用印申请",
+          label: "Solicitud de sello",
           doc: sr.draftDoc,
-          sealCode: sr.code
-        }
+          sealCode: sr.code,
+        },
       ];
       if (sr.stampedDoc) {
         arr.push({
           kind: "stamped",
-          label: "盖章后扫描",
+          label: "Escaneo después del sello",
           doc: sr.stampedDoc,
-          sealCode: sr.code
+          sealCode: sr.code,
         });
       }
       return arr;
-    })
+    }),
   ];
 
   return (
     <section className="ll-surface rounded-lg border border-border p-4">
       <header className="mb-3 flex items-center gap-2">
         <FileText className="h-3.5 w-3.5 text-primary" strokeWidth={1.8} />
-        <span className="text-[15px]">委托合同 / 附件</span>
+        <span className="text-[15px]">Contrato de mandato / anexos</span>
         <span className="font-mono text-[11px] text-muted-foreground tabular">
           {rows.length}
         </span>
       </header>
       {rows.length === 0 ? (
         <p className="py-6 text-center text-xs text-muted-foreground">
-          暂无合同或用印附件
+          No hay contratos ni anexos de sello
         </p>
       ) : (
         <ul className="space-y-1.5">
@@ -116,13 +121,15 @@ export function ContractsCard({
                     ? "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400"
                     : r.kind === "draft"
                       ? "bg-amber-500/10 text-amber-700 dark:text-amber-400"
-                      : "bg-primary/10 text-primary"
+                      : "bg-primary/10 text-primary",
                 )}
               >
                 {r.label}
               </span>
               <div className="min-w-0 flex-1">
-                <div className="truncate text-[0.82rem] font-medium">{r.doc.name}</div>
+                <div className="truncate text-[0.82rem] font-medium">
+                  {r.doc.name}
+                </div>
                 <div className="font-mono text-[10px] tabular text-muted-foreground">
                   {r.sealCode ? `${r.sealCode} · ` : ""}
                   {r.doc.size ? `${(r.doc.size / 1024).toFixed(0)} KB · ` : ""}
@@ -134,7 +141,7 @@ export function ContractsCard({
                 target="_blank"
                 rel="noreferrer"
                 className="text-muted-foreground transition-colors hover:text-primary"
-                aria-label="下载"
+                aria-label="Descargar"
               >
                 <Download className="h-4 w-4" strokeWidth={1.6} />
               </a>
@@ -159,7 +166,7 @@ export type ExpressItem = {
 
 export function ExpressMiniCard({
   expresses,
-  matterId
+  matterId,
 }: {
   expresses: ExpressItem[];
   matterId?: string;
@@ -170,14 +177,18 @@ export function ExpressMiniCard({
       <header className="flex items-center justify-between border-b border-border px-4 py-2">
         <span className="flex items-center gap-1.5 text-[13px] font-medium">
           <Package className="h-3.5 w-3.5 text-primary" strokeWidth={1.8} />
-          快递记录
+          Registro de envíos
           <span className="ml-1 font-mono text-[11px] text-muted-foreground tabular">
             {expresses.length}
           </span>
         </span>
         <div className="flex items-center gap-2">
           {matterId && (
-            <Button size="sm" onClick={() => setAddOpen(true)} className="h-6 gap-0.5 px-2 text-[11px]">
+            <Button
+              size="sm"
+              onClick={() => setAddOpen(true)}
+              className="h-6 gap-0.5 px-2 text-[11px]"
+            >
               <Plus className="h-2.5 w-2.5" />
               Agregar
             </Button>
@@ -191,7 +202,9 @@ export function ExpressMiniCard({
         </div>
       </header>
       {expresses.length === 0 ? (
-        <p className="py-6 text-center text-xs text-muted-foreground">暂无快递记录</p>
+        <p className="py-6 text-center text-xs text-muted-foreground">
+          No hay registros de envíos
+        </p>
       ) : (
         <ul className="space-y-1.5">
           {expresses.slice(0, 6).map((e) => (
@@ -200,9 +213,15 @@ export function ExpressMiniCard({
               className="flex items-center gap-3 rounded-md border border-border bg-card px-3 py-2"
             >
               {e.direction === "OUTBOUND" ? (
-                <ArrowUpFromLine className="h-3.5 w-3.5 shrink-0 text-orange-600" strokeWidth={1.8} />
+                <ArrowUpFromLine
+                  className="h-3.5 w-3.5 shrink-0 text-orange-600"
+                  strokeWidth={1.8}
+                />
               ) : (
-                <ArrowDownToLine className="h-3.5 w-3.5 shrink-0 text-emerald-600" strokeWidth={1.8} />
+                <ArrowDownToLine
+                  className="h-3.5 w-3.5 shrink-0 text-emerald-600"
+                  strokeWidth={1.8}
+                />
               )}
               <div className="min-w-0 flex-1">
                 <div className="truncate text-[0.82rem]">{e.purpose}</div>
@@ -211,7 +230,9 @@ export function ExpressMiniCard({
                 </div>
               </div>
               <div className="text-right">
-                <div className="text-[11px] text-foreground/80">{e.lastState ?? "—"}</div>
+                <div className="text-[11px] text-foreground/80">
+                  {e.lastState ?? "—"}
+                </div>
                 <div className="font-mono text-[10px] tabular text-muted-foreground">
                   {e.lastUpdateAt
                     ? new Date(e.lastUpdateAt).toLocaleDateString("zh-CN")
@@ -224,7 +245,11 @@ export function ExpressMiniCard({
       )}
 
       {matterId && (
-        <AddExpressDialog open={addOpen} onOpenChange={setAddOpen} matterId={matterId} />
+        <AddExpressDialog
+          open={addOpen}
+          onOpenChange={setAddOpen}
+          matterId={matterId}
+        />
       )}
     </section>
   );
@@ -240,7 +265,7 @@ export function ExpressMiniCard({
 function AddExpressDialog({
   open,
   onOpenChange,
-  matterId
+  matterId,
 }: {
   open: boolean;
   onOpenChange: (o: boolean) => void;
@@ -249,7 +274,9 @@ function AddExpressDialog({
   const router = useRouter();
   const [trackingNo, setTrackingNo] = useState("");
   const [companyCode, setCompanyCode] = useState("");
-  const [direction, setDirection] = useState<"OUTBOUND" | "INBOUND">("OUTBOUND");
+  const [direction, setDirection] = useState<"OUTBOUND" | "INBOUND">(
+    "OUTBOUND",
+  );
   const [purpose, setPurpose] = useState("");
   const [recipient, setRecipient] = useState("");
   const [recipientPhone, setRecipientPhone] = useState("");
@@ -275,14 +302,14 @@ function AddExpressDialog({
         const r = await parseExpressLabel(fd);
         if (r.trackingNo) {
           setTrackingNo(r.trackingNo);
-          toast.success(`已识别单号：${r.trackingNo}`);
+          toast.success(`Número reconocido: ${r.trackingNo}`);
         } else {
-          toast.warning("未识别到单号，请手动输入");
+          toast.warning("No se reconoció el número; ingresalo manualmente");
         }
         if (r.companyCode) setCompanyCode(r.companyCode);
       } catch (err) {
-        toast.error("识别失败", {
-          description: err instanceof Error ? err.message : ""
+        toast.error("Error al reconocer", {
+          description: err instanceof Error ? err.message : "",
         });
       }
     });
@@ -290,11 +317,11 @@ function AddExpressDialog({
 
   function handleSubmit() {
     if (!trackingNo.trim()) {
-      toast.error("请填写或识别快递单号");
+      toast.error("Ingresá o reconocé el número de envío");
       return;
     }
     if (!purpose.trim()) {
-      toast.error("请填写用途");
+      toast.error("Ingresá el propósito");
       return;
     }
     startSubmit(async () => {
@@ -306,15 +333,15 @@ function AddExpressDialog({
           matterId,
           purpose: purpose.trim(),
           recipient: recipient.trim(),
-          recipientPhone: recipientPhone.trim()
+          recipientPhone: recipientPhone.trim(),
         });
-        toast.success("快递记录已Crear");
+        toast.success("Registro de envío creado");
         reset();
         onOpenChange(false);
         router.refresh();
       } catch (err) {
-        toast.error("Crear失败", {
-          description: err instanceof Error ? err.message : ""
+        toast.error("No se pudo crear", {
+          description: err instanceof Error ? err.message : "",
         });
       }
     });
@@ -324,20 +351,21 @@ function AddExpressDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Agregar快递记录</DialogTitle>
+          <DialogTitle>Agregar registro de envío</DialogTitle>
           <DialogDescription className="text-xs">
-            可上传快递单照片自动识别单号，也可手动输入。
+            Podés subir una foto del comprobante de envío para reconocer
+            automáticamente el número, o ingresarlo manualmente.
           </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-3 py-2">
           <div className="space-y-1.5">
-            <Label className="text-xs">单号</Label>
+            <Label className="text-xs">Número</Label>
             <div className="flex gap-1">
               <Input
                 value={trackingNo}
                 onChange={(e) => setTrackingNo(e.target.value)}
-                placeholder="可手动输入或上传图片识别"
+                placeholder="Podés ingresarlo manualmente o reconocerlo con una imagen"
                 className="font-mono"
               />
               <input
@@ -357,29 +385,29 @@ function AddExpressDialog({
                 onClick={() => fileRef.current?.click()}
                 disabled={ocrPending}
                 className="h-9 shrink-0 gap-1"
-                title="上传快递单照片，AI 自动识别单号 + 快递公司"
+                title="Subí la foto del comprobante de envío para que la IA reconozca el número + la empresa de envío"
               >
                 {ocrPending ? (
                   <Loader2 className="h-3 w-3 animate-spin" />
                 ) : (
                   <ScanLine className="h-3 w-3" />
                 )}
-                识别
+                Reconocer
               </Button>
             </div>
           </div>
 
           <div className="grid grid-cols-2 gap-2">
             <div className="space-y-1.5">
-              <Label className="text-xs">快递公司</Label>
+              <Label className="text-xs">Empresa de envío</Label>
               <Input
                 value={companyCode}
                 onChange={(e) => setCompanyCode(e.target.value)}
-                placeholder="留空则自动识别"
+                placeholder="Dejar vacío para reconocer automáticamente"
               />
             </div>
             <div className="space-y-1.5">
-              <Label className="text-xs">方向</Label>
+              <Label className="text-xs">Tipo</Label>
               <Select
                 value={direction}
                 onValueChange={(v) => setDirection(v as "OUTBOUND" | "INBOUND")}
@@ -388,32 +416,36 @@ function AddExpressDialog({
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="OUTBOUND">寄出（我方→外）</SelectItem>
-                  <SelectItem value="INBOUND">收件（外→我方）</SelectItem>
+                  <SelectItem value="OUTBOUND">
+                    Envío (nosotros → exterior)
+                  </SelectItem>
+                  <SelectItem value="INBOUND">
+                    Recepción (exterior → nosotros)
+                  </SelectItem>
                 </SelectContent>
               </Select>
             </div>
           </div>
 
           <div className="space-y-1.5">
-            <Label className="text-xs">用途 *</Label>
+            <Label className="text-xs">Propósito *</Label>
             <Input
               value={purpose}
               onChange={(e) => setPurpose(e.target.value)}
-              placeholder="如：起诉状寄朝阳法院"
+              placeholder="Ej.: envío de la demanda al Tribunal de Chaoyang"
             />
           </div>
 
           <div className="grid grid-cols-2 gap-2">
             <div className="space-y-1.5">
-              <Label className="text-xs">收件人 / 单位</Label>
+              <Label className="text-xs">Destinatario / entidad</Label>
               <Input
                 value={recipient}
                 onChange={(e) => setRecipient(e.target.value)}
               />
             </div>
             <div className="space-y-1.5">
-              <Label className="text-xs">收件电话</Label>
+              <Label className="text-xs">Teléfono del destinatario</Label>
               <Input
                 value={recipientPhone}
                 onChange={(e) => setRecipientPhone(e.target.value)}
@@ -424,12 +456,16 @@ function AddExpressDialog({
         </div>
 
         <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)} disabled={submitting}>
+          <Button
+            variant="outline"
+            onClick={() => onOpenChange(false)}
+            disabled={submitting}
+          >
             Cancelar
           </Button>
           <Button onClick={handleSubmit} disabled={submitting}>
             {submitting && <Loader2 className="mr-1.5 h-4 w-4 animate-spin" />}
-            Guardar并跟踪
+            Guardar y rastrear
           </Button>
         </DialogFooter>
       </DialogContent>

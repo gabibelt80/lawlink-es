@@ -16,7 +16,7 @@ const userRoleSchema = z.enum([
 ]);
 
 const userCreateSchema = z.object({
-  name: z.string().min(1, "姓名必填").max(40),
+  name: z.string().min(1, "Nombre y apellido必填").max(40),
   email: z.string().email("Email格式不正确"),
   password: z.string().min(8, "Contraseña至少 8 位").max(128),
   role: userRoleSchema,
@@ -71,7 +71,7 @@ export async function listUsers() {
 
 /**
  * 任意Iniciar sesión用户都可调：拿活跃同事列表，用于收案/Caso团队选择。
- * 默认排除 FINANCE/ADMIN Sistema角色（仍可选，做"Ver todos"切换时再开放）。
+ * 默认排除 FINANCE/ADMIN SistemaRol（仍可选，做"Ver todos"切换时再开放）。
  */
 export async function listActiveColleagues() {
   await requireSession();
@@ -117,7 +117,7 @@ export async function updateUserRole(input: UserUpdateRoleInput) {
   const session = await requireAdmin();
   const data = userUpdateRoleSchema.parse(input);
   if (data.id === session.user.id) {
-    throw new Error("不能修改自己的角色");
+    throw new Error("不能修改自己的Rol");
   }
 
   await prisma.user.update({
@@ -140,7 +140,7 @@ export async function updateUserRole(input: UserUpdateRoleInput) {
 export async function toggleUserActive(id: string) {
   const session = await requireAdmin();
   if (id === session.user.id) {
-    throw new Error("不能禁用自己");
+    throw new Error("不能Deshabilitar自己");
   }
   const current = await prisma.user.findUnique({ where: { id }, select: { active: true } });
   if (!current) throw new Error("用户不存在");
@@ -182,7 +182,7 @@ export async function resetUserPassword(input: ResetPasswordInput) {
 }
 
 /**
- * 当前用户改自己的Contraseña（任何角色可用）。
+ * 当前用户改自己的Contraseña（任何Rol可用）。
  */
 export async function changeMyPassword(input: ChangeMyPasswordInput) {
   const session = await requireSession();

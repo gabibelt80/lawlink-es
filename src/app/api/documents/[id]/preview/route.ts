@@ -13,9 +13,9 @@ export const dynamic = "force-dynamic";
 /**
  * v0.42: Caso材料在线预览。
  * - docx → mammoth 转 HTML
- * - xlsx/xls → exceljs 读单元格转 HTML 表
+ * - xlsx/xls → exceljs 读单pesos格转 HTML 表
  * Volver完整 HTML 文档，前端 <iframe> 内嵌。
- * pdf/图片/文本等浏览器原生可预览的走 download?inline=1（本路由不处理）。
+ * pdf/图片/文本etc.浏览器原生可预览的走 download?inline=1（本路由不处理）。
  */
 function htmlShell(title: string, body: string): string {
   return `<!doctype html><html lang="zh"><head><meta charset="utf-8"/>
@@ -54,7 +54,7 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
   });
   if (!doc) return NextResponse.json({ error: "材料不存在" }, { status: 404 });
 
-  // 权限：与 download 路由一致（ADMIN/主任全看；Caso成员看本案；收案合同限相关人）
+  // 权限：y download 路由一致（ADMIN/主任全看；Caso成员看本案；收案合同限相关人）
   if (session.user.role !== "ADMIN" && session.user.role !== "PRINCIPAL_LAWYER") {
     if (doc.matterId) {
       const member = await prisma.matterMember.findUnique({
@@ -89,15 +89,15 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
     const stored = await storage.readFile(doc.path);
     if (doc.encrypted) {
       if (!doc.iv || !doc.authTag) {
-        return NextResponse.json({ error: "加密元数据损坏" }, { status: 500 });
+        return NextResponse.json({ error: "加密pesos数据损坏" }, { status: 500 });
       }
       buf = decryptBuffer(stored, doc.iv, doc.authTag);
     } else {
       buf = stored;
     }
   } catch (err) {
-    console.error("[preview] 读取失败：", err);
-    return NextResponse.json({ error: "读取失败" }, { status: 500 });
+    console.error("[preview] 读取Error：", err);
+    return NextResponse.json({ error: "读取Error" }, { status: 500 });
   }
 
   let html: string;
@@ -134,8 +134,8 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
       html = htmlShell(doc.name, parts.join("") || "<p>（空表格）</p>");
     }
   } catch (err) {
-    console.error("[preview] 转换失败：", err);
-    return NextResponse.json({ error: "文档转换失败，请下载Ver" }, { status: 500 });
+    console.error("[preview] 转换Error：", err);
+    return NextResponse.json({ error: "文档转换Error，请下载Ver" }, { status: 500 });
   }
 
   await audit({

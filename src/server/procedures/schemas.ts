@@ -63,7 +63,7 @@ export const deadlineCategorySchema = z.enum([
 
 export const deadlineCreateSchema = z.object({
   procedureId: z.string().cuid(),
-  title: z.string().min(1, "期限Nombre必填").max(100),
+  title: z.string().min(1, "PlazoNombre必填").max(100),
   category: deadlineCategorySchema.default("CUSTOM"),
   dueAt: z.coerce.date(),
   basis: z.string().max(200).optional().or(z.literal("")),

@@ -199,7 +199,7 @@ export function MatterDetailTabs({
         toast.success("程序已Eliminar");
         router.refresh();
       } catch (err) {
-        toast.error("Eliminar失败", { description: err instanceof Error ? err.message : "" });
+        toast.error("EliminarError", { description: err instanceof Error ? err.message : "" });
       }
     });
   }
@@ -218,7 +218,7 @@ export function MatterDetailTabs({
     canEditMatterInfo ||
     canOwnThisMatter ||
     Boolean(currentProcedure && canAssociateThisMatter);
-  const causeLabel = matter.cause?.name ?? matter.causeFreeText ?? "未填写案由";
+  const causeLabel = matter.cause?.name ?? matter.causeFreeText ?? "未填写Causa";
 
   const ROMAN = ["I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X"];
 
@@ -250,7 +250,7 @@ export function MatterDetailTabs({
 
   return (
     <div className="space-y-4">
-      {/* Caso详情是每天要开几十次的页面，页面级入场动画只会让它显得慢，故不加动效 */}
+      {/* Caso详情是每días要开几十次的页面，页面级入场动画只会让它显得慢，故不加动效 */}
       <header className="ll-hero-surface px-5 py-4">
         <div className="relative z-[1] flex flex-wrap items-start justify-between gap-4">
           <div className="min-w-0 flex-1">
@@ -310,7 +310,7 @@ export function MatterDetailTabs({
       </header>
 
       {/* v1.1 UI（方案 B）：吸顶摘要条——标题滚出视野后，Caso身份 +
-          下一节点倒计时仍常驻可见 */}
+          下一Etapa倒计时仍常驻可见 */}
       <MatterStickyBar
         title={matter.title}
         caseNumber={currentProcedure?.caseNumber ?? null}
@@ -478,10 +478,10 @@ type DeadlineProgressItem = ProcedureItem["deadlines"][number] & {
 };
 
 /**
- * Eliminar程序的确认文案。
+ * Eliminar程序的Confirmar文案。
  *
- * 原文案是「该程序下的所有开庭、期限、备忘和材料记录将被一并Eliminar」——两个问题：
- * 1. 笼统。人对「所有相关记录」会习惯性点Aceptar，对「3 条期限」会停手。
+ * 原文案是「该程序下的所有开庭、Plazo、备忘和材料记录将被一并Eliminar」——两个问题：
+ * 1. 笼统。人对「所有相关记录」会习惯性点Aceptar，对「3 条Plazo」会停手。
  * 2. 不准确。材料（Document）的外键是 SetNull，只会丢失程序关联，本身不删。
  *
  * 级联硬删的实际范围（schema onDelete: Cascade）：Deadline / Hearing /
@@ -489,18 +489,18 @@ type DeadlineProgressItem = ProcedureItem["deadlines"][number] & {
  */
 function deleteProcedureWarning(procedure: ProcedureItem, label: string): string {
   const parts: string[] = [];
-  if (procedure.deadlines.length > 0) parts.push(`${procedure.deadlines.length} 条期限`);
+  if (procedure.deadlines.length > 0) parts.push(`${procedure.deadlines.length} 条Plazo`);
   if (procedure.hearings.length > 0) parts.push(`${procedure.hearings.length} 场开庭`);
   if (procedure.stages.length > 0) parts.push(`${procedure.stages.length} 个环节`);
   if (procedure.memos.length > 0) parts.push(`${procedure.memos.length} 条备忘`);
 
   if (parts.length === 0) {
-    return `AceptarEliminar程序「${label}」？该程序下暂无期限、开庭、环节和备忘记录。`;
+    return `AceptarEliminar程序「${label}」？该程序下暂无Plazo、开庭、环节和备忘记录。`;
   }
   return (
     `AceptarEliminar程序「${label}」？\n\n` +
     `该程序下的 ${parts.join("、")} 将被一并Eliminar，此Acciones不可撤销。\n` +
-    `（材料不会被Eliminar，仅解除与本程序的关联。）`
+    `（材料不会被Eliminar，仅解除y本程序的关联。）`
   );
 }
 
@@ -644,7 +644,7 @@ function MatterStickyBar({
   caseNumber: string | null;
   procedures: ProcedureItem[];
 }) {
-  // 标题区自带期限/开庭卡片；摘要条只在标题滚出视野后以 fixed 形式出现，
+  // 标题区自带Plazo/开庭卡片；摘要条只在标题滚出视野后以 fixed 形式出现，
   // 页首不占位也不重复（sticky 放在零高容器里不会生效，故用 fixed + 测宽）
   const wrapRef = useRef<HTMLDivElement>(null);
   const [pinned, setPinned] = useState(false);
@@ -677,7 +677,7 @@ function MatterStickyBar({
   const deadlineTone =
     days === null ? "" : days < 0 || days <= 7 ? "text-destructive" : days <= 30 ? "text-amber-600" : "text-muted-foreground";
   const deadlineText =
-    days === null ? "" : days < 0 ? `逾期 ${-days} 天` : days === 0 ? "Hoy到期" : `剩 ${days} 天`;
+    days === null ? "" : days < 0 ? `Vencido ${-days} días` : days === 0 ? "Hoy到期" : `Restan ${days} días`;
 
   return (
     <div ref={wrapRef} className="h-0 w-full" aria-hidden={!pinned}>
@@ -702,7 +702,7 @@ function MatterStickyBar({
                   </span>
                 </span>
               ) : (
-                <span className="hidden text-muted-foreground sm:inline">无未完成期限</span>
+                <span className="hidden text-muted-foreground sm:inline">无未完成Plazo</span>
               )}
               {hearing && (
                 <span className="inline-flex items-center gap-1 text-muted-foreground">
@@ -768,7 +768,7 @@ function MatterKeypoints({
     <div className="relative z-[1] mt-3 grid grid-cols-2 gap-1 rounded-lg bg-muted/70 p-1 lg:grid-cols-4">
       <ProgressMetricCard
         icon={<Clock3 className="h-3 w-3" />}
-        label={nextDeadline?.title ?? "最近期限"}
+        label={nextDeadline?.title ?? "最近Plazo"}
         value={deadlineValue(nextDeadline)}
         sub={deadlineSub(nextDeadline)}
         tone={deadlineTone(nextDeadline)}
@@ -783,13 +783,13 @@ function MatterKeypoints({
         icon={<CalendarClock className="h-3 w-3" />}
         label="首次开庭"
         value={firstHearing ? formatMonthDay(firstHearing.startsAt) : "—"}
-        sub={firstHearing ? `${formatTime(firstHearing.startsAt)} · ${firstHearing.title}` : "暂无开庭安排"}
+        sub={firstHearing ? `${formatTime(firstHearing.startsAt)} · ${firstHearing.title}` : "Sin audiencia programada"}
       />
       <ProgressMetricCard
         icon={<CircleDollarSign className="h-3 w-3" />}
         label="实收进度"
         value={`${receivedPercent}%`}
-        sub={`${formatCurrency(finance.stats.received, { compact: true })} / ${feeTarget ? formatCurrency(feeTarget, { compact: true }) : "未设目标"}`}
+        sub={`${formatCurrency(finance.stats.received, { compact: true })} / ${feeTarget ? formatCurrency(feeTarget, { compact: true }) : "Sin objetivo establecido"}`}
         progress={receivedPercent}
       />
     </div>
@@ -971,13 +971,13 @@ function matterTeamRoleDescription(role: MatterTeamMember["matterRole"]) {
 function deadlineValue(deadline: DeadlineProgressItem | null) {
   if (!deadline) return "—";
   const days = daysFromToday(deadline.dueAt);
-  if (days < 0) return `逾期 ${Math.abs(days)} 天`;
+  if (days < 0) return `Vencido ${Math.abs(days)} días`;
   if (days === 0) return "Hoy";
-  return `${days} 天`;
+  return `${days} días`;
 }
 
 function deadlineSub(deadline: DeadlineProgressItem | null) {
-  if (!deadline) return "暂无未完成期限";
+  if (!deadline) return "暂无未完成Plazo";
   return formatShortDate(deadline.dueAt);
 }
 

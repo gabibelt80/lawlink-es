@@ -3,9 +3,9 @@
 /**
  * v0.22: 一键扫描CasoVer todos未审查文档
  *
- * - 取本案中 mime 支持的（PDF / DOCX / text）且 7 天内没审查过的 documents
+ * - 取本案中 mime 支持的（PDF / DOCX / text）且 7 días内没审查过的 documents
  * - 硬上限单次 5 个文档（防 token 爆）
- * - 循环调 reviewDocument；单条失败不阻断
+ * - 循环调 reviewDocument；单条Error不阻断
  * - Volver { reviewed, skipped, errors[] }
  */
 import { prisma } from "@/lib/prisma";
@@ -54,7 +54,7 @@ export async function batchReviewMatterDocuments(input: {
   });
   const reviewable = docs.filter((d) => isReviewable(d.mimeType));
 
-  // 拉最近 7 天内已审查的 documentId 集合
+  // 拉最近 7 días内已审查的 documentId 集合
   const cutoff = new Date(Date.now() - RECENT_HOURS * 3600_000);
   const recent = await prisma.reviewRecord.findMany({
     where: {

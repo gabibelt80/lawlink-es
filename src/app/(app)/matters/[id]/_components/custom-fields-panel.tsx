@@ -114,10 +114,10 @@ function EditDialog({
     startTransition(async () => {
       try {
         await saveMatterCustomValues(matterId, draft);
-        toast.success("已Guardar");
+        toast.success("Guardado");
         onClose();
       } catch (err) {
-        toast.error("Guardar失败", {
+        toast.error("Error al guardar", {
           description: err instanceof Error ? err.message : "",
         });
       }
@@ -128,7 +128,7 @@ function EditDialog({
     <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
       <DialogContent className="max-w-md">
         <DialogHeader>
-          <DialogTitle>Editar自定义信息</DialogTitle>
+          <DialogTitle>Editar información personalizada</DialogTitle>
         </DialogHeader>
 
         <div className="max-h-[60vh] space-y-3 overflow-y-auto">

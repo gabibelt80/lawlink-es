@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { parseSms } from "@/lib/sms-parser";
 
 describe("parseSms", () => {
-  it("提取开庭时间并生成重要事项", () => {
+  it("提取开庭时间并生成Elementos importantes", () => {
     const parsed = parseSms(
       "【上海市浦东新区人民法院】案号（2026）沪0115民初12345号，本院定于2026年7月1日上午9:30在第三法庭开庭，承办法官张三。"
     );
@@ -22,7 +22,7 @@ describe("parseSms", () => {
     );
   });
 
-  it("识别电子送达链接、账号Contraseña和人工Iniciar sesiónEstado", () => {
+  it("识别电子送达Enlace、账号Contraseña和人工Iniciar sesiónEstado", () => {
     const parsed = parseSms(
       "【12368】你有法律文书待签收，案号（2026）浙0106民初888号，请Iniciar sesiónhttps://songda.example.com/doc?id=abc，账号：lawyer001，Contraseña：Abc12345，验证码：778899。"
     );
@@ -37,13 +37,13 @@ describe("parseSms", () => {
     });
   });
 
-  it("把举证、缴费等Fecha识别成待处理事项", () => {
+  it("把举证、缴费etc.Fecha识别成待处理事ítems", () => {
     const parsed = parseSms(
-      "【法院Notificaciones】请于2026年6月25日前Enviar证据材料，并于2026年6月20日前缴纳诉讼费500元。详情：https://court.example.com/pay。"
+      "【法院Notificaciones】请于2026年6月25日前Enviar证据材料，并于2026年6月20日前缴纳诉讼费500pesos。详情：https://court.example.com/pay。"
     );
 
     expect(parsed.smsType).toBe("FEE_NOTICE");
-    expect(parsed.amounts).toContain("500元");
+    expect(parsed.amounts).toContain("500pesos");
     expect(parsed.importantItems).toEqual(
       expect.arrayContaining([
         expect.objectContaining({ kind: "EVIDENCE_DEADLINE", dateText: "2026年6月25日" }),

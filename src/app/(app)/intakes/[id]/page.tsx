@@ -33,7 +33,7 @@ export default async function IntakeDetailPage({ params }: PageProps) {
     select: { id: true, name: true }
   });
 
-  // 拉每条 hit 对应的 Matter 详情（编号 / 名 / 案由 / 主办 / 当事人角色）
+  // 拉每条 hit 对应的 Matter 详情（编号 / 名 / Causa / 主办 / 当事人Rol）
   let latestCheck: Parameters<typeof ConflictSection>[0]["latestCheck"] = null;
   if (latestCheckRaw) {
     const matterIds = Array.from(
@@ -175,10 +175,10 @@ export default async function IntakeDetailPage({ params }: PageProps) {
         <Separator className="my-5" />
 
         <dl className="grid grid-cols-2 gap-4 text-sm md:grid-cols-5">
-          <InfoItem label="案由">
+          <InfoItem label="Causa">
             {intake.cause?.name ?? intake.causeFreeText ?? "—"}
           </InfoItem>
-          <InfoItem label="发起人">{createdBy?.name ?? "—"}</InfoItem>
+          <InfoItem label="Iniciado por">{createdBy?.name ?? "—"}</InfoItem>
           <InfoItem label="主办Abogado">{intake.ownerUser?.name ?? "—"}</InfoItem>
           <InfoItem label="Cliente">
             {intake.client ? (
@@ -217,7 +217,7 @@ export default async function IntakeDetailPage({ params }: PageProps) {
             <div className="rounded-md border border-destructive/30 bg-destructive/10 p-3 text-sm">
               <div className="mb-1 flex items-center gap-1.5 text-xs font-medium uppercase tracking-wider text-destructive">
                 <AlertTriangle className="h-3.5 w-3.5" />
-                不接案原因
+                No aceptar casoMotivo
               </div>
               <p className="text-foreground/90">{intake.declinedReason}</p>
             </div>

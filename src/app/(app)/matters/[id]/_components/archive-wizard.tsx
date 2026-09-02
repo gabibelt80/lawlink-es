@@ -161,10 +161,10 @@ export function ArchiveWizardDialog({ matterId, open, onOpenChange }: Props) {
       fd.set("encrypted", "false");
       fd.set("file", file);
       await uploadDocument(fd);
-      toast.success(`已上传：${item.label}`, { description: file.name });
+      toast.success(`Se cargó: ${item.label}`, { description: file.name });
       await refreshPrep();
     } catch (err) {
-      toast.error("上传失败", {
+      toast.error("Error al subir", {
         description: err instanceof Error ? err.message : "",
       });
     } finally {
@@ -180,13 +180,17 @@ export function ArchiveWizardDialog({ matterId, open, onOpenChange }: Props) {
 
   function handleSubmit() {
     if (!summary.trim()) {
-      toast.warning("请填写结案小结");
+      toast.warning("Completá el resumen de cierre");
       return;
     }
     if (missingRequired.length > 0 && !forceWithMissing) {
-      toast.warning(`仍有 ${missingRequired.length} 项必交材料未勾选`, {
-        description: "如确实无法补齐，请勾选下方的'强制归档（缺项记录在档）'",
-      });
+      toast.warning(
+        `Todavía quedan ${missingRequired.length} documentos obligatorios sin marcar`,
+        {
+          description:
+            "Si no podés completarlos, marcá la opción de 'Archivar por fuerza (los faltantes quedan registrados)'",
+        },
+      );
       return;
     }
     startTransition(async () => {
@@ -202,16 +206,17 @@ export function ArchiveWizardDialog({ matterId, open, onOpenChange }: Props) {
         });
         toast.success(
           result.status === "APPROVED"
-            ? `Caso已归档（${result.archiveNo}）`
-            : `归档申请已Enviar（${result.archiveNo}），等待Administrar员Aprobación`,
+            ? `Caso archivado (${result.archiveNo})`
+            : `Solicitud de archivo enviada (${result.archiveNo}), esperando la aprobación del administrador`,
           {
-            description: "卷宗封皮 + 目录已自动生成至归档卷宗",
+            description:
+              "La carátula y el índice del expediente ya se generaron en el archivo",
           },
         );
         onOpenChange(false);
         router.refresh();
       } catch (err) {
-        toast.error("归档失败", {
+        toast.error("Error al archivar", {
           description: err instanceof Error ? err.message : "",
         });
       }
@@ -224,10 +229,12 @@ export function ArchiveWizardDialog({ matterId, open, onOpenChange }: Props) {
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <FileCheck2 className="h-5 w-5 text-[#9B7BF7]" />
-            归档Caso
+            Archivar caso
           </DialogTitle>
           <DialogDescription>
-            Enviar后进入Administrar员Aprobación；Aprobación通过后Caso转为只读，并生成卷宗封皮和卷宗目录入归档卷宗。
+            Después de enviar, pasa a aprobación del administrador; cuando se
+            aprueba, el caso queda en modo de solo lectura y se generan la
+            carátula y el índice del expediente en el archivo.
           </DialogDescription>
         </DialogHeader>
 
@@ -238,12 +245,16 @@ export function ArchiveWizardDialog({ matterId, open, onOpenChange }: Props) {
         ) : (
           <ScrollArea className="max-h-[60vh] pr-4">
             <div className="space-y-5">
-              {/* 结案信息 */}
+              {/* Cerrar caso信息 */}
               <section className="space-y-3">
-                <h3 className="text-sm font-medium">结案信息</h3>
+                <h3 className="text-sm font-medium">
+                  Información del cierre del caso
+                </h3>
                 <div className="grid grid-cols-2 gap-3">
                   <div className="space-y-1.5">
-                    <Label className="text-xs">结案方式 *</Label>
+                    <Label className="text-xs">
+                      Motivo del cierre del caso *
+                    </Label>
                     <Select
                       value={closedReason}
                       onValueChange={(v) =>
@@ -265,7 +276,9 @@ export function ArchiveWizardDialog({ matterId, open, onOpenChange }: Props) {
                     </Select>
                   </div>
                   <div className="space-y-1.5">
-                    <Label className="text-xs">结案Fecha *</Label>
+                    <Label className="text-xs">
+                      Fecha de cierre del caso *
+                    </Label>
                     <Input
                       type="date"
                       value={completedAt}
@@ -275,7 +288,9 @@ export function ArchiveWizardDialog({ matterId, open, onOpenChange }: Props) {
                   </div>
                 </div>
                 <div className="space-y-1.5">
-                  <Label className="text-xs">裁判结果摘要</Label>
+                  <Label className="text-xs">
+                    Resumen del resultado judicial
+                  </Label>
                   <Textarea
                     value={judgmentSummary}
                     onChange={(e) => setJudgmentSummary(e.target.value)}
@@ -285,11 +300,14 @@ export function ArchiveWizardDialog({ matterId, open, onOpenChange }: Props) {
                 </div>
                 <div className="space-y-1.5">
                   <div className="flex items-baseline justify-between">
-                    <Label className="text-xs">结案小结 *</Label>
+                    <Label className="text-xs">
+                      Resumen del cierre del caso *
+                    </Label>
                     {summaryFromClose && (
                       <span className="inline-flex items-center gap-1 text-[10px] text-primary">
                         <Sparkles className="h-3 w-3" />
-                        已引用结案时填写的小结，可直接Editar
+                        Se tomó el resumen ingresado al cerrar el caso; podés
+                        editarlo
                       </span>
                     )}
                   </div>
@@ -299,7 +317,7 @@ export function ArchiveWizardDialog({ matterId, open, onOpenChange }: Props) {
                       setSummary(e.target.value);
                       setSummaryFromClose(false);
                     }}
-                    placeholder="Caso办理过程概述、关键节点、得失复盘等"
+                    placeholder="Resumen del proceso del caso, etapas clave, evaluación de aciertos y aspectos a mejorar, etc."
                     rows={3}
                   />
                 </div>
@@ -311,7 +329,9 @@ export function ArchiveWizardDialog({ matterId, open, onOpenChange }: Props) {
                   <div className="flex items-center justify-between">
                     <h3 className="text-sm font-medium">{checklist.title}</h3>
                     <span className="text-xs text-muted-foreground">
-                      点击「上传」即关联到对应项并自动勾选；带 * 为必交
+                      Al hacer clic en «Subir», el documento se vincula con el
+                      ítem correspondiente y se marca automáticamente; * indica
+                      que es obligatorio
                     </span>
                   </div>
                   <input
@@ -358,7 +378,7 @@ export function ArchiveWizardDialog({ matterId, open, onOpenChange }: Props) {
                               {hasDocs && !item.autoGenerated && (
                                 <span className="inline-flex items-center gap-1 text-[10px] text-emerald-600">
                                   <FileCheck className="h-3 w-3" />
-                                  已上传 {docs.length} 份
+                                  {docs.length} documento(s) subido(s)
                                 </span>
                               )}
                             </div>
@@ -400,7 +420,7 @@ export function ArchiveWizardDialog({ matterId, open, onOpenChange }: Props) {
                               ) : (
                                 <>
                                   <Upload className="mr-1 h-3 w-3" />
-                                  {hasDocs ? "再传" : "上传"}
+                                  {hasDocs ? "Subir otro" : "Subir"}
                                 </>
                               )}
                             </Button>
@@ -412,7 +432,7 @@ export function ArchiveWizardDialog({ matterId, open, onOpenChange }: Props) {
                 </section>
               )}
 
-              {/* 缺项警告 - 红色 + 提示先去案卷材料上传 */}
+              {/* 缺ítems警告 - 红色 + 提示先去案卷材料上传 */}
               {missingRequired.length > 0 && (
                 <Alert
                   variant="destructive"
@@ -420,14 +440,18 @@ export function ArchiveWizardDialog({ matterId, open, onOpenChange }: Props) {
                 >
                   <AlertTriangle className="h-4 w-4" />
                   <AlertTitle className="text-sm font-medium text-destructive">
-                    仍有 {missingRequired.length} 项必交材料未勾选
+                    Todavía hay {missingRequired.length} ítem(s) obligatorio(s)
+                    sin marcar
                   </AlertTitle>
                   <AlertDescription className="mt-1 text-xs text-destructive/85">
                     <div className="mb-1">
-                      缺项：{missingRequired.map((x) => x.label).join("、")}
+                      Faltan: {missingRequired.map((x) => x.label).join(", ")}
                     </div>
                     <div>
-                      在上方对应行点「上传」即可补传并自动勾选；如材料确实无法补齐，可勾选下方强制归档。
+                      Hacé clic en «Subir» en la fila correspondiente para
+                      cargar el documento y marcarlo automáticamente. Si no
+                      podés completarlo, seleccioná la opción de archivo
+                      forzoso.
                     </div>
                   </AlertDescription>
                   <label className="mt-3 flex cursor-pointer items-center gap-2">
@@ -436,7 +460,9 @@ export function ArchiveWizardDialog({ matterId, open, onOpenChange }: Props) {
                       onCheckedChange={(v) => setForceWithMissing(!!v)}
                     />
                     <span className="text-xs text-destructive">
-                      强制归档（缺项 ID 会记入档案，可在归档详情Ver）
+                      Archivar por fuerza (los ítems faltantes quedarán
+                      registrados en el expediente y podrás verlos en los
+                      detalles del archivo)
                     </span>
                   </label>
                 </Alert>
@@ -445,10 +471,12 @@ export function ArchiveWizardDialog({ matterId, open, onOpenChange }: Props) {
               {/* v0.16: Aprobación流提示 */}
               <Alert className="border-primary/30 bg-primary/5">
                 <AlertTitle className="text-xs font-medium text-primary">
-                  归档Aprobación流程
+                  Flujo de aprobación del archivo
                 </AlertTitle>
                 <AlertDescription className="mt-0.5 text-[11.5px] text-muted-foreground">
-                  Enviar后Estado为「归档中」，需Administrar员Aprobación通过才正式归档。
+                  Después de enviar, el estado será «Archivando» y un
+                  administrador deberá aprobarlo para que el archivo se
+                  concrete.
                 </AlertDescription>
               </Alert>
             </div>
@@ -471,7 +499,7 @@ export function ArchiveWizardDialog({ matterId, open, onOpenChange }: Props) {
             {isPending && (
               <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
             )}
-            确认归档
+            Confirmar archivo
           </Button>
         </DialogFooter>
       </DialogContent>

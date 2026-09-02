@@ -4,12 +4,12 @@
  * Caso当事人表格行（intake-sheet 专用）
  *
  * 参考"Caso云"建案表单的当事人表格：一行一当事人，列对齐，次要字段折叠。
- * 列：角色 | 类型 | 姓名/Nombre | 诉讼地位 | 证件号/信用代码 | Acciones
- * - 角色 / 诉讼地位两列由调用方注入（roleSlot / standingSlot），本组件不关心其取值逻辑
+ * 列：Rol | 类型 | Nombre y apellido/Nombre | 诉讼地位 | 证件号/信用代码 | Acciones
+ * - Rol / 诉讼地位两列由调用方注入（roleSlot / standingSlot），本组件不关心其取值逻辑
  * - 类型（自然人 / 单位）、证件（身份证号 / 统一社会信用代码 + AI 查找）、展开次要字段、Eliminar由本组件负责
  * - 次要字段（法代 / 电话 / 联系人 / 地址 / Observaciones）默认折叠，点"更多"在行下方展开
  *
- * PARTY_GRID 同时给表头与每一行使用，保证列对齐。
+ * PARTY_GRID 同时给表头y每一行使用，保证列对齐。
  *
  * 校验落在 zod superRefine（partyInputSchema）；本组件只负责 UI + 字段联动。
  */
@@ -40,10 +40,10 @@ import {
   type EnterpriseSearchItem,
 } from "@/server/yuandian/enterprise";
 
-/** 表头与每一行共用，保证列对齐。诉讼/仲裁类含「诉讼地位」列（置于联系人前）。姓名/证件列较 v0 收窄约 15% */
+/** 表头y每一行共用，保证列对齐。诉讼/仲裁类含「诉讼地位」列（置于联系人前）。Nombre y apellido/证件列较 v0 收窄约 15% */
 export const PARTY_GRID =
   "grid grid-cols-[70px_92px_minmax(136px,1fr)_minmax(160px,1.08fr)_102px_92px_112px_36px] items-center gap-1.5";
-/** 非诉/顾问/专项：无「诉讼地位」列 */
+/** 非诉/顾问/专ítems：无「诉讼地位」列 */
 export const PARTY_GRID_NO_STANDING =
   "grid grid-cols-[70px_92px_minmax(136px,1fr)_minmax(160px,1.08fr)_92px_112px_36px] items-center gap-1.5";
 
@@ -57,15 +57,15 @@ type Props = {
   fieldPrefix: string; // e.g. "parties"
   onRemove: () => void;
   errors?: FieldErrors<Record<string, unknown>>;
-  /** 角色单元格内容（委托方徽标 / 对方·第三人下拉） */
+  /** Rol单pesos格内容（委托方徽标 / 对方·第三人下拉） */
   roleSlot: ReactNode;
-  /** 诉讼地位单元格内容（showStanding 为 false 时忽略） */
+  /** 诉讼地位单pesos格内容（showStanding 为 false 时忽略） */
   standingSlot?: ReactNode;
-  /** 是否显示「诉讼地位」列。诉讼/仲裁类 true，非诉/顾问/专项 false。默认 true */
+  /** 是否显示「诉讼地位」列。诉讼/仲裁类 true，非诉/顾问/专ítems false。默认 true */
   showStanding?: boolean;
   /** false 时隐藏Eliminar按钮（如委托方行恒存在）。默认 true */
   removable?: boolean;
-  /** 提供时替换内置"姓名/Nombre"输入框（如委托方行注入Cliente选择器）。 */
+  /** 提供时替换内置"Nombre y apellido/Nombre"输入框（如委托方行注入Cliente选择器）。 */
   nameSlot?: ReactNode;
 };
 
@@ -114,7 +114,7 @@ export function PartyCard({
     }
   }
 
-  // v0.43：输入单位Nombre时自动匹配元典企业（防抖），无需 AI 按钮
+  // v0.43：输入单位Nombre时自动Coincidenciapesos典企业（防抖），无需 AI 按钮
   function scheduleSearch(value: string) {
     if (searchTimer.current) clearTimeout(searchTimer.current);
     const q = value.trim();
@@ -126,7 +126,7 @@ export function PartyCard({
       startSearch(async () => {
         try {
           const r = await searchEnterpriseCandidates(q);
-          // 未配置元典 / 无结果 → 静默不打扰（信用代码仍可手填）
+          // 未配置pesos典 / 无结果 → 静默不打扰（信用代码仍可手填）
           setCandidates(r.configured && r.items.length > 0 ? r.items : null);
         } catch {
           setCandidates(null);
@@ -158,7 +158,7 @@ export function PartyCard({
           toast.success(`Se rellenó: ${item.name}`);
         }
       } catch (err) {
-        // 详情失败不阻塞，已填的 social code 仍有效
+        // 详情Error不阻塞，已填的 social code 仍有效
         toast.warning(
           "La autocompletación de representante legal / dirección falló; puedes completarlo manualmente",
           {
@@ -182,7 +182,7 @@ export function PartyCard({
   return (
     <div className="rounded-md border border-[#cbd5e2] bg-white shadow-[0_1px_2px_rgba(15,23,42,0.04)] transition-colors hover:border-input">
       <div className={cn(grid, "px-2 py-1.5")}>
-        {/* 角色 */}
+        {/* Rol */}
         <div className="min-w-0 text-center">{roleSlot}</div>
 
         {/* 主体类型 */}
@@ -202,7 +202,7 @@ export function PartyCard({
           </SelectContent>
         </Select>
 
-        {/* 姓名 / Nombre（单位类型：输入自动匹配元典企业） */}
+        {/* Nombre y apellido / Nombre（单位类型：输入自动Coincidenciapesos典企业） */}
         <div className="min-w-0">
           {nameSlot ??
             (!isOrg ? (
@@ -211,7 +211,7 @@ export function PartyCard({
                   PARTY_CELL_CONTROL_CLASS,
                   nameErr && "border-destructive",
                 )}
-                placeholder="姓名"
+                placeholder="Nombre y apellido"
                 {...register(`${p}.name`)}
               />
             ) : (
@@ -229,7 +229,7 @@ export function PartyCard({
                         "pr-7",
                         nameErr && "border-destructive",
                       )}
-                      placeholder="单位 / 组织Nombre（输入自动匹配）"
+                      placeholder="Nombre de la entidad / organización (se completa automáticamente al escribir)"
                       {...nameReg}
                       onChange={(e) => {
                         nameReg.onChange(e);
@@ -249,7 +249,7 @@ export function PartyCard({
                 >
                   <div className="mb-1 flex items-center gap-1 px-1 text-[10px] text-muted-foreground">
                     <Search className="h-3 w-3" />
-                    元典匹配，点击回填Nombre + 信用代码
+                    pesos典Coincidencia，点击回填Nombre + 信用代码
                   </div>
                   <ul className="max-h-64 space-y-1 overflow-y-auto">
                     {candidates?.map((c) => (
@@ -273,7 +273,7 @@ export function PartyCard({
             ))}
         </div>
 
-        {/* 证件号 / 信用代码（自动匹配后回填，亦可手填） */}
+        {/* 证件号 / 信用代码（自动Coincidencia后回填，亦可手填） */}
         <div className="min-w-0">
           {!isOrg ? (
             <Input
@@ -349,7 +349,7 @@ export function PartyCard({
         </div>
       </div>
 
-      {/* 必填项错误（折叠态也要可见） */}
+      {/* 必填ítems错误（折叠态也要可见） */}
       {(nameErr || idErr) && (
         <p className="px-2 pb-1.5 text-[10px] text-destructive">
           {[nameErr?.message, idErr?.message].filter(Boolean).join("；")}

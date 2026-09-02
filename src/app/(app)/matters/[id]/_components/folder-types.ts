@@ -36,38 +36,39 @@ export type TemplateSummary = {
   isBuiltIn: boolean;
 };
 
-export const TEMPLATE_CATEGORY_CN: Record<TemplateSummary["category"], string> = {
-  INTAKE: "收案文书",
-  RETAINER: "委托文书",
-  LITIGATION: "诉讼文书",
-  HEARING: "庭审文书",
-  WORK_PRODUCT: "工作成果",
-  ARCHIVE: "卷宗文书",
-  CLOSING: "结案文书",
-  BLANK: "空白文档"
-};
+export const TEMPLATE_CATEGORY_CN: Record<TemplateSummary["category"], string> =
+  {
+    INTAKE: "Documentos de admisión",
+    RETAINER: "Documentos de mandato",
+    LITIGATION: "Documentos de litigio",
+    HEARING: "Documentos de audiencia",
+    WORK_PRODUCT: "Trabajo realizado",
+    ARCHIVE: "Documentos del expediente",
+    CLOSING: "Documentos de cierre",
+    BLANK: "Documento en blanco",
+  };
 
 export const VARIABLE_LABEL_CN: Record<string, string> = {
-  "firm.name": "律所Nombre",
-  "firm.address": "律所地址",
-  "firm.phone": "律所电话",
-  "lawyer.name": "主办Abogado",
-  "lawyer.phone": "Abogado电话",
-  "matter.code": "Caso编号",
-  "matter.title": "CasoNombre",
-  "matter.causeText": "案由",
-  "matter.intakeDate": "收案Fecha",
-  "matter.claimAmount": "涉案标的",
-  "matter.ourStanding": "我方诉讼地位",
-  "client.name": "委托人姓名",
-  "client.idNumber": "委托人证件号",
-  "client.address": "委托人住址",
-  "client.phone": "委托人电话",
-  "opposing.name": "对方姓名",
-  "opposing.idNumber": "对方证件号",
-  "opposing.address": "对方住址",
-  "opposing.phone": "对方电话",
-  "proceeding.court": "受理法院",
-  "proceeding.caseNo": "案号",
-  "todayCN": "生成Fecha"
+  "firm.name": "Nombre del bufete",
+  "firm.address": "Dirección del bufete",
+  "firm.phone": "Teléfono del bufete",
+  "lawyer.name": "Abogado principal",
+  "lawyer.phone": "Teléfono del abogado",
+  "matter.code": "Código del caso",
+  "matter.title": "Nombre del caso",
+  "matter.causeText": "Causa",
+  "matter.intakeDate": "Fecha de admisión",
+  "matter.claimAmount": "Monto del caso",
+  "matter.ourStanding": "Nuestra posición en el litigio",
+  "client.name": "Nombre del cliente",
+  "client.idNumber": "Número de documento del cliente",
+  "client.address": "Domicilio del cliente",
+  "client.phone": "Teléfono del cliente",
+  "opposing.name": "Nombre de la parte contraria",
+  "opposing.idNumber": "Número de documento de la parte contraria",
+  "opposing.address": "Domicilio de la parte contraria",
+  "opposing.phone": "Teléfono de la parte contraria",
+  "proceeding.court": "Tribunal / Juzgado",
+  "proceeding.caseNo": "Número del caso",
+  todayCN: "Fecha de generación",
 };

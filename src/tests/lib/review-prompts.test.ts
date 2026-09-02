@@ -86,18 +86,18 @@ describe("prompt 内容契约", () => {
     expect(CONTRACT_PROMPT).toContain("争议解决");
     expect(CONTRACT_PROMPT).toContain("不可抗力");
   });
-  it("PLEADING prompt 关注诉讼程序与诉请", () => {
+  it("PLEADING prompt 关注诉讼程序y诉请", () => {
     expect(PLEADING_PROMPT).toContain("诉讼请求");
     expect(PLEADING_PROMPT).toContain("管辖");
     expect(PLEADING_PROMPT).toContain("诉讼时效");
   });
-  it("EVIDENCE prompt 关注三性与证据链", () => {
+  it("EVIDENCE prompt 关注三性y证据链", () => {
     expect(EVIDENCE_PROMPT).toContain("真实性");
     expect(EVIDENCE_PROMPT).toContain("合法性");
     expect(EVIDENCE_PROMPT).toContain("关联性");
     expect(EVIDENCE_PROMPT).toContain("证据链");
   });
-  it("JUDGMENT prompt 关注裁判分析与应对策略", () => {
+  it("JUDGMENT prompt 关注裁判分析y应对策略", () => {
     expect(JUDGMENT_PROMPT).toContain("二审");
     expect(JUDGMENT_PROMPT).toContain("再审");
     expect(JUDGMENT_PROMPT).toMatch(/应对|策略|不利/);

@@ -2,8 +2,8 @@
  * v0.50: ICS 日历订阅源（PRD §二十一）。
  *
  * GET /api/calendar/{token} → text/calendar
- * token 即凭证（对应 User.calendarToken，可在 Configuración→个人信息 重置）；
- * 内容 = 该用户可见范围内 过去 7 天 ~ 未来 90 天 的开庭 / 期限 / 任务 / Preservación到期。
+ * token 即凭证（对应 User.calendarToken，可在 Configuración→Información personal Restablecer）；
+ * 内容 = 该用户可见范围内 过去 7 días ~ 未来 90 días 的开庭 / Plazo / Tarea / Preservación到期。
  * 苹果日历 / Google Calendar / Outlook 订阅 URL 后自动定期刷新。
  */
 import { NextResponse } from "next/server";
@@ -18,8 +18,8 @@ const FUTURE_DAYS = 90;
 
 const TYPE_PREFIX: Record<string, string> = {
   hearing: "[开庭]",
-  deadline: "[期限]",
-  task: "[任务]"
+  deadline: "[Plazo]",
+  task: "[Tarea]"
 };
 
 export async function GET(
@@ -53,7 +53,7 @@ export async function GET(
 
   const events: IcsEvent[] = items.map((item) => {
     const prefix = TYPE_PREFIX[item.type] ?? "";
-    // Cliente名而非完整Caso名（与站内Calendario一致，减少日历外泄的敏感信息）
+    // Cliente名而非完整Caso名（y站内Calendario一致，减少日历外泄的敏感信息）
     const who = item.clientName ?? item.matter.internalCode;
     const isTimed = item.type === "hearing";
     return {

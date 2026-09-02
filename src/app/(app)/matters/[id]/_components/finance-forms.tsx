@@ -4,7 +4,14 @@ import { useEffect, useState, useTransition } from "react";
 import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
-import { Loader2, Plus, Trash2, Paperclip, FileText, Sparkles } from "lucide-react";
+import {
+  Loader2,
+  Plus,
+  Trash2,
+  Paperclip,
+  FileText,
+  Sparkles,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -14,7 +21,7 @@ import {
   SelectContent,
   SelectItem,
   SelectTrigger,
-  SelectValue
+  SelectValue,
 } from "@/components/ui/select";
 import {
   Dialog,
@@ -22,23 +29,26 @@ import {
   DialogHeader,
   DialogTitle,
   DialogDescription,
-  DialogFooter
+  DialogFooter,
 } from "@/components/ui/dialog";
 import { RadioChips } from "@/components/ui/radio-chips";
 import {
   billingCreateSchema,
   feeEntryCreateSchema,
   type BillingCreateInput,
-  type FeeEntryCreateInput
+  type FeeEntryCreateInput,
 } from "@/server/finance/schemas";
 import {
   createBilling,
   createFeeEntry,
   setCommissionPlan,
-  listMatterInvoiceRequests
+  listMatterInvoiceRequests,
 } from "@/server/finance/actions";
 import { uploadDocument } from "@/server/documents/actions";
-import { recognizeInvoiceFromImage, type RecognizedInvoice } from "@/server/ai/actions";
+import {
+  recognizeInvoiceFromImage,
+  type RecognizedInvoice,
+} from "@/server/ai/actions";
 import { userRoleLabel } from "@/lib/enums";
 
 // ============ AddBillingSheet ============
@@ -46,7 +56,7 @@ import { userRoleLabel } from "@/lib/enums";
 export function AddBillingSheet({
   open,
   onOpenChange,
-  matterId
+  matterId,
 }: {
   open: boolean;
   onOpenChange: (o: boolean) => void;
@@ -60,7 +70,7 @@ export function AddBillingSheet({
     handleSubmit,
     setValue,
     reset,
-    formState: { errors }
+    formState: { errors },
   } = useForm<BillingCreateInput>({
     resolver: zodResolver(billingCreateSchema),
     defaultValues: {
@@ -68,8 +78,8 @@ export function AddBillingSheet({
       title: "",
       contractAmount: 0,
       schedule: "",
-      status: "ACTIVE"
-    }
+      status: "ACTIVE",
+    },
   });
   const billingStatus = useWatch({ control, name: "status" });
 
@@ -83,18 +93,20 @@ export function AddBillingSheet({
           fd.set("name", contractFile.name);
           fd.set("category", "CONTRACT");
           fd.set("encrypted", "true");
-          fd.set("tags", `合同,${values.title}`);
+          fd.set("tags", `Contrato,${values.title}`);
           fd.set("file", contractFile);
           await uploadDocument(fd);
-          toast.success("合同已Crear，附件已加密入库");
+          toast.success("Contrato creado, el adjunto se almacenó cifrado");
         } else {
-          toast.success("合同已Crear");
+          toast.success("Contrato creado");
         }
         reset();
         setContractFile(null);
         onOpenChange(false);
       } catch (err) {
-        toast.error("失败", { description: err instanceof Error ? err.message : "" });
+        toast.error("Error", {
+          description: err instanceof Error ? err.message : "",
+        });
       }
     });
   }
@@ -103,22 +115,32 @@ export function AddBillingSheet({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="flex max-h-[88vh] w-[92vw] max-w-2xl flex-col gap-0 p-0">
         <DialogHeader className="border-b border-border px-6 py-4">
-          <DialogTitle>新增合同</DialogTitle>
+          <DialogTitle>Nuevo contrato</DialogTitle>
           <DialogDescription className="text-xs">
-            一个Caso可以有多份合同（如分阶段委托）。可同时上传合同扫描件，加密入库后归到本案材料库。
+            Un Caso puede tener varios contratos (por ejemplo, por etapas de
+            representación). También podés cargar escaneos del contrato; después
+            de cifrarlos, quedarán almacenados en la biblioteca de materiales
+            del caso.
           </DialogDescription>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit(onSubmit)} className="flex flex-1 flex-col">
+        <form
+          onSubmit={handleSubmit(onSubmit)}
+          className="flex flex-1 flex-col"
+        >
           <div className="flex-1 space-y-3 overflow-y-auto px-6 py-5">
-            <Field label="合同Nombre" required error={errors.title?.message}>
+            <Field
+              label="Nombre del contrato"
+              required
+              error={errors.title?.message}
+            >
               <Input
-                placeholder="如：委托代理合同 - 一审阶段"
+                placeholder="Ej.: Contrato de representación legal - etapa de primera instancia"
                 {...register("title")}
               />
             </Field>
 
-            <Field label="合同金额（元）" required>
+            <Field label="Monto del contrato (¥)" required>
               <Input
                 type="number"
                 step="0.01"
@@ -131,28 +153,33 @@ export function AddBillingSheet({
               <RadioChips
                 size="sm"
                 items={[
-                  { value: "DRAFT", label: "草稿" },
-                  { value: "ACTIVE", label: "生效中" },
-                  { value: "CLOSED", label: "已结清" }
+                  { value: "DRAFT", label: "Borrador" },
+                  { value: "ACTIVE", label: "Vigente" },
+                  { value: "CLOSED", label: "Cerrado" },
                 ]}
                 value={billingStatus}
-                onChange={(v) => setValue("status", v as BillingCreateInput["status"])}
+                onChange={(v) =>
+                  setValue("status", v as BillingCreateInput["status"])
+                }
               />
             </Field>
 
-            <Field label="签订Fecha">
-              <Input type="date" {...register("signedAt", { valueAsDate: true })} />
+            <Field label="Fecha de firma">
+              <Input
+                type="date"
+                {...register("signedAt", { valueAsDate: true })}
+              />
             </Field>
 
-            <Field label="阶段付款约定">
+            <Field label="Convenio de pago por etapas">
               <Textarea
                 rows={3}
-                placeholder="如：签约时收 30%，立案时收 30%，判决生效后收 40%"
+                placeholder="Ej.: al firmar 30%, al presentar la demanda 30%, al entrar en vigencia la sentencia 40%"
                 {...register("schedule")}
               />
             </Field>
 
-            <Field label="合同附件（可选）">
+            <Field label="Adjunto del contrato (opcional)">
               <label className="flex cursor-pointer items-center gap-2 rounded border border-dashed border-border px-3 py-3 text-[12px] text-muted-foreground hover:bg-muted/30">
                 <Paperclip className="h-3.5 w-3.5" />
                 {contractFile ? (
@@ -164,7 +191,7 @@ export function AddBillingSheet({
                     </span>
                   </span>
                 ) : (
-                  "选择 PDF / docx 文件，Enviar时自动加密入库"
+                  "Seleccioná PDF / DOCX, se cifrará y almacenará automáticamente al Enviar"
                 )}
                 <input
                   type="file"
@@ -202,7 +229,7 @@ export function AddFeeEntrySheet({
   open,
   onOpenChange,
   matterId,
-  billings
+  billings,
 }: {
   open: boolean;
   onOpenChange: (o: boolean) => void;
@@ -228,7 +255,7 @@ export function AddFeeEntrySheet({
     setValue,
     getValues,
     reset,
-    formState: { errors }
+    formState: { errors },
   } = useForm<FeeEntryCreateInput>({
     resolver: zodResolver(feeEntryCreateSchema),
     defaultValues: {
@@ -240,8 +267,8 @@ export function AddFeeEntrySheet({
       invoiceNo: "",
       payerOrPayee: "",
       method: "",
-      note: ""
-    }
+      note: "",
+    },
   });
 
   const type = useWatch({ control, name: "type" });
@@ -252,12 +279,14 @@ export function AddFeeEntrySheet({
       try {
         await createFeeEntry(values);
         toast.success(
-          values.type === "RECEIVED" ? "实收已录入" : "记录已Crear"
+          values.type === "RECEIVED" ? "Ingreso registrado" : "Registro creado",
         );
         reset();
         onOpenChange(false);
       } catch (err) {
-        toast.error("失败", { description: err instanceof Error ? err.message : "" });
+        toast.error("Error", {
+          description: err instanceof Error ? err.message : "",
+        });
       }
     });
   }
@@ -266,26 +295,31 @@ export function AddFeeEntrySheet({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="flex max-h-[88vh] w-[92vw] max-w-2xl flex-col gap-0 p-0">
         <DialogHeader className="border-b border-border px-6 py-4">
-          <DialogTitle>新增收付记录</DialogTitle>
+          <DialogTitle>Nuevo registro de cobro/pago</DialogTitle>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit(onSubmit)} className="flex flex-1 flex-col">
+        <form
+          onSubmit={handleSubmit(onSubmit)}
+          className="flex flex-1 flex-col"
+        >
           <div className="flex-1 space-y-3 overflow-y-auto px-6 py-5">
-            <Field label="类型" required>
+            <Field label="Tipo" required>
               <RadioChips
                 size="sm"
                 items={[
-                  { value: "RECEIVABLE", label: "应收" },
-                  { value: "RECEIVED", label: "实收", accent: "#16a34a" },
-                  { value: "REFUND", label: "退款", accent: "#dc2626" },
-                  { value: "COST", label: "成本" }
+                  { value: "RECEIVABLE", label: "Por cobrar" },
+                  { value: "RECEIVED", label: "Cobrado", accent: "#16a34a" },
+                  { value: "REFUND", label: "Reembolso", accent: "#dc2626" },
+                  { value: "COST", label: "Costo" },
                 ]}
                 value={type}
-                onChange={(v) => setValue("type", v as FeeEntryCreateInput["type"])}
+                onChange={(v) =>
+                  setValue("type", v as FeeEntryCreateInput["type"])
+                }
               />
             </Field>
 
-            <Field label="金额（元）" required error={errors.amount?.message}>
+            <Field label="Monto (¥)" required error={errors.amount?.message}>
               <Input
                 type="number"
                 step="0.01"
@@ -294,7 +328,7 @@ export function AddFeeEntrySheet({
               />
             </Field>
 
-            <Field label="发生Fecha" required>
+            <Field label="Fecha de ocurrencia" required>
               <Input
                 type="date"
                 {...register("occurredAt", { valueAsDate: true })}
@@ -302,7 +336,7 @@ export function AddFeeEntrySheet({
             </Field>
 
             {billings.length > 0 && (
-              <Field label="关联合同">
+              <Field label="Contrato relacionado">
                 <Select
                   value={billingId || "none"}
                   onValueChange={(v) =>
@@ -313,7 +347,7 @@ export function AddFeeEntrySheet({
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="none">不关联</SelectItem>
+                    <SelectItem value="none">No asociar</SelectItem>
                     {billings.map((b) => (
                       <SelectItem key={b.id} value={b.id}>
                         {b.title}
@@ -324,18 +358,24 @@ export function AddFeeEntrySheet({
               </Field>
             )}
 
-            <Field label="付款方 / 收款方">
-              <Input placeholder="如 上海青石建设有限公司" {...register("payerOrPayee")} />
+            <Field label="Pagador / beneficiario">
+              <Input
+                placeholder="Ej.: Constructora del Norte S.A."
+                {...register("payerOrPayee")}
+              />
             </Field>
 
-            <Field label="方式">
-              <Input placeholder="转账 / 现金 / 支付宝" {...register("method")} />
+            <Field label="Forma">
+              <Input
+                placeholder="Transferencia / efectivo / Alipay"
+                {...register("method")}
+              />
             </Field>
 
             {invoiceRequests.length > 0 && (
               <Field
-                label="关联申请发票"
-                hint="选中后自动填金额；已开具的会填真实发票号，未开具的填占位 req:xxxxxxxx"
+                label="Factura solicitada asociada"
+                hint="Al seleccionarla, se completa automáticamente el monto; si ya fue emitida, se completa el número real; si no, se usa la referencia req:xxxxxxxx"
               >
                 <Select
                   value="none"
@@ -343,29 +383,37 @@ export function AddFeeEntrySheet({
                     if (v === "none") return;
                     const req = invoiceRequests.find((r) => r.id === v);
                     if (!req) return;
-                    setValue("amount", Number(req.amount), { shouldDirty: true });
-                    // 优先用真实发票号（Finanzas已 ISSUED 时回填），否则用占位
-                    const invoiceNoValue = req.invoiceNo ?? `req:${req.id.slice(0, 8)}`;
-                    setValue("invoiceNo", invoiceNoValue, { shouldDirty: true });
+                    setValue("amount", Number(req.amount), {
+                      shouldDirty: true,
+                    });
+                    const invoiceNoValue =
+                      req.invoiceNo ?? `req:${req.id.slice(0, 8)}`;
+                    setValue("invoiceNo", invoiceNoValue, {
+                      shouldDirty: true,
+                    });
                     const existing = getValues("note") ?? "";
                     const noteText = req.invoiceNo
-                      ? `关联申请发票 #${req.id.slice(0, 8)}${req.title ? "（" + req.title + "）" : ""}`
-                      : `关联申请发票（未开具）#${req.id.slice(0, 8)}${req.title ? "（" + req.title + "）" : ""}`;
-                    setValue("note", existing ? `${existing}\n${noteText}` : noteText, {
-                      shouldDirty: true
-                    });
+                      ? `Factura solicitada asociada #${req.id.slice(0, 8)}${req.title ? "（" + req.title + "）" : ""}`
+                      : `Factura solicitada asociada (sin emitir) #${req.id.slice(0, 8)}${req.title ? "（" + req.title + "）" : ""}`;
+                    setValue(
+                      "note",
+                      existing ? `${existing}\n${noteText}` : noteText,
+                      {
+                        shouldDirty: true,
+                      },
+                    );
                   }}
                 >
                   <SelectTrigger>
-                    <SelectValue placeholder="从已申请发票中选择" />
+                    <SelectValue placeholder="Seleccionar de facturas solicitadas" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="none">不关联</SelectItem>
+                    <SelectItem value="none">No asociar</SelectItem>
                     {invoiceRequests.map((r) => (
                       <SelectItem key={r.id} value={r.id}>
                         ${Number(r.amount).toLocaleString()} ·{" "}
-                        {r.title ?? "未命名"} ·{" "}
-                        {r.invoiceNo ? `已开具 ${r.invoiceNo}` : r.status}
+                        {r.title ?? "Sin nombre"} ·{" "}
+                        {r.invoiceNo ? `Emitida ${r.invoiceNo}` : r.status}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -373,21 +421,29 @@ export function AddFeeEntrySheet({
               </Field>
             )}
 
-            <Field label="发票号">
+            <Field label="Número de factura">
               <Input className="font-mono" {...register("invoiceNo")} />
             </Field>
 
             <InvoiceOcrBlock
               onRecognized={(data) => {
                 if (data.invoiceNumber)
-                  setValue("invoiceNo", data.invoiceNumber, { shouldDirty: true });
-                if (data.totalWithTax || data.totalAmount) {
-                  setValue("amount", Number(data.totalWithTax ?? data.totalAmount), {
-                    shouldDirty: true
+                  setValue("invoiceNo", data.invoiceNumber, {
+                    shouldDirty: true,
                   });
+                if (data.totalWithTax || data.totalAmount) {
+                  setValue(
+                    "amount",
+                    Number(data.totalWithTax ?? data.totalAmount),
+                    {
+                      shouldDirty: true,
+                    },
+                  );
                 }
                 if (data.sellerName)
-                  setValue("payerOrPayee", data.sellerName, { shouldDirty: true });
+                  setValue("payerOrPayee", data.sellerName, {
+                    shouldDirty: true,
+                  });
                 if (data.invoiceDate) {
                   const d = new Date(data.invoiceDate);
                   if (!isNaN(d.getTime()))
@@ -412,7 +468,7 @@ export function AddFeeEntrySheet({
             </Button>
             <Button type="submit" disabled={isPending} className="gap-1.5">
               {isPending && <Loader2 className="h-4 w-4 animate-spin" />}
-              {type === "RECEIVED" ? "记录实收" : "Guardar"}
+              {type === "RECEIVED" ? "Registrar cobro" : "Guardar"}
             </Button>
           </DialogFooter>
         </form>
@@ -430,7 +486,7 @@ export function EditCommissionPlanDialog({
   onOpenChange,
   matterId,
   userOptions,
-  initialPlans
+  initialPlans,
 }: {
   open: boolean;
   onOpenChange: (o: boolean) => void;
@@ -442,11 +498,13 @@ export function EditCommissionPlanDialog({
   const [plans, setPlans] = useState<PlanRow[]>(initialPlans);
 
   function addRow() {
-    const available = userOptions.find((u) => !plans.some((p) => p.userId === u.id));
+    const available = userOptions.find(
+      (u) => !plans.some((p) => p.userId === u.id),
+    );
     if (available) {
       setPlans([...plans, { userId: available.id, percent: 0, label: "" }]);
     } else {
-      toast.warning("已为所有用户Agregar分成");
+      toast.warning("Ya se asignó participación a todos los usuarios");
     }
   }
 
@@ -462,17 +520,17 @@ export function EditCommissionPlanDialog({
 
   function handleSave() {
     if (total > 100) {
-      toast.error("分成Total和不能超过 100%");
+      toast.error("El total de la participación no puede superar el 100%");
       return;
     }
     startTransition(async () => {
       try {
         await setCommissionPlan({ matterId, items: plans });
-        toast.success("分成方案已Guardar");
+        toast.success("Plan de participación guardado");
         onOpenChange(false);
       } catch (err) {
-        toast.error("Guardar失败", {
-          description: err instanceof Error ? err.message : ""
+        toast.error("Error al guardar", {
+          description: err instanceof Error ? err.message : "",
         });
       }
     });
@@ -482,16 +540,18 @@ export function EditCommissionPlanDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl">
         <DialogHeader>
-          <DialogTitle>分成方案</DialogTitle>
+          <DialogTitle>Plan de participación</DialogTitle>
           <p className="text-xs text-muted-foreground">
-            未列入的比例归律所留存。实收时按此方案自动派生分成条目。
+            El porcentaje no especificado queda retenido por el estudio. Al
+            cobrar, se generan automáticamente los items de participación según
+            este plan.
           </p>
         </DialogHeader>
 
         <div className="space-y-2">
           {plans.length === 0 ? (
             <p className="rounded-md border border-dashed border-border bg-background py-6 text-center text-xs text-muted-foreground">
-              未配置分成
+              No se configuró participación
             </p>
           ) : (
             plans.map((p, idx) => {
@@ -502,7 +562,7 @@ export function EditCommissionPlanDialog({
                 >
                   <div className="col-span-4">
                     <Label className="text-[10px] uppercase tracking-wider text-muted-foreground">
-                      用户
+                      Usuario
                     </Label>
                     <Select
                       value={p.userId}
@@ -514,7 +574,10 @@ export function EditCommissionPlanDialog({
                       <SelectContent>
                         {userOptions.map((u) => (
                           <SelectItem key={u.id} value={u.id}>
-                            {u.name} · {userRoleLabel[u.role as keyof typeof userRoleLabel] ?? u.role}
+                            {u.name} ·{" "}
+                            {userRoleLabel[
+                              u.role as keyof typeof userRoleLabel
+                            ] ?? u.role}
                           </SelectItem>
                         ))}
                       </SelectContent>
@@ -522,7 +585,7 @@ export function EditCommissionPlanDialog({
                   </div>
                   <div className="col-span-3">
                     <Label className="text-[10px] uppercase tracking-wider text-muted-foreground">
-                      百分比
+                      Porcentaje
                     </Label>
                     <Input
                       type="number"
@@ -538,12 +601,14 @@ export function EditCommissionPlanDialog({
                   </div>
                   <div className="col-span-4">
                     <Label className="text-[10px] uppercase tracking-wider text-muted-foreground">
-                      标签
+                      Etiqueta
                     </Label>
                     <Input
                       value={p.label}
-                      onChange={(e) => updateRow(idx, { label: e.target.value })}
-                      placeholder="主办Abogado / 推荐人 / 合伙人"
+                      onChange={(e) =>
+                        updateRow(idx, { label: e.target.value })
+                      }
+                      placeholder="Abogado principal / recomendador / socio"
                       className="mt-1 h-9 bg-background"
                     />
                   </div>
@@ -564,17 +629,24 @@ export function EditCommissionPlanDialog({
         </div>
 
         <div className="flex items-center justify-between rounded-md border border-border bg-background px-3 py-2">
-          <Button variant="outline" size="sm" onClick={addRow} className="h-7 gap-1">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={addRow}
+            className="h-7 gap-1"
+          >
             <Plus className="h-3.5 w-3.5" />
             Agregar
           </Button>
           <div className="flex items-center gap-4 text-xs">
             <div>
-              受益人合计：
-              <span className="ml-1 font-mono tabular text-foreground">{total.toFixed(1)}%</span>
+              Total de beneficiarios:
+              <span className="ml-1 font-mono tabular text-foreground">
+                {total.toFixed(1)}%
+              </span>
             </div>
             <div>
-              律所留存：
+              Retención del estudio:
               <span className="ml-1 font-mono tabular text-muted-foreground">
                 {Math.max(0, 100 - total).toFixed(1)}%
               </span>
@@ -583,12 +655,16 @@ export function EditCommissionPlanDialog({
         </div>
 
         <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)} disabled={isPending}>
+          <Button
+            variant="outline"
+            onClick={() => onOpenChange(false)}
+            disabled={isPending}
+          >
             Cancelar
           </Button>
           <Button onClick={handleSave} disabled={isPending} className="gap-1.5">
             {isPending && <Loader2 className="h-4 w-4 animate-spin" />}
-            Guardar方案
+            Guardar plan
           </Button>
         </DialogFooter>
       </DialogContent>
@@ -599,7 +675,7 @@ export function EditCommissionPlanDialog({
 // ============ Invoice OCR ============
 
 function InvoiceOcrBlock({
-  onRecognized
+  onRecognized,
 }: {
   onRecognized: (data: RecognizedInvoice) => void;
 }) {
@@ -609,7 +685,7 @@ function InvoiceOcrBlock({
 
   const recognize = async () => {
     if (!file) {
-      toast.warning("请先选择发票图片");
+      toast.warning("Primero seleccioná una imagen de factura");
       return;
     }
     setBusy(true);
@@ -623,9 +699,9 @@ function InvoiceOcrBlock({
       }
       setPreview(res.data);
       onRecognized(res.data);
-      toast.success("已识别并自动填入");
+      toast.success("Reconocido y completado automáticamente");
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : "识别失败");
+      toast.error(e instanceof Error ? e.message : "Error al reconocer");
     } finally {
       setBusy(false);
     }
@@ -635,10 +711,12 @@ function InvoiceOcrBlock({
     <div className="space-y-1.5 rounded-md border border-dashed border-border bg-muted/20 p-3">
       <Label className="flex items-center gap-1.5 text-xs">
         <Sparkles className="h-3 w-3 text-primary" />
-        AI 发票识别（可选）
+        Reconocimiento de factura con IA (opcional)
       </Label>
       <p className="text-[11px] text-muted-foreground">
-        上传增值税发票（JPG / PNG / PDF），识别后自动填发票号 / 金额 / 销售方 / 开票日
+        Subí una factura de IVA (JPG / PNG / PDF); tras reconocerla, se
+        completará automáticamente el número de factura, el monto, el vendedor y
+        la fecha de emisión.
       </p>
       <div className="flex items-center gap-2">
         <label className="flex flex-1 cursor-pointer items-center gap-2 rounded border border-border bg-background px-2.5 py-1.5 text-[11px] text-muted-foreground hover:bg-muted/30">
@@ -649,7 +727,7 @@ function InvoiceOcrBlock({
               {file.name}
             </span>
           ) : (
-            "选择发票（JPG / PNG / PDF）"
+            "Seleccionar factura (JPG / PNG / PDF)"
           )}
           <input
             type="file"
@@ -670,24 +748,31 @@ function InvoiceOcrBlock({
           className="h-8 gap-1 text-[11px]"
         >
           {busy && <Loader2 className="h-3 w-3 animate-spin" />}
-          识别
+          Reconocer
         </Button>
       </div>
       {preview && (
         <div className="mt-1.5 grid grid-cols-1 sm:grid-cols-2 gap-x-3 gap-y-0.5 rounded border border-border bg-background p-2 text-[10.5px] text-muted-foreground">
-          {preview.invoiceType && <div>类型：{preview.invoiceType}</div>}
+          {preview.invoiceType && <div>Tipo: {preview.invoiceType}</div>}
           {preview.invoiceNumber && (
             <div>
-              发票号：<span className="font-mono text-foreground/85">{preview.invoiceNumber}</span>
+              Número de factura:{" "}
+              <span className="font-mono text-foreground/85">
+                {preview.invoiceNumber}
+              </span>
             </div>
           )}
-          {preview.invoiceDate && <div>开票日：{preview.invoiceDate}</div>}
-          {preview.sellerName && <div>销售方：{preview.sellerName}</div>}
-          {preview.buyerName && <div>购买方：{preview.buyerName}</div>}
+          {preview.invoiceDate && (
+            <div>Fecha de emisión: {preview.invoiceDate}</div>
+          )}
+          {preview.sellerName && <div>Vendedor: {preview.sellerName}</div>}
+          {preview.buyerName && <div>Comprador: {preview.buyerName}</div>}
           {preview.totalWithTax != null && (
             <div>
-              价税合计：
-              <span className="font-mono text-foreground/85">${preview.totalWithTax}</span>
+              Total con impuestos:
+              <span className="font-mono text-foreground/85">
+                ${preview.totalWithTax}
+              </span>
             </div>
           )}
         </div>
@@ -703,7 +788,7 @@ function Field({
   required,
   error,
   hint,
-  children
+  children,
 }: {
   label: string;
   required?: boolean;
@@ -718,7 +803,9 @@ function Field({
         {required && <span className="text-destructive">*</span>}
       </Label>
       {children}
-      {hint && !error && <p className="text-[11px] text-muted-foreground">{hint}</p>}
+      {hint && !error && (
+        <p className="text-[11px] text-muted-foreground">{hint}</p>
+      )}
       {error && <p className="text-xs text-destructive">{error}</p>}
     </div>
   );

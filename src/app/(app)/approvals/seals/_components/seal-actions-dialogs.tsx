@@ -178,7 +178,7 @@ function ApprovalDialog({
 
   const submit = () => {
     if (mode === "reject" && !note.trim()) {
-      toast.error("驳回需要写明原因");
+      toast.error("Rechazar需要写明Motivo");
       return;
     }
     startTransition(async () => {
@@ -188,7 +188,7 @@ function ApprovalDialog({
           toast.success("已批准");
         } else {
           await rejectSealRequest({ id: row.id, reason: note.trim() });
-          toast.success("已驳回");
+          toast.success("Rechazado");
         }
         onClose();
       } catch (e) {
@@ -201,7 +201,7 @@ function ApprovalDialog({
     <Dialog open onOpenChange={(o) => !o && onClose()}>
       <DialogContent className="max-h-[88vh] w-[92vw] max-w-2xl overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Aprobación用章申请</DialogTitle>
+          <DialogTitle>AprobaciónSolicitud de sello</DialogTitle>
         </DialogHeader>
         <div className="min-w-0 space-y-2 rounded border border-border bg-muted/20 p-3 text-[12px]">
           <Field k="流水号" v={row.code} mono />
@@ -220,7 +220,7 @@ function ApprovalDialog({
           {row.urgency === "URGENT" && (
             <p className="flex items-center gap-1 text-destructive">
               <AlertOctagon className="h-3 w-3" />
-              紧急
+              Urgente
             </p>
           )}
           {row.draftDoc && (
@@ -249,7 +249,7 @@ function ApprovalDialog({
             onClick={() => setMode("approve")}
             className="flex-1"
           >
-            通过
+            Aprobar
           </Button>
           <Button
             size="sm"
@@ -257,7 +257,7 @@ function ApprovalDialog({
             onClick={() => setMode("reject")}
             className="flex-1"
           >
-            驳回
+            Rechazar
           </Button>
         </div>
 
@@ -265,7 +265,7 @@ function ApprovalDialog({
           value={note}
           onChange={(e) => setNote(e.target.value)}
           placeholder={
-            mode === "approve" ? "Aprobación意见 (可选)" : "驳回原因 (必填)"
+            mode === "approve" ? "Aprobación意见 (可选)" : "RechazarMotivo (必填)"
           }
           rows={2}
           className="mt-2 text-[12px]"
@@ -310,10 +310,10 @@ function StampDialog({
     startTransition(async () => {
       try {
         await stampSealRequest(fd);
-        toast.success("已完成");
+        toast.success("Completado");
         onClose();
       } catch (e) {
-        toast.error(e instanceof Error ? e.message : "Enviar失败");
+        toast.error(e instanceof Error ? e.message : "EnviarError");
       }
     });
   };
@@ -382,7 +382,7 @@ function CancelDialog({
         toast.success("已撤销");
         onClose();
       } catch (e) {
-        toast.error(e instanceof Error ? e.message : "撤销失败");
+        toast.error(e instanceof Error ? e.message : "撤销Error");
       }
     });
   };
@@ -390,7 +390,7 @@ function CancelDialog({
     <Dialog open onOpenChange={(o) => !o && onClose()}>
       <DialogContent className="max-w-sm">
         <DialogHeader>
-          <DialogTitle>撤销用章申请</DialogTitle>
+          <DialogTitle>撤销Solicitud de sello</DialogTitle>
         </DialogHeader>
         <p className="text-[12px] text-muted-foreground">
           Aceptar撤销 {row.code} ？

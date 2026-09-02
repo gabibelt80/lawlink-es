@@ -1,6 +1,6 @@
 /**
- * v0.38: 制度规范独立页（律所文书里的 POLICY 分类，只列文件、不显分类筛选）
- * v0.44: 标题与上传按钮同行（不再 hideHeader，改用 headerTitle 覆盖）
+ * v0.38: 制度规范独立页（Documentos del estudio里的 POLICY 分类，只列文件、不显分类筛选）
+ * v0.44: 标题y上传按钮同行（不再 hideHeader，改用 headerTitle 覆盖）
  */
 import { redirect } from "next/navigation";
 import { BookText } from "lucide-react";

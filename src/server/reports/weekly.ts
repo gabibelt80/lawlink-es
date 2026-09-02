@@ -89,7 +89,7 @@ export function formatWeeklyDigestContent(d: LawyerWeeklyDigest): string {
     `新收 ${d.newIntake} 件`,
     `已结 ${d.closed} 件`,
     `已归档 ${d.archived} 件`,
-    `收款 ${d.receivedAmount.toLocaleString("zh-CN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} 元`
+    `收款 ${d.receivedAmount.toLocaleString("zh-CN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} pesos`
   ];
   return parts.join(" · ");
 }

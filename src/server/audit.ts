@@ -1,7 +1,7 @@
 import { prisma } from "@/lib/prisma";
 
 /**
- * 写一条审计日志。失败不抛错（业务流程不应被审计失败阻塞）。
+ * 写一条审计日志。Error不抛错（业务流程不应被审计Error阻塞）。
  *
  * 用法：
  *   await audit({ userId, action: "CLIENT_CREATE", targetType: "Client", targetId, detail })
@@ -28,6 +28,6 @@ export async function audit(params: {
       }
     });
   } catch (err) {
-    console.error("[audit] 写入失败：", err);
+    console.error("[audit] 写入Error：", err);
   }
 }

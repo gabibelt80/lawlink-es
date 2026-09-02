@@ -58,8 +58,8 @@ function aggData(
       被执行人统计: { Total数: v.被执行人, 立案年份: [] },
       股权冻结统计: { Total数: v.股权冻结 },
       严重违法统计: { Total数: v.严重违法, 类别: [{ key: "重大", count: v.严重违法 }] },
-      经营异常统计: { Total数: v.经营异常, 列入经营异常名录原因: [] },
-      法院公告统计: {
+      经营异常统计: { Total数: v.经营异常, 列入经营异常名录Motivo: [] },
+      法院Anuncio统计: {
         Total数: 5,
         起诉方: 1,
         应诉方: 4,
@@ -68,9 +68,9 @@ function aggData(
           { key: "上海浦东法院", count: 2 }
         ]
       },
-      开庭公告统计: { Total数: 10, 起诉方: 2, 应诉方: 8 },
+      开庭Anuncio统计: { Total数: 10, 起诉方: 2, 应诉方: 8 },
       Administrativo处罚统计: { Total数: 0 },
-      欠税公告统计: { Total数: 0 },
+      欠税Anuncio统计: { Total数: 0 },
       变更记录统计: { Total数: 3 },
       对外担保统计: { Total数: 0 },
       股权出质统计: { Total数: 1 },
@@ -117,8 +117,8 @@ describe("getEnterpriseSummary", () => {
       "严重违法",
       "经营异常"
     ]);
-    // 法院公告 top 提取
-    const court = r!.litigation.find((s) => s.category === "法院公告")!;
+    // 法院Anuncio top 提取
+    const court = r!.litigation.find((s) => s.category === "法院Anuncio")!;
     expect(court.total).toBe(5);
     expect(court.asPlaintiff).toBe(1);
     expect(court.asDefendant).toBe(4);
@@ -157,7 +157,7 @@ describe("getEnterpriseSummary", () => {
   });
 });
 
-describe("computeRiskLevel（通过聚合响应间接验证）", () => {
+describe("computeRiskLevel（Aprobar聚合响应间接验证）", () => {
   it("失信被执行人 > 0 → HIGH", async () => {
     fetchMock.mockResolvedValue(jsonRes(aggData({ 失信被执行人: 2 })));
     const r = await getEnterpriseSummary({ id: "x" }, configured);

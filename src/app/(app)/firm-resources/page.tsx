@@ -1,5 +1,5 @@
 /**
- * v0.38: 律所文书恢复独立页（v0.37 曾并入 /service-center，现拆回真实页面）
+ * v0.38: Documentos del estudio恢复独立页（v0.37 曾并入 /service-center，现拆回真实页面）
  * v0.44: 分类改为合同/函件/证照/其他
  */
 import type { FirmFileCategory } from "@prisma/client";

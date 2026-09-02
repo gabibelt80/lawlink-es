@@ -34,7 +34,7 @@ function requireApprover(role: string) {
   }
 }
 
-/** 按 {委托方} 与 {对方} {案由} 自动生成标题 — 案由本身通常已含"纠纷"二字 */
+/** 按 {委托方} y {对方} {Causa} 自动生成标题 — Causa本身通常已含"纠纷"二字 */
 function generateTitle(
   clientName: string | null,
   opposingNames: string[],
@@ -43,8 +43,8 @@ function generateTitle(
   const left = clientName || "待补充委托方";
   const right = opposingNames.length > 0 ? opposingNames.join("、") : "待补充对方";
   const cause = causeName ?? "Caso";
-  // CasoNombre不含空格（产品要求，与 matterCreateSchema 去空白一致）
-  return `${left}与${right}${cause}`.replace(/\s+/g, "");
+  // CasoNombre不含空格（产品要求，y matterCreateSchema 去空白一致）
+  return `${left}y${right}${cause}`.replace(/\s+/g, "");
 }
 
 function clientTypeToPartyType(type: ClientType): PartyType {
@@ -168,7 +168,7 @@ function assertConflictReviewAllowsConversion(intake: IntakeConflictGateInput) {
     throw new Error("利益冲突检索结论为信息不足，不能转为正式Caso");
   }
   if (latestCheck.conclusion === "SAME_SUBJECT") {
-    throw new Error("已确认存在利益冲突，不能直接转为正式Caso");
+    throw new Error("已Confirmar存在利益冲突，不能直接转为正式Caso");
   }
   if (latestCheck.conclusion !== "DIFFERENT") {
     throw new Error("利益冲突检索结论异常，请重新检索后再转为正式Caso");
@@ -248,7 +248,7 @@ export async function listIntakes(input: Partial<IntakeListQuery> = {}) {
 
 export async function getIntakeById(id: string) {
   const session = await requireSession();
-  // 单条收案权限检查：manager 看Ver todos，其他人只能看自己参与或Crear的
+  // 单条收案权限检查：manager 看Ver todos，其他人只能看自己参y或Crear的
   if (session.user.role !== "ADMIN" && session.user.role !== "PRINCIPAL_LAWYER") {
     const owned = await prisma.intake.findFirst({
       where: {
@@ -367,7 +367,7 @@ export async function createIntake(input: IntakeCreateInput) {
     }
   }
 
-  // ----- 案由名（用于自动 title）-----
+  // ----- Causa名（用于自动 title）-----
   let causeName: string | null = data.causeFreeText || null;
   if (data.causeId) {
     const cause = await prisma.causeOfAction.findUnique({
@@ -506,11 +506,11 @@ export async function declineIntake(input: DeclineIntakeInput) {
   return { ok: true };
 }
 
-/** v0.14: 标记需补正 — 让Abogado补充材料后可再次Enviar（区别于 DECLINED 终态） */
+/** v0.14: 标记需补正 — 让Abogado补充材料后可再次Enviar（区别于 DECLINED Estado final） */
 export async function markIntakeNeedsRevision(input: { id: string; reason: string }) {
   const session = await requireSession();
   requireApprover(session.user.role);
-  if (!input.reason.trim()) throw new Error("请填写补正原因");
+  if (!input.reason.trim()) throw new Error("请填写补正Motivo");
 
   await prisma.intake.update({
     where: { id: input.id },
@@ -543,7 +543,7 @@ export async function resubmitIntake(id: string) {
     select: { status: true, title: true, createdById: true, ownerUserId: true }
   });
   if (!intake) throw new Error("收案不存在");
-  if (intake.status !== "NEEDS_REVISION") throw new Error("只有待补正Estado可重新Enviar");
+  if (intake.status !== "NEEDS_REVISION") throw new Error("只有Pendiente de correcciónEstado可重新Enviar");
 
   await prisma.intake.update({
     where: { id },
@@ -640,7 +640,7 @@ export async function convertIntakeToMatter(intakeId: string) {
         intakeDate: intake.receivedAt,
         ourStanding: intake.ourStanding,
         claimAmount: intake.claimAmount,
-        // 是否反诉：按我方地位推断角色（被告提反诉→反诉原告；原告被反诉→反诉被告）
+        // 是否反诉：按我方地位推断Rol（被告提反诉→反诉原告；原告被反诉→反诉被告）
         counterclaimAsPlaintiff:
           !!intake.counterclaim &&
           (intake.ourStanding === "DEFENDANT" || intake.ourStanding === "JOINT_DEFENDANT"),
@@ -648,7 +648,7 @@ export async function convertIntakeToMatter(intakeId: string) {
           !!intake.counterclaim &&
           (intake.ourStanding === "PLAINTIFF" || intake.ourStanding === "JOINT_PLAINTIFF"),
         barFiling: intake.barFiling,
-        // v0.35: 非诉/顾问/专项 专属字段带入
+        // v0.35: 非诉/顾问/专ítems 专属字段带入
         businessType: intake.businessType,
         serviceScope: intake.serviceScope,
         deliverables: intake.deliverables,

@@ -2,11 +2,11 @@
  * v0.9.2 Abogado常用速算
  *
  * 三大场景：
- *  - 诉讼费：依据《诉讼费用交纳办法》全国统一分段累进 + 简易程序减半
- *  - 迟延履行金：判决金额 × (LPR + 5%) × 实际履行 - 应履行 天数 / 365
- *  - 天数：两Fecha间 / 加减 N 日
+ *  - 诉讼费：依据《诉讼Gastos交纳办法》全国统一分段累进 + 简易程序减半
+ *  - 迟延履行金：判决Monto × (LPR + 5%) × 实际履行 - 应履行 días数 / 365
+ *  - días数：两Fecha间 / 加减 N 日
  *
- * 大写金额：numberToChinese（万 / 亿 / 万亿 完整支持）
+ * 大写Monto：numberToChinese（万 / 亿 / 万亿 完整支持）
  *
  * 不依赖网络、不依赖 server。
  */
@@ -19,12 +19,12 @@ export type CourtFeeCaseType =
   | "PROPERTY"       // 财产Caso
   | "DIVORCE"        // 离婚Caso
   | "LABOR"          // 劳动争议
-  | "IP"             // 知识产权（无争议金额）
+  | "IP"             // 知识产权（无争议Monto）
   | "OTHER";         // 其他非财产Caso
 
 /**
- * 财产Caso分段累进（《诉讼费用交纳办法》第十三条）：
- *   ≤ 1 万                              50 元
+ * 财产Caso分段累进（《诉讼Gastos交纳办法》第十三条）：
+ *   ≤ 1 万                              50 pesos
  *   1 万 – 10 万         × 2.5%  - 200
  *   10 万 – 20 万        × 2%    + 300
  *   20 万 – 50 万        × 1.5%  + 1300
@@ -71,7 +71,7 @@ export function calcCourtFee(input: { caseType: CourtFeeCaseType; amount?: numbe
       };
     }
     case "DIVORCE": {
-      // 离婚：每件 50-300 元；涉及财产分割 > 20 万 部分 × 0.5%
+      // 离婚：每件 50-300 pesos；涉y财产分割 > 20 万 部分 × 0.5%
       const base = 300;
       const extra = amount > 200_000 ? (amount - 200_000) * 0.005 : 0;
       const fee = Math.round(base + extra);
@@ -82,8 +82,8 @@ export function calcCourtFee(input: { caseType: CourtFeeCaseType; amount?: numbe
         feeSimplified: Math.round(fee / 2),
         note:
           amount > 200_000
-            ? "离婚 300 元 + 财产分割超 20 万部分 × 0.5%（简易程序减半）"
-            : "离婚每件 300 元（简易程序减半）"
+            ? "离婚 300 pesos + 财产分割超 20 万部分 × 0.5%（简易程序减半）"
+            : "离婚每件 300 pesos（简易程序减半）"
       };
     }
     case "LABOR":
@@ -92,16 +92,16 @@ export function calcCourtFee(input: { caseType: CourtFeeCaseType; amount?: numbe
         amount,
         fee: 10,
         feeSimplified: 5,
-        note: "劳动争议Caso每件 10 元（简易程序 5 元）"
+        note: "劳动争议Caso每件 10 pesos（简易程序 5 pesos）"
       };
     case "IP":
-      // 50 元 ≤ X ≤ 100 元；Caso复杂 100-500 元；区间给中位
+      // 50 pesos ≤ X ≤ 100 pesos；Caso复杂 100-500 pesos；区间给中位
       return {
         caseType: "IP",
         amount: 0,
         fee: 1000,
         feeSimplified: 500,
-        note: "知识产权（无争议金额）500–1000 元，本结果取上限"
+        note: "知识产权（无争议Monto）500–1000 pesos，本结果取上限"
       };
     case "OTHER":
       return {
@@ -109,7 +109,7 @@ export function calcCourtFee(input: { caseType: CourtFeeCaseType; amount?: numbe
         amount: 0,
         fee: 100,
         feeSimplified: 50,
-        note: "其他非财产Caso每件 50–100 元，本结果取上限"
+        note: "其他非财产Caso每件 50–100 pesos，本结果取上限"
       };
   }
 }
@@ -120,7 +120,7 @@ export function calcCourtFee(input: { caseType: CourtFeeCaseType; amount?: numbe
 
 /**
  * 民诉法解释第 463 条 + 民诉法第 260 条：
- *   迟延履行期间债务利息 = 判决金额 × (LPR 1Y + 5%) × 迟延天数 / 365
+ *   迟延履行期间债务利息 = 判决Monto × (LPR 1Y + 5%) × 迟延días数 / 365
  *
  * 法律依据：被执行人未按判决履行金钱给付义务，应当加倍支付迟延履行期间债务利息。
  * 此为"加倍部分"。
@@ -160,7 +160,7 @@ export function calcLateInterest(input: {
 }
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-// 3. 天数计算
+// 3. días数计算
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 export function daysBetween(a: Date, b: Date, excludeWeekend = false): number {
@@ -191,7 +191,7 @@ export function addDays(base: Date, days: number): Date {
 }
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-// 4. 大写金额（取自旧Sistema numToCn，整理后）
+// 4. 大写Monto（取自旧Sistema numToCn，整理后）
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 const CN_DIGIT = "零壹贰叁肆伍陆柒捌玖";
@@ -218,7 +218,7 @@ function chineseGroup4(s: string): string {
 }
 
 export function numberToChinese(n: number): string {
-  if (n === 0 || !isFinite(n)) return "零元整";
+  if (n === 0 || !isFinite(n)) return "零pesos整";
   const neg = n < 0;
   const abs = Math.round(Math.abs(n) * 100) / 100;
   const [intStr, decStrRaw = ""] = String(abs).split(".");
@@ -246,7 +246,7 @@ export function numberToChinese(n: number): string {
     }
   }
   if (!r) r = "零";
-  r += "元";
+  r += "pesos";
 
   const j = +decStr[0];
   const f = +decStr[1];

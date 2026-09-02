@@ -28,7 +28,7 @@ describe("partyInputSchema (v0.27)", () => {
     }
   });
 
-  it("自然人填了 idNumber 通过", () => {
+  it("自然人填了 idNumber Aprobar", () => {
     const r = partyInputSchema.safeParse({
       ...baseInputs,
       partyType: "NATURAL_PERSON",
@@ -53,7 +53,7 @@ describe("partyInputSchema (v0.27)", () => {
     }
   });
 
-  it("公司填了 enterpriseSocialCode 即使没 idNumber 也通过", () => {
+  it("公司填了 enterpriseSocialCode 即使没 idNumber 也Aprobar", () => {
     const r = partyInputSchema.safeParse({
       ...baseInputs,
       name: "上海某某有限公司",

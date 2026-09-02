@@ -7,7 +7,7 @@
  * - admin 手动：pushWeeklyReportToAll（require session）
  * - cron 自动（v0.22）：runWeeklyReportPush（无 auth，trigger=cron）
  *
- * 收件人：所有 active 的 ADMIN / PRINCIPAL_LAWYER / LAWYER。
+ * Recibido人：所有 active 的 ADMIN / PRINCIPAL_LAWYER / LAWYER。
  * 每人收到自己的 LawyerWeeklyDigest 摘要，作为 Notification（type=SYSTEM）。
  */
 import { prisma } from "@/lib/prisma";
@@ -65,7 +65,7 @@ export async function runWeeklyReportPush(
     } catch (err) {
       failed.push({
         userId: u.id,
-        error: err instanceof Error ? err.message : "未知错误"
+        error: err instanceof Error ? err.message : "Desconocido错误"
       });
     }
   }

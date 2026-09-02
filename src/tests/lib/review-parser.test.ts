@@ -7,7 +7,7 @@ describe("parseReviewItems", () => {
       { type: "SUGGESTION", severity: "LOW", title: "措辞建议", detail: "可改用更规范术语" },
       { type: "MISSING", severity: "HIGH", title: "违约责任缺失", detail: "未约定违约金计算方式" },
       { type: "RISK", severity: "MEDIUM", title: "管辖约定模糊", detail: "未指定具体法院" },
-      { type: "ISSUE", severity: "HIGH", title: "金额前后不符", detail: "正文 5 万但附件 5.5 万" }
+      { type: "ISSUE", severity: "HIGH", title: "Monto前后不符", detail: "正文 5 万但Adjunto 5.5 万" }
     ]);
     const items = parseReviewItems(json);
     expect(items).toHaveLength(4);

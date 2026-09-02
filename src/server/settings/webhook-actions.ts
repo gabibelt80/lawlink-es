@@ -52,9 +52,9 @@ export async function saveWebhookSettingsAction(input: z.infer<typeof saveSchema
 export async function sendTestWebhookAction() {
   const session = await requireManager();
   const result = await sendWebhookText(
-    `LawLink 测试消息：Recordatorios推送配置成功（发起人：${session.user.name ?? session.user.email}）`
+    `LawLink 测试消息：Recordatorios推送配置成功（Iniciado por：${session.user.name ?? session.user.email}）`
   );
   if (result.skipped) throw new Error("推送未启用或未配置机器人地址");
-  if (!result.ok) throw new Error(`发送失败：${result.error ?? "未知错误"}`);
+  if (!result.ok) throw new Error(`发送Error：${result.error ?? "Desconocido错误"}`);
   return { ok: true };
 }

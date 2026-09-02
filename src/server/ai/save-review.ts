@@ -1,7 +1,7 @@
 "use server";
 
 /**
- * v0.20: 文书 AI 审查结果Guardar为Caso Document（与 A3 类案存档对称的模式）
+ * v0.20: 文书 AI 审查结果Guardar为Caso Document（y A3 类案存档对称的模式）
  */
 import { prisma } from "@/lib/prisma";
 import { requireSession } from "@/lib/auth/session";
@@ -12,31 +12,28 @@ import { audit } from "@/server/audit";
 import type {
   ReviewItem,
   ReviewType,
-  ReviewSeverity
+  ReviewSeverity,
 } from "@/lib/ai/review-parser";
 import { revalidateMatter } from "@/server/matters/route";
 
 const TYPE_CN: Record<ReviewType, string> = {
-  MISSING: "缺失要素",
-  RISK: "法律风险",
-  ISSUE: "条款问题",
-  SUGGESTION: "优化建议"
+  MISSING: "Elementos faltantes",
+  RISK: "Riesgo legal",
+  ISSUE: "Problemas de cláusulas",
+  SUGGESTION: "Sugerencias de mejora",
 };
 
 const SEV_CN: Record<ReviewSeverity, string> = {
-  HIGH: "高",
-  MEDIUM: "中",
-  LOW: "低"
+  HIGH: "Alta",
+  MEDIUM: "Media",
+  LOW: "Baja",
 };
 
 function safeFileName(name: string): string {
   return name.replace(/[\\/:*?"<>|]/g, "").slice(0, 60);
 }
 
-function buildMarkdown(
-  reviewedDocName: string,
-  items: ReviewItem[]
-): string {
+function buildMarkdown(reviewedDocName: string, items: ReviewItem[]): string {
   const now = new Date().toLocaleString("zh-CN");
   const lines: string[] = [
     `# AI 审查结果：${reviewedDocName}`,
@@ -45,7 +42,7 @@ function buildMarkdown(
     `- **审查条数**：${items.length}`,
     "",
     "---",
-    ""
+    "",
   ];
   if (items.length === 0) {
     lines.push("> AI 未发现明显问题。");
@@ -73,11 +70,15 @@ export async function saveReviewToMatter(input: {
   items: ReviewItem[];
 }): Promise<{ ok: true; documentId: string; documentName: string }> {
   const session = await requireSession();
-  await assertCanAccessMatter(session.user.id, session.user.role, input.matterId);
+  await assertCanAccessMatter(
+    session.user.id,
+    session.user.role,
+    input.matterId,
+  );
 
   const matter = await prisma.matter.findUnique({
     where: { id: input.matterId, deletedAt: null },
-    select: { id: true, status: true }
+    select: { id: true, status: true },
   });
   if (!matter) throw new Error("Caso不存在");
   if (matter.status === "ARCHIVED") {
@@ -102,9 +103,9 @@ export async function saveReviewToMatter(input: {
       size: buf.byteLength,
       sha256: hash,
       encrypted: false,
-      tags: ["AI审查", "存档"]
+      tags: ["AI审查", "存档"],
     },
-    select: { id: true, name: true }
+    select: { id: true, name: true },
   });
 
   await audit({
@@ -116,8 +117,8 @@ export async function saveReviewToMatter(input: {
       reviewedDocId: input.reviewedDocId,
       reviewedDocName: input.reviewedDocName,
       itemCount: input.items.length,
-      documentId: doc.id
-    }
+      documentId: doc.id,
+    },
   });
 
   await revalidateMatter(input.matterId);

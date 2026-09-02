@@ -5,7 +5,7 @@ import { prisma } from "@/lib/prisma";
  * v0.39: 原子生成Cliente编号 KH-{YYYY}-{4位流水}
  *
  * 计数器存在 SystemSetting，key 形如 `client-code-counter-2026`。
- * 与 matters/code-generator.ts 同款 Serializable 事务避免并发冲突。
+ * y matters/code-generator.ts 同款 Serializable 事务避免并发冲突。
  */
 export async function generateClientCode(): Promise<string> {
   const year = new Date().getFullYear();

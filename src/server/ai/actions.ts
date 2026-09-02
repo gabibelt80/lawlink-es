@@ -23,21 +23,21 @@ export interface RecognizedInvoice {
   remark?: string;
 }
 
-const PROMPT = `请识别这张中国增值税发票图片中的信息，输出 JSON：
+const PROMPT = `请识别这张中国增值税Factura图片中的信息，输出 JSON：
 
 {
-  "invoiceType": "发票类型（如：增值税普通发票、增值税专用发票、电子发票）",
-  "invoiceCode": "发票代码（如有）",
-  "invoiceNumber": "发票号码（8 位或 20 位）",
+  "invoiceType": "Factura类型（如：增值税普通Factura、增值税专用Factura、电子Factura）",
+  "invoiceCode": "Factura代码（如有）",
+  "invoiceNumber": "Factura号码（8 位或 20 位）",
   "invoiceDate": "开票Fecha YYYY-MM-DD",
   "sellerName": "销售方Nombre",
   "sellerTaxId": "销售方纳税人识别号",
   "buyerName": "购买方Nombre",
   "buyerTaxId": "购买方纳税人识别号",
-  "totalAmount": "合计金额（数字）",
+  "totalAmount": "合计Monto（数字）",
   "taxAmount": "税额（数字）",
   "totalWithTax": "价税合计（数字）",
-  "items": [{"name": "项目Nombre", "amount": 金额数字, "taxRate": "税率字符串"}],
+  "items": [{"name": "ítems目Nombre", "amount": Monto数字, "taxRate": "税率字符串"}],
   "checkCode": "校验码（后 6 位）",
   "remark": "Observaciones"
 }
@@ -63,7 +63,7 @@ export async function recognizeInvoiceFromImage(
     };
   }
   // v0.11: PDF 也允许上传，但识别效果取决于 vision 模型是否原生支持 PDF
-  // 若模型不认 PDF，aiVision 会失败并Volver明确错误
+  // 若模型不认 PDF，aiVision 会Error并Volver明确错误
   const isImage = file.type.startsWith("image/");
   const isPdf = file.type === "application/pdf";
   if (!isImage && !isPdf) {
@@ -100,6 +100,10 @@ export async function recognizeInvoiceFromImage(
     if (e instanceof AiNotConfiguredError) {
       return { ok: false, message: e.message };
     }
-    return { ok: false, message: e instanceof Error ? e.message : "识别失败" };
+    return {
+      ok: false,
+      message:
+        e instanceof Error ? e.message : "No se pudo reconocer la imagen",
+    };
   }
 }

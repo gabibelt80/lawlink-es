@@ -96,10 +96,10 @@ export function classifyExpiry(daysLeft: number): {
   label: string;
   tone: "danger" | "warn" | "ok" | "muted";
 } {
-  if (daysLeft < 0) return { label: `已过期 ${-daysLeft} 天`, tone: "danger" };
-  if (daysLeft === 0) return { label: "今日到期", tone: "danger" };
-  if (daysLeft <= 7) return { label: `${daysLeft} 天后到期`, tone: "danger" };
-  if (daysLeft <= 30) return { label: `${daysLeft} 天后到期`, tone: "warn" };
-  if (daysLeft <= 60) return { label: `${daysLeft} 天后到期`, tone: "muted" };
-  return { label: `${daysLeft} 天后到期`, tone: "ok" };
+  if (daysLeft < 0) return { label: `已过期 ${-daysLeft} días`, tone: "danger" };
+  if (daysLeft === 0) return { label: "Vence hoy", tone: "danger" };
+  if (daysLeft <= 7) return { label: `${daysLeft} días后到期`, tone: "danger" };
+  if (daysLeft <= 30) return { label: `${daysLeft} días后到期`, tone: "warn" };
+  if (daysLeft <= 60) return { label: `${daysLeft} días后到期`, tone: "muted" };
+  return { label: `${daysLeft} días后到期`, tone: "ok" };
 }

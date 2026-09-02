@@ -8,7 +8,7 @@ describe("matterHref", () => {
     );
   });
 
-  it("internalCode 为空时回退到 id，链接不会断", () => {
+  it("internalCode 为空时回退到 id，Enlace不会断", () => {
     expect(matterHref({ id: "cmq3lxgrm002nitzfhh8qn8ql", internalCode: null })).toBe(
       "/matters/cmq3lxgrm002nitzfhh8qn8ql"
     );
@@ -46,7 +46,7 @@ describe("normalizeMatterParam", () => {
     expect(normalizeMatterParam("M-2026-100%")).toBe("M-2026-100%");
   });
 
-  it("cuid 原样保留（大写化不影响按 id 匹配）", () => {
+  it("cuid 原样保留（大写化不影响按 id Coincidencia）", () => {
     expect(normalizeMatterParam("cmq3lxgrm002nitzfhh8qn8ql")).toBe(
       "CMQ3LXGRM002NITZFHH8QN8QL"
     );

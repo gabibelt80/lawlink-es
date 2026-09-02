@@ -94,7 +94,7 @@ export async function listSealRequests(input?: z.input<typeof sealListFilterSche
   if (filter.scope === "mine") {
     where.requestedById = session.user.id;
   } else if (filter.scope === "approval") {
-    // 待我Aprobación：根据用户角色拼出可Aprobación的 sealTypes
+    // 待我Aprobación：根据用户Rol拼出可Aprobación的 sealTypes
     const approvableTypes = await pickApprovableSealTypes(session.user);
     if (approvableTypes.length === 0) {
       return [];
@@ -260,7 +260,7 @@ export async function getSealStats() {
 export async function createSealRequest(formData: FormData) {
   const session = await requireSession();
   if (session.user.role !== "ADMIN" && session.user.role !== "PRINCIPAL_LAWYER" && session.user.role !== "LAWYER") {
-    throw new Error("仅Abogado、主任、Administrar员可申请用章");
+    throw new Error("仅Abogado、主任、Administrar员可Solicitar sello");
   }
 
   const raw = {
@@ -398,7 +398,7 @@ export async function createSealRequest(formData: FormData) {
         algorithm: draftDocPrepare.algorithm,
         iv: draftDocPrepare.iv,
         authTag: draftDocPrepare.authTag,
-        tags: ["用章申请", "待盖章稿"],
+        tags: ["Solicitud de sello", "待盖章稿"],
         uploadedById: session.user.id
       }
     });
@@ -437,7 +437,7 @@ export async function createSealRequest(formData: FormData) {
           algorithm: legalRepDocPrepare.algorithm,
           iv: legalRepDocPrepare.iv,
           authTag: legalRepDocPrepare.authTag,
-          tags: ["用章申请", "待盖章稿", "法人章副本"],
+          tags: ["Solicitud de sello", "待盖章稿", "法人章副本"],
           uploadedById: session.user.id
         }
       });
@@ -446,7 +446,7 @@ export async function createSealRequest(formData: FormData) {
           code: legalRepCode,
           sealType: "LEGAL_REP_SEAL",
           matterId: data.matterId ?? undefined,
-          purpose: `${data.purpose.trim()}（与 ${code} 同时加盖）`,
+          purpose: `${data.purpose.trim()}（y ${code} 同时加盖）`,
           documentTitle: data.documentTitle.trim(),
           pageCount: data.pageCount,
           requireCrossPageSeal: data.requireCrossPageSeal,
@@ -509,7 +509,7 @@ export async function createSealRequest(formData: FormData) {
       code: legalRepCode,
       sealType: "LEGAL_REP_SEAL",
       documentTitle: data.documentTitle.trim(),
-      purpose: `${data.purpose.trim()}（与 ${code} 同时加盖）`,
+      purpose: `${data.purpose.trim()}（y ${code} 同时加盖）`,
       requesterId: session.user.id,
       requesterName: session.user.name,
       urgency: data.urgency
@@ -522,7 +522,7 @@ export async function createSealRequest(formData: FormData) {
 }
 
 // ============================================================
-// Aprobación通过
+// AprobaciónAprobar
 // ============================================================
 export async function approveSealRequest(input: z.infer<typeof sealApproveSchema>) {
   const session = await requireSession();
@@ -559,8 +559,8 @@ export async function approveSealRequest(input: z.infer<typeof sealApproveSchema
   await createNotification({
     userId: seal.requestedById,
     type: "SEAL_STATUS_CHANGE",
-    title: "用章申请已通过",
-    content: `您的用章申请（${seal.sealType}）已Aprobación通过`,
+    title: "Solicitud de sello已Aprobar",
+    content: `您的Solicitud de sello（${seal.sealType}）已AprobaciónAprobar`,
     href: "/approvals/seals",
     refType: "SealRequest",
     refId: data.id
@@ -572,7 +572,7 @@ export async function approveSealRequest(input: z.infer<typeof sealApproveSchema
 }
 
 // ============================================================
-// 驳回
+// Rechazar
 // ============================================================
 export async function rejectSealRequest(input: z.infer<typeof sealRejectSchema>) {
   const session = await requireSession();
@@ -586,7 +586,7 @@ export async function rejectSealRequest(input: z.infer<typeof sealRejectSchema>)
   if (seal.status !== "PENDING") throw new Error("此申请已处理");
 
   const ok = await canApproveSealType(seal.sealType, session.user);
-  if (!ok) throw new Error("无权驳回该用章类型");
+  if (!ok) throw new Error("无权Rechazar该用章类型");
 
   await prisma.sealRequest.update({
     where: { id: data.id },
@@ -610,8 +610,8 @@ export async function rejectSealRequest(input: z.infer<typeof sealRejectSchema>)
   await createNotification({
     userId: seal.requestedById,
     type: "SEAL_STATUS_CHANGE",
-    title: "用章申请已驳回",
-    content: `您的用章申请（${seal.sealType}）已被驳回，原因：${data.reason}`,
+    title: "Solicitud de selloRechazado",
+    content: `您的Solicitud de sello（${seal.sealType}）已被Rechazar，Motivo：${data.reason}`,
     href: "/approvals/seals",
     refType: "SealRequest",
     refId: data.id
@@ -671,7 +671,7 @@ export async function stampSealRequest(formData: FormData) {
         algorithm: enc.algorithm,
         iv: enc.iv.toString("base64"),
         authTag: enc.authTag.toString("base64"),
-        tags: ["用章申请", "盖章后扫描件"],
+        tags: ["Solicitud de sello", "盖章后扫描件"],
         uploadedById: session.user.id
       }
     });

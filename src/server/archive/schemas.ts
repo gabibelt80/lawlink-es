@@ -6,28 +6,31 @@ export const archiveClosedReasonSchema = z.enum([
   "WITHDRAWAL",
   "SETTLEMENT",
   "RULING",
-  "OTHER"
+  "OTHER",
 ]);
 
 export const archiveSubmitSchema = z.object({
   matterId: z.string().cuid(),
-  summary: z.string().min(1, "结案小结必填").max(4000),
+  summary: z.string().min(1, "El resumen del cierre es obligatorio").max(4000),
   closedReason: archiveClosedReasonSchema,
   completedAt: z.coerce.date(),
   judgmentSummary: z.string().max(2000).optional().or(z.literal("")),
   // checklist 勾选Estado：{ itemId: true/false }
   checklist: z.record(z.boolean()).default({}),
-  // Abogado确认强制归档（缺必填项时需 true 才能Enviar）
-  forceWithMissing: z.boolean().default(false)
+  // AbogadoConfirmar强制归档（缺必填ítems时需 true 才能Enviar）
+  forceWithMissing: z.boolean().default(false),
 });
 
 export type ArchiveSubmitInput = z.infer<typeof archiveSubmitSchema>;
 
-export const CLOSED_REASON_CN: Record<z.infer<typeof archiveClosedReasonSchema>, string> = {
+export const CLOSED_REASON_CN: Record<
+  z.infer<typeof archiveClosedReasonSchema>,
+  string
+> = {
   JUDGMENT: "判决",
   MEDIATION: "调解",
   WITHDRAWAL: "撤诉",
   SETTLEMENT: "和解",
   RULING: "裁定",
-  OTHER: "其他"
+  OTHER: "其他",
 };

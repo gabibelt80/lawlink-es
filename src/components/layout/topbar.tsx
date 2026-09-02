@@ -50,7 +50,7 @@ const APP_ITEMS = [
   { label: "实务工具", icon: Calculator, kind: "tools" },
   { label: "快递跟踪", href: "/express", icon: Package, kind: "link" },
   {
-    label: "律所文书",
+    label: "Documentos del estudio",
     href: "/firm-resources",
     icon: FolderArchive,
     kind: "link",
@@ -61,7 +61,7 @@ const APP_ITEMS = [
     icon: Compass,
     kind: "external",
   },
-  { label: "公告指引", href: "/announcements", icon: Megaphone, kind: "link" },
+  { label: "Anuncio指引", href: "/announcements", icon: Megaphone, kind: "link" },
   { label: "制度规范", href: "/policy", icon: BookText, kind: "link" },
   { label: "通讯录", href: "/contacts", icon: Contact, kind: "link" },
 ] as const;
@@ -234,7 +234,7 @@ export function Topbar({
           <DropdownMenuItem asChild>
             <Link href="/settings/profile" className="cursor-pointer">
               <User className="mr-2 h-4 w-4" />
-              个人信息
+              Información personal
             </Link>
           </DropdownMenuItem>
           <DropdownMenuItem asChild>

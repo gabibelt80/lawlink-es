@@ -5,7 +5,7 @@ import { matterHref, normalizeMatterParam } from "@/lib/matters/route";
 /**
  * 把详情页路由参数解析成Caso主键。
  *
- * 不去猜参数形状（cuid 还是编号），直接让数据库同时匹配两者：
+ * 不去猜参数形状（cuid 还是编号），直接让数据库同时Coincidencia两者：
  * `internalCode` 有唯一索引，cuid 不含 `-`、编号必含，两者不可能撞，
  * 一次查询即可，也不用为 cuid 的具体格式（v1/v2）写正则。
  *

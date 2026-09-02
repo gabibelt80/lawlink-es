@@ -1,12 +1,12 @@
 "use server";
 
 /**
- * v0.22: 律所资料库（FirmFile）
+ * v0.22: 律所Material库（FirmFile）
  *
  * 全所共享：所有 active 用户可读；admin / PRINCIPAL_LAWYER 可上传 / 替代 / Eliminar。
  * 4 分类：制度 / 指引 / 参考模板 / 其他文件。
- * 版本：supersededById 链接旧→新；列表默认只显示"最新"。
- * Buscar：ILIKE name + description + tags 多字段模糊匹配（不用 tsvector）。
+ * 版本：supersededById Enlace旧→新；列表默认只显示"最新"。
+ * Buscar：ILIKE name + description + tags 多字段模糊Coincidencia（不用 tsvector）。
  */
 import { prisma } from "@/lib/prisma";
 import { requireSession } from "@/lib/auth/session";
@@ -36,7 +36,7 @@ export type FirmFileEntry = {
 async function requireUploader() {
   const session = await requireSession();
   if (session.user.role !== "ADMIN" && session.user.role !== "PRINCIPAL_LAWYER") {
-    throw new Error("仅Administrar员 / 主任Abogado可Administrar律所资料");
+    throw new Error("仅Administrar员 / 主任Abogado可Administrar律所Material");
   }
   return session;
 }
@@ -251,8 +251,8 @@ export async function updateFirmFile(input: {
     where: { id: input.id },
     select: { id: true, archivedAt: true }
   });
-  if (!existing) throw new Error("资料不存在");
-  if (existing.archivedAt) throw new Error("已Eliminar的资料不可Editar");
+  if (!existing) throw new Error("Material不存在");
+  if (existing.archivedAt) throw new Error("已Eliminar的Material不可Editar");
 
   const data: Prisma.FirmFileUpdateInput = {};
   if (input.name !== undefined) data.name = input.name.trim().slice(0, 200);

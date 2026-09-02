@@ -13,19 +13,19 @@ import {
   DialogDescription,
   DialogFooter,
   DialogHeader,
-  DialogTitle
+  DialogTitle,
 } from "@/components/ui/dialog";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
-  SelectValue
+  SelectValue,
 } from "@/components/ui/select";
 import { RadioChips } from "@/components/ui/radio-chips";
 import {
   createInvoiceRequest,
-  getMatterInvoiceContext
+  getMatterInvoiceContext,
 } from "@/server/finance/actions";
 import { uploadDocument } from "@/server/documents/actions";
 import { cn } from "@/lib/utils";
@@ -37,13 +37,13 @@ const INVOICE_ITEM_OPTIONS: { value: InvoiceItem; label: string }[] = [
   { value: "LAWYER_FEE", label: "Abogado服务费" },
   { value: "CONSULTING_FEE", label: "法律咨询费" },
   { value: "AGENCY_FEE", label: "代理费" },
-  { value: "OTHER", label: "其他法律服务" }
+  { value: "OTHER", label: "其他法律服务" },
 ];
 
 export function InvoiceRequestSheet({
   open,
   onOpenChange,
-  matterId
+  matterId,
 }: {
   open: boolean;
   onOpenChange: (o: boolean) => void;
@@ -57,14 +57,14 @@ export function InvoiceRequestSheet({
 
   // 表单Estado
   const [amount, setAmount] = useState<string>("");
-  // v0.42 项5：开票类型无默认值，必须主动选择一次
+  // v0.42 ítems5：开票类型无默认值，必须主动选择一次
   const [invoiceType, setInvoiceType] = useState<InvoiceType | null>(null);
   const [invoiceItem, setInvoiceItem] = useState<InvoiceItem>("LAWYER_FEE");
-  // v0.42 项3：开票抬头改下拉（本案Cliente）
+  // v0.42 ítems3：开票抬头改下拉（本案Cliente）
   const [buyerClientId, setBuyerClientId] = useState<string>("");
   const [buyerName, setBuyerName] = useState("");
   const [buyerTaxNo, setBuyerTaxNo] = useState("");
-  // v0.42 项4：专票购方六要素
+  // v0.42 ítems4：专票购方六要素
   const [buyerAddress, setBuyerAddress] = useState("");
   const [buyerPhone, setBuyerPhone] = useState("");
   const [buyerBank, setBuyerBank] = useState("");
@@ -73,7 +73,7 @@ export function InvoiceRequestSheet({
   const [evidenceFiles, setEvidenceFiles] = useState<File[]>([]);
   const fileRef = useRef<HTMLInputElement>(null);
 
-  // 拉取Caso上下文 + 重置表单
+  // 拉取Caso上下文 + Restablecer表单
   useEffect(() => {
     if (!open) return;
     setCtxLoading(true);
@@ -117,7 +117,8 @@ export function InvoiceRequestSheet({
   function handleFiles(list: FileList | null) {
     if (!list) return;
     const arr = Array.from(list).filter((f) => f.size <= 20 * 1024 * 1024);
-    if (arr.length < list.length) toast.warning("跳过了超过 20MB 的文件");
+    if (arr.length < list.length)
+      toast.warning("Se omitieron los archivos de más de 20 MB");
     setEvidenceFiles((prev) => [...prev, ...arr]);
     if (fileRef.current) fileRef.current.value = "";
   }
@@ -125,41 +126,51 @@ export function InvoiceRequestSheet({
   function submit() {
     const amt = Number(amount);
     if (!amt || amt <= 0) {
-      toast.warning("请填写金额");
+      toast.warning("Ingresá el monto");
       return;
     }
     if (!invoiceType) {
-      toast.warning("请选择开票类型");
+      toast.warning("Seleccioná el tipo de factura");
       return;
     }
     if (!buyerName.trim()) {
-      toast.warning("请选择开票抬头");
+      toast.warning("Seleccioná el titular de la factura");
       return;
     }
     if (invoiceType === "SPECIAL") {
       if (!buyerTaxNo.trim()) {
-        toast.warning("增值税专用发票必须填写纳税人识别号");
+        toast.warning(
+          "La factura de IVA debe incluir el número de identificación tributaria",
+        );
         return;
       }
       if (!buyerAddress.trim()) {
-        toast.warning("增值税专用发票必须填写购方地址");
+        toast.warning(
+          "La factura de IVA debe incluir la dirección del comprador",
+        );
         return;
       }
       if (!buyerPhone.trim()) {
-        toast.warning("增值税专用发票必须填写购方电话");
+        toast.warning(
+          "La factura de IVA debe incluir el teléfono del comprador",
+        );
         return;
       }
       if (!buyerBank.trim()) {
-        toast.warning("增值税专用发票必须填写开户银行");
+        toast.warning("La factura de IVA debe incluir el banco del comprador");
         return;
       }
       if (!buyerBankAccount.trim()) {
-        toast.warning("增值税专用发票必须填写银行账号");
+        toast.warning(
+          "La factura de IVA debe incluir la cuenta bancaria del comprador",
+        );
         return;
       }
     }
     if (evidenceFiles.length === 0) {
-      toast.warning("请上传开票依据（扫描版委托合同等）");
+      toast.warning(
+        "Subí el respaldo de la factura (por ejemplo, el contrato de mandato escaneado)",
+      );
       return;
     }
 
@@ -193,14 +204,14 @@ export function InvoiceRequestSheet({
           buyerBank: isSpecial ? buyerBank : null,
           buyerBankAccount: isSpecial ? buyerBankAccount : null,
           evidenceDocIds: docIds,
-          requestNote
+          requestNote,
         });
 
-        toast.success("开票申请已Enviar");
+        toast.success("La solicitud de factura fue enviada");
         onOpenChange(false);
       } catch (err) {
-        toast.error("Enviar失败", {
-          description: err instanceof Error ? err.message : ""
+        toast.error("Error al enviar", {
+          description: err instanceof Error ? err.message : "",
         });
       }
     });
@@ -214,21 +225,21 @@ export function InvoiceRequestSheet({
         <DialogHeader className="border-b border-border px-5 py-3">
           <DialogTitle className="flex items-center gap-2">
             <Receipt className="h-4 w-4 text-primary" />
-            申请开具发票
+            Solicitar factura
           </DialogTitle>
           <DialogDescription className="text-xs">
             {ctxLoading
-              ? "CargarCaso信息..."
+              ? "Cargando la información del caso..."
               : ctx
-                ? `Caso：${ctx.matterTitle}${ctx.intake ? "（已关联收案Aprobación）" : ""}`
-                : "无法CargarCaso信息"}
+                ? `Caso: ${ctx.matterTitle}${ctx.intake ? " (con aprobación de admisión asociada)" : ""}`
+                : "No se pudo cargar la información del caso"}
           </DialogDescription>
         </DialogHeader>
 
         <div className="flex-1 space-y-4 overflow-y-auto px-5 py-4">
-          {/* v0.42 项5：金额 + 开票类型 同一行 */}
+          {/* v0.42 ítems5：Monto + 开票类型 同一行 */}
           <div className="grid grid-cols-2 gap-3">
-            <Field label="开票金额（元）" required>
+            <Field label="Monto de la factura (pesos)" required>
               <Input
                 type="number"
                 step="0.01"
@@ -239,24 +250,26 @@ export function InvoiceRequestSheet({
                 onChange={(e) => setAmount(e.target.value)}
               />
             </Field>
-            <Field label="开票类型" required>
+            <Field label="Tipo de factura" required>
               <Select
                 value={invoiceType ?? undefined}
                 onValueChange={(v) => setInvoiceType(v as InvoiceType)}
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="请选择" />
+                  <SelectValue placeholder="Seleccioná una opción" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="PLAIN">普通发票</SelectItem>
-                  <SelectItem value="SPECIAL">增值税专用发票</SelectItem>
+                  <SelectItem value="PLAIN">Factura común</SelectItem>
+                  <SelectItem value="SPECIAL">
+                    Factura especial de IVA
+                  </SelectItem>
                 </SelectContent>
               </Select>
             </Field>
           </div>
 
           {/* 开票名目 */}
-          <Field label="开票名目" required>
+          <Field label="Concepto de la factura" required>
             <RadioChips
               items={INVOICE_ITEM_OPTIONS}
               value={invoiceItem}
@@ -264,43 +277,46 @@ export function InvoiceRequestSheet({
             />
           </Field>
 
-          {/* v0.42 项3：Cliente抬头下拉（本案Cliente） */}
+          {/* v0.42 ítems3：Cliente抬头下拉（本案Cliente） */}
           <Field
-            label="开票抬头（Cliente）"
+            label="Titular de la factura (cliente)"
             required
             hint={
               clientOptions.length === 0
-                ? "本案暂无关联Cliente，请先在Caso当事人中登记Cliente"
-                : "选项为本案关联的Cliente"
+                ? "Este caso no tiene clientes asociados. Primero registrá un cliente entre las partes del caso"
+                : "Seleccioná un cliente asociado a este caso"
             }
           >
             {clientOptions.length > 0 ? (
               <Select value={buyerClientId} onValueChange={handlePickClient}>
                 <SelectTrigger>
-                  <SelectValue placeholder="请选择开票抬头" />
+                  <SelectValue placeholder="Seleccioná el titular de la factura" />
                 </SelectTrigger>
                 <SelectContent>
                   {clientOptions.map((c) => (
                     <SelectItem key={c.id} value={c.id}>
                       {c.name}
-                      {c.isPrimary ? "（主要Cliente）" : ""}
+                      {c.isPrimary ? " (cliente principal)" : ""}
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
             ) : (
               <Input
-                placeholder="如：上海某某科技有限公司 / 张三"
+                placeholder="Por ejemplo: Empresa XYZ / Juan Pérez"
                 value={buyerName}
                 onChange={(e) => setBuyerName(e.target.value)}
               />
             )}
           </Field>
 
-          {/* 专票购方六要素（v0.42 项4，税法合规） */}
+          {/* 专票购方六要素（v0.42 ítems4，税法合规） */}
           {invoiceType === "SPECIAL" && (
             <div className="space-y-3 rounded-md border border-primary/30 bg-primary/5 p-3">
-              <Field label="纳税人识别号（统一社会信用代码）" required>
+              <Field
+                label="Número de identificación tributaria (código fiscal unificado)"
+                required
+              >
                 <Input
                   className="font-mono"
                   placeholder="91310000XXXXXXXXXX"
@@ -311,7 +327,7 @@ export function InvoiceRequestSheet({
               <div className="grid grid-cols-2 gap-3">
                 <Field label="开户银行" required>
                   <Input
-                    placeholder="如：中国银行上海分行"
+                    placeholder="Por ejemplo: Banco Nación, sucursal Centro"
                     value={buyerBank}
                     onChange={(e) => setBuyerBank(e.target.value)}
                   />
@@ -326,17 +342,17 @@ export function InvoiceRequestSheet({
                 </Field>
               </div>
               <div className="grid grid-cols-2 gap-3">
-                <Field label="购方地址" required>
+                <Field label="Dirección del comprador" required>
                   <Input
-                    placeholder="营业执照登记地址"
+                    placeholder="Dirección registrada en la licencia comercial"
                     value={buyerAddress}
                     onChange={(e) => setBuyerAddress(e.target.value)}
                   />
                 </Field>
-                <Field label="购方电话" required>
+                <Field label="Teléfono del comprador" required>
                   <Input
                     className="font-mono"
-                    placeholder="021-XXXXXXXX"
+                    placeholder="011-XXXXXXXX"
                     value={buyerPhone}
                     onChange={(e) => setBuyerPhone(e.target.value)}
                   />
@@ -347,9 +363,9 @@ export function InvoiceRequestSheet({
 
           {/* 开票依据 */}
           <Field
-            label="开票依据"
+            label="Respaldo de la factura"
             required
-            hint="正常情况下必须上传扫描版委托合同，支付凭证可选；特殊情况请Enviar情况说明，单文件 ≤ 20MB"
+            hint="En condiciones normales, subí el contrato de mandato escaneado. El comprobante de pago es opcional; en casos especiales, enviá una explicación. Cada archivo debe pesar ≤ 20 MB"
             action={
               <Button
                 type="button"
@@ -359,7 +375,7 @@ export function InvoiceRequestSheet({
                 className="h-7 gap-1.5 px-2 text-[11px]"
               >
                 <Paperclip className="h-3.5 w-3.5" />
-                Agregar文件
+                Adjuntar archivo
               </Button>
             }
           >
@@ -374,7 +390,7 @@ export function InvoiceRequestSheet({
               />
               {evidenceFiles.length === 0 ? (
                 <p className="rounded-md border border-dashed border-border bg-background py-3 text-center text-xs text-muted-foreground">
-                  未选择任何文件
+                  No seleccionaste ningún archivo
                 </p>
               ) : (
                 <ul className="space-y-1.5">
@@ -394,7 +410,7 @@ export function InvoiceRequestSheet({
                           setEvidenceFiles((c) => c.filter((_, j) => j !== i))
                         }
                         className="text-muted-foreground hover:text-destructive"
-                        aria-label="移除"
+                        aria-label="Quitar"
                       >
                         <X className="h-3 w-3" />
                       </button>
@@ -406,10 +422,10 @@ export function InvoiceRequestSheet({
           </Field>
 
           {/* 申请Observaciones */}
-          <Field label="申请Observaciones（可选）">
+          <Field label="Observaciones de la solicitud (opcional)">
             <Textarea
               rows={2}
-              placeholder="如：请尽快开具，Cliente催要"
+              placeholder="Por ejemplo: emitila cuanto antes, el cliente la necesita"
               value={requestNote}
               onChange={(e) => setRequestNote(e.target.value)}
             />
@@ -425,9 +441,13 @@ export function InvoiceRequestSheet({
           >
             Cancelar
           </Button>
-          <Button onClick={submit} disabled={isPending || ctxLoading} className="gap-1.5">
+          <Button
+            onClick={submit}
+            disabled={isPending || ctxLoading}
+            className="gap-1.5"
+          >
             {isPending && <Loader2 className="h-4 w-4 animate-spin" />}
-            Enviar申请
+            Enviar solicitud
           </Button>
         </DialogFooter>
       </DialogContent>
@@ -440,7 +460,7 @@ function Field({
   required,
   hint,
   action,
-  children
+  children,
 }: {
   label: string;
   required?: boolean;

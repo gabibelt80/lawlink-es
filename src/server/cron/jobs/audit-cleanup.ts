@@ -1,7 +1,7 @@
 /**
- * AuditLog 保留策略：每天 03:00 删超过 N 天的旧记录。
+ * AuditLog 保留策略：每días 03:00 删超过 N días的旧记录。
  *
- * 默认 365 天；环境变量 AUDIT_RETENTION_DAYS 可覆盖（如设 90 = 3 个月）。
+ * 默认 365 días；环境变量 AUDIT_RETENTION_DAYS 可覆盖（如设 90 = 3 个月）。
  * AuditLog 表无 FK 反向引用，安全 hard delete。
  */
 import { prisma } from "@/lib/prisma";
@@ -25,7 +25,7 @@ export async function runAuditCleanup(): Promise<AuditCleanupResult> {
     where: { createdAt: { lt: cutoff } }
   });
 
-  // 自己写一条 audit 留痕（这条 365 天后又会被自己删，但短期内可查）
+  // 自己写一条 audit 留痕（这条 365 días后又会被自己删，但短期内可查）
   await audit({
     userId: null,
     action: "AUDIT_CLEANUP_CRON",

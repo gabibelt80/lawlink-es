@@ -14,7 +14,7 @@ export type ParsedSummons = {
   hearingTime: string | null; // HH:mm
   courtRoom: string | null; // 法庭（如：第三法庭）
   caseNumber: string | null; // 案号（如：(2024)京0105民初1234号）
-  judge: string | null; // 法官姓名
+  judge: string | null; // 法官Nombre y apellido
   parties: string[] | null; // 当事人列表
 };
 
@@ -32,7 +32,7 @@ const PROMPT = `下方图片是一张中国法院传票（开庭传票）。请�
   "hearingTime": "开庭时间（HH:mm，24小时制）",
   "courtRoom": "开庭地点/法庭（如：本院第三法庭）",
   "caseNumber": "案号（如：(2024)京0105民初1234号）",
-  "judge": "审判员/法官姓名",
+  "judge": "审判员/法官Nombre y apellido",
   "parties": ["原告/上诉人Nombre", "被告/被上诉人Nombre"]
 }
 规则：
@@ -45,11 +45,14 @@ const PROMPT = `下方图片是一张中国法院传票（开庭传票）。请�
 export async function parseSummons(form: FormData): Promise<ParsedSummons> {
   await requireSession();
   const file = form.get("file");
-  if (!(file instanceof File)) throw new Error("缺少文件");
+  if (!(file instanceof File)) throw new Error("Falta el archivo");
   if (!SUPPORTED.has(file.type)) {
-    throw new Error(`仅支持图片（JPG/PNG）格式，当前 ${file.type || "未知"}`);
+    throw new Error(
+      `Solo se admiten imágenes (JPG/PNG); formato actual: ${file.type || "desconocido"}`,
+    );
   }
-  if (file.size > 10 * 1024 * 1024) throw new Error("文件超过 10MB");
+  if (file.size > 10 * 1024 * 1024)
+    throw new Error("El archivo supera los 10 MB");
 
   const buf = Buffer.from(await file.arrayBuffer());
   const dataUrl = `data:${file.type};base64,${buf.toString("base64")}`;
@@ -73,6 +76,6 @@ export async function parseSummons(form: FormData): Promise<ParsedSummons> {
     };
   } catch (err) {
     if (err instanceof AiNotConfiguredError) throw err;
-    throw new Error(err instanceof Error ? err.message : "传票识别失败");
+    throw new Error(err instanceof Error ? err.message : "传票识别Error");
   }
 }

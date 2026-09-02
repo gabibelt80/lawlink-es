@@ -1,9 +1,9 @@
 /**
  * v0.50: 数据库 + 文件存储自动备份（PRD §六承诺的"内置备份"最后一公里）。
  *
- * 每天 02:30 调 scripts/backup.sh（pg_dump + storage 打包），备份到
+ * 每días 02:30 调 scripts/backup.sh（pg_dump + storage 打包），备份到
  * BACKUP_DIR（默认 ./backups），并做保留数清理（BACKUP_KEEP，默认 14 份）。
- * 失败时给所有 ADMIN 发站内Notificaciones——备份静默失败等于没有备份。
+ * Error时给所有 ADMIN 发站内Notificaciones——备份静默Erroretc.于没有备份。
  *
  * Cerrar方式：环境变量 BACKUP_CRON_ENABLED=false（部署环境没有 pg_dump 时）。
  */
@@ -77,7 +77,7 @@ async function pruneOldBackups(baseDir: string, keep: number): Promise<number> {
     try {
       if ((await stat(full)).isDirectory()) backupDirs.push(name);
     } catch {
-      // 忽略读取失败的条目
+      // 忽略读取Error的条目
     }
   }
   backupDirs.sort();
@@ -129,7 +129,7 @@ export async function runDatabaseBackup(): Promise<BackupResult> {
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
     await notifyAdmins(
-      "数据库自动备份失败",
+      "数据库自动备份Error",
       `${message.slice(0, 300)}｜请检查 pg_dump 是否可用、BACKUP_DIR 是否可写；修复前Sistema没有新备份。`
     );
     // 抛出让 scheduler 统一写 *_FAILED_CRON audit

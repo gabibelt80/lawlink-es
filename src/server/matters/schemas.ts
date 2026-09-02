@@ -102,7 +102,7 @@ export const partyInputSchema = z
     ordinal: z.number().int().min(1).default(1),
     // v0.27: 主体类型决定必填字段
     partyType: partyTypeSchema.default("NATURAL_PERSON"),
-    name: z.string().min(1, "当事人姓名/Nombre必填").max(120),
+    name: z.string().min(1, "当事人Nombre y apellido/Nombre必填").max(120),
     // 自然人路径必填：身份证号；公司路径必填：enterpriseSocialCode（superRefine 校验）
     idNumber: z.string().max(50).optional().or(z.literal("")),
     enterpriseSocialCode: z.string().max(50).optional().or(z.literal("")),
@@ -141,7 +141,7 @@ export const matterCreateSchema = z.object({
   ),
   category: matterCategorySchema,
 
-  // 案由
+  // Causa
   causeId: z.string().cuid().optional().or(z.literal("")),
   causeFreeText: z.string().max(200).optional().or(z.literal("")),
 

@@ -2,7 +2,7 @@
  * v0.9.1 OpenAI 兼容协议封装
  *
  * 所有调用走 {baseUrl}/chat/completions。
- * 支持 OpenAI / 通义 / DeepSeek / Kimi / 智谱 / OpenRouter / Ollama 等。
+ * 支持 OpenAI / 通义 / DeepSeek / Kimi / 智谱 / OpenRouter / Ollama etc.。
  *
  * server-side only（直接读 SystemSetting）。
  */
@@ -33,7 +33,9 @@ export interface AiChatResult {
 
 export class AiNotConfiguredError extends Error {
   constructor() {
-    super("AI 未配置，请先到 Configuración → AI 接入 填写 API key");
+    super(
+      "La IA no está configurada. Primero completá la clave de API en Configuración → Acceso a IA",
+    );
     this.name = "AiNotConfiguredError";
   }
 }
@@ -47,18 +49,21 @@ async function callOpenAiCompatible(opts: {
   const ctrl = new AbortController();
   const timer = setTimeout(() => ctrl.abort(), opts.timeoutMs);
   try {
-    const res = await fetch(`${opts.baseUrl.replace(/\/$/, "")}/chat/completions`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${opts.apiKey}`
+    const res = await fetch(
+      `${opts.baseUrl.replace(/\/$/, "")}/chat/completions`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${opts.apiKey}`,
+        },
+        body: JSON.stringify(opts.body),
+        signal: ctrl.signal,
       },
-      body: JSON.stringify(opts.body),
-      signal: ctrl.signal
-    });
+    );
     if (!res.ok) {
       const body = await res.text();
-      throw new Error(`AI 请求失败 (${res.status}): ${body.slice(0, 200)}`);
+      throw new Error(`AI 请求Error (${res.status}): ${body.slice(0, 200)}`);
     }
     return res.json();
   } finally {
@@ -74,14 +79,14 @@ export async function aiChat(input: AiChatOptions): Promise<AiChatResult> {
     model: input.model || s.textModel,
     messages: input.messages,
     max_tokens: input.maxTokens ?? 1500,
-    temperature: input.temperature ?? 0.2
+    temperature: input.temperature ?? 0.2,
   };
 
   const json = (await callOpenAiCompatible({
     apiKey: s.apiKey,
     baseUrl: s.baseUrl,
     body,
-    timeoutMs: input.timeoutMs ?? 20_000
+    timeoutMs: input.timeoutMs ?? 20_000,
   })) as {
     choices?: { message?: { content?: string } }[];
   };
@@ -103,23 +108,24 @@ export async function aiVision(input: {
   const s = await getAiSettings();
   if (!s.configured) throw new AiNotConfiguredError();
 
-  const imageUrl = "dataUrl" in input.image ? input.image.dataUrl : input.image.url;
+  const imageUrl =
+    "dataUrl" in input.image ? input.image.dataUrl : input.image.url;
 
   const messages: ChatMessage[] = [
     {
       role: "user",
       content: [
         { type: "image_url", image_url: { url: imageUrl } },
-        { type: "text", text: input.prompt }
-      ]
-    }
+        { type: "text", text: input.prompt },
+      ],
+    },
   ];
 
   return aiChat({
     messages,
     model: input.model || s.visionModel,
     maxTokens: input.maxTokens ?? 2000,
-    timeoutMs: input.timeoutMs ?? 30_000
+    timeoutMs: input.timeoutMs ?? 30_000,
   });
 }
 

@@ -56,7 +56,7 @@ export async function GET(
   try {
     result = await buildArchiveZip(params.matterId);
   } catch (err) {
-    console.error("[archive export] 构建失败：", err);
+    console.error("[archive export] 构建Error：", err);
     return NextResponse.json(
       { error: err instanceof Error ? err.message : "Error al exportar" },
       { status: 500 },
@@ -74,7 +74,7 @@ export async function GET(
       data: { exportPath: storagePath, checksum: result.checksum },
     });
   } catch (err) {
-    console.error("[archive export] 落盘失败（不阻断下载）：", err);
+    console.error("[archive export] 落盘Error（不阻断下载）：", err);
   }
 
   await audit({

@@ -12,7 +12,7 @@ import { Toaster as Sonner } from "sonner"
 type ToasterProps = React.ComponentProps<typeof Sonner>
 
 /**
- * LawLink 全站 toast。样式与图标在这里定型，调用方只传位置一类的布局参数，
+ * LawLink 全站 toast。样式y图标在这里定型，调用方只传位置一类的布局参数，
  * 避免再出现「另起一个裸 <Toaster/>」导致图标配置失效。
  */
 const Toaster = ({ toastOptions, ...props }: ToasterProps) => {

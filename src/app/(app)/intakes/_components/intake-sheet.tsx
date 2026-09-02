@@ -279,13 +279,13 @@ export function IntakeSheet({
   const coUserIds = watch<string[]>("coUserIds") ?? [];
   const receivedAt = watch("receivedAt");
   const jurisdiction = watch("jurisdiction") ?? "";
-  // 争议解决机构按管辖地匹配
+  // 争议解决机构按管辖地Coincidencia
   const agencyOpts = useMemo(
     () => agencyOptionsForProcedure(jurisdiction, firstProcedureType),
     [jurisdiction, firstProcedureType],
   );
 
-  // v0.31: Caso类别决定表单结构（诉讼/仲裁 vs 非诉/专项 vs 顾问）
+  // v0.31: Caso类别决定表单结构（诉讼/仲裁 vs 非诉/专ítems vs 顾问）
   const kind: CategoryKind = matterCategoryKind(category);
   const nameLabel =
     kind === "counsel"
@@ -294,7 +294,7 @@ export function IntakeSheet({
         ? "Nombre del proyecto"
         : "Nombre del caso";
 
-  // 标题自动生成：填完当事人 + 案由后按「委托方 与 对方 案由」生成，用户手改后不再覆盖
+  // 标题自动生成：填完当事人 + Causa后按「委托方 y 对方 Causa」生成，用户手改后不再覆盖
   const [titleTouched, setTitleTouched] = useState(false);
   const [causeName, setCauseName] = useState("");
   const watchedParties = watch("parties");
@@ -309,7 +309,7 @@ export function IntakeSheet({
     if (!clientNm && !oppNm) return;
     // CasoNombre不含空格（产品要求）
     const suggested =
-      `${clientNm ?? ""}${oppNm ? `与${oppNm}` : ""}${causeNm}`.replace(
+      `${clientNm ?? ""}${oppNm ? `y${oppNm}` : ""}${causeNm}`.replace(
         /\s+/g,
         "",
       );
@@ -351,7 +351,7 @@ export function IntakeSheet({
   }, [category, firstProcedureType, procedureOptions, setValue]);
 
   // v0.31: 切类别时同步当事人行
-  // 顾问 / 非诉 / 专项：默认只留委托方一行（相对方按需Agregar）
+  // 顾问 / 非诉 / 专ítems：默认只留委托方一行（相对方按需Agregar）
   // 诉讼/仲裁：确保至少有一个相对方行
   useEffect(() => {
     const cur = (watch("parties") ?? []) as { role?: string }[];
@@ -587,7 +587,7 @@ export function IntakeSheet({
         { description: "Revise manualmente si los campos son correctos" },
       );
 
-      // OCR 后联动 AI 案由推荐（仅当 OCR 抽到 cause / claimDescription 时触发）
+      // OCR 后联动 AI Causa推荐（仅当 OCR 抽到 cause / claimDescription 时触发）
       const situationParts: string[] = [];
       if (res.cause)
         situationParts.push(`Causa reconocida por OCR: ${res.cause}`);
@@ -1131,7 +1131,7 @@ export function IntakeSheet({
                 )}
                 {/* ① 基本信息（共用：类别 / Nombre / 收案 / 经办）*/}
                 <Section title="① Información básica" required>
-                  {/* Caso类别 | 收案时间（与类别等宽）| CasoNombre（剩余）*/}
+                  {/* Caso类别 | 收案时间（y类别etc.宽）| CasoNombre（Restan余）*/}
                   <div className="grid grid-cols-1 gap-3 lg:grid-cols-[160px_160px_minmax(0,1fr)]">
                     <Field label="Categoría del caso" required>
                       <Select
@@ -1189,7 +1189,7 @@ export function IntakeSheet({
                   {/* 诉讼/仲裁：案情信息（并入基本信息）*/}
                   {kind === "litigation" && (
                     <>
-                      {/* 当前程序 | 案由 | 管辖地 | 争议解决机构 */}
+                      {/* 当前程序 | Causa | 管辖地 | 争议解决机构 */}
                       <div className="grid grid-cols-1 gap-3 lg:grid-cols-4">
                         <Field
                           label="Trámite actual"
@@ -1305,7 +1305,7 @@ export function IntakeSheet({
                     </>
                   )}
 
-                  {/* 非诉/专项：项目信息（并入基本信息）*/}
+                  {/* 非诉/专ítems：ítems目信息（并入基本信息）*/}
                   {kind === "project" && (
                     <>
                       <div className="grid grid-cols-1 gap-3 lg:grid-cols-4">
@@ -1557,7 +1557,7 @@ export function IntakeSheet({
                   </Section>
                 )}
 
-                {/* ③ 非诉/专项：委托方与相对方（无诉讼地位）*/}
+                {/* ③ 非诉/专ítems：委托方y相对方（无诉讼地位）*/}
                 {kind === "project" && (
                   <Section
                     title="② Cliente y parte contraria"

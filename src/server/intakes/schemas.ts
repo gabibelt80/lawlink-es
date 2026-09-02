@@ -49,10 +49,10 @@ const litigationIntakeCategories = new Set([
 ]);
 
 // HTML number 输入框留空时，react-hook-form 的 valueAsNumber 会产生 NaN。
-// 可选金额应将其视为“未填写”，否则 resolver 会在用户看不到的字段上阻断Enviar。
+// 可选Monto应将其视为“未填写”，否则 resolver 会在用户看不到的字段上阻断Enviar。
 const optionalNonnegativeNumberSchema = z.preprocess(
   (value) => (typeof value === "number" && Number.isNaN(value) ? undefined : value),
-  z.coerce.number().nonnegative("金额不能为负数").optional()
+  z.coerce.number().nonnegative("Monto不能为负数").optional()
 );
 
 const intakeCreateBaseSchema = z.object({
@@ -80,7 +80,7 @@ const intakeCreateBaseSchema = z.object({
   barFiling: z.enum(["NONE", "COLLECTIVE", "SENSITIVE", "MAJOR", "OTHER"]).optional(),
   counterclaim: z.boolean().default(false),
 
-  // v0.31: 非诉 / 顾问 / 专项 专属
+  // v0.31: 非诉 / 顾问 / 专ítems 专属
   businessType: z.string().max(60).optional().or(z.literal("")),
   serviceScope: z.string().max(1000).optional().or(z.literal("")),
   deliverables: z.string().max(500).optional().or(z.literal("")),
@@ -95,14 +95,14 @@ const intakeCreateBaseSchema = z.object({
   contactName: z.string().max(40).optional().or(z.literal("")),
   contactPhone: z.string().max(30).optional().or(z.literal("")),
 
-  // 企业自动填充（元典查询结果，透传到 Client Crear）
+  // 企业自动填充（pesos典查询结果，透传到 Client Crear）
   clientIdNumber: z.string().max(50).optional().or(z.literal("")),
   clientAddress: z.string().max(200).optional().or(z.literal("")),
   clientLegalRep: z.string().max(40).optional().or(z.literal("")),
 
   // Abogado费
   feeType: feeTypeSchema.optional(),
-  feeAmount: optionalNonnegativeNumberSchema, // FIXED: Total金额；CONTINGENCY: 基础办案费
+  feeAmount: optionalNonnegativeNumberSchema, // FIXED: TotalMonto；CONTINGENCY: 基础办案费
   contingencyTerms: z.string().max(1000).optional().or(z.literal("")), // CONTINGENCY 收费方式
   feeSchedule: z.string().max(500).optional().or(z.literal("")),
   feeNote: z.string().max(500).optional().or(z.literal("")),
@@ -161,7 +161,7 @@ export const intakeListQuerySchema = z.object({
 
 export const declineIntakeSchema = z.object({
   id: z.string().cuid(),
-  reason: z.string().min(1, "请填写不接案原因").max(500)
+  reason: z.string().min(1, "请填写No aceptar casoMotivo").max(500)
 });
 
 export type IntakeCreateInput = z.infer<typeof intakeCreateSchema>;

@@ -47,7 +47,7 @@ describe("recommendCause", () => {
     aiChatMock.mockResolvedValue({
       content: JSON.stringify([
         { name: "民间借贷纠纷", reason: "借款关系明确", confidence: "HIGH" },
-        { name: "买卖合同纠纷", reason: "可能涉及货款", confidence: "MEDIUM" },
+        { name: "买卖合同纠纷", reason: "可能涉y货款", confidence: "MEDIUM" },
         { name: "保证合同纠纷", reason: "存在担保人", confidence: "LOW" }
       ]),
       raw: {}
@@ -70,13 +70,13 @@ describe("recommendCause", () => {
     aiChatMock.mockResolvedValue({
       content: JSON.stringify([
         { name: "民间借贷纠纷", reason: "x", confidence: "HIGH" },
-        { name: "不存在的案由", reason: "x", confidence: "LOW" },
+        { name: "不存在的Causa", reason: "x", confidence: "LOW" },
         { name: "保证合同纠纷", reason: "x", confidence: "MEDIUM" }
       ]),
       raw: {}
     });
     searchCausesMock.mockImplementation(async ({ query }: { query: string }) =>
-      query === "不存在的案由" ? [] : [fakeCause({ id: query, name: query })]
+      query === "不存在的Causa" ? [] : [fakeCause({ id: query, name: query })]
     );
 
     const res = await recommendCause({
@@ -108,11 +108,11 @@ describe("recommendCause", () => {
     expect(res[0].cause.name).toBe("民间借贷纠纷");
   });
 
-  it("Ver todos反查失败 → 抛错", async () => {
+  it("Ver todos反查Error → 抛错", async () => {
     aiChatMock.mockResolvedValue({
       content: JSON.stringify([
-        { name: "案由甲", reason: "x", confidence: "HIGH" },
-        { name: "案由乙", reason: "x", confidence: "MEDIUM" }
+        { name: "Causa甲", reason: "x", confidence: "HIGH" },
+        { name: "Causa乙", reason: "x", confidence: "MEDIUM" }
       ]),
       raw: {}
     });
@@ -120,7 +120,7 @@ describe("recommendCause", () => {
 
     await expect(
       recommendCause({ category: "CIVIL_COMMERCIAL", situation: "测试用案情Descripción" })
-    ).rejects.toThrow(/案由库/);
+    ).rejects.toThrow(/Causa库/);
   });
 
   it("LLM Volver非 JSON → 抛错", async () => {

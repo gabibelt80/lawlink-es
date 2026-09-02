@@ -3,7 +3,7 @@
  *
  * 策略（用户选择"中"）：
  *   - Caso status === "ARCHIVED" 后：业务写Acciones全禁
- *   - 例外：补传材料到 ARCHIVE 卷宗（结案/归档）允许
+ *   - 例外：补传材料到 ARCHIVE 卷宗（Cerrar caso/归档）允许
  *
  * 调用方式（每个写Acciones server action 入口）：
  *   await assertMatterWritable(matterId);
@@ -54,10 +54,10 @@ export async function assertMatterWritable(
 }
 
 /**
- * 判定 folder 是否为 ARCHIVE 卷宗（结案 / 归档），用于上传材料门禁放行。
- * 命中条件：name 命中 ["结案", "归档"] 之一（与 default-folders.ts 一致）。
+ * 判定 folder 是否为 ARCHIVE 卷宗（Cerrar caso / 归档），用于上传材料门禁放行。
+ * 命中条件：name 命中 ["Cerrar caso", "归档"] 之一（y default-folders.ts 一致）。
  */
-const ARCHIVE_FOLDER_NAMES = new Set(["结案", "归档"]);
+const ARCHIVE_FOLDER_NAMES = new Set(["Cerrar caso", "归档"]);
 
 export function isArchiveFolderName(name: string | null | undefined): boolean {
   if (!name) return false;
@@ -80,6 +80,6 @@ export async function assertDocumentWritable(
     throw new Error("Caso已归档，材料不可修改或Eliminar");
   }
   if (opts.kind === "upload" && !isArchiveFolderName(opts.folderName)) {
-    throw new Error("Caso已归档，仅允许补传材料到「结案」或「归档」卷宗");
+    throw new Error("Caso已归档，仅允许补传材料到「Cerrar caso」或「归档」卷宗");
   }
 }

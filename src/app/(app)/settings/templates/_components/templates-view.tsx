@@ -195,7 +195,7 @@ function EditTemplateDialog({
         toast.success("模板已Guardar");
         onClose();
       } catch (err) {
-        toast.error("Guardar失败", { description: err instanceof Error ? err.message : "" });
+        toast.error("GuardarError", { description: err instanceof Error ? err.message : "" });
       }
     });
   }

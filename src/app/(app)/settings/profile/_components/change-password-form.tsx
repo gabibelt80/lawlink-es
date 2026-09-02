@@ -46,7 +46,7 @@ export function ChangePasswordForm() {
         toast.success("Contraseña已修改");
         reset();
       } catch (err) {
-        toast.error("修改失败", { description: err instanceof Error ? err.message : "" });
+        toast.error("修改Error", { description: err instanceof Error ? err.message : "" });
       }
     });
   }
@@ -59,7 +59,7 @@ export function ChangePasswordForm() {
       <Field label="新Contraseña（至少 8 位）" error={errors.newPassword?.message}>
         <Input type="password" autoComplete="new-password" {...register("newPassword")} />
       </Field>
-      <Field label="确认新Contraseña" error={errors.confirmPassword?.message}>
+      <Field label="Confirmar新Contraseña" error={errors.confirmPassword?.message}>
         <Input type="password" autoComplete="new-password" {...register("confirmPassword")} />
       </Field>
       <Button type="submit" disabled={isPending} className="gap-1.5">

@@ -223,7 +223,7 @@ async function materializeProcedureStage(
         }
       }
 
-      if (!targetStage) throw new Error("环节Crear失败");
+      if (!targetStage) throw new Error("环节CrearError");
       return { stage: targetStage, created: true, revived: false, materializedCount: names.length };
     }
 
@@ -250,7 +250,7 @@ async function materializeProcedureStage(
       data: {
         matterId: procedure.matterId,
         eventType: "STAGE_ADDED",
-        title: result.revived ? `恢复环节：${result.stage.name}` : `新增环节：${result.stage.name}`,
+        title: result.revived ? `Restaurar etapa：${result.stage.name}` : `新增环节：${result.stage.name}`,
         occurredAt: new Date(),
         refType: "MatterStage",
         refId: result.stage.id
@@ -342,7 +342,7 @@ export async function removeProcedureStage(input: ProcedureStageRemoveInput) {
   const hasContent = stage._count.tasks > 0 || linkedDocuments > 0 || preservationRecords > 0;
 
   if (hasContent) {
-    // 有任务/材料/专项记录：置 HIDDEN 保留数据，重新Agregar同名环节时可恢复
+    // 有Tarea/材料/专ítems记录：置 HIDDEN 保留数据，重新Agregar同名环节时可恢复
     await prisma.$transaction(async (tx) => {
       await tx.matterStage.update({
         where: { id: stage.id },
@@ -446,12 +446,12 @@ export async function addDeadline(input: DeadlineCreateInput) {
       targetId: created.id,
       detail: { matterId: procedure.matterId, procedureId: data.procedureId }
     });
-    // v0.43 项4：写入Caso动态时间线
+    // v0.43 ítems4：写入Caso动态时间线
     await prisma.timelineEvent.create({
       data: {
         matterId: procedure.matterId,
         eventType: "DEADLINE_ADDED",
-        title: `新增期限：${data.title}`,
+        title: `新增Plazo：${data.title}`,
         occurredAt: new Date(),
         refType: "Deadline",
         refId: created.id

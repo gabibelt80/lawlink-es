@@ -2,7 +2,7 @@
 
 /**
  * v1.0: 工作流开关卡片（律所信息页，仅 ADMIN）。
- * 目前只有一个开关：外部联系人审核流（默认关——小所信任环境直接通过）。
+ * 目前只有一个开关：外部联系人审核流（默认关——小所信任环境直接Aprobar）。
  */
 import { useState, useTransition } from "react";
 import { Loader2, SlidersHorizontal } from "lucide-react";
@@ -26,10 +26,10 @@ export function WorkflowTogglesCard({
     startTransition(async () => {
       try {
         await saveWorkflowTogglesAction({ externalContactReview: next });
-        toast.success(next ? "已开启联系人审核" : "已Cerrar联系人审核（新增直接通过）");
+        toast.success(next ? "已开启联系人审核" : "已Cerrar联系人审核（新增直接Aprobar）");
       } catch (err) {
         setExternalContactReview(prev);
-        toast.error("Guardar失败", { description: err instanceof Error ? err.message : "" });
+        toast.error("GuardarError", { description: err instanceof Error ? err.message : "" });
       }
     });
   }
@@ -53,7 +53,7 @@ export function WorkflowTogglesCard({
         <span>
           <span className="font-medium">外部联系人需Administrar员审核</span>
           <span className="mt-0.5 block text-[12px] leading-5 text-muted-foreground">
-            Cerrar（默认）：任何人新增法院/仲裁机构等外部联系人后全所直接可见。
+            Cerrar（默认）：任何人新增法院/仲裁机构etc.外部联系人后全所直接可见。
             开启：普通Abogado新增的联系人需Administrar员/主任Abogado审核后展示。
           </span>
         </span>

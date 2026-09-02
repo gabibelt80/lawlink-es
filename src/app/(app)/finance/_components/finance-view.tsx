@@ -83,7 +83,7 @@ export type InvoiceRequestRow = {
   buyerPhone: string | null;
   buyerBank: string | null;
   buyerBankAccount: string | null;
-  // v0.43 项5：matter 可空（无关联Caso开票）
+  // v0.43 ítems5：matter 可空（无关联Caso开票）
   matter: { id: string; internalCode: string; title: string } | null;
   noMatterReason: string | null;
   requestedBy: { id: string; name: string };
@@ -380,7 +380,7 @@ export function FinanceView({
 
             {filtered.length === 0 ? (
               <p className="py-12 text-center text-xs text-muted-foreground">
-                没有匹配的记录
+                Sin coincidencias的记录
               </p>
             ) : (
               <ul className="max-h-[640px] divide-y divide-border overflow-y-auto">

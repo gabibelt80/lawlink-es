@@ -11,7 +11,7 @@ import { revalidateMatter } from "@/server/matters/route";
 
 const closeMatterSchema = z.object({
   id: z.string().cuid(),
-  summary: z.string().min(1, "结案小结必填").max(2000)
+  summary: z.string().min(1, "Cerrar caso小结必填").max(2000)
 });
 
 const holdMatterSchema = z.object({
@@ -23,14 +23,14 @@ export type CloseMatterInput = z.infer<typeof closeMatterSchema>;
 export type HoldMatterInput = z.infer<typeof holdMatterSchema>;
 
 /**
- * 结案：把CasoEstado切到 CLOSED，记录结案小结到 TimelineEvent。
+ * Cerrar caso：把CasoEstado切到 CLOSED，记录Cerrar caso小结到 TimelineEvent。
  * 不强制要求所有 procedure 都 concluded，Abogado自行判断。
  */
 export async function closeMatter(input: CloseMatterInput) {
   const session = await requireSession();
   const data = closeMatterSchema.parse(input);
   await assertMatterWritable(data.id);
-  await assertCanLeadMatter(session.user.id, data.id, "仅Caso主办/协办可以结案");
+  await assertCanLeadMatter(session.user.id, data.id, "仅Caso主办/协办可以Cerrar caso");
 
   await prisma.$transaction(async (tx) => {
     await tx.matter.update({
@@ -44,7 +44,7 @@ export async function closeMatter(input: CloseMatterInput) {
       data: {
         matterId: data.id,
         eventType: "MATTER_CLOSED",
-        title: "Caso已结案",
+        title: "Caso已Cerrar caso",
         content: data.summary,
         occurredAt: new Date()
       }
@@ -114,7 +114,7 @@ export async function reopenMatter(id: string) {
 }
 
 /**
- * 暂停Caso（Cliente失联、待补充材料等）。
+ * 暂停Caso（Cliente失联、待补充材料etc.）。
  */
 export async function holdMatter(input: HoldMatterInput) {
   const session = await requireSession();

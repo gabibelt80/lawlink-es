@@ -397,7 +397,7 @@ function DataCell({
 
 function formatDate(value: Date | null) {
   if (!value) return "—";
-  return new Date(value).toLocaleDateString("zh-CN");
+  return new Date(value).toLocaleDateString("es-419");
 }
 
 function formatDateTime(value: Date | null) {

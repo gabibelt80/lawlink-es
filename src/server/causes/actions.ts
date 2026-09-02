@@ -49,7 +49,7 @@ function flatten(c: {
     parent: { id: string; name: string; level: number } | null;
   } | null;
 }): CauseSearchResult {
-  // 找 l1 / l2：本节点 + 链向上的祖先里按 level 取
+  // 找 l1 / l2：本Etapa + 链向上的祖先里按 level 取
   const chain: { name: string; level: number }[] = [{ name: c.name, level: c.level }];
   if (c.parent) chain.push({ name: c.parent.name, level: c.parent.level });
   if (c.parent?.parent) chain.push({ name: c.parent.parent.name, level: c.parent.parent.level });
@@ -68,11 +68,11 @@ function flatten(c: {
 }
 
 /**
- * Buscar规范案由库。
+ * Buscar规范Causa库。
  *
  * - 必传 category
- * - 空 query 时Volver该 category 下二级案由（让用户先看分类）+ 部分三级
- * - 模糊匹配 name / shortName / keywords / pinyin
+ * - 空 query 时Volver该 category 下二级Causa（让用户先看分类）+ 部分三级
+ * - 模糊Coincidencia name / shortName / keywords / pinyin
  * - 结果带 parent 链，UI 可显示"二级 / 三级"路径
  */
 function codeFilter(prefixes: readonly string[]): Prisma.CauseOfActionWhereInput {

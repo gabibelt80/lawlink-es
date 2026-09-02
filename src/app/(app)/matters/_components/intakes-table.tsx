@@ -29,7 +29,7 @@ export type IntakeRow = {
 };
 
 /**
- * v0.17: 待Aprobación / 待补正 收案列表 — 复用 MattersTable 的 CaseListCard 保证视觉一致
+ * v0.17: 待Aprobación / Pendiente de corrección 收案列表 — 复用 MattersTable 的 CaseListCard 保证视觉一致
  */
 export function IntakesTable({
   items,
@@ -63,12 +63,12 @@ export function IntakesTable({
 
   return (
     <div className="ll-surface overflow-hidden">
-      <CaseListHeader detailColumnLabel="案由" />
+      <CaseListHeader detailColumnLabel="Causa" />
       <ul>
         {items.map((it) => {
           const statusLabel =
             kind === "revision"
-              ? "待补正"
+              ? "Pendiente de corrección"
               : (intakeStatusLabel[it.status] ?? it.status);
           const dot =
             kind === "revision"
@@ -87,9 +87,9 @@ export function IntakesTable({
               intakeDate={it.receivedAt}
               firmCaseNo={it.matter?.internalCode ?? null}
               clientName={it.client?.name ?? it.parties[0]?.name ?? null}
-              detailColumnLabel="案由"
+              detailColumnLabel="Causa"
               procedureLabel={it.cause?.name ?? null}
-              procedureFallback="未填写案由"
+              procedureFallback="Causa no especificada"
               procedureValueClassName="text-[12px] text-muted-foreground"
               showProcedureDots={false}
               proceduresCount={it.matter ? 1 : 0}

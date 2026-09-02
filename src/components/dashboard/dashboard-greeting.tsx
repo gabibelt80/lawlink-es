@@ -21,7 +21,7 @@ const typeMeta = {
   hearing: { icon: Calendar, color: "text-primary", label: "Audiencia" },
 };
 
-/** v0.47：工作台顶部问候区 + 右侧近期Calendario */
+/** v0.47：Panel de trabajo顶部问候区 + 右侧近期Calendario */
 export function DashboardGreeting({
   name,
   summary,
@@ -61,8 +61,8 @@ export function DashboardGreeting({
           </h1>
           <p className="mt-1.5 max-w-xl text-[13px] leading-relaxed text-muted-foreground">
             Hoy有 <Num>{summary.todayDeadlineCount}</Num> 件事需处理；本周开庭{" "}
-            <Num>{summary.weekHearingCount}</Num> 场；近期期限{" "}
-            <Num>{summary.nearTermCount}</Num> 项。
+            <Num>{summary.weekHearingCount}</Num> 场；近期Plazo{" "}
+            <Num>{summary.nearTermCount}</Num> ítems。
           </p>
         </div>
 
@@ -101,7 +101,7 @@ export function DashboardGreeting({
                 <span className="font-mono text-[40px] font-semibold leading-none tabular text-[#B91C1C]">
                   {Math.max(focusItem.daysUntil, 0)}
                 </span>
-                <span className="text-[12px] text-muted-foreground">天</span>
+                <span className="text-[12px] text-muted-foreground">días</span>
               </div>
               <div className="text-[11.5px] text-muted-foreground">
                 距 {focusItem.title}
@@ -109,7 +109,7 @@ export function DashboardGreeting({
             </>
           ) : (
             <div className="mt-8 text-sm text-muted-foreground">
-              暂无近期期限
+              暂无近期Plazo
             </div>
           )}
         </div>
@@ -119,7 +119,7 @@ export function DashboardGreeting({
           </div>
           <div className="mt-1 flex items-center gap-1 text-[10.5px] text-muted-foreground">
             <span className="font-mono tabular">
-              {focusItem?.date ?? "未来 30 天"}
+              {focusItem?.date ?? "未来 30 días"}
             </span>
             <ArrowRight className="h-3 w-3 transition-transform group-hover:translate-x-0.5" />
           </div>
@@ -150,7 +150,7 @@ export function DashboardGreeting({
           </ul>
         ) : (
           <div className="flex h-[150px] items-center justify-center text-[12px] text-muted-foreground">
-            暂无近期事项
+            暂无近期事ítems
           </div>
         )}
       </div>

@@ -274,18 +274,18 @@ function SmsCard({
         await markSmsProcessed({ id: sms.id });
         toast.success("已标记处理");
       } catch (e) {
-        toast.error(e instanceof Error ? e.message : "失败");
+        toast.error(e instanceof Error ? e.message : "Error");
       }
     });
 
   const onDelete = () => {
-    if (!confirm("确认Eliminar这条SMS记录？")) return;
+    if (!confirm("ConfirmarEliminar这条SMS记录？")) return;
     startTransition(async () => {
       try {
         await deleteSms({ id: sms.id });
         toast.success("已Eliminar");
       } catch (e) {
-        toast.error(e instanceof Error ? e.message : "失败");
+        toast.error(e instanceof Error ? e.message : "Error");
       }
     });
   };
@@ -314,13 +314,13 @@ function SmsCard({
         ).length;
         toast.success(
           downloaded > 0
-            ? `已提取 ${downloaded} 个附件`
+            ? `Ya descargado ${downloaded} 个Adjunto`
             : needsManual > 0
               ? "送达入口需要人工处理"
-              : "附件提取已完成",
+              : "Adjunto提取Completado",
         );
       } catch (e) {
-        toast.error(e instanceof Error ? e.message : "提取失败");
+        toast.error(e instanceof Error ? e.message : "提取Error");
       }
     });
 
@@ -403,7 +403,7 @@ function SmsCard({
                 rel="noreferrer"
                 className="text-primary hover:underline"
               >
-                {parsed.platforms[i] ?? `链接 ${i + 1}`}
+                {parsed.platforms[i] ?? `Enlace ${i + 1}`}
               </a>
             </Field>
           ))}
@@ -413,7 +413,7 @@ function SmsCard({
         <div className="mt-3 border-t border-border pt-3">
           <div className="mb-1.5 flex items-center gap-1.5 text-[11px] font-medium text-foreground/80">
             <CalendarClock className="h-3.5 w-3.5 text-primary" />
-            重要事项
+            Elementos importantes
           </div>
           <div className="grid gap-1.5 md:grid-cols-2">
             {parsed.importantItems.slice(0, 4).map((item, i) => (
@@ -462,7 +462,7 @@ function SmsCard({
                     className="inline-flex items-center gap-1 text-primary hover:underline"
                   >
                     <ExternalLink className="h-3 w-3" />
-                    {link.platform ?? `送达链接 ${i + 1}`}
+                    {link.platform ?? `送达Enlace ${i + 1}`}
                   </a>
                   {link.requiresLogin && (
                     <span className="rounded bg-amber-500/10 px-1.5 py-0.5 text-[10px] text-amber-700">
@@ -533,7 +533,7 @@ function SmsCard({
           onClick={() => setShowRaw((v) => !v)}
           className="text-[11px] text-muted-foreground hover:text-foreground"
         >
-          {showRaw ? "收起原文" : "Ver原文"}
+          {showRaw ? "Ocultar texto original" : "Ver原文"}
         </button>
 
         <div className="ml-auto flex items-center gap-2">
@@ -557,7 +557,7 @@ function SmsCard({
                 className="h-7 gap-1 text-[11px]"
               >
                 <Clock className="h-3 w-3" />
-                生成期限
+                生成Plazo
               </Button>
               {canBackfillCaseNumber && (
                 <Button
@@ -582,8 +582,8 @@ function SmsCard({
               className="h-7 gap-1 text-[11px]"
               title={
                 sms.matchedMatter
-                  ? "提取SMS中的送达附件"
-                  : "先关联Caso后再提取附件"
+                  ? "提取SMS中的送达Adjunto"
+                  : "先关联Caso后再提取Adjunto"
               }
             >
               {pending ? (
@@ -591,7 +591,7 @@ function SmsCard({
               ) : (
                 <FileDown className="h-3 w-3" />
               )}
-              提取附件
+              提取Adjunto
             </Button>
           )}
           {!sms.processed && (
@@ -710,7 +710,7 @@ function AttachmentResultRow({
       bg: "bg-muted/50",
     },
     FAILED: {
-      label: "失败",
+      label: "Error",
       color: "text-destructive",
       bg: "bg-destructive/10",
     },
@@ -719,9 +719,9 @@ function AttachmentResultRow({
       color: "text-muted-foreground",
       bg: "bg-muted/50",
     },
-    // parsedJson 来自 DB JSON，status 可能是历史版本写入的未知值，需兜底
+    // parsedJson 来自 DB JSON，status 可能是历史版本写入的Desconocido值，需兜底
   }[result.status] ?? {
-    label: "未知",
+    label: "Desconocido",
     color: "text-muted-foreground",
     bg: "bg-muted/50",
   };
@@ -739,7 +739,7 @@ function AttachmentResultRow({
           className="inline-flex items-center gap-1 text-primary hover:underline"
         >
           <FileCheck2 className="h-3 w-3" />
-          {result.documentName ?? "已Guardar附件"}
+          {result.documentName ?? "已GuardarAdjunto"}
         </a>
       ) : (
         <span className="line-clamp-1">{result.message}</span>
@@ -753,7 +753,7 @@ function AttachmentResultRow({
 
 function UrgencyBadge({ level }: { level: "HIGH" | "MEDIUM" | "LOW" }) {
   const meta = {
-    HIGH: { label: "紧急", color: "#DC2626", bg: "rgb(248 113 113 / 0.12)" },
+    HIGH: { label: "Urgente", color: "#DC2626", bg: "rgb(248 113 113 / 0.12)" },
     MEDIUM: { label: "本周", color: "#D97706", bg: "rgb(252 211 77 / 0.15)" },
     LOW: { label: "知悉", color: "#737373", bg: "rgb(229 229 229 / 0.5)" },
   }[level];
@@ -786,7 +786,7 @@ function MatterPicker({
         toast.success("已关联Caso");
         setOpen(false);
       } catch (e) {
-        toast.error(e instanceof Error ? e.message : "失败");
+        toast.error(e instanceof Error ? e.message : "Error");
       }
     });
   };

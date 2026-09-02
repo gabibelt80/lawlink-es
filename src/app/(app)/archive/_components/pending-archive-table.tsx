@@ -42,7 +42,7 @@ const CATEGORY_CN: Record<string, string> = {
   ADMINISTRATIVE: "Administrativo",
   NON_LITIGATION: "非诉",
   LEGAL_COUNSEL: "顾问",
-  SPECIAL_PROJECT: "专项",
+  SPECIAL_PROJECT: "专ítems",
 };
 
 interface PendingRecord {

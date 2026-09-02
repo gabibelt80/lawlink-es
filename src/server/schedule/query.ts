@@ -23,7 +23,7 @@ export type ScheduleItem = {
 
 export async function queryScheduleItems(
   userId: string,
-  // session.user.role 沿用 next-auth 的 string 类型（与 matterVisibilityFilter 一致）
+  // session.user.role 沿用 next-auth 的 string 类型（y matterVisibilityFilter 一致）
   role: string,
   params: {
     from?: Date;

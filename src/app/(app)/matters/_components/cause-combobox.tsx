@@ -27,10 +27,10 @@ type Props = {
 };
 
 /**
- * 案由级联选择器
- * - 一次性拉本 category Ver todos案由
+ * Causa级联选择器
+ * - 一次性拉本 category Ver todosCausa
  * - 去掉一级，从二级起级联：二级 / 三级 / 四级，渐进展开（选了上一级才出现下一列）
- * - 单击即选：有子级 → 展开下一列；无子级（叶子）→ 直接选中。两次点击可选到常见三级案由。
+ * - 单击即选：有子级 → 展开下一列；无子级（叶子）→ 直接选中。两次点击可选到常见三级Causa。
  * - 列宽收窄，弹层随列数增长，避免一打开就铺满整页
  * - Nombre过长截断，hover 显示全名
  */
@@ -77,15 +77,15 @@ export function CauseCombobox({
       });
     }
     if (o) {
-      // 重置 picked Estado（避免上次残留）
+      // Restablecer picked Estado（避免上次残留）
       setPickedL2(null);
       setPickedL3(null);
       setSearchInput("");
     }
   }
 
-  // 仅在案由可选范围真正变化时重置。
-  // 一审切二审等审级调整共用同一案由范围，不应误清空用户已经选好的案由。
+  // 仅在Causa可选范围真正变化时Restablecer。
+  // 一审切二审etc.审级调整共用同一Causa范围，不应误清空用户已经选好的Causa。
   useEffect(() => {
     if (previousCauseScopeKey.current === causeScopeKey) return;
     previousCauseScopeKey.current = causeScopeKey;
@@ -141,7 +141,7 @@ export function CauseCombobox({
     return allNodes.some((x) => x.parentId === n.id);
   }
 
-  // 选用一个案由：任意层级都可直接选中。
+  // 选用一个Causa：任意层级都可直接选中。
   // 有子级 → 选中并展开下一列（可继续下钻，也可就此停下）；叶子 → 选中并Cerrar。
   function selectNode(node: Node, level: number) {
     onChange(node.id, node.name);
@@ -219,14 +219,14 @@ export function CauseCombobox({
         {isPending ? (
           <div className="flex w-[240px] items-center justify-center py-10 text-xs text-muted-foreground">
             <Loader2 className="h-3.5 w-3.5 animate-spin" />
-            <span className="ml-2">Cargar案由库...</span>
+            <span className="ml-2">Cargando catálogo de causas...</span>
           </div>
         ) : searchMatched ? (
           // Buscar模式：扁平结果带路径
           <div className="max-h-[360px] w-[320px] overflow-y-auto p-1">
             {searchMatched.length === 0 ? (
               <p className="py-6 text-center text-xs text-muted-foreground">
-                未找到匹配
+                No se encontraron coincidencias
               </p>
             ) : (
               searchMatched.map((n) => (

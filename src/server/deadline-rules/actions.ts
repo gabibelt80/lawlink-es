@@ -8,8 +8,8 @@ import { assertCanAccessMatter } from "@/lib/permissions";
 const procedureIdSchema = z.object({ procedureId: z.string().cuid() });
 
 /**
- * v0.49：列出适用于指定程序的法定期限规则（按程序类型 + Caso类别过滤）。
- * 生成期限本身仍走 addDeadline（单一Enviar路径，权限校验不重复实现）。
+ * v0.49：列出适用于指定程序的法定Plazo规则（按程序类型 + Caso类别过滤）。
+ * 生成Plazo本身仍走 addDeadline（单一Enviar路径，权限校验不重复实现）。
  */
 export async function listDeadlineRulesForProcedure(input: { procedureId: string }) {
   const session = await requireSession();

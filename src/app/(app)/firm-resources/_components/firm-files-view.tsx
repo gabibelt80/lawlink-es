@@ -47,7 +47,7 @@ const CATEGORY_META: Record<FirmFileCategory, { label: string; color: string }> 
   OTHER_FIRM: { label: "其他", color: "#9B7BF7" }
 };
 
-/** 律所文书页展示的分类 */
+/** Documentos del estudio页展示的分类 */
 const FIRM_DOC_CATEGORIES: FirmFileCategory[] = ["CONTRACT", "LETTER", "LICENSE", "OTHER_FIRM"];
 /** 旧分类（兼容已有数据） */
 const LEGACY_CATEGORIES: FirmFileCategory[] = ["POLICY", "GUIDE", "TEMPLATE", "REFERENCE"];
@@ -89,7 +89,7 @@ export function FirmFilesView({
   headerTitle?: string;
   headerSubtitle?: string;
   headerIcon?: React.ReactNode;
-  /** v0.44: 分类集合（"firm"=律所文书新分类，默认旧分类） */
+  /** v0.44: 分类集合（"firm"=Documentos del estudio新分类，默认旧分类） */
   categorySet?: "firm" | "legacy";
 }) {
   const router = useRouter();
@@ -128,7 +128,7 @@ export function FirmFilesView({
   }
 
   function handleDelete(f: FileEntry) {
-    if (!confirm(`确认Eliminar「${f.name}」？\n（软Eliminar，可在数据库找回）`)) return;
+    if (!confirm(`ConfirmarEliminar「${f.name}」？\n（软Eliminar，可在数据库找回）`)) return;
     setPendingId(f.id);
     startTransition(async () => {
       try {
@@ -136,7 +136,7 @@ export function FirmFilesView({
         toast.success("已Eliminar");
         router.refresh();
       } catch (err) {
-        toast.error("Eliminar失败", { description: err instanceof Error ? err.message : "" });
+        toast.error("EliminarError", { description: err instanceof Error ? err.message : "" });
       } finally {
         setPendingId(null);
       }
@@ -159,13 +159,13 @@ export function FirmFilesView({
           <div>
             <h1 className="flex items-center gap-2 text-xl">
               {headerIcon ?? <FolderArchive className="h-5 w-5 text-primary" strokeWidth={1.8} />}
-              {headerTitle ?? "律所文书"}
+              {headerTitle ?? "Documentos del estudio"}
             </h1>
             <p className="mt-0.5 text-[12px] text-muted-foreground">
               {headerSubtitle ?? (
                 <>
                   合同 · 函件 · 证照 · 其他。全所共享，
-                  {canUpload ? "Administrar员可上传与版本替代" : "Administrar员上传"}
+                  {canUpload ? "Administrar员可上传y版本替代" : "Administrar员上传"}
                 </>
               )}
             </p>
@@ -173,7 +173,7 @@ export function FirmFilesView({
           {canUpload && (
             <Button size="sm" onClick={() => setUploadOpen(true)} className="gap-1.5">
               <Upload className="h-3.5 w-3.5" />
-              上传资料
+              上传Material
             </Button>
           )}
         </header>
@@ -182,7 +182,7 @@ export function FirmFilesView({
           <div className="flex justify-end">
             <Button size="sm" onClick={() => setUploadOpen(true)} className="gap-1.5">
               <Upload className="h-3.5 w-3.5" />
-              上传资料
+              上传Material
             </Button>
           </div>
         )
@@ -257,10 +257,10 @@ export function FirmFilesView({
           <FolderArchive className="mx-auto mb-2 h-8 w-8 text-muted-foreground/40" />
           <p className="text-sm text-muted-foreground">
             {currentSearch
-              ? `没有匹配「${currentSearch}」的资料`
+              ? `Sin coincidencias「${currentSearch}」的Material`
               : currentCategory
-                ? `没有「${CATEGORY_META[currentCategory].label}」类资料`
-                : "还没有上传任何资料"}
+                ? `没有「${CATEGORY_META[currentCategory].label}」类Material`
+                : "还没有上传任何Material"}
           </p>
         </div>
       ) : (

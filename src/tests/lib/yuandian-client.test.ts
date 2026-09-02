@@ -41,7 +41,7 @@ describe("searchPtalCases", () => {
     ).rejects.toBeInstanceOf(YuandianNotConfiguredError);
   });
 
-  it("所有过滤条件都空 → 抛错（元典要求 body 非空）", async () => {
+  it("所有过滤条件都空 → 抛错（pesos典要求 body 非空）", async () => {
     await expect(searchPtalCases({}, configuredSettings)).rejects.toThrow(/至少填写一个/);
     expect(fetchMock).not.toHaveBeenCalled();
   });
@@ -75,7 +75,7 @@ describe("searchPtalCases", () => {
     );
 
     const res = await searchPtalCases(
-      { ay: ["民间借贷纠纷"], qw: "违约 逾期", top_k: 3 },
+      { ay: ["民间借贷纠纷"], qw: "违约 Vencido", top_k: 3 },
       configuredSettings
     );
     expect(res.total).toBe(2);
@@ -88,7 +88,7 @@ describe("searchPtalCases", () => {
     expect(init.headers["X-API-Key"]).toBe("test_key");
     const body = JSON.parse(init.body as string);
     expect(body.ay).toEqual(["民间借贷纠纷"]);
-    expect(body.qw).toBe("违约 逾期");
+    expect(body.qw).toBe("违约 Vencido");
     expect(body.search_mode).toBe("and");
     expect(body.top_k).toBe(3);
   });
@@ -147,7 +147,7 @@ describe("buildCaseDetailUrl", () => {
       buildCaseDetailUrl("https://www.example.com", "/ydzk/caseDetail/case/abc")
     ).toBe("https://www.example.com/ydzk/caseDetail/case/abc");
   });
-  it("host 尾 / 与 path 头 / 容错", () => {
+  it("host 尾 / y path 头 / 容错", () => {
     expect(buildCaseDetailUrl("https://www.example.com/", "ydzk/x")).toBe(
       "https://www.example.com/ydzk/x"
     );

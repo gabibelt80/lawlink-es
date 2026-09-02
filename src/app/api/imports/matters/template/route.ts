@@ -21,8 +21,8 @@ export async function GET() {
   try {
     buf = await buildMatterImportTemplate();
   } catch (err) {
-    console.error("[imports/template] 生成失败：", err);
-    return NextResponse.json({ error: "模板生成失败" }, { status: 500 });
+    console.error("[imports/template] 生成Error：", err);
+    return NextResponse.json({ error: "模板生成Error" }, { status: 500 });
   }
 
   const filename = "lawlink-Caso导入模板.xlsx";

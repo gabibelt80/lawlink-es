@@ -21,14 +21,14 @@ export async function GET(
   const f = await prisma.firmFile.findUnique({
     where: { id: params.id, archivedAt: null }
   });
-  if (!f) return NextResponse.json({ error: "资料不存在" }, { status: 404 });
+  if (!f) return NextResponse.json({ error: "Material不存在" }, { status: 404 });
 
   let buf: Buffer;
   try {
     buf = await storage.readFile(f.path);
   } catch (err) {
-    console.error("[firm-files/download] 读取失败：", err);
-    return NextResponse.json({ error: "读取失败" }, { status: 500 });
+    console.error("[firm-files/download] 读取Error：", err);
+    return NextResponse.json({ error: "读取Error" }, { status: 500 });
   }
 
   const inline = new URL(req.url).searchParams.get("inline") === "1";

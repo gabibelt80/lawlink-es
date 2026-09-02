@@ -9,7 +9,7 @@
 import { scanDueReminders, type DueReminderScanResult } from "@/server/cron/jobs/scan-due-reminders";
 import { requireSession } from "@/lib/auth/session";
 
-/** admin / 主任Abogado可立即扫一遍（灰度验证 + 紧急补推 + 本地 dev 验证） */
+/** admin / 主任Abogado可立即扫一遍（灰度验证 + Urgente补推 + 本地 dev 验证） */
 export async function triggerDueReminderScan(): Promise<DueReminderScanResult> {
   const session = await requireSession();
   if (session.user.role !== "ADMIN" && session.user.role !== "PRINCIPAL_LAWYER") {

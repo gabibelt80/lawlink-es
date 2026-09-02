@@ -34,7 +34,7 @@ export function CourtFeeCalc() {
         <Scale className="h-4 w-4 text-primary" strokeWidth={1.8} />
         <h2 className="text-lg">诉讼费计算</h2>
         <span className="ml-2 text-[10px] text-muted-foreground">
-          《诉讼费用交纳办法》全国统一标准
+          《诉讼Gastos交纳办法》全国统一标准
         </span>
       </header>
 
@@ -53,7 +53,7 @@ export function CourtFeeCalc() {
         {showAmount && (
           <div>
             <Label className="text-[11px]">
-              {caseType === "DIVORCE" ? "财产分割金额（元，可填 0）" : "诉讼标的金额（元）"}
+              {caseType === "DIVORCE" ? "财产分割Monto（pesos，可填 0）" : "诉讼标的Monto（pesos）"}
             </Label>
             <Input
               type="number"

@@ -68,7 +68,7 @@ describe("customPeriod", () => {
     expect(() => customPeriod("2026-1-1", "2026-3-31")).toThrow(/格式/);
   });
 
-  it("同一天合法（含当天 → 半开 +1 后仍 > start）", () => {
+  it("同一días合法（含当días → 半开 +1 后仍 > start）", () => {
     expect(() => customPeriod("2026-03-01", "2026-03-01")).not.toThrow();
   });
 

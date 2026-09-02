@@ -25,7 +25,7 @@ const documentCategorySchema = z.enum([
 const MAX_FILE_SIZE = 20 * 1024 * 1024; // 20MB
 
 /**
- * 上传材料。前端通过 Server Action 传 FormData，含 file（File）、metadata。
+ * 上传材料。前端Aprobar Server Action 传 FormData，含 file（File）、metadata。
  * 加密分支：encrypted=true 时把文件用 AES-256-GCM 加密后写盘。
  */
 export async function uploadDocument(formData: FormData) {
@@ -78,26 +78,26 @@ export async function uploadDocument(formData: FormData) {
         select: { matterId: true, name: true }
       });
       if (!folder || folder.matterId !== matterId) {
-        throw new Error("目标卷宗与Caso不匹配");
+        throw new Error("目标卷宗yCaso不Coincidencia");
       }
       folderName = folder.name;
     }
 
-    // v0.48: 归属环节必须属于本Caso（且与 procedureId 一致时才可信）
+    // v0.48: 归属环节必须属于本Caso（且y procedureId 一致时才可信）
     if (stageId) {
       const stage = await prisma.matterStage.findUnique({
         where: { id: stageId },
         select: { procedureId: true, procedure: { select: { matterId: true } } }
       });
       if (!stage || stage.procedure.matterId !== matterId) {
-        throw new Error("归属环节与Caso不匹配");
+        throw new Error("归属环节yCaso不Coincidencia");
       }
       if (typeof procedureId === "string" && procedureId && stage.procedureId !== procedureId) {
-        throw new Error("归属环节与程序不匹配");
+        throw new Error("归属环节y程序不Coincidencia");
       }
     }
 
-    // 归档后仅允许补传到 ARCHIVE 卷宗（结案 / 归档），由 guard 判定
+    // 归档后仅允许补传到 ARCHIVE 卷宗（Cerrar caso / 归档），由 guard 判定
     await assertDocumentWritable(matterId, { kind: "upload", folderName });
   }
   if (intakeId) {
@@ -178,7 +178,7 @@ export async function uploadDocument(formData: FormData) {
     detail: { matterId, intakeId, name, encrypted, size: file.size }
   });
 
-  // v0.43 项4：写入Caso动态时间线（仅Caso文档）
+  // v0.43 ítems4：写入Caso动态时间线（仅Caso文档）
   if (matterId) {
     await prisma.timelineEvent.create({
       data: {
@@ -359,7 +359,7 @@ export async function approveDocument(id: string) {
 export async function rejectDocument(id: string, reason?: string) {
   const session = await requireSession();
   if (!isManager(session.user.role)) {
-    throw new Error("仅Administrar员或主办Abogado可驳回文书");
+    throw new Error("仅Administrar员或主办Abogado可Rechazar文书");
   }
   const doc = await prisma.document.findUnique({ where: { id, deletedAt: null } });
   if (!doc) throw new Error("材料不存在");

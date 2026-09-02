@@ -26,7 +26,7 @@ export function matterVisibilityFilter(
   return { members: { some: { userId } } };
 }
 
-/** Acciones/关联Caso用：不因 ADMIN / PRINCIPAL_LAWYER / FINANCE 角色放大全所范围 */
+/** Acciones/关联Caso用：不因 ADMIN / PRINCIPAL_LAWYER / FINANCE Rol放大全所范围 */
 export function matterAssociationFilter(userId: string): Prisma.MatterWhereInput {
   return {
     OR: [
@@ -61,7 +61,7 @@ export async function assertCanAccessMatter(
   if (!row) throw new Error("Caso不存在");
 }
 
-/** Acciones/关联断言：只允许主办或Caso成员，不因Administrar角色放开 */
+/** Acciones/关联断言：只允许主办或Caso成员，不因AdministrarRol放开 */
 export async function assertCanAssociateMatter(
   userId: string,
   matterId: string
@@ -77,7 +77,7 @@ export async function assertCanAssociateMatter(
   if (!row) throw new Error("Caso不存在或无权关联");
 }
 
-/** Caso处理断言：只允许主办或Caso成员，不因Administrar角色放开 */
+/** Caso处理断言：只允许主办或Caso成员，不因AdministrarRol放开 */
 export async function assertCanHandleMatter(
   userId: string,
   matterId: string
@@ -93,7 +93,7 @@ export async function assertCanHandleMatter(
   if (!row) throw new Error("Caso不存在或无权处理");
 }
 
-/** 主办/协办断言：用于归档、团队、核心信息、文书生成等较敏感处理 */
+/** 主办/协办断言：用于归档、团队、核心信息、文书生成etc.较敏感处理 */
 export async function assertCanLeadMatter(
   userId: string,
   matterId: string,
@@ -113,7 +113,7 @@ export async function assertCanLeadMatter(
   if (!row) throw new Error(message);
 }
 
-/** 当前主办Abogado断言：用于变更承办团队、EliminarCaso等所有权级Acciones */
+/** 当前主办Abogado断言：用于变更承办团队、EliminarCasoetc.所有权级Acciones */
 export async function assertCanOwnMatter(
   userId: string,
   matterId: string,
@@ -130,7 +130,7 @@ export async function assertCanOwnMatter(
   if (!row) throw new Error(message);
 }
 
-/** 修改断言：只允许主办或Caso成员，不因Administrar角色放开 */
+/** 修改断言：只允许主办或Caso成员，不因AdministrarRol放开 */
 export async function assertCanModifyMatter(
   userId: string,
   _role: string,
@@ -165,7 +165,7 @@ export function intakeVisibilityFilter(
 
 // ============ Cliente可见性 ============
 
-/** Cliente通过关联的Caso判断可见性；manager/finance 看Ver todos */
+/** ClienteAprobar关联的Caso判断可见性；manager/finance 看Ver todos */
 export function clientVisibilityFilter(
   userId: string,
   role: string

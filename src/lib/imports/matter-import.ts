@@ -1,9 +1,15 @@
 /**
- * v0.42 批F（项6）Caso批量导入 —— 纯逻辑（无 DB / 无 exceljs 依赖，便于单测）。
+ * v0.42 批F（ítems6）Caso批量导入 —— 纯逻辑（无 DB / 无 exceljs 依赖，便于单测）。
  * 列定义、文本→枚举映射、标题生成、首程序推断、单行结构校验都在这里；
- * AbogadoEmail / 案由的 DB 查找放在 server/imports/actions.ts。
+ * AbogadoEmail / Causa的 DB 查找放在 server/imports/actions.ts。
  */
-import type { MatterCategory, MatterStatus, ClientType, PartyType, ProcedureType } from "@prisma/client";
+import type {
+  MatterCategory,
+  MatterStatus,
+  ClientType,
+  PartyType,
+  ProcedureType,
+} from "@prisma/client";
 
 import { matterCategoryLabel, matterStatusLabel } from "@/lib/enums";
 
@@ -16,20 +22,69 @@ export interface ImportColumn {
 }
 
 export const IMPORT_COLUMNS: ImportColumn[] = [
-  { key: "clientName", header: "ClienteNombre", required: true },
-  { key: "clientIdNumber", header: "Cliente证件号", required: true, hint: "身份证 / 统一社会信用代码" },
-  { key: "clientType", header: "Cliente类型", required: false, hint: "个人 / 企业，默认个人" },
-  { key: "opposingName", header: "相对方Nombre", required: true },
-  { key: "opposingIdNumber", header: "相对方证件号", required: true },
-  { key: "opposingType", header: "相对方类型", required: false, hint: "个人 / 企业，默认个人" },
-  { key: "category", header: "Caso类型", required: true, hint: Object.values(matterCategoryLabel).join(" / ") },
-  { key: "status", header: "CasoEstado", required: true, hint: "办理中 / 已结案 / 已归档" },
-  { key: "ownerEmail", header: "主办AbogadoEmail", required: false, hint: "按Email精确匹配；留空则归当前导入人" },
-  { key: "intakeDate", header: "收案Fecha", required: false, hint: "YYYY-MM-DD" },
-  { key: "cause", header: "案由", required: false, hint: "匹配案由库；未匹配则作为自由文本" },
-  { key: "claimAmount", header: "标的额", required: false, hint: "数字，单位元" },
-  { key: "clientPhone", header: "联系电话", required: false },
-  { key: "jurisdiction", header: "所属管辖地", required: false }
+  { key: "clientName", header: "Nombre del Cliente", required: true },
+  {
+    key: "clientIdNumber",
+    header: "Documento del Cliente",
+    required: true,
+    hint: "Documento de identidad / Código de identificación tributaria",
+  },
+  {
+    key: "clientType",
+    header: "Tipo del Cliente",
+    required: false,
+    hint: "Persona / Empresa, por defecto persona",
+  },
+  { key: "opposingName", header: "Nombre de la contraparte", required: true },
+  {
+    key: "opposingIdNumber",
+    header: "Documento de la contraparte",
+    required: true,
+  },
+  {
+    key: "opposingType",
+    header: "Tipo de contraparte",
+    required: false,
+    hint: "Persona / Empresa, por defecto persona",
+  },
+  {
+    key: "category",
+    header: "Tipo de caso",
+    required: true,
+    hint: Object.values(matterCategoryLabel).join(" / "),
+  },
+  {
+    key: "status",
+    header: "Estado del caso",
+    required: true,
+    hint: "En trámite / Cerrado / Archivado",
+  },
+  {
+    key: "ownerEmail",
+    header: "Email del Abogado Principal",
+    required: false,
+    hint: "Coincidir exactamente por email; si se deja vacío, se asigna al importador actual",
+  },
+  {
+    key: "intakeDate",
+    header: "Fecha de admisión",
+    required: false,
+    hint: "YYYY-MM-DD",
+  },
+  {
+    key: "cause",
+    header: "Causa",
+    required: false,
+    hint: "Coincidir con el catálogo de causas; si no hay coincidencia, se usa como texto libre",
+  },
+  {
+    key: "claimAmount",
+    header: "Monto",
+    required: false,
+    hint: "Número, en yuanes",
+  },
+  { key: "clientPhone", header: "Teléfono de contacto", required: false },
+  { key: "jurisdiction", header: "Jurisdicción", required: false },
 ];
 
 export type RawRow = Record<string, string>;
@@ -61,10 +116,10 @@ export function parseCategoryLabel(text: string): MatterCategory | null {
   return null;
 }
 
-/** 文本反查CasoEstado（兼容「结案」=「已结案」） */
+/** 文本反查CasoEstado（兼容「Cerrar caso」=「已Cerrar caso」） */
 export function parseStatusLabel(text: string): MatterStatus | null {
   const t = text.trim();
-  if (t === "结案") return "CLOSED";
+  if (t === "Cerrar caso") return "CLOSED";
   for (const [key, label] of Object.entries(matterStatusLabel)) {
     if (label === t) return key as MatterStatus;
   }
@@ -97,22 +152,26 @@ export function parseImportDate(text: string | undefined): Date | null {
   return date;
 }
 
-/** 标的额解析：去掉逗号/￥/元，转数字 */
+/** 标的额解析：去掉逗号/￥/pesos，转数字 */
 export function parseAmount(text: string | undefined): number | null {
-  const t = (text ?? "").trim().replace(/[,$￥\s元]/g, "");
+  const t = (text ?? "").trim().replace(/[,$￥\spesos]/g, "");
   if (!t) return null;
   const n = Number(t);
   return Number.isFinite(n) && n >= 0 ? n : null;
 }
 
-/** Caso标题：`Cliente 与 相对方 案由`（无重复空格） */
-export function buildMatterTitle(clientName: string, opposingName: string, cause: string | null): string {
-  const base = `${clientName.trim()} 与 ${opposingName.trim()}`;
+/** Caso标题：`Cliente y 相对方 Causa`（无重复空格） */
+export function buildMatterTitle(
+  clientName: string,
+  opposingName: string,
+  cause: string | null,
+): string {
+  const base = `${clientName.trim()} y ${opposingName.trim()}`;
   const c = (cause ?? "").trim();
   return c ? `${base} ${c}` : base;
 }
 
-/** 首程序类型：与收案转化（convertIntakeToMatter）一致的推断 */
+/** 首程序类型：y收案转化（convertIntakeToMatter）一致的推断 */
 export function firstProcedureTypeFor(category: MatterCategory): ProcedureType {
   return category === "CIVIL_COMMERCIAL" ||
     category === "CRIMINAL" ||
@@ -148,20 +207,23 @@ export function validateRow(raw: RawRow): RowValidation {
   const statusText = get("status");
   const status = parseStatusLabel(statusText);
   if (!statusText) errors.push("缺少CasoEstado");
-  else if (!status) errors.push(`CasoEstado「${statusText}」无法识别（办理中/已结案/已归档）`);
+  else if (!status)
+    errors.push(`CasoEstado「${statusText}」无法识别（办理中/已Cerrar caso/已归档）`);
 
   const intakeText = get("intakeDate");
   let intakeDate: Date | null = null;
   if (intakeText) {
     intakeDate = parseImportDate(intakeText);
-    if (!intakeDate) errors.push(`收案Fecha「${intakeText}」格式应为 YYYY-MM-DD`);
+    if (!intakeDate)
+      errors.push(`收案Fecha「${intakeText}」格式应为 YYYY-MM-DD`);
   }
 
   const amountText = get("claimAmount");
   let claimAmount: number | null = null;
   if (amountText) {
     claimAmount = parseAmount(amountText);
-    if (claimAmount === null) errors.push(`标的额「${amountText}」不是有效数字`);
+    if (claimAmount === null)
+      errors.push(`标的额「${amountText}」不是有效数字`);
   }
 
   if (errors.length > 0 || !category || !status) {
@@ -190,7 +252,7 @@ export function validateRow(raw: RawRow): RowValidation {
       intakeDate,
       causeText,
       claimAmount,
-      jurisdiction
-    }
+      jurisdiction,
+    },
   };
 }

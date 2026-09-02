@@ -41,9 +41,9 @@ export function IntakeActions({
   const role = session?.user?.role;
   const canApprove = role === "ADMIN" || role === "PRINCIPAL_LAWYER";
 
-  // Abogado端：待补正Estado → 显示"重新Enviar"按钮
+  // Abogado端：Pendiente de correcciónEstado → 显示"重新Enviar"按钮
   function handleResubmit() {
-    if (!confirm("确认重新EnviarAprobación？")) return;
+    if (!confirm("Confirmar重新EnviarAprobación？")) return;
     startTransition(async () => {
       try {
         await resubmitIntake(intakeId);
@@ -62,7 +62,7 @@ export function IntakeActions({
       <div className="flex items-center gap-2">
         <div className="inline-flex items-center gap-1.5 rounded-md border border-amber-500/40 bg-amber-500/10 px-3 py-1.5 text-xs text-amber-700">
           <AlertCircle className="h-3.5 w-3.5" />
-          待补正：补充材料后可重新Enviar
+          Pendiente de corrección：补充材料后可重新Enviar
         </div>
         <Button size="sm" onClick={handleResubmit} disabled={isPending} className="gap-1.5">
           {isPending ? (
@@ -80,20 +80,20 @@ export function IntakeActions({
     return (
       <div className="inline-flex items-center gap-1.5 rounded-md border border-border bg-muted/30 px-3 py-1.5 text-xs text-muted-foreground">
         <Clock className="h-3.5 w-3.5" />
-        等待Administrar员/主任AbogadoAprobación
+        etc.待Administrar员/主任AbogadoAprobación
       </div>
     );
   }
 
   function handleConvert() {
-    if (!confirm("确认转为正式Caso？将占用一个Caso编号。")) return;
+    if (!confirm("Confirmar转为正式Caso？将占用一个Caso编号。")) return;
     startTransition(async () => {
       try {
         const res = await convertIntakeToMatter(intakeId);
         toast.success(`已转化为Caso ${res.internalCode}`);
         router.push(matterHref({ id: res.matterId, internalCode: res.internalCode }));
       } catch (err) {
-        toast.error("转化失败", {
+        toast.error("转化Error", {
           description: err instanceof Error ? err.message : ""
         });
       }
@@ -107,17 +107,17 @@ export function IntakeActions({
 
   function handleConfirm() {
     if (!reason.trim()) {
-      toast.warning(dialogKind === "decline" ? "请填写不接案原因" : "请填写补正说明");
+      toast.warning(dialogKind === "decline" ? "请填写No aceptar casoMotivo" : "请填写补正说明");
       return;
     }
     startTransition(async () => {
       try {
         if (dialogKind === "decline") {
           await declineIntake({ id: intakeId, reason });
-          toast.success("已标记为不接案");
+          toast.success("已标记为No aceptar caso");
         } else {
           await markIntakeNeedsRevision({ id: intakeId, reason });
-          toast.success("已标记待补正，Abogado可补充后重新Enviar");
+          toast.success("已标记Pendiente de corrección，Abogado可补充后重新Enviar");
         }
         setDialogKind(null);
         router.refresh();
@@ -152,7 +152,7 @@ export function IntakeActions({
           className="border-destructive/40 text-destructive hover:bg-destructive/10"
         >
           <XCircle className="mr-1.5 h-3.5 w-3.5" />
-          不接案
+          No aceptar caso
         </Button>
         <Button
           size="sm"
@@ -172,17 +172,17 @@ export function IntakeActions({
       <Dialog open={dialogKind !== null} onOpenChange={(o) => !o && setDialogKind(null)}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>{isDecline ? "标记不接案" : "标记待补正"}</DialogTitle>
+            <DialogTitle>{isDecline ? "标记No aceptar caso" : "标记Pendiente de corrección"}</DialogTitle>
             <DialogDescription>
               {isDecline
-                ? "终态：此收案不会再转为正式Caso。仍保留在历史中。"
-                : "Abogado补充材料后可点击「重新EnviarAprobación」，区别于真正的不接案。"}
+                ? "Estado final：此收案不会再转为正式Caso。仍保留在历史中。"
+                : "Abogado补充材料后可点击「重新EnviarAprobación」，区别于真正的No aceptar caso。"}
             </DialogDescription>
           </DialogHeader>
 
           <div className="space-y-2">
             <Label htmlFor="reason" className="text-xs">
-              {isDecline ? "不接案原因" : "需补正项目"} *
+              {isDecline ? "No aceptar casoMotivo" : "需补正ítems目"} *
             </Label>
             <Textarea
               id="reason"
@@ -190,7 +190,7 @@ export function IntakeActions({
               onChange={(e) => setReason(e.target.value)}
               placeholder={
                 isDecline
-                  ? "如：与已有Cliente存在阻塞性冲突 / Cliente已撤回 / 不在业务范围内 ..."
+                  ? "如：y已有Cliente存在阻塞性冲突 / ClienteRetirado / 不在业务范围内 ..."
                   : "如：缺身份证扫描件 / 委托代理合同未签字 / 利益冲突说明不充分 ..."
               }
               rows={4}
@@ -207,7 +207,7 @@ export function IntakeActions({
               variant={isDecline ? "destructive" : "default"}
             >
               {isPending && <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />}
-              {isDecline ? "确认不接案" : "标记待补正"}
+              {isDecline ? "ConfirmarNo aceptar caso" : "标记Pendiente de corrección"}
             </Button>
           </DialogFooter>
         </DialogContent>

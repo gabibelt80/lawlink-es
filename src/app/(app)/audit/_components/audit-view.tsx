@@ -110,7 +110,7 @@ export function AuditView({
             审计日志
           </h1>
           <p className="mt-0.5 text-[12px] text-muted-foreground">
-            记录每个用户的关键Acciones。默认保留 365 天，每天 03:00 自动清理旧记录
+            记录每个用户的关键Acciones。默认保留 365 días，每días 03:00 自动清理旧记录
           </p>
         </div>
         <Button
@@ -119,7 +119,7 @@ export function AuditView({
           onClick={handleCleanup}
           disabled={cleaning}
           className="gap-1.5"
-          title="立刻清理过期记录（不等到 03:00）"
+          title="立刻清理过期记录（不etc.到 03:00）"
         >
           {cleaning ? (
             <Loader2 className="h-3.5 w-3.5 animate-spin" />
@@ -261,7 +261,7 @@ export function AuditView({
                   colSpan={7}
                   className="px-2 py-10 text-center text-muted-foreground"
                 >
-                  没有匹配的审计记录
+                  Sin coincidencias的审计记录
                 </td>
               </tr>
             ) : (

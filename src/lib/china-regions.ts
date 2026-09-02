@@ -1,12 +1,121 @@
-// v0.30 管辖地数据 + 争议解决机构匹配
-// 数据来自 china-division（全国省/市/区县），法院/仲裁机构Nombre按命名规则生成。
+// v0.30 Datos de jurisdicciones de Argentina + generación de organismos de resolución de disputas
+// Datos basados en provincias argentinas y sus departamentos/partidos
+
 import type { ProcedureType } from "@prisma/client";
-import pca from "china-division/dist/pca.json";
 
-type Pca = Record<string, Record<string, string[]>>;
-const DATA = pca as Pca;
+// Datos de Argentina: provincias y sus departamentos/partidos principales
+// Fuente: INDEC - División Político Territorial de la República Argentina
+const ARGENTINA_DATA: Record<string, Record<string, string[]>> = {
+  "Buenos Aires": {
+    "La Plata": ["La Plata", "Berisso", "Ensenada"],
+    "Mar del Plata": ["Mar del Plata", "General Pueyrredón"],
+    "Bahía Blanca": ["Bahía Blanca"],
+    "Tandil": ["Tandil"],
+    "Olavarría": ["Olavarría"],
+    "Junín": ["Junín"],
+    "Pergamino": ["Pergamino"],
+    "Campana": ["Campana"],
+    "San Nicolás": ["San Nicolás"],
+    "Zárate": ["Zárate"],
+    "Mercedes": ["Mercedes"],
+    "Luján": ["Luján"],
+    "San Isidro": ["San Isidro"],
+    "Vicente López": ["Vicente López"],
+    "Morón": ["Morón"],
+    "Lanús": ["Lanús"],
+    "Quilmes": ["Quilmes"],
+    "Avellaneda": ["Avellaneda"],
+    "Lomas de Zamora": ["Lomas de Zamora"],
+    "Almirante Brown": ["Almirante Brown"],
+    "Florencio Varela": ["Florencio Varela"],
+    "Berazategui": ["Berazategui"]
+  },
+  "Ciudad Autónoma de Buenos Aires": {
+    "CABA": ["Comuna 1", "Comuna 2", "Comuna 3", "Comuna 4", "Comuna 5", "Comuna 6", "Comuna 7", "Comuna 8", "Comuna 9", "Comuna 10", "Comuna 11", "Comuna 12", "Comuna 13", "Comuna 14", "Comuna 15"]
+  },
+  "Catamarca": {
+    "San Fernando del Valle de Catamarca": ["San Fernando del Valle de Catamarca"]
+  },
+  "Chaco": {
+    "Resistencia": ["Resistencia"]
+  },
+  "Chubut": {
+    "Rawson": ["Rawson"],
+    "Comodoro Rivadavia": ["Comodoro Rivadavia"],
+    "Trelew": ["Trelew"]
+  },
+  "Córdoba": {
+    "Córdoba": ["Córdoba", "Villa Carlos Paz"],
+    "Río Cuarto": ["Río Cuarto"],
+    "Villa María": ["Villa María"]
+  },
+  "Corrientes": {
+    "Corrientes": ["Corrientes"]
+  },
+  "Entre Ríos": {
+    "Paraná": ["Paraná"],
+    "Concordia": ["Concordia"],
+    "Gualeguaychú": ["Gualeguaychú"]
+  },
+  "Formosa": {
+    "Formosa": ["Formosa"]
+  },
+  "Jujuy": {
+    "San Salvador de Jujuy": ["San Salvador de Jujuy"]
+  },
+  "La Pampa": {
+    "Santa Rosa": ["Santa Rosa"]
+  },
+  "La Rioja": {
+    "La Rioja": ["La Rioja"]
+  },
+  "Mendoza": {
+    "Mendoza": ["Mendoza", "Godoy Cruz", "Guaymallén", "Las Heras", "Luján de Cuyo"]
+  },
+  "Misiones": {
+    "Posadas": ["Posadas"],
+    "Oberá": ["Oberá"]
+  },
+  "Neuquén": {
+    "Neuquén": ["Neuquén"]
+  },
+  "Río Negro": {
+    "Viedma": ["Viedma"],
+    "San Carlos de Bariloche": ["San Carlos de Bariloche"],
+    "General Roca": ["General Roca"]
+  },
+  "Salta": {
+    "Salta": ["Salta"]
+  },
+  "San Juan": {
+    "San Juan": ["San Juan"]
+  },
+  "San Luis": {
+    "San Luis": ["San Luis"]
+  },
+  "Santa Cruz": {
+    "Río Gallegos": ["Río Gallegos"]
+  },
+  "Santa Fe": {
+    "Santa Fe": ["Santa Fe"],
+    "Rosario": ["Rosario"],
+    "Rafaela": ["Rafaela"]
+  },
+  "Santiago del Estero": {
+    "Santiago del Estero": ["Santiago del Estero"]
+  },
+  "Tierra del Fuego": {
+    "Ushuaia": ["Ushuaia"],
+    "Río Grande": ["Río Grande"]
+  },
+  "Tucumán": {
+    "San Miguel de Tucumán": ["San Miguel de Tucumán"]
+  }
+};
 
-export const NATIONAL_AGENCY_OPTIONS = ["最高人民法院"] as const;
+const DATA = ARGENTINA_DATA;
+
+export const NATIONAL_AGENCY_OPTIONS = ["Corte Suprema de Justicia de la Nación"] as const;
 
 export const provinces: string[] = Object.keys(DATA);
 
@@ -18,7 +127,7 @@ export function areasOf(province: string, city: string): string[] {
   return province && city && DATA[province]?.[city] ? DATA[province][city] : [];
 }
 
-/** 管辖地序列化：省/市/区县（区县可缺）。空串表示未选。 */
+/** Serializar jurisdicción: provincia/ciudad/departamento (departamento opcional). */
 export function joinJurisdiction(province?: string, city?: string, area?: string): string {
   return [province, city, area].filter(Boolean).join("/");
 }
@@ -39,7 +148,7 @@ export function isNationalAgency(value?: string | null): boolean {
 
 export function isCourtAgency(value?: string | null): boolean {
   const agency = value?.trim();
-  return Boolean(agency && /人民法院|法院/.test(agency));
+  return Boolean(agency && /Tribunal|Juzgado|Corte/.test(agency));
 }
 
 export function isCommercialArbitrationProcedure(type?: ProcedureType | null): boolean {
@@ -60,7 +169,7 @@ export function assertAgencyAllowedForProcedure(
   procedureType?: ProcedureType | null
 ) {
   if (!isAgencyAllowedForProcedure(agency, procedureType)) {
-    throw new Error("商事仲裁程序的管辖机构应为仲裁机构，不能选择法院；撤裁、执行等后续程序可选择法院。");
+    throw new Error("El organismo jurisdiccional para procedimientos de arbitraje comercial debe ser un tribunal arbitral, no un tribunal judicial.");
   }
 }
 
@@ -72,23 +181,20 @@ export function normalizeJurisdictionForAgency(
   return jurisdiction?.trim() || null;
 }
 
-// 直辖市 / 地级市占位项「市辖区」「县」不作为机构名，回退到省级Nombre
 function effectiveCityName(province: string, city: string): string {
-  if (!city || city === "市辖区" || city === "县") return province;
+  if (!city || city === "Departamento" || city === "Partido") return province;
   return city;
 }
 
-// 仲裁委员会一般用城市名去掉「市」后缀：广州市 → 广州仲裁委员会
 function arbitrationCityName(cityName: string): string {
-  return cityName.replace(/(市|地区|自治州|盟)$/, "");
+  return cityName.replace(/(Ciudad|Autónoma|Federal|Capital|Provincia)$/, "").trim();
 }
 
 /**
- * 根据管辖地生成可选「争议解决机构」：
- * - 未选管辖地：全国级机构
- * - 选到区县：本区县基层法院 + 本市中院 + 本省高院 + 本市仲裁委
- * - 只选到市：本市中院 + 本市各区县基层法院 + 本省高院 + 本市仲裁委
- * Volver去重后的字符串列表。
+ * Generar opciones de organismos según jurisdicción:
+ * - Sin jurisdicción seleccionada: organismos nacionales
+ * - Con departamento/partido seleccionado: Juzgado local + Tribunal departamental + Tribunal provincial
+ * - Solo ciudad: Tribunal departamental + Juzgados locales + Tribunal provincial
  */
 export function agencyOptions(value?: string | null): string[] {
   const { province, city, area } = parseJurisdiction(value);
@@ -97,17 +203,16 @@ export function agencyOptions(value?: string | null): string[] {
   const out: string[] = [];
 
   if (area) {
-    out.push(`${area}人民法院`);
-    out.push(`${cityName}中级人民法院`);
+    out.push(`Juzgado de Primera Instancia de ${area}`);
+    out.push(`Tribunal de Apelaciones de ${cityName}`);
   } else if (city) {
-    out.push(`${cityName}中级人民法院`);
-    for (const a of areasOf(province, city)) out.push(`${a}人民法院`);
+    out.push(`Tribunal de Apelaciones de ${cityName}`);
+    for (const a of areasOf(province, city)) out.push(`Juzgado de Primera Instancia de ${a}`);
   }
-  out.push(`${province}高级人民法院`);
+  out.push(`Tribunal Superior de Justicia de ${province}`);
   out.push(...NATIONAL_AGENCY_OPTIONS);
-  out.push(`${arbitrationCityName(cityName)}仲裁委员会`);
+  out.push(`Tribunal Arbitral de ${arbitrationCityName(cityName) || province}`);
 
-  // 去重保序
   return Array.from(new Set(out.filter(Boolean)));
 }
 

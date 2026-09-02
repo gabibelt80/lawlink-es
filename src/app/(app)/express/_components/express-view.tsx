@@ -61,7 +61,7 @@ const STATE_TONE: Record<string, "danger" | "ok" | "warn" | "muted"> = {
   退签: "danger",
   退回: "danger",
   暂无信息: "warn",
-  未知: "warn",
+  Desconocido: "warn",
 };
 
 export function ExpressView({

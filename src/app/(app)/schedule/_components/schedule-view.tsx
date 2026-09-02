@@ -31,8 +31,8 @@ import { matterHref } from "@/lib/matters/route";
 
 const typeMeta = {
   hearing: { icon: Gavel, label: "开庭", color: "#5B8DEF" },
-  deadline: { icon: AlertTriangle, label: "期限", color: "#FBBF24" },
-  task: { icon: ClipboardList, label: "事项", color: "#4FD1C5" }
+  deadline: { icon: AlertTriangle, label: "Plazo", color: "#FBBF24" },
+  task: { icon: ClipboardList, label: "事ítems", color: "#4FD1C5" }
 } as const;
 
 const WEEKDAY_LABELS = ["一", "二", "三", "四", "五", "六", "日"];
@@ -89,7 +89,7 @@ export function ScheduleView({
       <header className="ll-page-head">
         <div>
           <h1 className="ll-page-title">Calendario</h1>
-          <p className="ll-page-sub">未来 90 天的开庭、期限与待办事项</p>
+          <p className="ll-page-sub">未来 90 días的开庭、PlazoyPendiente事ítems</p>
         </div>
 
           <div className="flex flex-wrap items-center justify-end gap-2">
@@ -125,7 +125,7 @@ export function ScheduleView({
         <Stat label="今日" value={stats.todayCount} color="hsl(var(--primary))" icon={<Clock className="h-3.5 w-3.5" />} />
         <Stat label="本周" value={stats.weekCount} color="#4FD1C5" icon={<Calendar className="h-3.5 w-3.5" />} />
         <Stat label="开庭" value={stats.hearingCount} color="hsl(var(--primary))" icon={<Gavel className="h-3.5 w-3.5" />} />
-        <Stat label="期限" value={stats.deadlineCount} color="#EA580C" icon={<AlertTriangle className="h-3.5 w-3.5" />} />
+        <Stat label="Plazo" value={stats.deadlineCount} color="#EA580C" icon={<AlertTriangle className="h-3.5 w-3.5" />} />
       </div>
 
       {view === "list" ? (
@@ -170,7 +170,7 @@ function ListView({
   if (items.length === 0) {
     return (
       <div className="ll-surface border-dashed py-16 text-center">
-        <p className="text-sm text-muted-foreground">未来 90 天没有Calendario</p>
+        <p className="text-sm text-muted-foreground">未来 90 días没有Calendario</p>
       </div>
     );
   }
@@ -203,12 +203,12 @@ function ListView({
                   <Badge className="bg-primary text-primary-foreground text-[10px]">Hoy</Badge>
                 ) : (
                   <span className="text-xs text-muted-foreground">
-                    {days === 1 ? "Mañana" : days > 0 ? `${days} 天后` : `${-days} 天前`}
+                    {days === 1 ? "Mañana" : days > 0 ? `${days} días后` : `${-days} días前`}
                   </span>
                 )}
               </div>
               <span className="font-mono text-xs tabular text-muted-foreground">
-                {group.length} 项
+                {group.length} ítems
               </span>
             </header>
             <ul className="divide-y divide-border">
@@ -321,9 +321,9 @@ function CalendarView({
   const year = cursor.getFullYear();
   const month = cursor.getMonth();
 
-  // 一个月有多少天
+  // 一个月有多少días
   const daysInMonth = new Date(year, month + 1, 0).getDate();
-  // 当月第一天是周几（周一=1 ... 周日=7，转化为 0-6 让"周一在最左"）
+  // 当月第一días是周几（周一=1 ... 周日=7，转化为 0-6 让"周一在最左"）
   const firstWeekday = ((new Date(year, month, 1).getDay() + 6) % 7); // 0=周一
 
   const cells: { date: Date | null; key: string | null }[] = [];
@@ -484,7 +484,7 @@ function ScheduleSideRail({
             Hoy
           </h3>
           <span className="font-mono text-xs text-muted-foreground tabular">
-            {todayItems.length} 项
+            {todayItems.length} ítems
           </span>
         </header>
         {todayItems.length === 0 ? (
@@ -505,11 +505,11 @@ function ScheduleSideRail({
             即将到期
           </h3>
           <span className="font-mono text-xs text-muted-foreground tabular">
-            {upcomingDeadlines.length} 项
+            {upcomingDeadlines.length} ítems
           </span>
         </header>
         {upcomingDeadlines.length === 0 ? (
-          <p className="px-4 py-8 text-center text-xs text-muted-foreground">暂无近期到期事项</p>
+          <p className="px-4 py-8 text-center text-xs text-muted-foreground">暂无近期到期事ítems</p>
         ) : (
           <ul className="divide-y divide-border px-4">
             {upcomingDeadlines.map((item) => (
@@ -598,7 +598,7 @@ function ScheduleItemDialog({
                 </Badge>
                 {item.completed && (
                   <Badge variant="secondary" className="text-[10px]">
-                    已完成
+                    Completado
                   </Badge>
                 )}
               </div>
@@ -623,10 +623,10 @@ function ScheduleItemDialog({
                 <DetailLine label="程序" value={formatProcedureLabel(item.procedureLabel)} />
               )}
               {item.type === "deadline" && item.category && (
-                <DetailLine label="期限类型" value={item.category} />
+                <DetailLine label="Plazo类型" value={item.category} />
               )}
               {item.type === "deadline" && item.remindDays !== undefined && (
-                <DetailLine label="Recordatorios" value={`提前 ${item.remindDays} 天`} />
+                <DetailLine label="Recordatorios" value={`提前 ${item.remindDays} días`} />
               )}
               {item.type === "task" && item.priority !== undefined && (
                 <DetailLine label="优先级" value={priorityLabel(item.priority)} />
@@ -723,7 +723,7 @@ function formatProcedureLabel(value: string) {
 }
 
 function priorityLabel(value: number) {
-  if (value >= 2) return "紧急";
+  if (value >= 2) return "Urgente";
   if (value === 1) return "高";
   return "普通";
 }

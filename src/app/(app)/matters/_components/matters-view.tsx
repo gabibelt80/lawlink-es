@@ -340,21 +340,21 @@ export function MattersView({
             <span className="text-foreground/80">
               {TABS.find((t) => t.key === tab)?.label}
             </span>
-            <span className="mx-2 text-muted-foreground/50">·</span>共{" "}
+            <span className="mx-2 text-muted-foreground/50">·</span>Total{" "}
             <span className="font-mono tabular text-foreground">{total}</span>{" "}
-            件
+            casos
           </p>
         </div>
         <div className="flex items-center gap-2">
           <Button asChild variant="outline" className="gap-1.5 px-3">
             <a href={buildExportUrl()}>
               <Download className="h-4 w-4" strokeWidth={2} />
-              导出
+              Exportar
             </a>
           </Button>
           <Button onClick={() => setSheetOpen(true)} className="gap-1.5 px-4">
             <Plus className="h-4 w-4" strokeWidth={2} />
-            新建收案
+            Nueva admisión
           </Button>
         </div>
       </header>
@@ -413,10 +413,10 @@ export function MattersView({
         </form>
       </div>
 
-      {/* 筛选 / 排序 */}
+      {/* Filtrar / ordenar */}
       <div className="flex flex-wrap items-center gap-1.5 rounded-lg border border-border bg-muted/70 px-2 py-2">
         <CompactSelect
-          label="类型"
+          label="Tipo"
           value={category}
           onValueChange={(v) => {
             const next = v as MatterCategory | "ALL";
@@ -430,7 +430,7 @@ export function MattersView({
           {ALL_CATEGORIES.map((c) => (
             <SelectItem key={c} value={c}>
               {c === "ALL"
-                ? "Ver todos类型"
+                ? "Ver todos los tipos"
                 : matterCategoryLabel[c as MatterCategory]}
             </SelectItem>
           ))}
@@ -457,29 +457,29 @@ export function MattersView({
         )}
 
         <div className="flex h-8 items-center gap-1 rounded-full border border-input bg-card px-2 shadow-sm">
-          <span className="text-[10px] text-muted-foreground">收案</span>
+          <span className="text-[10px] text-muted-foreground">Admisión</span>
           <Input
             type="date"
             value={dateFrom}
             onChange={(e) => setDateFrom(e.target.value)}
             onBlur={applyFilters}
             className="h-7 w-[7.25rem] border-0 bg-transparent px-0 text-[11px] shadow-none focus-visible:ring-0"
-            title="收案时间起"
+            title="Fecha de admisión inicio"
           />
-          <span className="text-[11px] text-muted-foreground">至</span>
+          <span className="text-[11px] text-muted-foreground">a</span>
           <Input
             type="date"
             value={dateTo}
             onChange={(e) => setDateTo(e.target.value)}
             onBlur={applyFilters}
             className="h-7 w-[7.25rem] border-0 bg-transparent px-0 text-[11px] shadow-none focus-visible:ring-0"
-            title="收案时间止"
+            title="Fecha de admisión fin"
           />
         </div>
 
         <span className="mx-1 h-5 w-px bg-border" />
         <CompactSelect
-          label="排序"
+          label="Orden"
           value={sortBy}
           onValueChange={(v) => {
             const next = v as SortBy;
@@ -497,7 +497,7 @@ export function MattersView({
           ))}
         </CompactSelect>
         <CompactSelect
-          label="方向"
+          label="Dirección"
           value={sortDir}
           onValueChange={(v) => {
             const next = v as SortDir;
@@ -523,7 +523,7 @@ export function MattersView({
             className="h-8 gap-1 px-2 text-muted-foreground"
           >
             <X className="h-3.5 w-3.5" />
-            清除
+            Limpiar
           </Button>
         )}
       </div>
@@ -615,14 +615,13 @@ function PaginationBar({
   return (
     <div className="flex flex-col gap-2 rounded-lg border border-border bg-muted/50 px-3 py-2 text-[12px] text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
       <div>
-        第 <span className="font-mono text-foreground">{page}</span> /{" "}
-        <span className="font-mono text-foreground">{totalPages}</span> 页
+        Página <span className="font-mono text-foreground">{page}</span> de{" "}
+        <span className="font-mono text-foreground">{totalPages}</span>
         <span className="mx-2 text-muted-foreground/50">·</span>
-        本页{" "}
         <span className="font-mono text-foreground">
           {pageStart}-{pageEnd}
         </span>{" "}
-        件，共 <span className="font-mono text-foreground">{total}</span> 件
+        de <span className="font-mono text-foreground">{total}</span> casos
       </div>
       <div className="flex items-center gap-1.5">
         {page > 1 ? (
@@ -634,7 +633,7 @@ function PaginationBar({
           >
             <a href={buildUrl(prevPage)}>
               <ChevronLeft className="h-3.5 w-3.5" />
-              上一页
+              Anterior
             </a>
           </Button>
         ) : (
@@ -645,7 +644,7 @@ function PaginationBar({
             disabled
           >
             <ChevronLeft className="h-3.5 w-3.5" />
-            上一页
+            Anterior
           </Button>
         )}
         {page < totalPages ? (
@@ -656,7 +655,7 @@ function PaginationBar({
             className="h-8 gap-1.5 px-2.5"
           >
             <a href={buildUrl(nextPage)}>
-              下一页
+              Siguiente
               <ChevronRight className="h-3.5 w-3.5" />
             </a>
           </Button>
@@ -667,7 +666,7 @@ function PaginationBar({
             className="h-8 gap-1.5 px-2.5"
             disabled
           >
-            下一页
+            Siguiente
             <ChevronRight className="h-3.5 w-3.5" />
           </Button>
         )}

@@ -155,9 +155,9 @@ export function AuditView({
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="7">近 7 天</SelectItem>
-            <SelectItem value="30">近 30 天</SelectItem>
-            <SelectItem value="90">近 90 天</SelectItem>
+            <SelectItem value="7">近 7 días</SelectItem>
+            <SelectItem value="30">近 30 días</SelectItem>
+            <SelectItem value="90">近 90 días</SelectItem>
             <SelectItem value="365">近 1 年</SelectItem>
           </SelectContent>
         </Select>
@@ -165,14 +165,14 @@ export function AuditView({
         {(action !== "ALL" || userId !== "ALL" || days !== "30") && (
           <Button variant="ghost" size="sm" onClick={reset} className="gap-1">
             <RotateCcw className="h-3.5 w-3.5" />
-            重置
+            Restablecer
           </Button>
         )}
       </div>
 
       {items.length === 0 ? (
         <div className="rounded-xl border border-dashed border-border bg-card py-16 text-center">
-          <p className="text-sm text-muted-foreground">没有匹配的审计记录</p>
+          <p className="text-sm text-muted-foreground">Sin coincidencias的审计记录</p>
         </div>
       ) : (
         <ul className="space-y-1.5">

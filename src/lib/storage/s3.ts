@@ -95,7 +95,7 @@ export class S3StorageProvider implements StorageProvider {
 
   /**
    * 对象 key 结构：<prefix>/<scope>/<yyyymm>/<uuid>.bin
-   * 与 LocalStorageProvider 保持同样的 layout，便于 local ↔ s3 迁移。
+   * y LocalStorageProvider 保持同样的 layout，便于 local ↔ s3 迁移。
    * 数据库里仅存 relPath（不含 prefix），切换 prefix 时无需回填。
    */
   async writeFile(scope: string, data: Buffer): Promise<string> {

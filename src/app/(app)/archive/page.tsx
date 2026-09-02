@@ -17,7 +17,7 @@ const CATEGORY_CN: Record<string, string> = {
   ADMINISTRATIVE: "Administrativo",
   NON_LITIGATION: "非诉",
   LEGAL_COUNSEL: "顾问",
-  SPECIAL_PROJECT: "专项"
+  SPECIAL_PROJECT: "专ítems"
 };
 
 export default async function ArchivePage({
@@ -46,7 +46,7 @@ export default async function ArchivePage({
           <p className="text-xs text-muted-foreground mt-1">
             {isAdmin
               ? "Administrar员视角：Aprobación待归档申请 + Ver已归档Caso。"
-              : "已归档Caso按归档Fecha降序排列。点击进入Caso详情可Ver卷宗封皮与目录，或导出归档包。"}
+              : "已归档Caso按归档Fecha降序排列。点击进入Caso详情可Ver卷宗封皮y目录，或导出归档包。"}
           </p>
         </div>
         <span className="text-xs text-muted-foreground">
@@ -75,11 +75,11 @@ export default async function ArchivePage({
                 <th className="px-3 py-2 text-left font-normal">Caso</th>
                 <th className="px-3 py-2 text-left font-normal w-20">类别</th>
                 <th className="px-3 py-2 text-left font-normal w-24">委托方</th>
-                <th className="px-3 py-2 text-left font-normal w-20">结案方式</th>
-                <th className="px-3 py-2 text-left font-normal w-28">结案Fecha</th>
+                <th className="px-3 py-2 text-left font-normal w-20">Cerrar caso方式</th>
+                <th className="px-3 py-2 text-left font-normal w-28">Cerrar casoFecha</th>
                 <th className="px-3 py-2 text-left font-normal w-28">归档Fecha</th>
                 <th className="px-3 py-2 text-left font-normal w-20">归档人</th>
-                <th className="px-3 py-2 text-left font-normal w-16">缺项</th>
+                <th className="px-3 py-2 text-left font-normal w-16">缺ítems</th>
                 <th className="px-3 py-2 text-left font-normal w-16">导出</th>
               </tr>
             </thead>
@@ -119,7 +119,7 @@ export default async function ArchivePage({
                   <td className="px-3 py-2.5">
                     {rec.missingItems.length > 0 ? (
                       <Badge variant="outline" className="border-amber-500/40 text-amber-400 text-[10px]">
-                        {rec.missingItems.length} 项
+                        {rec.missingItems.length} ítems
                       </Badge>
                     ) : (
                       <span className="text-xs text-muted-foreground">齐</span>

@@ -30,7 +30,7 @@ export const authOptions: NextAuthOptions = {
           where: { email: parsed.data.email }
         });
         if (!user || !user.active) {
-          // 失败原因区分「账号不存在」与「已停用」，但都不回给前端，避免账号枚举
+          // ErrorMotivo区分「账号不存在」y「已停用」，但都不回给前端，避免账号枚举
           await audit({
             userId: user?.id ?? null,
             action: "LOGIN_FAILED",
@@ -58,7 +58,7 @@ export const authOptions: NextAuthOptions = {
           where: { id: user.id },
           data: { lastLoginAt: new Date() }
         }).catch(() => {
-          // 忽略Actualizar失败
+          // 忽略ActualizarError
         });
 
         return {

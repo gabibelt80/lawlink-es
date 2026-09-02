@@ -71,7 +71,7 @@ export const PARTY_TYPE_OPTIONS: PartyType[] = [
   "OTHER_ORG"
 ];
 
-// v0.30: 需向律协备案与否
+// v0.30: 需向律协备案y否
 export const barFilingLabel: Record<BarFilingType, string> = {
   NONE: "否",
   COLLECTIVE: "需要，涉集体Caso",
@@ -89,7 +89,7 @@ export const BAR_FILING_OPTIONS: BarFilingType[] = [
 ];
 
 // v0.31: Caso类别按业务性质分三类——决定收案表单结构
-// litigation 诉讼/仲裁（Civil/Comercial/Penal/Administrativo）；project 非诉/专项；counsel 顾问
+// litigation 诉讼/仲裁（Civil/Comercial/Penal/Administrativo）；project 非诉/专ítems；counsel 顾问
 export type CategoryKind = "litigation" | "project" | "counsel";
 
 export function matterCategoryKind(c: MatterCategory): CategoryKind {
@@ -99,7 +99,7 @@ export function matterCategoryKind(c: MatterCategory): CategoryKind {
   return "litigation";
 }
 
-// 非诉 / 专项 业务类型（可微调）
+// 非诉 / 专ítems 业务类型（可微调）
 export const PROJECT_BUSINESS_TYPES: string[] = [
   "尽职调查",
   "合同审查 / 起草",
@@ -115,7 +115,7 @@ export const PROJECT_BUSINESS_TYPES: string[] = [
 ];
 
 // 顾问类型
-export const COUNSEL_TYPES: string[] = ["常年法律顾问", "专项法律顾问"];
+export const COUNSEL_TYPES: string[] = ["常年法律顾问", "专ítems法律顾问"];
 
 export const matterCategoryLabel: Record<MatterCategory, string> = {
   CIVIL_COMMERCIAL: "民商诉讼",
@@ -123,9 +123,9 @@ export const matterCategoryLabel: Record<MatterCategory, string> = {
   COMMERCIAL_ARBITRATION: "商事仲裁",
   CRIMINAL: "Penal诉讼",
   ADMINISTRATIVE: "Administrativo诉讼",
-  NON_LITIGATION: "非诉项目",
+  NON_LITIGATION: "非诉ítems目",
   LEGAL_COUNSEL: "常年顾问",
-  SPECIAL_PROJECT: "法律专项"
+  SPECIAL_PROJECT: "法律专ítems"
 };
 
 export const matterCategoryColor: Record<MatterCategory, string> = {
@@ -155,16 +155,16 @@ export const matterStatusLabel: Record<MatterStatus, string> = {
   PENDING_ACCEPTANCE: "待启动",
   IN_PROGRESS: "办理中",
   ON_HOLD: "暂停",
-  CLOSED: "已结案",
+  CLOSED: "已Cerrar caso",
   ARCHIVED: "已归档"
 };
 
 export const intakeStatusLabel: Record<IntakeStatus, string> = {
   INTAKE: "已咨询",
-  PENDING_CONFIRMATION: "待确认",
+  PENDING_CONFIRMATION: "待Confirmar",
   CONVERTED: "已转化",
-  DECLINED: "不接案",
-  NEEDS_REVISION: "待补正"
+  DECLINED: "No aceptar caso",
+  NEEDS_REVISION: "Pendiente de corrección"
 };
 
 export const userRoleLabel: Record<UserRole, string> = {
@@ -199,7 +199,7 @@ export const litigationStandingLabel: Record<LitigationStanding, string> = {
   ADMIN_DEFENDANT: "Administrativo被告",
   ADMIN_RECONSIDERATION_APPLICANT: "复议申请人",
   ADMIN_RECONSIDERATION_RESPONDENT: "复议被申请人",
-  NON_LITIGATION_PARTY: "项目当事人"
+  NON_LITIGATION_PARTY: "ítems目当事人"
 };
 
 export const procedureTypeLabel: Record<ProcedureType, string> = {
@@ -237,7 +237,7 @@ export const invoiceRequestStatusLabel: Record<InvoiceRequestStatus, string> = {
   PENDING: "待Finanzas处理",
   APPROVED: "已批准",
   ISSUED: "已开具",
-  REJECTED: "已驳回"
+  REJECTED: "Rechazado"
 };
 
 export const invoiceRequestStatusColor: Record<InvoiceRequestStatus, string> = {

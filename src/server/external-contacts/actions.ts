@@ -6,7 +6,7 @@
  * 范围：法院 / 检察院 / 公证 / 仲裁 / 他所Abogado / 鉴定专家 / 其他外部联系
  * 同事用 User 表，不在此（前端可一并展示）。
  *
- * 权限：所有Iniciar sesión用户可看已通过联系人，可新建；普通成员新建后需Administrar层审核。
+ * 权限：所有Iniciar sesión用户可看已Aprobar联系人，可新建；普通成员新建后需Administrar层审核。
  */
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
@@ -31,7 +31,7 @@ const categories = [
 ] as const;
 
 const externalContactSchema = z.object({
-  name: z.string().min(1, "姓名必填").max(60),
+  name: z.string().min(1, "Nombre y apellido必填").max(60),
   category: z.enum(categories),
   organization: z.string().max(120).optional().or(z.literal("")),
   title: z.string().max(60).optional().or(z.literal("")),
@@ -117,7 +117,7 @@ async function assertCanModify(id: string, sessionUserId: string, role: string) 
 export async function createExternalContact(input: z.infer<typeof externalContactSchema>) {
   const session = await requireSession();
   const data = externalContactSchema.parse(input);
-  // v1.0: 审核流默认Cerrar（小所信任环境，新增直接通过）；可在Configuración里打开
+  // v1.0: 审核流默认Cerrar（小所信任环境，新增直接Aprobar）；可在Configuración里打开
   const { externalContactReview } = await getWorkflowToggles();
   const status =
     !externalContactReview || isManager(session.user.role) ? "APPROVED" : "PENDING_REVIEW";
@@ -220,8 +220,8 @@ export async function approveExternalContact(input: z.infer<typeof externalConta
   });
   if (current.createdById !== session.user.id) {
     await notifyRequester(current.createdById, {
-      title: "通讯录联系人已通过",
-      content: `外部联系人「${approved.name}」已通过审核并展示`,
+      title: "通讯录联系人已Aprobar",
+      content: `外部联系人「${approved.name}」已Aprobar审核并展示`,
       refId: approved.id
     });
   }
@@ -259,8 +259,8 @@ export async function rejectExternalContact(input: z.infer<typeof externalContac
   });
   if (current.createdById !== session.user.id) {
     await notifyRequester(current.createdById, {
-      title: "通讯录联系人未通过",
-      content: `外部联系人「${rejected.name}」未通过审核${data.note ? `：${data.note}` : ""}`,
+      title: "通讯录联系人未Aprobar",
+      content: `外部联系人「${rejected.name}」未Aprobar审核${data.note ? `：${data.note}` : ""}`,
       refId: rejected.id
     });
   }

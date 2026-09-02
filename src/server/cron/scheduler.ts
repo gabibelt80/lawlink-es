@@ -1,7 +1,7 @@
 /**
  * v0.22: 进程内 cron 调度（node-cron）
  *
- * 在 next start 进程启动时通过 instrumentation.ts → register() 调用。
+ * 在 next start 进程启动时Aprobar instrumentation.ts → register() 调用。
  *
  * 限制：
  * - **仅在 next start（生产）下生效**。dev 模式不跑（避免开发时误推Notificaciones）。
@@ -11,14 +11,14 @@
  *
  * 当前定时作业：
  * - 每周一 09:00 推送本周Informe
- * - 每天 09:00 扫描归档逾期 30 天的Caso
- * - 每天 03:00 清理超过 N 天的 AuditLog
+ * - 每días 09:00 扫描归档Vencido 30 días的Caso
+ * - 每días 03:00 清理超过 N días的 AuditLog
  *
  * 时区：所有 cron 用 Asia/Shanghai（避免容器 UTC 跑出来 8 小时偏差）。
  *
  * v0.26 cron 可观测性：
  * - 成功路径由各 job 内部自己写 *_CRON audit（已有）
- * - 失败路径在此处统一捕获 + 写 *_FAILED_CRON audit，避免 cron 静默失败
+ * - Error路径在此处统一捕获 + 写 *_FAILED_CRON audit，避免 cron 静默Error
  */
 import cron from "node-cron";
 import { runWeeklyReportPush } from "@/server/reports/push-weekly";
@@ -81,19 +81,19 @@ export function registerCronJobs() {
     { timezone: TIMEZONE }
   );
 
-  // 每天 09:00 扫归档逾期
+  // 每días 09:00 扫归档Vencido
   cron.schedule(
     "0 9 * * *",
     () =>
       runWithFailureAudit(
-        "归档逾期扫描",
+        "归档Vencido扫描",
         "ARCHIVE_OVERDUE_SCAN_FAILED_CRON",
         () => scanArchiveOverdue()
       ),
     { timezone: TIMEZONE }
   );
 
-  // 每天 03:00 清理超过 N 天的 AuditLog（默认 365 天，AUDIT_RETENTION_DAYS 可覆盖）
+  // 每días 03:00 清理超过 N días的 AuditLog（默认 365 días，AUDIT_RETENTION_DAYS 可覆盖）
   cron.schedule(
     "0 3 * * *",
     () =>
@@ -105,7 +105,7 @@ export function registerCronJobs() {
     { timezone: TIMEZONE }
   );
 
-  // v0.27: 每天 09:00 扫到期期限（T-3/T-1/T/T+1 四档），发 DEADLINE_REMINDER
+  // v0.27: 每días 09:00 扫到期Plazo（T-3/T-1/T/T+1 四档），发 DEADLINE_REMINDER
   cron.schedule(
     "0 9 * * *",
     () =>
@@ -117,7 +117,7 @@ export function registerCronJobs() {
     { timezone: TIMEZONE }
   );
 
-  // 每天 09:10 扫描已Aprobación但未回填盖章件的用章申请；同一申请 3 天内不重复Recordatorios
+  // 每días 09:10 扫描已Aprobación但未回填盖章件的Solicitud de sello；同一申请 3 días内不重复Recordatorios
   cron.schedule(
     "10 9 * * *",
     () =>
@@ -129,7 +129,7 @@ export function registerCronJobs() {
     { timezone: TIMEZONE }
   );
 
-  // v0.50: 每天 02:30 数据库+文件存储备份（BACKUP_CRON_ENABLED=false 可关）
+  // v0.50: 每días 02:30 数据库+文件存储备份（BACKUP_CRON_ENABLED=false 可关）
   if (backupCronEnabled()) {
     cron.schedule(
       "30 2 * * *",
@@ -144,6 +144,6 @@ export function registerCronJobs() {
   }
 
   console.log(
-    `[cron] 已Registrarse ${backupCronEnabled() ? 6 : 5} 个定时作业（周报推送 / 归档逾期扫描 / AuditLog 清理 / 到期Recordatorios扫描 / 用章回填Recordatorios扫描${backupCronEnabled() ? " / 数据库备份" : ""}），时区 Asia/Shanghai`
+    `[cron] 已Registrarse ${backupCronEnabled() ? 6 : 5} 个定时作业（周报推送 / 归档Vencido扫描 / AuditLog 清理 / 到期Recordatorios扫描 / 用章回填Recordatorios扫描${backupCronEnabled() ? " / 数据库备份" : ""}），时区 Asia/Shanghai`
   );
 }

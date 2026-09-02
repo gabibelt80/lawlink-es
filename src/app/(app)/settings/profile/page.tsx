@@ -17,14 +17,14 @@ export default async function ProfilePage() {
   return (
     <div className="space-y-5">
       <section className="rounded-xl border border-border bg-card p-6">
-        <h2 className="mb-4 text-base font-semibold">个人信息</h2>
+        <h2 className="mb-4 text-base font-semibold">Información personal</h2>
         <div className="mb-5">
           <AvatarForm name={user.name ?? ""} initialAvatar={dbUser?.avatar ?? null} />
         </div>
         <dl className="grid grid-cols-1 gap-4 text-sm md:grid-cols-2">
-          <Item label="姓名">{user.name}</Item>
+          <Item label="Nombre y apellido">{user.name}</Item>
           <Item label="Email" mono>{user.email}</Item>
-          <Item label="角色">{userRoleLabel[user.role as keyof typeof userRoleLabel] ?? user.role}</Item>
+          <Item label="Rol">{userRoleLabel[user.role as keyof typeof userRoleLabel] ?? user.role}</Item>
         </dl>
       </section>
 

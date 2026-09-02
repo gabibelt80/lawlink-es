@@ -68,8 +68,8 @@ export async function buildMatterImportTemplate(): Promise<Buffer> {
   for (const c of IMPORT_COLUMNS) {
     if (c.hint) notes.addRow({ h: c.header, d: c.hint });
   }
-  notes.addRow({ h: "首程序", d: "「办理中」的Caso按Caso类型自动生成首程序（诉讼→一审、其他→非诉/仲裁阶段）；已结案/已归档不建程序" });
-  notes.addRow({ h: "利益冲突", d: "Cliente与相对方的Nombre+证件号会写入当事人库，导入后即可被冲突检索命中" });
+  notes.addRow({ h: "首程序", d: "「办理中」的Caso按Caso类型自动生成首程序（诉讼→一审、其他→非诉/仲裁阶段）；已Cerrar caso/已归档不建程序" });
+  notes.addRow({ h: "利益冲突", d: "Clientey相对方的Nombre+证件号会写入当事人库，导入后即可被冲突检索命中" });
   notes.addRow({ h: "示例行", d: "第 2 行为示例，正式导入前请Eliminar或覆盖" });
 
   const out = await wb.xlsx.writeBuffer();

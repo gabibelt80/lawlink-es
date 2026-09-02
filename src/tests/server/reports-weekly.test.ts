@@ -13,7 +13,7 @@ describe("weekPeriod", () => {
     expect(p.label).toBe("2026-05-25 ~ 2026-05-31");
   });
 
-  it("周一 2026-05-25 当天本身 → 本周一即 05-25", () => {
+  it("周一 2026-05-25 当días本身 → 本周一即 05-25", () => {
     const p = weekPeriod(new Date(2026, 4, 25));
     expect(ymd(p.start)).toEqual([2026, 5, 25]);
     expect(ymd(p.end)).toEqual([2026, 6, 1]);
@@ -33,7 +33,7 @@ describe("weekPeriod", () => {
 });
 
 describe("formatWeeklyDigestContent", () => {
-  it("拼接 4 项数据，金额带千分位 + 2 位小数", () => {
+  it("拼接 4 ítems数据，Monto带千分位 + 2 位小数", () => {
     const text = formatWeeklyDigestContent({
       userId: "u1",
       userName: "张三",
@@ -46,7 +46,7 @@ describe("formatWeeklyDigestContent", () => {
     expect(text).toContain("新收 3 件");
     expect(text).toContain("已结 1 件");
     expect(text).toContain("已归档 2 件");
-    expect(text).toContain("125,000.50 元");
+    expect(text).toContain("125,000.50 pesos");
   });
 
   it("零值也照常拼", () => {
@@ -59,7 +59,7 @@ describe("formatWeeklyDigestContent", () => {
       archived: 0,
       receivedAmount: 0
     });
-    expect(text).toContain("0.00 元");
+    expect(text).toContain("0.00 pesos");
     expect(text.split("·")).toHaveLength(4);
   });
 });

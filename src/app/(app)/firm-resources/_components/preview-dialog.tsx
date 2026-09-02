@@ -6,7 +6,7 @@ import {
   DialogContent,
   DialogDescription,
   DialogHeader,
-  DialogTitle
+  DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 
@@ -34,7 +34,7 @@ function isInlineText(mime: string | null | undefined): boolean {
 export function PreviewDialog({
   open,
   file,
-  onOpenChange
+  onOpenChange,
 }: {
   open: boolean;
   file: PreviewableFile | null;
@@ -58,19 +58,30 @@ export function PreviewDialog({
           </DialogTitle>
           <DialogDescription className="flex items-center justify-between text-[11px]">
             <span className="font-mono text-muted-foreground">
-              {file.mimeType ?? "未知类型"} · {(file.size / 1024).toFixed(1)} KB
+              {file.mimeType ?? "Tipo desconocido"} ·{" "}
+              {(file.size / 1024).toFixed(1)} KB
             </span>
             <span className="flex items-center gap-1.5">
               <a href={previewUrl} target="_blank" rel="noreferrer">
-                <Button type="button" variant="ghost" size="sm" className="h-7 gap-1">
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  className="h-7 gap-1"
+                >
                   <ExternalLink className="h-3 w-3" />
-                  新窗口打开
+                  Abrir en una ventana nueva
                 </Button>
               </a>
               <a href={downloadUrl}>
-                <Button type="button" variant="outline" size="sm" className="h-7 gap-1">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  className="h-7 gap-1"
+                >
                   <Download className="h-3 w-3" />
-                  下载
+                  Descargar
                 </Button>
               </a>
             </span>
@@ -99,18 +110,24 @@ export function PreviewDialog({
             <div className="flex h-full flex-col items-center justify-center gap-3 px-8 text-center text-sm text-muted-foreground">
               <FileText className="h-10 w-10 opacity-30" />
               <p>
-                浏览器暂不支持直接预览
+                El navegador no admite la vista previa directa
                 <span className="ml-1 font-mono text-[11px]">
-                  ({file.mimeType ?? "未知类型"})
+                  ({file.mimeType ?? "Tipo desconocido"})
                 </span>
               </p>
               <p className="text-[11px]">
-                Office 文档（docx / xlsx / pptx）需先下载后用本地应用打开
+                Los documentos de Office (docx / xlsx / pptx) deben descargarse
+                y abrirse con una aplicación local
               </p>
               <a href={downloadUrl}>
-                <Button type="button" variant="outline" size="sm" className="gap-1.5">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  className="gap-1.5"
+                >
                   <Download className="h-3.5 w-3.5" />
-                  下载文件
+                  Descargar archivo
                 </Button>
               </a>
             </div>

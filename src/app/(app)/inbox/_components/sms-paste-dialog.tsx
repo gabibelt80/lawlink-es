@@ -111,7 +111,7 @@ export function SmsPasteDialog({
                 checked={batch}
                 onCheckedChange={(v) => setBatch(v === true)}
               />
-              <span>多条SMS（按空行分隔）—— 一次Enviar，逐条解析与匹配</span>
+              <span>多条SMS（按空行分隔）—— 一次Enviar，逐条解析yCoincidencia</span>
             </label>
             <label className="flex items-center gap-2 text-[12px] text-muted-foreground">
               <Checkbox
@@ -122,7 +122,7 @@ export function SmsPasteDialog({
                 用 AI 增强解析{" "}
                 <Sparkles className="inline h-3 w-3 text-primary" /> —— 补{" "}
                 <span className="text-foreground/80">
-                  摘要 / Abogado动作 / 紧急程度
+                  摘要 / Abogado动作 / Urgente程度
                 </span>
                 （需先到 Configuración → AI 接入 配置）
               </span>
@@ -133,9 +133,9 @@ export function SmsPasteDialog({
                 onCheckedChange={(v) => setExtractAttachments(v === true)}
               />
               <span>
-                尝试提取电子送达附件{" "}
+                尝试提取电子送达Adjunto{" "}
                 <FileDown className="inline h-3 w-3 text-primary" /> ——
-                已匹配Caso时Guardar为Caso材料；需Iniciar sesión或验证码的平台会标记待处理
+                已CoincidenciaCaso时Guardar为Caso材料；需Iniciar sesión或验证码的平台会标记待处理
               </span>
             </label>
           </div>
@@ -188,7 +188,7 @@ export function SmsPasteDialog({
                         {p.parsed.importantItems.length > 0 && (
                           <span className="inline-flex items-center gap-1">
                             <CalendarClock className="h-3 w-3" />
-                            {p.parsed.importantItems.length} 个事项
+                            {p.parsed.importantItems.length} 个事ítems
                           </span>
                         )}
                         {p.parsed.credentials.length > 0 && (
@@ -200,7 +200,7 @@ export function SmsPasteDialog({
                           </span>
                         )}
                         {p.parsed.urls.length > 0 && (
-                          <span>{p.parsed.urls.length} 个链接</span>
+                          <span>{p.parsed.urls.length} 个Enlace</span>
                         )}
                       </div>
                     </li>

@@ -27,7 +27,7 @@ async function requireManager() {
   return session;
 }
 
-/** Excel 单元格值 → 字符串（Fecha统一格式化为 YYYY-MM-DD） */
+/** Excel 单pesos格值 → 字符串（Fecha统一格式化为 YYYY-MM-DD） */
 function cellToString(value: ExcelJS.CellValue): string {
   if (value === null || value === undefined) return "";
   if (value instanceof Date) {
@@ -55,7 +55,7 @@ async function readSheet(file: File): Promise<{ rowNo: number; raw: RawRow }[]> 
   const sheet = wb.worksheets[0];
   if (!sheet) throw new Error("文件中没有工作表");
 
-  // 表头 → 列索引（去掉必填星号，匹配 IMPORT_COLUMNS.header）
+  // 表头 → 列索引（去掉必填星号，Coincidencia IMPORT_COLUMNS.header）
   const headerByIndex = new Map<number, string>(); // colIndex → field key
   const headerRow = sheet.getRow(1);
   headerRow.eachCell((cell, colNumber) => {
@@ -120,7 +120,7 @@ export async function parseMatterImportAction(formData: FormData): Promise<Impor
     const { errors, normalized } = validateRow(raw);
     const errs = [...errors];
     if (normalized?.ownerEmail && !knownEmails.has(normalized.ownerEmail.toLowerCase())) {
-      errs.push(`主办AbogadoEmail「${normalized.ownerEmail}」未匹配到用户`);
+      errs.push(`主办AbogadoEmail「${normalized.ownerEmail}」未Coincidencia到用户`);
     }
     return { rowNo, raw, errors: errs, valid: errs.length === 0 };
   });
@@ -142,11 +142,11 @@ async function createOneMatter(n: NormalizedRow, currentUserId: string) {
       where: { email: { equals: n.ownerEmail, mode: "insensitive" } },
       select: { id: true }
     });
-    if (!lawyer) throw new Error(`主办AbogadoEmail「${n.ownerEmail}」未匹配到用户`);
+    if (!lawyer) throw new Error(`主办AbogadoEmail「${n.ownerEmail}」未Coincidencia到用户`);
     ownerId = lawyer.id;
   }
 
-  // 案由：精确匹配案由库，否则作为自由文本
+  // Causa：精确CoincidenciaCausa库，否则作为自由文本
   let causeId: string | null = null;
   let causeFreeText: string | null = null;
   let causeDowngradeReason: string | null = null;
@@ -159,12 +159,12 @@ async function createOneMatter(n: NormalizedRow, currentUserId: string) {
     else causeFreeText = n.causeText;
   }
 
-  // v1.2：导入曾是唯一绕过案由校验的写入路径，能造出界面Crear不出来的组合
-  // （如劳动仲裁Caso挂婚姻家庭类案由）。校验基准与CrearCaso一致：类别 + 首程序类型。
+  // v1.2：导入曾是唯一绕过Causa校验的写入路径，能造出界面Crear不出来的组合
+  // （如劳动仲裁Caso挂婚姻家庭类Causa）。校验基准yCrearCaso一致：类别 + 首程序类型。
   //
-  // 不合规时降级为自由文本、不整行失败：导入是历史数据迁移工具，历史Caso按当时
-  // 规则立的案由未必符合现行范围，为一个案由把整条Caso挡在门外代价过大。
-  // 自由文本字段本就不参与联动校验，信息不丢，降级情况在导入结果里逐行列出。
+  // 不合规时降级为自由文本、不整行Error：导入是历史数据迁移工具，历史Caso按当时
+  // 规则立的Causa未必符合现行范围，为一个Causa把整条Caso挡在门外代价过大。
+  // 自由文本字段本就不参y联动校验，信息不丢，降级情况在导入结果里逐行列出。
   if (causeId) {
     try {
       await assertCauseAllowedForSelection({
@@ -173,7 +173,7 @@ async function createOneMatter(n: NormalizedRow, currentUserId: string) {
         procedureType: firstProcedureTypeFor(n.category)
       });
     } catch (e) {
-      causeDowngradeReason = e instanceof Error ? e.message : "案由与Caso类别不匹配";
+      causeDowngradeReason = e instanceof Error ? e.message : "CausayCaso类别不Coincidencia";
       causeFreeText = n.causeText ?? null;
       causeId = null;
     }
@@ -248,7 +248,7 @@ async function createOneMatter(n: NormalizedRow, currentUserId: string) {
         members: { create: { userId: ownerId, role: "LEAD" } },
         clientLinks: { create: { clientId, isPrimary: true, label: "主要委托方" } },
         parties: { create: [clientParty, opposingParty] },
-        // 办理中按类别自动生成首程序（与收案转化一致）；结案/归档不建
+        // 办理中按类别自动生成首程序（y收案转化一致）；Cerrar caso/归档不建
         ...(n.status === "IN_PROGRESS"
           ? {
               procedures: {
@@ -289,13 +289,13 @@ export interface ImportResult {
     internalCode: string;
     firmCaseNo: string | null;
     title: string;
-    /** 案由与Caso类别不匹配、已降级为自由文本；需事后人工核对 */
+    /** CausayCaso类别不Coincidencia、已降级为自由文本；需事后人工核对 */
     causeDowngradeReason?: string;
   }[];
   failed: { rowNo: number; error: string }[];
 }
 
-/** 确认导入：逐行事务、失败不阻断，Volver成功/失败清单 */
+/** Confirmar导入：逐行事务、Error不阻断，Volver成功/Error清单 */
 export async function commitMatterImportAction(input: {
   rows: { rowNo: number; raw: RawRow }[];
 }): Promise<ImportResult> {
@@ -306,7 +306,7 @@ export async function commitMatterImportAction(input: {
   for (const { rowNo, raw } of input.rows) {
     try {
       const { errors, normalized } = validateRow(raw);
-      if (!normalized) throw new Error(errors.join("；") || "行校验失败");
+      if (!normalized) throw new Error(errors.join("；") || "行校验Error");
       const m = await createOneMatter(normalized, session.user.id);
       succeeded.push({
         rowNo,
@@ -316,7 +316,7 @@ export async function commitMatterImportAction(input: {
         ...(m.causeDowngradeReason ? { causeDowngradeReason: m.causeDowngradeReason } : {})
       });
     } catch (e) {
-      failed.push({ rowNo, error: e instanceof Error ? e.message : "导入失败" });
+      failed.push({ rowNo, error: e instanceof Error ? e.message : "导入Error" });
     }
   }
 

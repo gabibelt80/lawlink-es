@@ -99,8 +99,8 @@ export function UsersView({
         <table className="w-full text-sm">
           <thead className="border-b border-border bg-popover">
             <tr className="text-left text-xs uppercase tracking-wider text-muted-foreground">
-              <th className="px-5 py-3 font-medium">姓名 / Email</th>
-              <th className="px-5 py-3 font-medium">角色</th>
+              <th className="px-5 py-3 font-medium">Nombre y apellido / Email</th>
+              <th className="px-5 py-3 font-medium">Rol</th>
               <th className="px-5 py-3 font-medium">Caso</th>
               <th className="px-5 py-3 font-medium">最近Iniciar sesión</th>
               <th className="px-5 py-3 font-medium">Estado</th>
@@ -145,22 +145,22 @@ function UserRow({
     startTransition(async () => {
       try {
         await updateUserRole({ id: user.id, role });
-        toast.success("角色已Actualizar");
+        toast.success("Rol已Actualizar");
       } catch (err) {
-        toast.error("Actualizar失败", { description: err instanceof Error ? err.message : "" });
+        toast.error("ActualizarError", { description: err instanceof Error ? err.message : "" });
       }
     });
   }
 
   function handleToggleActive() {
     if (
-      !confirm(user.active ? `禁用 ${user.name}？禁用后该用户无法Iniciar sesión。` : `重新激活 ${user.name}？`)
+      !confirm(user.active ? `Deshabilitar ${user.name}？Deshabilitar后该用户无法Iniciar sesión。` : `Reactivar ${user.name}？`)
     )
       return;
     startTransition(async () => {
       try {
         const res = await toggleUserActive(user.id);
-        toast.success(res.active ? "已激活" : "已禁用");
+        toast.success(res.active ? "Activado" : "已Deshabilitar");
       } catch (err) {
         toast.error("Operación fallida", { description: err instanceof Error ? err.message : "" });
       }
@@ -198,7 +198,7 @@ function UserRow({
         )}
       </td>
       <td className="px-5 py-3 font-mono text-xs tabular text-muted-foreground">
-        主办 {user._count.ownedMatters} · 参与 {user._count.memberships}
+        主办 {user._count.ownedMatters} · 参y {user._count.memberships}
       </td>
       <td className="px-5 py-3 font-mono text-xs text-muted-foreground tabular">
         {user.lastLoginAt
@@ -210,7 +210,7 @@ function UserRow({
           variant={user.active ? "secondary" : "outline"}
           className="text-[10px]"
         >
-          {user.active ? "已激活" : "已禁用"}
+          {user.active ? "Activado" : "已Deshabilitar"}
         </Badge>
       </td>
       <td className="px-5 py-3">
@@ -236,7 +236,7 @@ function UserRow({
               {user.active ? (
                 <>
                   <CircleOff className="h-3.5 w-3.5" />
-                  禁用
+                  Deshabilitar
                 </>
               ) : (
                 <>
@@ -287,7 +287,7 @@ function CreateUserSheet({
         reset();
         onOpenChange(false);
       } catch (err) {
-        toast.error("Crear失败", { description: err instanceof Error ? err.message : "" });
+        toast.error("CrearError", { description: err instanceof Error ? err.message : "" });
       }
     });
   }
@@ -304,7 +304,7 @@ function CreateUserSheet({
 
         <form onSubmit={handleSubmit(onSubmit)} className="flex flex-1 flex-col">
           <div className="flex-1 space-y-3 overflow-y-auto px-6 py-5">
-            <SheetField label="姓名" required error={errors.name?.message}>
+            <SheetField label="Nombre y apellido" required error={errors.name?.message}>
               <Input {...register("name")} />
             </SheetField>
             <SheetField label="Email" required error={errors.email?.message}>
@@ -313,7 +313,7 @@ function CreateUserSheet({
             <SheetField label="初始Contraseña（至少 8 位）" required error={errors.password?.message}>
               <Input type="text" className="font-mono" {...register("password")} />
             </SheetField>
-            <SheetField label="角色" required>
+            <SheetField label="Rol" required>
               <Select
                 value={role}
                 onValueChange={(v) =>
@@ -376,11 +376,11 @@ function ResetPasswordDialog({
     startTransition(async () => {
       try {
         await resetUserPassword({ id: user.id, newPassword: pwd });
-        toast.success(`已重置 ${user.name} 的Contraseña`);
+        toast.success(`已Restablecer ${user.name} 的Contraseña`);
         setPwd("");
         onClose();
       } catch (err) {
-        toast.error("失败", { description: err instanceof Error ? err.message : "" });
+        toast.error("Error", { description: err instanceof Error ? err.message : "" });
       }
     });
   }
@@ -389,9 +389,9 @@ function ResetPasswordDialog({
     <Dialog open={!!user} onOpenChange={(o) => !o && onClose()}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>重置 {user?.name} 的Contraseña</DialogTitle>
+          <DialogTitle>Restablecer {user?.name} 的Contraseña</DialogTitle>
           <DialogDescription>
-            Administrar员重置后，用户使用新ContraseñaIniciar sesión。建议线下告知用户。
+            Administrar员Restablecer后，用户使用新ContraseñaIniciar sesión。建议线下告知用户。
           </DialogDescription>
         </DialogHeader>
         <div className="space-y-2">
@@ -409,7 +409,7 @@ function ResetPasswordDialog({
           </Button>
           <Button onClick={handleReset} disabled={isPending}>
             {isPending && <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />}
-            重置
+            Restablecer
           </Button>
         </DialogFooter>
       </DialogContent>

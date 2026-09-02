@@ -23,8 +23,8 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
   });
   if (!doc) return NextResponse.json({ error: "材料不存在" }, { status: 404 });
 
-  // 权限检查：ADMIN / PRINCIPAL_LAWYER 可读Ver todos；其他角色 —— Caso成员才能读Caso材料；
-  // 仅 intakeId 的收案合同限收案Crear人/主办/协办（含Cliente身份证号等隐私，不再对全所开放）
+  // 权限检查：ADMIN / PRINCIPAL_LAWYER 可读Ver todos；其他Rol —— Caso成员才能读Caso材料；
+  // 仅 intakeId 的收案合同限收案Crear人/主办/协办（含Cliente身份证号etc.隐私，不再对全所开放）
   if (session.user.role !== "ADMIN" && session.user.role !== "PRINCIPAL_LAWYER") {
     if (doc.matterId) {
       const member = await prisma.matterMember.findUnique({
@@ -55,15 +55,15 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
     const stored = await storage.readFile(doc.path);
     if (doc.encrypted) {
       if (!doc.iv || !doc.authTag) {
-        return NextResponse.json({ error: "加密元数据损坏" }, { status: 500 });
+        return NextResponse.json({ error: "加密pesos数据损坏" }, { status: 500 });
       }
       buf = decryptBuffer(stored, doc.iv, doc.authTag);
     } else {
       buf = stored;
     }
   } catch (err) {
-    console.error("[download] 读取失败：", err);
-    return NextResponse.json({ error: "读取失败" }, { status: 500 });
+    console.error("[download] 读取Error：", err);
+    return NextResponse.json({ error: "读取Error" }, { status: 500 });
   }
 
   await audit({

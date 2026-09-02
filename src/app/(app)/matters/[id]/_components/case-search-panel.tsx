@@ -35,7 +35,7 @@ type Props = {
 
 const PROVINCES = [
   "北京",
-  "天津",
+  "días津",
   "河北",
   "山西",
   "内蒙古",

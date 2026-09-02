@@ -69,7 +69,7 @@ export function InvoiceSection({ matterId }: { matterId: string }) {
         </p>
       ) : !requests || requests.length === 0 ? (
         <p className="py-10 text-center text-xs text-muted-foreground">
-          还没有开票申请。Cliente需要发票时点上方&ldquo;申请开票&rdquo;
+          还没有开票申请。Cliente需要Factura时点上方&ldquo;申请开票&rdquo;
         </p>
       ) : (
         <ul className="divide-y divide-border">
@@ -120,7 +120,7 @@ function InvoiceItem({ row }: { row: InvoiceRow }) {
           {row.processedBy && (
             <>
               {" · "}
-              {row.status === "REJECTED" ? "驳回" : "处理"}：{row.processedBy.name}
+              {row.status === "REJECTED" ? "Rechazar" : "处理"}：{row.processedBy.name}
             </>
           )}
         </div>
@@ -155,7 +155,7 @@ function InvoiceItem({ row }: { row: InvoiceRow }) {
             title={row.invoiceFile.name}
           >
             <Download className="h-3 w-3" />
-            电子发票
+            电子Factura
           </a>
         )}
       </div>
@@ -186,7 +186,7 @@ function CreateInvoiceDialog({
   function handleSubmit() {
     const amt = Number(amount);
     if (!amt || amt <= 0) {
-      toast.warning("请填写有效的开票金额");
+      toast.warning("请填写有效的开票Monto");
       return;
     }
     startTransition(async () => {
@@ -197,11 +197,11 @@ function CreateInvoiceDialog({
           title,
           requestNote: note
         });
-        toast.success("开票申请已Enviar，等待Finanzas处理");
+        toast.success("开票申请已Enviar，etc.待Finanzas处理");
         reset();
         onOpenChange(false);
       } catch (err) {
-        toast.error("Enviar失败", {
+        toast.error("EnviarError", {
           description: err instanceof Error ? err.message : ""
         });
       }
@@ -220,16 +220,16 @@ function CreateInvoiceDialog({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Receipt className="h-4 w-4 text-primary" />
-            申请开具发票
+            申请开具Factura
           </DialogTitle>
           <DialogDescription className="text-xs">
-            Enviar后由Finanzas处理，Finanzas会上传扫描件合同 + 电子发票
+            Enviar后由Finanzas处理，Finanzas会上传扫描件合同 + 电子Factura
           </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-3 py-2">
           <div className="space-y-1.5">
-            <Label className="text-xs">开票金额（元）*</Label>
+            <Label className="text-xs">开票Monto（pesos）*</Label>
             <Input
               type="number"
               step="0.01"
@@ -252,7 +252,7 @@ function CreateInvoiceDialog({
             <Label className="text-xs">说明（可选）</Label>
             <Textarea
               rows={3}
-              placeholder="如：开具增值税专用发票，税号 ..."
+              placeholder="如：开具增值税专用Factura，税号 ..."
               value={note}
               onChange={(e) => setNote(e.target.value)}
             />

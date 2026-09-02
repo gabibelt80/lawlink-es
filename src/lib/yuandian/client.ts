@@ -1,5 +1,5 @@
 /**
- * 元典开放平台 HTTP Cliente端（server-side only）
+ * pesos典开放平台 HTTP Cliente端（server-side only）
  *
  * 入口：POST {baseUrl}/{routeKey}，header X-API-Key。
  * 详见 https://open.chineselaw.com/llms-full.txt
@@ -8,7 +8,9 @@ import { getYuandianSettings, type ResolvedYuandianSettings } from "./settings";
 
 export class YuandianNotConfiguredError extends Error {
   constructor() {
-    super("元典 API 未配置，请先到 Configuración → AI 接入 填写元典 API key");
+    super(
+      "La API de Yuandian no está configurada; primero ingresá la clave de la API en Configuración → Acceso a IA",
+    );
     this.name = "YuandianNotConfiguredError";
   }
 }
@@ -23,15 +25,15 @@ export class YuandianApiError extends Error {
 }
 
 export type PtalSearchParams = {
-  ay?: string[]; // 案由数组
+  ay?: string[]; // Causa数组
   ajlb?:
     | "PenalCaso"
     | "民事Caso"
     | "AdministrativoCaso"
     | "执行Caso"
     | "管辖Caso"
-    | "国家赔偿与司法救助Caso"
-    | "强制清算与破产Caso"
+    | "国家赔偿y司法救助Caso"
+    | "强制清算y破产Caso"
     | "国际司法协助Caso"
     | "非诉Preservación审查Caso"
     | "其他Caso";
@@ -48,7 +50,7 @@ export type PtalCase = {
   id: string;
   ah: string; // 案号
   title: string;
-  ay: string[]; // 案由
+  ay: string[]; // Causa
   jbdw: string; // 经办法院
   ajlb: string; // Caso类别
   xzqh_p: string; // 省份
@@ -67,16 +69,16 @@ export type PtalSearchResult = {
 /**
  * 普通案例关键词检索（rh_ptal_search，计费 10 POINT/次）
  *
- * 请求体不能完全为空，调用方至少传一个过滤条件（ay/qw/jbdw 等）。
+ * 请求体不能完全为空，调用方至少传一个过滤条件（ay/qw/jbdw etc.）。
  */
 export async function searchPtalCases(
   params: PtalSearchParams,
-  resolved?: ResolvedYuandianSettings
+  resolved?: ResolvedYuandianSettings,
 ): Promise<PtalSearchResult> {
   const s = resolved ?? (await getYuandianSettings());
   if (!s.configured) throw new YuandianNotConfiguredError();
 
-  // 元典要求 body 非空；调用方至少要传一个过滤条件
+  // pesos典要求 body 非空；调用方至少要传一个过滤条件
   const hasAny =
     (params.ay?.length ?? 0) > 0 ||
     !!params.qw?.trim() ||
@@ -85,7 +87,10 @@ export async function searchPtalCases(
     (params.wszl?.length ?? 0) > 0 ||
     !!params.ja_start ||
     !!params.ja_end;
-  if (!hasAny) throw new Error("至少填写一个检索条件（案由 / 关键词 / 法院 / 地区 / Fecha）");
+  if (!hasAny)
+    throw new Error(
+      "至少填写一个检索条件（Causa / 关键词 / 法院 / 地区 / Fecha）",
+    );
 
   const body: Record<string, unknown> = {};
   if (params.ay?.length) body.ay = params.ay;
@@ -115,10 +120,10 @@ export async function searchPtalCases(
       headers: {
         "X-API-Key": s.apiKey,
         "Content-Type": "application/json; charset=utf-8",
-        Accept: "application/json"
+        Accept: "application/json",
       },
       body: JSON.stringify(body),
-      signal: ctrl.signal
+      signal: ctrl.signal,
     });
     if (!res.ok) {
       throw new YuandianApiError(`HTTP ${res.status}`, res.status);
@@ -129,18 +134,21 @@ export async function searchPtalCases(
   }
 
   if (json.status !== "success") {
-    throw new YuandianApiError(json.message ?? "元典Volver失败", json.code ?? 500);
+    throw new YuandianApiError(
+      json.message ?? "pesos典VolverError",
+      json.code ?? 500,
+    );
   }
   // 未命中：data === null
   if (!json.data) return { total: 0, items: [] };
   return {
     total: json.data.total ?? 0,
-    items: json.data.lst ?? []
+    items: json.data.lst ?? [],
   };
 }
 
 /**
- * 拼出元典前端的案例详情完整 URL（用于"Ver全文"外跳）。
+ * 拼出pesos典前端的案例详情完整 URL（用于"Ver全文"外跳）。
  * caseDetailHost 默认 https://www.chineselaw.com，可在Configuración里改。
  */
 export function buildCaseDetailUrl(host: string, relPath: string): string {
@@ -157,12 +165,12 @@ const WSZL_NAME_TO_CODE: Record<string, string> = {
   判决书: "1",
   裁定书: "2",
   调解书: "3",
-  决定书: "4"
+  决定书: "4",
 };
 
 export type VectorSearchParams = {
   query: string; // 必填，自然语言
-  ay?: string[]; // 案由名（vector 接受名字，不是 code）
+  ay?: string[]; // Causa名（vector 接受名字，不是 code）
   ajlb?: PtalSearchParams["ajlb"]; // 同 ptal 的中文枚举
   xzqh_p?: string; // ⚠ vector 这里是 string 单值，不是数组
   wszl?: ("判决书" | "裁定书" | "调解书" | "决定书")[]; // 我们对外仍传名字，内部转 code
@@ -176,7 +184,7 @@ export type VectorCase = {
   title: string;
   ah: string;
   ay: string[]; // ⚠ Volver的是 code 数组，不是名字
-  anyou?: string[]; // 案由名（如果Volver字段有的话，做兜底）
+  anyou?: string[]; // Causa名（如果Volver字段有的话，做兜底）
   jbdw: string | null;
   ajlb: string;
   wszl: string;
@@ -195,7 +203,7 @@ export type VectorSearchResult = {
 
 export async function searchCasesByVector(
   params: VectorSearchParams,
-  resolved?: ResolvedYuandianSettings
+  resolved?: ResolvedYuandianSettings,
 ): Promise<VectorSearchResult> {
   const s = resolved ?? (await getYuandianSettings());
   if (!s.configured) throw new YuandianNotConfiguredError();
@@ -234,10 +242,10 @@ export async function searchCasesByVector(
       headers: {
         "X-API-Key": s.apiKey,
         "Content-Type": "application/json; charset=utf-8",
-        Accept: "application/json"
+        Accept: "application/json",
       },
       body: JSON.stringify(body),
-      signal: ctrl.signal
+      signal: ctrl.signal,
     });
     if (!res.ok) throw new YuandianApiError(`HTTP ${res.status}`, res.status);
     json = await res.json();
@@ -248,7 +256,7 @@ export async function searchCasesByVector(
   // 语义接口成功 code 是 201（按文档示例）；保险接受 200-299
   const code = json.code ?? 0;
   if (code < 200 || code >= 300) {
-    throw new YuandianApiError(json.msg ?? "元典语义检索失败", code);
+    throw new YuandianApiError(json.msg ?? "pesos典语义检索Error", code);
   }
   return { items: json.extra?.wenshu ?? [] };
 }

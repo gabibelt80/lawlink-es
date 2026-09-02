@@ -3,7 +3,7 @@
  *
  * 单 SystemSetting key `workflowToggles`：
  * - externalContactReview：外部联系人审核流。小所是信任环境，默认Cerrar
- *   （新增联系人直接通过）；需要管控的所可打开。
+ *   （新增联系人直接Aprobar）；需要管控的所可打开。
  * 沿用 firm-profile 的「单 key + 类型化读写」范式。
  */
 import { prisma } from "@/lib/prisma";

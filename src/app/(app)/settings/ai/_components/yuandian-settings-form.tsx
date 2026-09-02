@@ -46,22 +46,22 @@ export function YuandianSettingsForm({
     startTransition(async () => {
       try {
         await saveYuandianSettingsAction({ apiKey, baseUrl, caseDetailHost });
-        toast.success("元典配置已Guardar");
+        toast.success("pesos典配置已Guardar");
         setApiKey("");
       } catch (e) {
-        toast.error(e instanceof Error ? e.message : "Guardar失败");
+        toast.error(e instanceof Error ? e.message : "GuardarError");
       }
     });
   };
 
   const clearKey = () => {
-    if (!confirm("确认清除元典 API key？类案检索功能将停止工作。")) return;
+    if (!confirm("Confirmar清除pesos典 API key？类案检索功能将停止工作。")) return;
     startTransition(async () => {
       try {
         await clearYuandianKeyAction({ confirm: true });
-        toast.success("元典 API key 已清除");
+        toast.success("pesos典 API key 已清除");
       } catch (e) {
-        toast.error(e instanceof Error ? e.message : "失败");
+        toast.error(e instanceof Error ? e.message : "Error");
       }
     });
   };
@@ -83,7 +83,7 @@ export function YuandianSettingsForm({
     <section className="ll-surface rounded-lg border border-border p-5">
       <header className="mb-3 flex items-center gap-2">
         <Scale className="h-4 w-4 text-primary" strokeWidth={1.8} />
-        <h2 className="text-lg">元典案例库 API</h2>
+        <h2 className="text-lg">pesos典案例库 API</h2>
         {initial.configured && (
           <span className="ml-2 inline-flex items-center gap-1 rounded-full bg-emerald-500/15 px-2 py-0.5 text-[10px] text-emerald-700">
             <CheckCircle2 className="h-3 w-3" /> 已配置
@@ -92,7 +92,7 @@ export function YuandianSettingsForm({
       </header>
 
       <p className="mb-4 text-[12px] text-muted-foreground">
-        元典开放平台（chineselaw.com）法律案例检索 API，配置后启用：
+        pesos典开放平台（chineselaw.com）法律案例检索 API，配置后启用：
         <span className="text-foreground/85"> Caso详情 → 类案 tab 类案检索</span>。
         按次计费（普通案例 10 POINT/次）。
       </p>
@@ -111,7 +111,7 @@ export function YuandianSettingsForm({
             type="password"
             value={apiKey}
             onChange={(e) => setApiKey(e.target.value)}
-            placeholder={initial.configured ? "如需更换粘贴新 key" : "粘贴元典 API key"}
+            placeholder={initial.configured ? "如需更换粘贴新 key" : "粘贴pesos典 API key"}
             className="mt-1 font-mono"
             autoComplete="off"
           />
@@ -136,7 +136,7 @@ export function YuandianSettingsForm({
             className="mt-1 font-mono text-[12px]"
           />
           <p className="mt-1 text-[10px] text-muted-foreground">
-            用于「Ver全文」外跳，与接口 URL 区分
+            用于「Ver全文」外跳，y接口 URL 区分
           </p>
         </div>
       </div>
@@ -194,7 +194,7 @@ export function YuandianSettingsForm({
           rel="noreferrer"
           className="ml-1 inline-flex items-center gap-1 text-primary hover:underline"
         >
-          元典开放平台
+          pesos典开放平台
           <ExternalLink className="h-3 w-3" />
         </a>
       </p>

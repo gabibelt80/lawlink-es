@@ -2,7 +2,7 @@ import { describe, it, expect } from "vitest";
 import { calcCourtFee, calcLateInterest, daysBetween, numberToChinese } from "@/lib/legal-calc";
 
 describe("calcCourtFee — 财产Caso分段累进", () => {
-  it("≤1万：固定50元", () => {
+  it("≤1万：固定50pesos", () => {
     expect(calcCourtFee({ caseType: "PROPERTY", amount: 5000 }).fee).toBe(50);
   });
 
@@ -21,7 +21,7 @@ describe("calcCourtFee — 财产Caso分段累进", () => {
 });
 
 describe("calcCourtFee — 其他Caso类型", () => {
-  it("劳动争议固定10元", () => {
+  it("劳动争议固定10pesos", () => {
     const r = calcCourtFee({ caseType: "LABOR" });
     expect(r.fee).toBe(10);
     expect(r.feeSimplified).toBe(5);
@@ -29,7 +29,7 @@ describe("calcCourtFee — 其他Caso类型", () => {
 });
 
 describe("calcLateInterest", () => {
-  it("逾期30天计算", () => {
+  it("Vencido30días计算", () => {
     const r = calcLateInterest({
       principal: 100_000,
       dueDate: new Date("2025-01-01"),
@@ -40,7 +40,7 @@ describe("calcLateInterest", () => {
     expect(r.totalToPay).toBe(100_000 + r.interest);
   });
 
-  it("未逾期：0天、0利息", () => {
+  it("未Vencido：0días、0利息", () => {
     const r = calcLateInterest({
       principal: 100_000,
       dueDate: new Date("2025-01-31"),
@@ -52,7 +52,7 @@ describe("calcLateInterest", () => {
 });
 
 describe("daysBetween", () => {
-  it("基本天数差", () => {
+  it("基本días数差", () => {
     expect(daysBetween(new Date("2025-01-01"), new Date("2025-01-11"))).toBe(10);
   });
 
@@ -64,16 +64,16 @@ describe("daysBetween", () => {
 
 describe("numberToChinese", () => {
   it("整数", () => {
-    expect(numberToChinese(10000)).toBe("壹万元整");
+    expect(numberToChinese(10000)).toBe("壹万pesos整");
   });
 
   it("带角分", () => {
     const result = numberToChinese(123.45);
-    expect(result).toContain("壹佰贰拾叁元");
+    expect(result).toContain("壹佰贰拾叁pesos");
     expect(result).toContain("肆角伍分");
   });
 
-  it("零元", () => {
-    expect(numberToChinese(0)).toBe("零元整");
+  it("零pesos", () => {
+    expect(numberToChinese(0)).toBe("零pesos整");
   });
 });

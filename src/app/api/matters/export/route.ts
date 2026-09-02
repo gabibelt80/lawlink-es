@@ -26,8 +26,8 @@ export async function GET(req: Request) {
       role: session.user.role
     });
   } catch (err) {
-    console.error("[matters/export] 生成失败：", err);
-    return NextResponse.json({ error: "导出失败" }, { status: 500 });
+    console.error("[matters/export] 生成Error：", err);
+    return NextResponse.json({ error: "导出Error" }, { status: 500 });
   }
 
   await audit({

@@ -33,7 +33,7 @@ export function ExpressSettingsForm({ initial }: { initial: Initial }) {
         setKdAppKey("");
         setK100Key("");
       } catch (e) {
-        toast.error(e instanceof Error ? e.message : "失败");
+        toast.error(e instanceof Error ? e.message : "Error");
       }
     });
   };
@@ -45,7 +45,7 @@ export function ExpressSettingsForm({ initial }: { initial: Initial }) {
         await saveExpressSettingsAction({ kdniaoClearKey: true });
         toast.success("已清除");
       } catch (e) {
-        toast.error(e instanceof Error ? e.message : "失败");
+        toast.error(e instanceof Error ? e.message : "Error");
       }
     });
   };
@@ -57,7 +57,7 @@ export function ExpressSettingsForm({ initial }: { initial: Initial }) {
         await saveExpressSettingsAction({ kuaidi100ClearKey: true });
         toast.success("已清除");
       } catch (e) {
-        toast.error(e instanceof Error ? e.message : "失败");
+        toast.error(e instanceof Error ? e.message : "Error");
       }
     });
   };
@@ -71,7 +71,7 @@ export function ExpressSettingsForm({ initial }: { initial: Initial }) {
         </header>
         <p className="mb-4 text-[12px] text-muted-foreground">
           双 provider：优先 <span className="text-foreground/85">快递鸟</span>（500 条/日免费），
-          失败时降级到 <span className="text-foreground/85">快递100</span>。
+          Error时降级到 <span className="text-foreground/85">快递100</span>。
           配置任一即可使用。
         </p>
 
@@ -208,7 +208,7 @@ export function ExpressSettingsForm({ initial }: { initial: Initial }) {
         </div>
 
         <p className="mt-3 text-[11px] text-muted-foreground">
-          密钥使用 AES-256-GCM 加密存入 SystemSetting，与文档加密复用同一密钥（
+          密钥使用 AES-256-GCM 加密存入 SystemSetting，y文档加密复用同一密钥（
           <span className="font-mono">STORAGE_ENCRYPTION_KEY</span>）。前端永远不显示明文。
         </p>
       </section>

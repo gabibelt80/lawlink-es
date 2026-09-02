@@ -175,14 +175,14 @@ export async function moveDocumentToFolder(input: z.infer<typeof moveDocumentToF
   });
   if (!doc || !doc.matterId) throw new Error("文档不存在或未归属Caso");
 
-  // 校验目标卷宗与文档同Caso
+  // 校验目标卷宗y文档同Caso
   if (data.folderId) {
     const folder = await prisma.documentFolder.findUnique({
       where: { id: data.folderId },
       select: { matterId: true }
     });
     if (!folder || folder.matterId !== doc.matterId) {
-      throw new Error("目标卷宗与文档不属于同一Caso");
+      throw new Error("目标卷宗y文档不属于同一Caso");
     }
   }
   await requireFolderEditor(doc.matterId, session);

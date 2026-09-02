@@ -218,7 +218,7 @@ function FieldFormDialog({
             .filter(Boolean)
         : [];
     if (fieldType === "SELECT" && options.length === 0) {
-      toast.warning("下拉类型请至少填写一个选项（每行一个）");
+      toast.warning("下拉类型请至少填写一个选ítems（每行一个）");
       return;
     }
     startTransition(async () => {
@@ -243,7 +243,7 @@ function FieldFormDialog({
         toast.success(field ? "已Actualizar" : "已Agregar");
         onClose();
       } catch (err) {
-        toast.error("Guardar失败", {
+        toast.error("GuardarError", {
           description: err instanceof Error ? err.message : "",
         });
       }
@@ -295,14 +295,14 @@ function FieldFormDialog({
           {fieldType === "SELECT" && (
             <div className="space-y-1">
               <label className="text-xs font-medium text-muted-foreground">
-                选项值（每行一个）
+                选ítems值（每行一个）
               </label>
               <textarea
                 value={optionsText}
                 onChange={(e) => setOptionsText(e.target.value)}
                 rows={4}
                 className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm"
-                placeholder={"选项一\n选项二"}
+                placeholder={"选ítems一\n选ítems二"}
               />
             </div>
           )}

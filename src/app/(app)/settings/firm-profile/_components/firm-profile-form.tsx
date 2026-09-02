@@ -61,7 +61,7 @@ export function FirmProfileForm({ initial }: { initial: Initial }) {
     }
     const reader = new FileReader();
     reader.onload = () => setLogoDataUrl(reader.result as string);
-    reader.onerror = () => toast.error("读取图片失败");
+    reader.onerror = () => toast.error("读取图片Error");
     reader.readAsDataURL(file);
   };
 
@@ -79,7 +79,7 @@ export function FirmProfileForm({ initial }: { initial: Initial }) {
         });
         toast.success("律所信息已Guardar");
       } catch (e) {
-        toast.error(e instanceof Error ? e.message : "Guardar失败");
+        toast.error(e instanceof Error ? e.message : "GuardarError");
       }
     });
   };
@@ -93,7 +93,7 @@ export function FirmProfileForm({ initial }: { initial: Initial }) {
           <h2 className="text-lg">律所品牌</h2>
         </header>
         <p className="mb-4 text-[12px] text-muted-foreground">
-          侧边栏顶部显示的Nombre、副标题与 Logo。留空Nombre将回退默认「LawLink」。
+          侧边栏顶部显示的Nombre、副标题y Logo。留空Nombre将回退默认「LawLink」。
         </p>
 
         <div className="flex items-start gap-5">
@@ -154,7 +154,7 @@ export function FirmProfileForm({ initial }: { initial: Initial }) {
               <Input
                 value={firmSubtitle}
                 onChange={(e) => setFirmSubtitle(e.target.value)}
-                placeholder="如：Abogado工作台"
+                placeholder="如：AbogadoPanel de trabajo"
                 className="mt-1"
               />
             </div>

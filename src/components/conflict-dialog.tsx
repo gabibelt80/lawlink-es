@@ -144,7 +144,7 @@ export function ConflictDialog({
       }))
       .filter((q) => q.name || q.idNumber);
     if (cleaned.length === 0) {
-      toast.warning("请至少填写一个姓名或证件号");
+      toast.warning("请至少填写一个Nombre y apellido或证件号");
       return;
     }
 
@@ -157,7 +157,7 @@ export function ConflictDialog({
         setHasRun(true);
         const extra =
           res.idMatchedClients?.length || res.sameNameClients?.length
-            ? `（同名 ${res.sameNameClients?.length ?? 0} · 证件号匹配 ${res.idMatchedClients?.length ?? 0}）`
+            ? `（同名 ${res.sameNameClients?.length ?? 0} · 证件号Coincidencia ${res.idMatchedClients?.length ?? 0}）`
             : "";
         if (res.hits.length === 0) {
           toast.success(`未命中冲突${extra}`);
@@ -165,7 +165,7 @@ export function ConflictDialog({
           toast.success(`命中 ${res.hits.length} 条${extra}，请审阅`);
         }
       } catch (err) {
-        toast.error("检索失败", {
+        toast.error("检索Error", {
           description: err instanceof Error ? err.message : "",
         });
       }
@@ -187,15 +187,15 @@ export function ConflictDialog({
             利益冲突检索
           </DialogTitle>
           <DialogDescription className="text-xs">
-            填入待查的姓名或证件号（至少一项），快速比对历史Cliente与Caso
+            填入待查的Nombre y apellido或证件号（至少一ítems），快速比对历史ClienteyCaso
           </DialogDescription>
         </DialogHeader>
 
         <div className="max-h-[calc(85vh-140px)] space-y-4 overflow-y-auto px-6 py-4">
-          {/* 输入项 */}
+          {/* 输入ítems */}
           <section>
             <div className="mb-2 flex items-center justify-between">
-              <Label className="text-xs">检索项</Label>
+              <Label className="text-xs">检索ítems</Label>
               <Button
                 type="button"
                 variant="outline"
@@ -249,7 +249,7 @@ export function ConflictDialog({
                           ),
                         )
                       }
-                      placeholder="姓名 / Nombre"
+                      placeholder="Nombre y apellido / Nombre"
                       className="h-9 bg-background"
                     />
                   </div>
@@ -335,13 +335,13 @@ export function ConflictDialog({
             </section>
           )}
 
-          {/* 身份证 / 信用代码精确匹配（强提示） */}
+          {/* 身份证 / 信用代码精确Coincidencia（强提示） */}
           {hasRun && idMatched.length > 0 && (
             <section className="rounded-md border border-amber-500/40 bg-amber-500/10 p-3">
               <div className="flex items-center gap-2 text-xs text-amber-400">
                 <AlertTriangle className="h-3.5 w-3.5" />
-                身份证 / 信用代码与Cliente库 {idMatched.length}{" "}
-                条记录精确匹配，请人工核对
+                身份证 / 信用代码yCliente库 {idMatched.length}{" "}
+                条记录精确Coincidencia，请人工核对
               </div>
               <div className="mt-2 flex flex-wrap gap-1.5">
                 {idMatched.map((c) => (
@@ -478,9 +478,9 @@ function MatterContext({
       <div className="grid grid-cols-2 gap-x-3 gap-y-1 text-muted-foreground">
         <Field label="Sistema收案">{formatDate(info.intakeDate)}</Field>
         <Field label="当前Estado">{matterStatusLabel[info.status]}</Field>
-        <Field label="案由/类型">{causeOrCategory}</Field>
+        <Field label="Causa/类型">{causeOrCategory}</Field>
         <Field label="主办Abogado">{info.ownerName ?? "—"}</Field>
-        <Field label="命中角色">
+        <Field label="命中Rol">
           {partyRoleLabel[info.partyRole]}
           {info.partyStanding
             ? ` · ${litigationStandingLabel[info.partyStanding]}`

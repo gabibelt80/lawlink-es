@@ -60,7 +60,7 @@ export function RelatedMattersField({
         setQuery("");
         router.refresh();
       } catch (err) {
-        toast.error("关联失败", { description: err instanceof Error ? err.message : "" });
+        toast.error("关联Error", { description: err instanceof Error ? err.message : "" });
       }
     });
   }
@@ -72,7 +72,7 @@ export function RelatedMattersField({
         await removeMatterLink(matterId, id);
         router.refresh();
       } catch (err) {
-        toast.error("解除失败", { description: err instanceof Error ? err.message : "" });
+        toast.error("解除Error", { description: err instanceof Error ? err.message : "" });
       }
     });
   }

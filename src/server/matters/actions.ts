@@ -803,9 +803,9 @@ export async function createMatter(input: MatterCreateInput) {
 
 /**
  * v0.5: ActualizarCaso团队。
- * - 仅当前主办Abogado可Acciones；Administrar角色只负责Aprobación，不因角色放开他人Caso处理权
+ * - 仅当前主办Abogado可Acciones；AdministrarRol只负责Aprobación，不因Rol放开他人Caso处理权
  * - ownerId 改变时同步替换 MatterMember 中的 LEAD
- * - coLeadIds 和 assistantIds 覆盖式Actualizar对应角色（不影响主办自动 LEAD）
+ * - coLeadIds 和 assistantIds 覆盖式Actualizar对应Rol（不影响主办自动 LEAD）
  */
 export async function updateMatterTeam(input: {
   matterId: string;
@@ -822,7 +822,7 @@ export async function updateMatterTeam(input: {
   await assertMatterWritable(input.matterId);
   await assertCanOwnMatter(session.user.id, input.matterId, "只有当前主办Abogado可以修改承办团队");
 
-  // 校验：coLeadIds / assistantIds 不能与 ownerId 重叠
+  // 校验：coLeadIds / assistantIds 不能y ownerId 重叠
   const co = input.coLeadIds.filter((id) => id !== input.ownerId);
   const ass = input.assistantIds.filter(
     (id) => id !== input.ownerId && !co.includes(id)
@@ -864,7 +864,7 @@ export async function updateMatterTeam(input: {
     detail: { ownerId: input.ownerId, coLeads: co.length, assistants: ass.length }
   });
 
-  // v0.43 项4：写入Caso动态时间线
+  // v0.43 ítems4：写入Caso动态时间线
   await prisma.timelineEvent.create({
     data: {
       matterId: input.matterId,

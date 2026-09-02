@@ -40,12 +40,12 @@ export async function buildReportWorkbook(period: ReportPeriod): Promise<Buffer>
     { header: "Caso编号", key: "code", width: 14 },
     { header: "标题", key: "title", width: 36 },
     { header: "类别", key: "category", width: 8 },
-    { header: "案由", key: "cause", width: 18 },
+    { header: "Causa", key: "cause", width: 18 },
     { header: "Cliente", key: "client", width: 18 },
     { header: "主办Abogado", key: "owner", width: 10 },
     { header: "Estado", key: "status", width: 10 },
     { header: "收案Fecha", key: "createdAt", width: 12 },
-    { header: "结案Fecha", key: "closedAt", width: 12 },
+    { header: "Cerrar casoFecha", key: "closedAt", width: 12 },
     { header: "归档Fecha", key: "archivedAt", width: 12 }
   ];
   for (const m of matters) {
@@ -90,13 +90,13 @@ export async function buildReportWorkbook(period: ReportPeriod): Promise<Buffer>
   const sheetFees = wb.addWorksheet("收款明细");
   sheetFees.columns = [
     { header: "收款Fecha", key: "occurredAt", width: 12 },
-    { header: "金额", key: "amount", width: 14 },
+    { header: "Monto", key: "amount", width: 14 },
     { header: "Cliente", key: "client", width: 18 },
     { header: "Caso编号", key: "matterCode", width: 14 },
     { header: "Caso标题", key: "matterTitle", width: 36 },
     { header: "主办Abogado", key: "owner", width: 10 },
     { header: "付款方", key: "payer", width: 18 },
-    { header: "发票号", key: "invoiceNo", width: 18 },
+    { header: "Factura号", key: "invoiceNo", width: 18 },
     { header: "收款方式", key: "method", width: 12 }
   ];
   for (const f of receivedFees) {
@@ -122,7 +122,7 @@ export async function buildReportWorkbook(period: ReportPeriod): Promise<Buffer>
     { header: "Abogado", key: "name", width: 12 },
     { header: "本期新收", key: "owned", width: 12 },
     { header: "本期已结", key: "closed", width: 12 },
-    { header: "本期收款金额", key: "received", width: 18 }
+    { header: "本期收款Monto", key: "received", width: 18 }
   ];
   for (const row of data.byLawyer) {
     sheetLawyer.addRow({
@@ -139,8 +139,8 @@ export async function buildReportWorkbook(period: ReportPeriod): Promise<Buffer>
   const sheetClient = wb.addWorksheet("Cliente应收");
   sheetClient.columns = [
     { header: "Cliente", key: "name", width: 24 },
-    { header: "应收金额", key: "receivable", width: 14 },
-    { header: "已收金额", key: "received", width: 14 },
+    { header: "应收Monto", key: "receivable", width: 14 },
+    { header: "已收Monto", key: "received", width: 14 },
     { header: "应收余额", key: "balance", width: 14 }
   ];
   for (const row of data.byClientReceivable) {

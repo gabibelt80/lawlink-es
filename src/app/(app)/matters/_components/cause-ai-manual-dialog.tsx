@@ -63,7 +63,7 @@ export function CauseAiManualDialog({
   const [candidates, setCandidates] = useState<CauseRecommendation[]>([]);
   const [error, setError] = useState<string | null>(null);
 
-  // 打开/重开时重置
+  // 打开/重开时Restablecer
   useEffect(() => {
     if (!open) return;
     const initTab: Tab = hasHints ? "preset" : "free";
@@ -90,7 +90,7 @@ export function CauseAiManualDialog({
       const list = await recommendCause({ category, procedureType, situation });
       setCandidates(list);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "AI 推荐失败");
+      setError(err instanceof Error ? err.message : "AI 推荐Error");
     } finally {
       setLoading(false);
     }
@@ -118,10 +118,10 @@ export function CauseAiManualDialog({
                 active={tab === "preset"}
                 onClick={() => switchTab("preset")}
               >
-                用现有字段
+                Usar campos existentes
               </TabBtn>
               <TabBtn active={tab === "free"} onClick={() => switchTab("free")}>
-                自由输入
+                Entrada libre
               </TabBtn>
             </div>
           )}
@@ -131,8 +131,8 @@ export function CauseAiManualDialog({
             onChange={(e) => setSituation(e.target.value)}
             placeholder={
               tab === "preset"
-                ? "已根据Caso字段填入，可修改后再推荐"
-                : "Descripción案情：当事人是谁、做了什么、争议焦点、诉求"
+                ? "Se rellenó según los campos del caso; podés modificarlo antes de recomendar."
+                : "Descripción del caso: quiénes son las partes, qué hizo, el punto de la disputa y la solicitud"
             }
             rows={6}
             className="resize-none"

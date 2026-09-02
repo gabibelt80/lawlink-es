@@ -1,5 +1,5 @@
 /**
- * v0.38: 公告指引独立页（v0.37 曾并入 /service-center，现拆回）
+ * v0.38: Anuncio指引独立页（v0.37 曾并入 /service-center，现拆回）
  */
 import { redirect } from "next/navigation";
 import { getSession } from "@/lib/auth/session";

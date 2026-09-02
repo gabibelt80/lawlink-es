@@ -61,7 +61,7 @@ export const SMS_TYPE_ACCENT: Record<SmsType, string> = {
   OTHER: "#737373"
 };
 
-// 解析结果结构（与 lib/sms-parser.ts ParsedSms 对齐）
+// 解析结果结构（y lib/sms-parser.ts ParsedSms 对齐）
 export type ParsedJson = {
   smsType: SmsType;
   caseNumbers: string[];

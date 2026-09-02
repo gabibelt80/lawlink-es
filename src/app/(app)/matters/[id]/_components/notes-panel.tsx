@@ -75,7 +75,7 @@ export function NotesPanel({
         await deleteNote(id);
         toast.success("已Eliminar");
       } catch (err) {
-        toast.error("Eliminar失败", { description: err instanceof Error ? err.message : "" });
+        toast.error("EliminarError", { description: err instanceof Error ? err.message : "" });
       }
     });
   }
@@ -130,7 +130,7 @@ export function NotesPanel({
                       </Badge>
                       {n.withWhom && (
                         <span className="text-xs text-muted-foreground">
-                          与 <span className="text-foreground">{n.withWhom}</span>
+                          y <span className="text-foreground">{n.withWhom}</span>
                         </span>
                       )}
                       <span className="font-mono text-xs text-muted-foreground tabular">
@@ -222,7 +222,7 @@ function NoteSheet({
         });
         onOpenChange(false);
       } catch (err) {
-        toast.error("Guardar失败", { description: err instanceof Error ? err.message : "" });
+        toast.error("GuardarError", { description: err instanceof Error ? err.message : "" });
       }
     });
   }
@@ -283,7 +283,7 @@ function NoteSheet({
               </Label>
               <Textarea
                 rows={8}
-                placeholder="简要记录沟通内容、对方意见、约定事项等"
+                placeholder="简要记录沟通内容、对方意见、约定事ítemsetc."
                 {...register("content")}
               />
               {errors.content && (

@@ -11,7 +11,7 @@ import {
   Download,
   Sparkles,
   Upload,
-  Stamp
+  Stamp,
 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -20,16 +20,20 @@ import {
   DialogContent,
   DialogFooter,
   DialogHeader,
-  DialogTitle
+  DialogTitle,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import {
   createFolder,
   renameFolder,
-  deleteFolder
+  deleteFolder,
 } from "@/server/document-folders/actions";
-import type { TemplateSummary, FolderPayload, FolderDocument } from "./folder-types";
+import type {
+  TemplateSummary,
+  FolderPayload,
+  FolderDocument,
+} from "./folder-types";
 import { TemplatePickerDialog } from "./template-picker-dialog";
 
 export function FoldersPanel({
@@ -37,7 +41,7 @@ export function FoldersPanel({
   matterCategory,
   folders,
   documents,
-  templates
+  templates,
 }: {
   matterId: string;
   matterCategory: string;
@@ -46,7 +50,7 @@ export function FoldersPanel({
   templates: TemplateSummary[];
 }) {
   const [activeFolderId, setActiveFolderId] = useState<string | null>(
-    folders[0]?.id ?? null
+    folders[0]?.id ?? null,
   );
   const [newFolderOpen, setNewFolderOpen] = useState(false);
   const [renameTarget, setRenameTarget] = useState<FolderPayload | null>(null);
@@ -63,14 +67,14 @@ export function FoldersPanel({
   const loose = byFolderId.get(null) ?? [];
 
   const activeDocs = activeFolderId
-    ? byFolderId.get(activeFolderId) ?? []
+    ? (byFolderId.get(activeFolderId) ?? [])
     : loose;
 
   return (
     <div>
       {/* 顶部Acciones栏 */}
       <div className="mb-4 flex items-center justify-between">
-        <h3 className="text-lg">卷宗</h3>
+        <h3 className="text-lg">Expediente</h3>
         <div className="flex gap-2">
           <Button
             size="sm"
@@ -78,16 +82,18 @@ export function FoldersPanel({
             className="gap-1.5"
           >
             <Sparkles className="h-3.5 w-3.5" />
-            从模板新建
+            Crear desde plantilla
           </Button>
           <Button
             size="sm"
             variant="outline"
-            onClick={() => toast.info("上传文件功能 v0.8.1 接入")}
+            onClick={() =>
+              toast.info("Función de carga de archivos v0.8.1 integrada")
+            }
             className="gap-1.5"
           >
             <Upload className="h-3.5 w-3.5" />
-            上传文件
+            Subir archivo
           </Button>
           <Button
             size="sm"
@@ -96,7 +102,7 @@ export function FoldersPanel({
             className="gap-1.5"
           >
             <Plus className="h-3.5 w-3.5" />
-            新建卷宗
+            Crear expediente
           </Button>
         </div>
       </div>
@@ -124,11 +130,11 @@ export function FoldersPanel({
                     "flex w-full items-center gap-2 rounded px-2 py-1.5 text-left text-[13px] transition-colors",
                     activeFolderId === null
                       ? "bg-primary/10 text-foreground"
-                      : "text-muted-foreground hover:bg-muted/40"
+                      : "text-muted-foreground hover:bg-muted/40",
                   )}
                 >
                   <FolderClosed className="h-3.5 w-3.5" strokeWidth={1.6} />
-                  <span className="flex-1 truncate">散件</span>
+                  <span className="flex-1 truncate">Documentos sueltos</span>
                   <span className="font-mono text-[10px] text-muted-foreground">
                     {loose.length}
                   </span>
@@ -143,7 +149,8 @@ export function FoldersPanel({
           {activeDocs.length === 0 ? (
             <div className="ll-surface rounded-lg p-10 text-center text-sm text-muted-foreground">
               <FolderOpen className="mx-auto mb-2 h-6 w-6 opacity-40" />
-              此卷宗暂无文档。点右上「从模板新建」生成首份文书。
+              Este expediente aún no tiene documentos. Hacé clic en «Crear desde
+              plantilla» arriba a la derecha para generar el primer documento.
             </div>
           ) : (
             <div className="grid grid-cols-2 gap-3 lg:grid-cols-3">
@@ -184,7 +191,7 @@ function FolderItem({
   active,
   count,
   onClick,
-  onRename
+  onRename,
 }: {
   folder: FolderPayload;
   active: boolean;
@@ -196,16 +203,23 @@ function FolderItem({
 
   const onDelete = () => {
     if (folder.isDefault) {
-      toast.error("默认卷宗不可Eliminar，可改名");
+      toast.error(
+        "El expediente predeterminado no se puede eliminar; podés renombrarlo.",
+      );
       return;
     }
-    if (!confirm(`AceptarEliminar卷宗「${folder.name}」？内含文档将归为散件。`)) return;
+    if (
+      !confirm(
+        `¿Eliminar expediente «${folder.name}»? Los documentos dentro pasarán a Documentos sueltos.`,
+      )
+    )
+      return;
     startTransition(async () => {
       try {
         await deleteFolder({ id: folder.id });
-        toast.success("已Eliminar");
+        toast.success("Eliminado");
       } catch (e) {
-        toast.error(e instanceof Error ? e.message : "Eliminar失败");
+        toast.error(e instanceof Error ? e.message : "Error al eliminar");
       }
     });
   };
@@ -215,7 +229,9 @@ function FolderItem({
       <div
         className={cn(
           "flex items-center gap-2 rounded px-2 py-1.5 text-[13px] transition-colors",
-          active ? "bg-primary/10 text-foreground" : "text-foreground hover:bg-muted/40"
+          active
+            ? "bg-primary/10 text-foreground"
+            : "text-foreground hover:bg-muted/40",
         )}
       >
         <button
@@ -224,18 +240,23 @@ function FolderItem({
           className="flex flex-1 items-center gap-2 truncate text-left"
         >
           {active ? (
-            <FolderOpen className="h-3.5 w-3.5 text-primary" strokeWidth={1.6} />
+            <FolderOpen
+              className="h-3.5 w-3.5 text-primary"
+              strokeWidth={1.6}
+            />
           ) : (
             <FolderClosed className="h-3.5 w-3.5" strokeWidth={1.6} />
           )}
           <span className="truncate">{folder.name}</span>
-          <span className="font-mono text-[10px] text-muted-foreground">{count}</span>
+          <span className="font-mono text-[10px] text-muted-foreground">
+            {count}
+          </span>
         </button>
         <div className="opacity-0 transition-opacity group-hover:opacity-100">
           <button
             type="button"
             onClick={onRename}
-            title="重命名"
+            title="Renombrar"
             className="rounded p-0.5 text-muted-foreground hover:text-foreground"
           >
             <Pencil className="h-3 w-3" />
@@ -264,19 +285,26 @@ function DocCard({ doc, matterId }: { doc: FolderDocument; matterId: string }) {
       : doc.size
         ? `${Math.round(doc.size / 1024)} KB`
         : "—";
-  const dateLabel = new Date(doc.createdAt).toLocaleDateString("zh-CN");
+  const dateLabel = new Date(doc.createdAt).toLocaleDateString("es-AR");
 
   return (
     <div className="ll-surface rounded-lg border border-border p-3 transition-shadow hover:shadow-sm">
       <div className="flex items-start gap-2">
-        <FileText className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" strokeWidth={1.6} />
+        <FileText
+          className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground"
+          strokeWidth={1.6}
+        />
         <div className="min-w-0 flex-1">
           <p className="truncate text-[13px] font-medium" title={doc.name}>
             {doc.name}
           </p>
           <p className="mt-0.5 font-mono text-[10px] text-muted-foreground">
             {sizeLabel} · {dateLabel}
-            {doc.templateId && <span className="ml-1 text-primary">· 模板生成</span>}
+            {doc.templateId && (
+              <span className="ml-1 text-primary">
+                · Generado por plantilla
+              </span>
+            )}
           </p>
         </div>
       </div>
@@ -284,10 +312,10 @@ function DocCard({ doc, matterId }: { doc: FolderDocument; matterId: string }) {
         <a
           href={`/api/documents/${doc.id}/download`}
           className="inline-flex items-center gap-1 text-[11px] text-muted-foreground hover:text-foreground"
-          title="下载"
+          title="Descargar"
         >
           <Download className="h-3 w-3" />
-          下载
+          Descargar
         </a>
         <button
           type="button"
@@ -301,10 +329,10 @@ function DocCard({ doc, matterId }: { doc: FolderDocument; matterId: string }) {
             window.location.href = url.toString();
           }}
           className="inline-flex items-center gap-1 text-[11px] text-muted-foreground hover:text-primary"
-          title="Enviar用章Aprobación"
+          title="Enviar a sello"
         >
           <Stamp className="h-3 w-3" />
-          Enviar用章
+          Enviar a sello
         </button>
       </div>
     </div>
@@ -314,7 +342,7 @@ function DocCard({ doc, matterId }: { doc: FolderDocument; matterId: string }) {
 function NewFolderDialog({
   open,
   onOpenChange,
-  matterId
+  matterId,
 }: {
   open: boolean;
   onOpenChange: (o: boolean) => void;
@@ -328,11 +356,11 @@ function NewFolderDialog({
     startTransition(async () => {
       try {
         await createFolder({ matterId, name: name.trim() });
-        toast.success("已新建");
+        toast.success("Creado");
         setName("");
         onOpenChange(false);
       } catch (e) {
-        toast.error(e instanceof Error ? e.message : "新建失败");
+        toast.error(e instanceof Error ? e.message : "Error al crear");
       }
     });
   };
@@ -341,12 +369,12 @@ function NewFolderDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>新建卷宗</DialogTitle>
+          <DialogTitle>Crear expediente</DialogTitle>
         </DialogHeader>
         <Input
           value={name}
           onChange={(e) => setName(e.target.value)}
-          placeholder="卷宗名（最多 40 字）"
+          placeholder="Nombre del expediente (máx. 40 caracteres)"
           autoFocus
           maxLength={40}
         />
@@ -355,7 +383,7 @@ function NewFolderDialog({
             Cancelar
           </Button>
           <Button onClick={submit} disabled={pending || !name.trim()}>
-            新建
+            Crear
           </Button>
         </DialogFooter>
       </DialogContent>
@@ -366,7 +394,7 @@ function NewFolderDialog({
 function RenameFolderDialog({
   folder,
   open,
-  onOpenChange
+  onOpenChange,
 }: {
   folder: FolderPayload;
   open: boolean;
@@ -383,10 +411,10 @@ function RenameFolderDialog({
     startTransition(async () => {
       try {
         await renameFolder({ id: folder.id, name: name.trim() });
-        toast.success("已Actualizar");
+        toast.success("Actualizado");
         onOpenChange(false);
       } catch (e) {
-        toast.error(e instanceof Error ? e.message : "Actualizar失败");
+        toast.error(e instanceof Error ? e.message : "Error al actualizar");
       }
     });
   };
@@ -395,9 +423,14 @@ function RenameFolderDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>重命名卷宗</DialogTitle>
+          <DialogTitle>Renombrar expediente</DialogTitle>
         </DialogHeader>
-        <Input value={name} onChange={(e) => setName(e.target.value)} maxLength={40} autoFocus />
+        <Input
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          maxLength={40}
+          autoFocus
+        />
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)}>
             Cancelar

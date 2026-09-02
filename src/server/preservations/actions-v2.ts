@@ -345,7 +345,7 @@ export async function renewProperty(input: z.infer<typeof propertyRenewSchema>) 
   if (prop.status === "LIFTED") throw new Error("已解除的Preservación不可续保");
   if (prop.target.case.matterId) await assertMatterWritable(prop.target.case.matterId);
   if (data.newExpiryDate <= prop.expiryDate) {
-    throw new Error("新到期日必须晚于原到期日");
+    throw new Error("新Fecha de vencimiento必须晚于原Fecha de vencimiento");
   }
 
   await prisma.$transaction([

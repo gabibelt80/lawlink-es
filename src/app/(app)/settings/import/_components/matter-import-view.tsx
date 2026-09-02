@@ -32,7 +32,7 @@ export function MatterImportView() {
         setPreview(p);
       } catch (e) {
         setPreview(null);
-        toast.error(e instanceof Error ? e.message : "解析失败");
+        toast.error(e instanceof Error ? e.message : "解析Error");
       }
     });
   };
@@ -50,9 +50,9 @@ export function MatterImportView() {
         setResult(res);
         setPreview(null);
         if (fileRef.current) fileRef.current.value = "";
-        toast.success(`导入完成：成功 ${res.succeeded.length}，失败 ${res.failed.length}`);
+        toast.success(`导入完成：成功 ${res.succeeded.length}，Error ${res.failed.length}`);
       } catch (e) {
-        toast.error(e instanceof Error ? e.message : "导入失败");
+        toast.error(e instanceof Error ? e.message : "导入Error");
       }
     });
   };
@@ -72,7 +72,7 @@ export function MatterImportView() {
           <h2 className="text-lg">Caso批量导入</h2>
         </header>
         <p className="mb-4 text-[12px] text-muted-foreground">
-          下载 Excel 模板填写后上传 → 预览校验（有误的行会标红，仅导入无误行）→ 确认导入。
+          下载 Excel 模板填写后上传 → 预览校验（有误的行会标红，仅导入无误行）→ Confirmar导入。
           每行将CrearCliente（按Nombre+证件号查重）、Caso（自动编号 + 所内案号 + 主办）、当事人（驱动利益冲突），
           「办理中」的Caso按类型自动生成首程序。
         </p>
@@ -120,7 +120,7 @@ export function MatterImportView() {
               </Button>
               <Button size="sm" onClick={doImport} disabled={importing || preview.validCount === 0} className="gap-1.5">
                 {importing && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
-                确认导入 {preview.validCount} 行
+                Confirmar导入 {preview.validCount} 行
               </Button>
             </div>
           </header>
@@ -177,7 +177,7 @@ export function MatterImportView() {
         <section className="ll-surface rounded-lg border border-border p-5">
           <header className="mb-3 flex items-center justify-between">
             <h3 className="text-[14px] font-medium">
-              导入结果 · 成功 <span className="text-emerald-700">{result.succeeded.length}</span> · 失败{" "}
+              导入结果 · 成功 <span className="text-emerald-700">{result.succeeded.length}</span> · Error{" "}
               <span className={result.failed.length > 0 ? "text-destructive" : ""}>{result.failed.length}</span>
             </h3>
             <Button variant="ghost" size="sm" onClick={reset}>
@@ -202,7 +202,7 @@ export function MatterImportView() {
                       <div className="ml-5 flex items-start gap-1.5 text-[11px] text-amber-600">
                         <AlertCircle className="mt-0.5 h-3 w-3 shrink-0" />
                         <span>
-                          案由已降级为自由文本（{s.causeDowngradeReason}），Caso已导入，请事后人工核对案由
+                          Causa已降级为自由文本（{s.causeDowngradeReason}），Caso已导入，请事后人工核对Causa
                         </span>
                       </div>
                     )}
@@ -214,7 +214,7 @@ export function MatterImportView() {
 
           {result.failed.length > 0 && (
             <div>
-              <p className="mb-1 text-[12px] text-destructive">失败行：</p>
+              <p className="mb-1 text-[12px] text-destructive">Error行：</p>
               <ul className="space-y-0.5 text-[12px]">
                 {result.failed.map((f) => (
                   <li key={f.rowNo} className="flex items-center gap-2 text-destructive">

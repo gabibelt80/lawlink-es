@@ -1,12 +1,13 @@
 /**
- * v0.9.1 AI 配置读写（OpenAI 兼容协议）
+ * v0.9.1 Configuración de IA (protocolo compatible con OpenAI)
  *
- * SystemSetting 单 key `aiSettings`，value 是加密后的 JSON：
+ * SystemSetting con clave `aiSettings`, valor JSON cifrado:
  *   { apiKeyCipher, baseUrl, textModel, visionModel }
- * apiKey 用 storage/crypto 同密钥（STORAGE_ENCRYPTION_KEY）加密存。
+ * apiKey se cifra con storage/crypto usando la misma clave (STORAGE_ENCRYPTION_KEY).
  *
- * 默认 provider：通义千问（决策 PRD §13.8.2 阿里云百炼免费额度大）。
- * 但用户可改任何 OpenAI 兼容 endpoint：DeepSeek / Kimi / 智谱 / OpenAI / OpenRouter / Ollama。
+ * Proveedor por defecto: Qwen (Alibaba Cloud) por su amplio nivel gratuito.
+ * El usuario puede cambiar a cualquier endpoint compatible con OpenAI:
+ * DeepSeek / Kimi / Zhipu / OpenAI / OpenRouter / Ollama / etc.
  */
 import { prisma } from "@/lib/prisma";
 import { encryptBuffer, decryptBuffer } from "@/lib/storage/crypto";
@@ -27,7 +28,7 @@ export interface StoredAiSettings {
 }
 
 export interface ResolvedAiSettings {
-  apiKey: string; // 已解密，仅 server 内部用
+  apiKey: string; // descifrada, solo para uso interno del servidor
   baseUrl: string;
   textModel: string;
   visionModel: string;
@@ -61,7 +62,7 @@ export async function readStoredAiSettings(): Promise<StoredAiSettings> {
   };
 }
 
-/** 给 UI 用：脱敏 + 是否已配置 */
+/** Datos para la UI: estado de configuración + valores (clave ofuscada) */
 export async function readPublicAiSettings(): Promise<{
   configured: boolean;
   baseUrl: string;
@@ -80,7 +81,7 @@ export async function readPublicAiSettings(): Promise<{
   };
 }
 
-/** 给 server 内部调用：拿解密后的可用配置 */
+/** Para uso interno del servidor: configuración descifrada y lista para usar */
 export async function getAiSettings(): Promise<ResolvedAiSettings> {
   const s = await readStoredAiSettings();
   const apiKey = decryptKey(s.apiKeyCipher);
@@ -94,7 +95,7 @@ export async function getAiSettings(): Promise<ResolvedAiSettings> {
 }
 
 export async function saveAiSettings(input: {
-  apiKey?: string; // 留空则保留原值；显式传 null 清除
+  apiKey?: string; // si se omite, conserva el valor anterior; null lo elimina
   baseUrl?: string;
   textModel?: string;
   visionModel?: string;

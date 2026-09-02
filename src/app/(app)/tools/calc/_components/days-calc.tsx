@@ -36,7 +36,7 @@ export function DaysCalc() {
     setBetween(daysBetween(a, b, excludeWeekend));
   }
 
-  // 模式 2：加减天数
+  // 模式 2：加减días数
   const [baseDate, setBaseDate] = useState(fmtDate(today));
   const [offset, setOffset] = useState("15");
   const [targetDate, setTargetDate] = useState<Date | null>(null);
@@ -54,7 +54,7 @@ export function DaysCalc() {
     <section className="ll-surface rounded-lg border border-border p-5">
       <header className="mb-4 flex items-center gap-2">
         <CalendarDays className="h-4 w-4 text-primary" strokeWidth={1.8} />
-        <h2 className="text-lg">天数计算</h2>
+        <h2 className="text-lg">días数计算</h2>
         <span className="ml-2 text-[10px] text-muted-foreground">
           举证期 / 上诉期 / 答辩期常用
         </span>
@@ -64,7 +64,7 @@ export function DaysCalc() {
         size="sm"
         items={[
           { value: "between", label: "两Fecha之间" },
-          { value: "add", label: "加减天数" }
+          { value: "add", label: "加减días数" }
         ]}
         value={mode}
         onChange={(v) => setMode(v as Mode)}
@@ -109,9 +109,9 @@ export function DaysCalc() {
 
           {between !== null && (
             <div className="rounded-lg border border-border bg-muted/20 p-4">
-              <div className="text-[10px] tracking-wider text-muted-foreground">间隔天数</div>
+              <div className="text-[10px] tracking-wider text-muted-foreground">间隔días数</div>
               <div className="mt-1 font-mono text-[26px] font-medium tabular text-primary">
-                {between >= 0 ? between : `-${Math.abs(between)}`} 天
+                {between >= 0 ? between : `-${Math.abs(between)}`} días
               </div>
               {between < 0 && (
                 <p className="mt-1 text-[11px] text-muted-foreground">截止日早于起始日</p>
@@ -132,7 +132,7 @@ export function DaysCalc() {
               />
             </div>
             <div>
-              <Label className="text-[11px]">加减天数（可负）</Label>
+              <Label className="text-[11px]">加减días数（可负）</Label>
               <Input
                 type="number"
                 value={offset}
@@ -160,7 +160,7 @@ export function DaysCalc() {
               <ArrowRight className="h-4 w-4 text-muted-foreground" />
               <div className="text-center">
                 <div className="text-[10px] tracking-wider text-muted-foreground">
-                  目标日（{parseInt(offset) >= 0 ? "+" : ""}{offset} 天）
+                  Fecha objetivo（{parseInt(offset) >= 0 ? "+" : ""}{offset} días）
                 </div>
                 <div className="mt-1 font-mono text-[20px] font-medium tabular text-primary">
                   {fmtDate(targetDate)}

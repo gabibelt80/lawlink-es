@@ -90,7 +90,7 @@ export async function deleteBilling(id: string) {
 /**
  * Crear一条收付记录。
  * - Crear RECEIVED 时自动按 CommissionPlan 派生 COMMISSION 子条目（每位受益人一条）
- * - parent / children 通过 parentFeeEntryId 关联
+ * - parent / children Aprobar parentFeeEntryId 关联
  */
 export async function createFeeEntry(input: FeeEntryCreateInput) {
   const session = await requireSession();
@@ -264,7 +264,7 @@ export async function getMatterFinance(matterId: string) {
       include: { user: { select: { id: true, name: true, role: true } } },
       orderBy: { createdAt: "asc" }
     }),
-    // 开票金额：已开具发票合计
+    // 开票Monto：已开具Factura合计
     prisma.invoiceRequest.findMany({
       where: { matterId, status: "ISSUED" },
       select: { amount: true }
@@ -288,7 +288,7 @@ export async function getMatterFinance(matterId: string) {
 }
 
 /**
- * v0.11: 列出Caso下的申请发票
+ * v0.11: 列出Caso下的申请Factura
  */
 export async function listMatterInvoiceRequests(matterId: string) {
   const session = await requireSession();
@@ -348,7 +348,7 @@ export async function getMatterInvoiceContext(matterId: string) {
   });
   if (!m) throw new Error("Caso不存在");
 
-  // v0.42 项3：开票抬头下拉 = 本案关联的Ver todosCliente（去重，主要Cliente置顶）
+  // v0.42 ítems3：开票抬头下拉 = 本案关联的Ver todosCliente（去重，主要Cliente置顶）
   const clientMap = new Map<
     string,
     { id: string; name: string; taxNo: string | null; isPrimary: boolean }
@@ -401,7 +401,7 @@ export async function getMatterInvoiceContext(matterId: string) {
  * v0.12: Crear开票申请（带类型/名目/抬头/依据）
  */
 export async function createInvoiceRequest(input: {
-  // v0.43 项5：matterId 可空——无关联Caso开票须填 noMatterReason
+  // v0.43 ítems5：matterId 可空——无关联Caso开票须填 noMatterReason
   matterId: string | null;
   noMatterReason?: string | null;
   amount: number;
@@ -409,7 +409,7 @@ export async function createInvoiceRequest(input: {
   invoiceItem: "LAWYER_FEE" | "CONSULTING_FEE" | "AGENCY_FEE" | "OTHER";
   buyerName: string;
   buyerTaxNo?: string | null;
-  // v0.42 项4：增值税专用发票购方六要素（专票必填）
+  // v0.42 ítems4：增值税专用Factura购方六要素（专票必填）
   buyerAddress?: string | null;
   buyerPhone?: string | null;
   buyerBank?: string | null;
@@ -421,31 +421,31 @@ export async function createInvoiceRequest(input: {
   if (input.matterId) {
     await assertCanAssociateMatter(session.user.id, input.matterId);
   } else {
-    // 无关联Caso开票仅Finanzas / Administrar员 / 主任可发起，且必须说明原因
+    // 无关联Caso开票仅Finanzas / Administrar员 / 主任可发起，且必须说明Motivo
     if (!isManager(session.user.role) && session.user.role !== "FINANCE") {
       throw new Error("无关联Caso开票仅Finanzas / Administrar员 / 主任Abogado可发起");
     }
     if (!input.noMatterReason?.trim()) {
-      throw new Error("无关联Caso时必须填写原因说明");
+      throw new Error("无关联Caso时必须填写Motivo说明");
     }
   }
 
-  if (input.amount <= 0) throw new Error("金额必须大于 0");
+  if (input.amount <= 0) throw new Error("Monto必须大于 0");
   if (input.invoiceType !== "PLAIN" && input.invoiceType !== "SPECIAL") {
     throw new Error("请选择开票类型");
   }
   if (!input.buyerName.trim()) throw new Error("请填写开票抬头");
-  // 专票合规校验（《增值税专用发票使用与AdministrarNotificaciones》第一条 + 购方六要素）
+  // 专票合规校验（《增值税专用Factura使用yAdministrarNotificaciones》第一条 + 购方六要素）
   if (input.invoiceType === "SPECIAL") {
-    if (!input.buyerTaxNo?.trim()) throw new Error("增值税专用发票必须填写纳税人识别号");
-    if (!input.buyerAddress?.trim()) throw new Error("增值税专用发票必须填写购方地址");
-    if (!input.buyerPhone?.trim()) throw new Error("增值税专用发票必须填写购方电话");
-    if (!input.buyerBank?.trim()) throw new Error("增值税专用发票必须填写开户银行");
-    if (!input.buyerBankAccount?.trim()) throw new Error("增值税专用发票必须填写银行账号");
+    if (!input.buyerTaxNo?.trim()) throw new Error("增值税专用Factura必须填写纳税人识别号");
+    if (!input.buyerAddress?.trim()) throw new Error("增值税专用Factura必须填写购方地址");
+    if (!input.buyerPhone?.trim()) throw new Error("增值税专用Factura必须填写购方电话");
+    if (!input.buyerBank?.trim()) throw new Error("增值税专用Factura必须填写开户银行");
+    if (!input.buyerBankAccount?.trim()) throw new Error("增值税专用Factura必须填写银行账号");
   }
-  // 关联Caso时必须上传开票依据（委托合同等）；无关联Caso以原因说明替代，依据可选
+  // 关联Caso时必须上传开票依据（委托合同etc.）；无关联Caso以Motivo说明替代，依据可选
   if (input.matterId && input.evidenceDocIds.length === 0) {
-    throw new Error("请上传至少一份开票依据（扫描版委托合同等）");
+    throw new Error("请上传至少一份开票依据（扫描版委托合同etc.）");
   }
 
   const isSpecial = input.invoiceType === "SPECIAL";
@@ -480,10 +480,10 @@ export async function createInvoiceRequest(input: {
   await notifyRoleApprovers({
     roles: ["ADMIN", "PRINCIPAL_LAWYER", "FINANCE"],
     excludeUserId: session.user.id,
-    title: "新的发票Aprobación待处理",
+    title: "新的FacturaAprobación待处理",
     content: `${session.user.name ?? "有用户"} Enviar了开票申请：${
       matter ? `${matter.internalCode} ${matter.title}` : input.noMatterReason?.trim() || "无关联Caso"
-    }，金额 ${input.amount.toLocaleString("zh-CN")} 元`,
+    }，Monto ${input.amount.toLocaleString("zh-CN")} pesos`,
     href: "/finance",
     refType: "InvoiceRequest",
     refId: created.id,
@@ -495,7 +495,7 @@ export async function createInvoiceRequest(input: {
   return created;
 }
 
-/** v0.43 项5：Finanzas页开票弹窗用——Buscar当前用户可关联Caso（轻量，Volver编号+标题） */
+/** v0.43 ítems5：Finanzas页开票弹窗用——Buscar当前用户可关联Caso（轻量，Volver编号+标题） */
 export async function searchMattersForInvoice(q?: string) {
   const session = await requireSession();
   return prisma.matter.findMany({
@@ -567,7 +567,7 @@ export async function getMonthlyRevenue(months = 6) {
 export async function getPersonalRevenue(userId: string) {
   const session = await requireSession();
   if (!isManager(session.user.role) && session.user.id !== userId) {
-    throw new Error("只能Ver自己的收入数据");
+    throw new Error("只能Ver自己的Ingresos数据");
   }
   const monthStart = new Date();
   monthStart.setDate(1);

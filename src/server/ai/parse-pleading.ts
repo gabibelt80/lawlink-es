@@ -37,26 +37,27 @@ export type ParsedPleading = {
 const SUPPORTED_IMAGE_MIME = ["image/jpeg", "image/png", "image/webp"];
 const SUPPORTED_PDF_MIME = ["application/pdf"];
 
-const SYSTEM_PROMPT = `你是法律文书解析助手。下方图片是一份起诉状 / 申请书 / 仲裁申请书。
-请严格按以下 JSON 模式Volver（仅 JSON，不要任何解释）：
+const SYSTEM_PROMPT = `Eres un asistente de análisis de documentos legales. La imagen de abajo es una demanda / solicitud / solicitud de arbitraje.
+Responde estrictamente con el siguiente formato JSON (solo JSON, sin ninguna explicación):
 {
-  "plaintiffs": [{"name": "全名", "idNumber": "身份证或统一社会信用代码（可选）", "address": "可选", "legalRep": "法定代表人（公司适用，可选）", "phone": "可选"}],
-  "thirdParties": [{"name": "全名", "idNumber": "可选", "address": "可选"}],
-  "cause": "案由（如：买卖合同纠纷）",
-  "claimAmount": 数字（元，仅金钱标的；非金钱填 null）,
-  "claimDescription": "诉讼请求/申请事项要点",
-  "court": "管辖法院/仲裁机构全称"
+  "plaintiffs": [{"name": "Nombre completo", "idNumber": "Documento de identidad o número de identificación tributaria (opcional)", "address": "Opcional", "legalRep": "Representante legal (aplicable para empresas, opcional)", "phone": "Opcional"}],
+  "thirdParties": [{"name": "Nombre completo", "idNumber": "Opcional", "address": "Opcional"}],
+  "cause": "Causa (por ejemplo: conflicto por contrato de compraventa)",
+  "claimAmount": número (en yuanes, solo para monto monetario; si no es monetario, usa null),
+  "claimDescription": "Resumen de la solicitud / pretensión principal",
+  "court": "Nombre completo del tribunal o arbitraje competente"
 }
-规则：
-- 找不到的字段Volver空数组 [] 或 null，不要编造
-- 起诉方包含原告 / 申请人 / 申请执行人 / 上诉人，统一放 plaintiffs
-- 不要Volver被告 / 被申请人 / 被上诉人（那是用户自己）
-- 金额单位统一为人民币元`;
+Reglas:
+- Si no se encuentra un campo, devuelve [] o null, no inventes información.
+- El demandante incluye demandante / solicitante / solicitante de ejecución / recurrente, y debe colocarse en plaintiffs.
+- No devuelvas demandado / demandado / apelado (es el usuario).
+- La unidad monetaria debe ser yuanes chinos`;
 
 function normalizeResult(
   parsed: Partial<ParsedPleading> | null | undefined,
 ): ParsedPleading {
-  if (!parsed) throw new Error("AI Volver结果无法解析为 JSON");
+  if (!parsed)
+    throw new Error("El resultado de IA no se pudo analizar como JSON");
   return {
     plaintiffs: Array.isArray(parsed.plaintiffs) ? parsed.plaintiffs : [],
     thirdParties: Array.isArray(parsed.thirdParties) ? parsed.thirdParties : [],
@@ -101,7 +102,7 @@ export async function parsePleading(form: FormData): Promise<ParsedPleading> {
   const isPdf = SUPPORTED_PDF_MIME.includes(file.type);
   if (!isImage && !isPdf) {
     throw new Error(
-      `仅支持 JPG / PNG / WebP / PDF，当前 ${file.type || "未知"}`,
+      `仅支持 JPG / PNG / WebP / PDF，当前 ${file.type || "Desconocido"}`,
     );
   }
   if (file.size > 20 * 1024 * 1024) throw new Error("文件超过 20MB");
@@ -160,11 +161,11 @@ export async function parsePleading(form: FormData): Promise<ParsedPleading> {
     }
 
     if (pageResults.length === 0) {
-      throw new Error("扫描版 PDF 识别失败，请改传图片或检查文件");
+      throw new Error("扫描版 PDF 识别Error，请改传图片或检查文件");
     }
     return mergeResults(pageResults);
   } catch (err) {
     if (err instanceof AiNotConfiguredError) throw err;
-    throw new Error(err instanceof Error ? err.message : "OCR 识别失败");
+    throw new Error(err instanceof Error ? err.message : "OCR 识别Error");
   }
 }

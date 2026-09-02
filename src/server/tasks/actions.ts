@@ -11,7 +11,7 @@ import { matterHrefById, revalidateMatter } from "@/server/matters/route";
 
 const taskCreateSchema = z.object({
   matterId: z.string().cuid(),
-  title: z.string().min(1, "事项标题必填").max(200),
+  title: z.string().min(1, "事ítems标题必填").max(200),
   description: z.string().max(2000).optional().or(z.literal("")),
   assigneeId: z.string().cuid().optional().or(z.literal("")),
   dueAt: z.coerce.date().optional(),
@@ -52,12 +52,12 @@ export async function createTask(input: TaskCreateInput) {
     detail: { matterId: data.matterId, title: created.title }
   });
 
-  // v0.43 项4：写入Caso动态时间线
+  // v0.43 ítems4：写入Caso动态时间线
   await prisma.timelineEvent.create({
     data: {
       matterId: data.matterId,
       eventType: "TASK_ADDED",
-      title: `新增事项：${created.title}`,
+      title: `新增事ítems：${created.title}`,
       occurredAt: new Date(),
       refType: "Task",
       refId: created.id
@@ -69,8 +69,8 @@ export async function createTask(input: TaskCreateInput) {
     await createNotification({
       userId: data.assigneeId,
       type: "TASK_ASSIGNED",
-      title: "您有新事项",
-      content: `事项「${created.title}」已指派给您`,
+      title: "您有新事ítems",
+      content: `事ítems「${created.title}」已指派给您`,
       href: await matterHrefById(data.matterId),
       refType: "Task",
       refId: created.id

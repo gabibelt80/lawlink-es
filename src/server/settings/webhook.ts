@@ -41,7 +41,7 @@ const WEBHOOK_TIMEOUT_MS = 8000;
 
 /**
  * 发送文本消息到已配置的 webhook。未启用/未配置时静默跳过（Volver skipped）。
- * 不抛异常：Recordatorios推送失败不能影响主流程，失败原因Volver给调用方记录。
+ * 不抛异常：Recordatorios推送Error不能影响主流程，ErrorMotivoVolver给调用方记录。
  */
 export async function sendWebhookText(
   content: string
@@ -76,7 +76,7 @@ export async function sendWebhookText(
     }
     return { ok: true };
   } catch (err) {
-    return { ok: false, error: err instanceof Error ? err.message : "请求失败" };
+    return { ok: false, error: err instanceof Error ? err.message : "请求Error" };
   } finally {
     clearTimeout(timer);
   }

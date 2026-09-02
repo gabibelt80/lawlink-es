@@ -31,7 +31,7 @@ export function AvatarForm({ name, initialAvatar }: { name: string; initialAvata
       setAvatar(dataUrl);
       save(dataUrl);
     };
-    reader.onerror = () => toast.error("读取图片失败");
+    reader.onerror = () => toast.error("读取图片Error");
     reader.readAsDataURL(file);
   };
 
@@ -42,7 +42,7 @@ export function AvatarForm({ name, initialAvatar }: { name: string; initialAvata
         toast.success(value ? "头像已Actualizar" : "头像已清除");
         router.refresh();
       } catch (e) {
-        toast.error(e instanceof Error ? e.message : "Guardar失败");
+        toast.error(e instanceof Error ? e.message : "GuardarError");
       }
     });
   };
@@ -92,7 +92,7 @@ export function AvatarForm({ name, initialAvatar }: { name: string; initialAvata
           )}
         </div>
         <p className="text-[11px] text-muted-foreground">
-          未上传时显示姓名首字「{initial}」。建议方形图片，≤ 180KB。
+          未上传时显示Nombre y apellido首字「{initial}」。建议方形图片，≤ 180KB。
         </p>
       </div>
     </div>

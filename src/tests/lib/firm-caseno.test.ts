@@ -18,7 +18,7 @@ describe("renderCaseNoTemplate — 所内案号模板渲染", () => {
     expect(renderCaseNoTemplate("{年2}{类}{序4}", { ...base, seq: 23 })).toBe("26民0023");
   });
 
-  it("{类} 与 {类词} 互不污染（{类词} 先替换）", () => {
+  it("{类} y {类词} 互不污染（{类词} 先替换）", () => {
     expect(renderCaseNoTemplate("{类词}/{类}", base)).toBe("民诉/民");
   });
 

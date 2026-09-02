@@ -56,7 +56,7 @@ export function LateInterestCalc() {
 
       <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
         <div>
-          <Label className="text-[11px]">判决金额（元）</Label>
+          <Label className="text-[11px]">判决Monto（pesos）</Label>
           <Input
             type="number"
             value={principal}
@@ -116,7 +116,7 @@ export function LateInterestCalc() {
       {result && (
         <>
           <div className="mt-4 grid grid-cols-1 gap-3 md:grid-cols-3">
-            <ResultCard label="迟延天数" value={`${result.daysLate} 天`} accent="#737373" />
+            <ResultCard label="迟延días数" value={`${result.daysLate} días`} accent="#737373" />
             <ResultCard
               label="年利率"
               value={`${(result.yearlyRate * 100).toFixed(2)}%`}
@@ -141,7 +141,7 @@ export function LateInterestCalc() {
           </div>
           <p className="mt-3 flex items-start gap-1.5 text-[11px] text-muted-foreground">
             <Info className="mt-0.5 h-3 w-3 shrink-0" />
-            算法：判决金额 × (LPR 1Y + {extraPercent}%) × 迟延天数 / 365。LPR 以中国人民银行公布为准，建议办案时确认当前值。
+            算法：判决Monto × (LPR 1Y + {extraPercent}%) × 迟延días数 / 365。LPR 以中国人民银行公布为准，建议办案时Confirmar当前值。
           </p>
         </>
       )}

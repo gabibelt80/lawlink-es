@@ -104,7 +104,7 @@ export function DocumentReviewDialog({
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
 
-  // 打开/换 doc 时重置 + 拉历史
+  // 打开/换 doc 时Restablecer + 拉历史
   useEffect(() => {
     if (!open || !documentId) return;
     let cancelled = false;
@@ -118,7 +118,7 @@ export function DocumentReviewDialog({
         if (!cancelled) setHistory(h);
       })
       .catch(() => {
-        // 历史查询失败不阻塞新审查
+        // 历史查询Error不阻塞新审查
       })
       .finally(() => {
         if (!cancelled) setLoadingHistory(false);
@@ -223,7 +223,7 @@ export function DocumentReviewDialog({
                 type="button"
                 onClick={() => setView({ kind: "list" })}
                 className="text-muted-foreground hover:text-foreground"
-                title="Volver列表"
+                title="Volver"
               >
                 <ChevronLeft className="h-4 w-4" />
               </button>

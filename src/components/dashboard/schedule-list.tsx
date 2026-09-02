@@ -7,7 +7,7 @@ import type { ScheduleItem } from "@/server/dashboard/actions";
 import { matterHref } from "@/lib/matters/route";
 
 const typeMeta = {
-  deadline: { icon: AlertTriangle, color: "text-amber-600", label: "期限" },
+  deadline: { icon: AlertTriangle, color: "text-amber-600", label: "Plazo" },
   hearing: { icon: Calendar, color: "text-primary", label: "开庭" },
 };
 
@@ -76,7 +76,7 @@ function ScheduleRow({ item }: { item: ScheduleItem }) {
       ? "Hoy"
       : item.daysUntil === 1
         ? "Mañana"
-        : `${item.daysUntil}天后`;
+        : `${item.daysUntil}días后`;
   const urgent = item.daysUntil <= 3;
 
   const inner = (

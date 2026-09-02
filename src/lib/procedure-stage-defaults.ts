@@ -14,15 +14,15 @@ const CIVIL_TRIAL_PRESETS: ProcedureStagePreset[] = [
   { name: "起诉立案", kind: "required", description: "起诉/应诉材料、主体身份、管辖材料、缴费和诉调衔接。" },
   { name: "财产Preservación", kind: "optional", description: "Preservación申请、担保、裁定、续保和解除。" },
   { name: "管辖权异议", kind: "optional", description: "管辖异议申请或答辩、裁定签收和上诉衔接。" },
-  { name: "举证质证", kind: "required", description: "举证期限、证据交换、补充证据和质证意见。" },
-  { name: "司法鉴定", kind: "optional", description: "鉴定事项、样本材料、鉴定机构和鉴定意见质证。" },
-  { name: "庭前会议", kind: "optional", description: "庭前会议Notificaciones、争点确认、证据交换和程序安排。" },
+  { name: "举证质证", kind: "required", description: "举证Plazo、证据交换、补充证据和质证意见。" },
+  { name: "司法鉴定", kind: "optional", description: "鉴定事ítems、样本材料、鉴定机构和鉴定意见质证。" },
+  { name: "庭前会议", kind: "optional", description: "庭前会议Notificaciones、争点Confirmar、证据交换和程序安排。" },
   { name: "模拟法庭", kind: "optional", description: "争点清单、发问提纲、攻防演练和Cliente庭前沟通。" },
   { name: "开庭审理", kind: "required", description: "传票、庭审提纲、发问提纲、证据原件和庭审记录。" },
   { name: "庭后补充", kind: "optional", description: "庭后代理意见、补充证据、庭审Informe和法官沟通。" },
   { name: "裁判签收", kind: "required", description: "裁判文书签收、上诉期、履行期和裁判结果Informe。" },
   { name: "上诉/二审衔接", kind: "optional", description: "是否上诉、二审委托、上诉材料和二审策略。" },
-  { name: "Caso归档", kind: "required", description: "结案Informe、材料完整性、原件退还和归档申请。" }
+  { name: "Caso归档", kind: "required", description: "Cerrar casoInforme、材料完整性、原件退还和归档申请。" }
 ];
 
 const SECOND_INSTANCE_PRESETS: ProcedureStagePreset[] = [
@@ -34,10 +34,10 @@ const SECOND_INSTANCE_PRESETS: ProcedureStagePreset[] = [
   { name: "举证质证", kind: "required", description: "二审新证据、补充证据和质证意见。" },
   { name: "司法鉴定", kind: "optional", description: "二审鉴定申请、补充鉴定或鉴定意见质证。" },
   { name: "模拟法庭", kind: "optional", description: "二审争点攻防、发问提纲和Cliente庭前演练。" },
-  { name: "开庭/询问", kind: "required", description: "开庭、询问或书面审理准备与记录。" },
+  { name: "开庭/询问", kind: "required", description: "开庭、询问或书面审理准备y记录。" },
   { name: "庭后补充", kind: "optional", description: "庭后补充意见、补交材料和法官沟通。" },
   { name: "二审裁判", kind: "required", description: "二审裁判签收、生效、履行和后续程序提示。" },
-  { name: "Caso归档", kind: "required", description: "二审结案Informe、材料归档和原件退还。" }
+  { name: "Caso归档", kind: "required", description: "二审Cerrar casoInforme、材料归档和原件退还。" }
 ];
 
 const ENFORCEMENT_PRESETS: ProcedureStagePreset[] = [
@@ -47,8 +47,8 @@ const ENFORCEMENT_PRESETS: ProcedureStagePreset[] = [
   { name: "财产查控", kind: "required", description: "财产线索、网络查控、查封冻结和处置跟进。" },
   { name: "异议/复议", kind: "optional", description: "执行异议、复议、不予执行和听证准备。" },
   { name: "执行和解", kind: "optional", description: "和解方案、协议签署、履行监督和恢复执行预案。" },
-  { name: "执行结案", kind: "required", description: "执行回款、终本/终结、结案文书和后续安排。" },
-  { name: "Caso归档", kind: "required", description: "执行结案Informe、材料归档和原件退还。" }
+  { name: "执行Cerrar caso", kind: "required", description: "执行回款、终本/终结、Cerrar caso文书和后续安排。" },
+  { name: "Caso归档", kind: "required", description: "执行Cerrar casoInforme、材料归档和原件退还。" }
 ];
 
 const ARBITRATION_PRESETS: ProcedureStagePreset[] = [
@@ -63,7 +63,7 @@ const ARBITRATION_PRESETS: ProcedureStagePreset[] = [
   { name: "开庭审理", kind: "required", description: "开庭Notificaciones、庭审提纲、发问提纲和原件核对。" },
   { name: "庭后补充", kind: "optional", description: "庭后补充意见、补交材料和仲裁庭沟通。" },
   { name: "仲裁裁决", kind: "required", description: "裁决签收、履行、撤裁评估和后续程序提示。" },
-  { name: "Caso归档", kind: "required", description: "仲裁结案Informe、材料归档和原件退还。" }
+  { name: "Caso归档", kind: "required", description: "仲裁Cerrar casoInforme、材料归档和原件退还。" }
 ];
 
 const CRIMINAL_INVESTIGATION_PRESETS: ProcedureStagePreset[] = [
