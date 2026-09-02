@@ -59,11 +59,11 @@ export function AddTaskDialog({
 
   function submit() {
     if (!matterId) {
-      toast.warning("Selecciona un Caso asociado");
+      toast.warning("Seleccioná un Caso asociado");
       return;
     }
     if (!title.trim()) {
-      toast.warning("Completa el título de la tarea");
+      toast.warning("Completá el título de la tarea");
       return;
     }
     if (!date) {
@@ -110,11 +110,11 @@ export function AddTaskDialog({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Plus className="h-4 w-4 text-primary" />
-            Agregar事ítems
+            Agregar tarea
           </DialogTitle>
           <DialogDescription className="text-xs">
             {date
-              ? date.toLocaleDateString("zh-CN", {
+              ? date.toLocaleDateString("es-AR", {
                   year: "numeric",
                   month: "long",
                   day: "numeric",
@@ -127,11 +127,11 @@ export function AddTaskDialog({
         <div className="space-y-3">
           <div className="space-y-1.5">
             <Label className="text-xs">
-              关联Caso <span className="text-destructive">*</span>
+              Caso asociado <span className="text-destructive">*</span>
             </Label>
             <Select value={matterId} onValueChange={setMatterId}>
               <SelectTrigger>
-                <SelectValue placeholder="请选择" />
+                <SelectValue placeholder="Seleccioná" />
               </SelectTrigger>
               <SelectContent className="max-h-64">
                 {matters.map((m) => (
@@ -148,10 +148,10 @@ export function AddTaskDialog({
 
           <div className="space-y-1.5">
             <Label className="text-xs">
-              事ítems标题 <span className="text-destructive">*</span>
+              Título de la tarea <span className="text-destructive">*</span>
             </Label>
             <Input
-              placeholder="如：起草起诉状 / Enviar证据清单"
+              placeholder="Ej.: Redactar demanda / Enviar lista de pruebas"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
             />
@@ -160,7 +160,7 @@ export function AddTaskDialog({
           <div className="space-y-1.5">
             <Label className="flex items-center gap-1 text-xs">
               <Clock className="h-3 w-3" />
-              时间
+              Hora
             </Label>
             <div className="flex items-center gap-2">
               <input
@@ -178,27 +178,27 @@ export function AddTaskDialog({
                   onChange={(e) => setAllDay(e.target.checked)}
                   className="h-3.5 w-3.5"
                 />
-                全días
+                Todo el día
               </label>
             </div>
           </div>
 
           <div className="space-y-1.5">
-            <Label className="text-xs">Descripción（可选）</Label>
+            <Label className="text-xs">Descripción (opcional)</Label>
             <Textarea
               rows={2}
-              placeholder="事ítems详情、相关材料etc."
+              placeholder="Detalle de la tarea, materiales relacionados, etc."
               value={description}
               onChange={(e) => setDescription(e.target.value)}
             />
           </div>
 
           <div className="space-y-1.5">
-            <Label className="text-xs">优先级</Label>
+            <Label className="text-xs">Prioridad</Label>
             <div className="flex gap-2">
               {[
-                { value: 0, label: "普通" },
-                { value: 1, label: "高" },
+                { value: 0, label: "Normal" },
+                { value: 1, label: "Alta" },
                 { value: 2, label: "Urgente" },
               ].map((p) => (
                 <button

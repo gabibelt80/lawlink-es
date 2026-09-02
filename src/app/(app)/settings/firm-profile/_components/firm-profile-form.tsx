@@ -236,7 +236,7 @@ export function FirmProfileForm({ initial }: { initial: Initial }) {
         </div>
 
         <div className="mt-4">
-          <Label className="text-[11px] text-muted-foreground">Mapeo de palabra de categoría ({"{palabraCat}"})</Label>
+          <Label className="text-[11px] text-muted-foreground">Palabra de categoría ({"{palabraCat}"})</Label>
           <div className="mt-2 grid grid-cols-2 gap-2 md:grid-cols-4">
             {initial.categories.map((c) => (
               <div key={c.key} className="rounded-md border border-border bg-card p-2">

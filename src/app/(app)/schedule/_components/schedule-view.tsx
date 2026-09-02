@@ -30,12 +30,12 @@ import { AddTaskDialog } from "./add-task-dialog";
 import { matterHref } from "@/lib/matters/route";
 
 const typeMeta = {
-  hearing: { icon: Gavel, label: "开庭", color: "#5B8DEF" },
-  deadline: { icon: AlertTriangle, label: "Plazo", color: "#FBBF24" },
-  task: { icon: ClipboardList, label: "事ítems", color: "#4FD1C5" }
+  hearing: { icon: Gavel, label: "Audiencia", color: "#5B8DEF" },
+  deadline: { icon: AlertTriangle, label: "Vencimiento", color: "#FBBF24" },
+  task: { icon: ClipboardList, label: "Tarea", color: "#4FD1C5" }
 } as const;
 
-const WEEKDAY_LABELS = ["一", "二", "三", "四", "五", "六", "日"];
+const WEEKDAY_LABELS = ["L", "Ma", "Mi", "J", "V", "S", "D"];
 const VISIBLE_ITEMS_PER_DAY = 4;
 
 export function ScheduleView({
@@ -89,13 +89,13 @@ export function ScheduleView({
       <header className="ll-page-head">
         <div>
           <h1 className="ll-page-title">Calendario</h1>
-          <p className="ll-page-sub">未来 90 días的开庭、PlazoyPendiente事ítems</p>
+          <p className="ll-page-sub">Próximos 90 días de audiencias, vencimientos y tareas pendientes</p>
         </div>
 
           <div className="flex flex-wrap items-center justify-end gap-2">
             <Button size="sm" onClick={() => openAddDialog()} className="h-8 gap-1.5">
               <Plus className="h-3.5 w-3.5" strokeWidth={1.8} />
-              AgregarCalendario
+              Agregar al calendario
             </Button>
             <div
               className="ll-segmented"
@@ -106,7 +106,7 @@ export function ScheduleView({
                 className={cn("ll-seg", view === "list" && "ll-seg-active text-primary")}
               >
                 <List className="h-3.5 w-3.5" strokeWidth={1.8} />
-                列表
+                Lista
               </button>
               <button
                 type="button"
@@ -114,7 +114,7 @@ export function ScheduleView({
                 className={cn("ll-seg", view === "calendar" && "ll-seg-active text-primary")}
               >
                 <Grid3X3 className="h-3.5 w-3.5" strokeWidth={1.8} />
-                月历
+                Mes
               </button>
             </div>
           </div>
@@ -122,10 +122,10 @@ export function ScheduleView({
 
       {/* KPI */}
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-        <Stat label="今日" value={stats.todayCount} color="hsl(var(--primary))" icon={<Clock className="h-3.5 w-3.5" />} />
-        <Stat label="本周" value={stats.weekCount} color="#4FD1C5" icon={<Calendar className="h-3.5 w-3.5" />} />
-        <Stat label="开庭" value={stats.hearingCount} color="hsl(var(--primary))" icon={<Gavel className="h-3.5 w-3.5" />} />
-        <Stat label="Plazo" value={stats.deadlineCount} color="#EA580C" icon={<AlertTriangle className="h-3.5 w-3.5" />} />
+        <Stat label="Hoy" value={stats.todayCount} color="hsl(var(--primary))" icon={<Clock className="h-3.5 w-3.5" />} />
+        <Stat label="Esta semana" value={stats.weekCount} color="#4FD1C5" icon={<Calendar className="h-3.5 w-3.5" />} />
+        <Stat label="Audiencias" value={stats.hearingCount} color="hsl(var(--primary))" icon={<Gavel className="h-3.5 w-3.5" />} />
+        <Stat label="Vencimientos" value={stats.deadlineCount} color="#EA580C" icon={<AlertTriangle className="h-3.5 w-3.5" />} />
       </div>
 
       {view === "list" ? (
@@ -157,7 +157,7 @@ function ListView({
   items: (ScheduleItem & { dateKey: string })[];
   today: Date;
 }) {
-  // 按日分组
+  // Agrupar por día
   const groups = useMemo(() => {
     const map = new Map<string, (ScheduleItem & { dateKey: string })[]>();
     for (const it of items) {
@@ -170,7 +170,7 @@ function ListView({
   if (items.length === 0) {
     return (
       <div className="ll-surface border-dashed py-16 text-center">
-        <p className="text-sm text-muted-foreground">未来 90 días没有Calendario</p>
+        <p className="text-sm text-muted-foreground">No hay eventos en los próximos 90 días</p>
       </div>
     );
   }
@@ -194,16 +194,16 @@ function ListView({
             >
               <div className="flex items-center gap-3">
                 <span className={cn("text-base font-semibold", isToday && "text-primary")}>
-                  {d.toLocaleDateString("zh-CN", { month: "long", day: "numeric" })}
+                  {d.toLocaleDateString("es-AR", { month: "long", day: "numeric" })}
                 </span>
                 <span className="text-xs text-muted-foreground">
-                  {d.toLocaleDateString("zh-CN", { weekday: "long" })}
+                  {d.toLocaleDateString("es-AR", { weekday: "long" })}
                 </span>
                 {isToday ? (
                   <Badge className="bg-primary text-primary-foreground text-[10px]">Hoy</Badge>
                 ) : (
                   <span className="text-xs text-muted-foreground">
-                    {days === 1 ? "Mañana" : days > 0 ? `${days} días后` : `${-days} días前`}
+                    {days === 1 ? "Mañana" : days > 0 ? `En ${days} días` : `Hace ${-days} días`}
                   </span>
                 )}
               </div>
@@ -279,7 +279,7 @@ function CalendarCellItem({
         event.stopPropagation();
         onSelect(item);
       }}
-      title={`${meta.label}：${formatTime(item.occurredAt)} ${item.title} · ${subject}`}
+      title={`${meta.label}: ${formatTime(item.occurredAt)} ${item.title} · ${subject}`}
       className={cn(
         "flex min-w-0 items-center gap-1 rounded-sm border px-1 py-0.5 text-left text-[10px] leading-4 transition-colors hover:border-current",
         item.completed && "line-through opacity-50"
@@ -321,10 +321,10 @@ function CalendarView({
   const year = cursor.getFullYear();
   const month = cursor.getMonth();
 
-  // 一个月有多少días
+  // Cuántos días tiene el mes
   const daysInMonth = new Date(year, month + 1, 0).getDate();
-  // 当月第一días是周几（周一=1 ... 周日=7，转化为 0-6 让"周一在最左"）
-  const firstWeekday = ((new Date(year, month, 1).getDay() + 6) % 7); // 0=周一
+  // Primer día del mes (Lunes=1 ... Domingo=7, convertido a 0-6 para que "Lunes esté más a la izquierda")
+  const firstWeekday = ((new Date(year, month, 1).getDay() + 6) % 7); // 0=Lunes
 
   const cells: { date: Date | null; key: string | null }[] = [];
   for (let i = 0; i < firstWeekday; i++) cells.push({ date: null, key: null });
@@ -332,10 +332,10 @@ function CalendarView({
     const d = new Date(year, month, day);
     cells.push({ date: d, key: dateKey(d) });
   }
-  // 补齐到 6 行 = 42 格
+  // Completar hasta 6 filas = 42 celdas
   while (cells.length < 42) cells.push({ date: null, key: null });
 
-  // 按 key 聚合 items
+  // Agrupar items por key
   const itemsByKey = useMemo(() => {
     const map = new Map<string, (ScheduleItem & { dateKey: string })[]>();
     for (const it of items) {
@@ -371,7 +371,7 @@ function CalendarView({
               <ChevronLeft className="h-4 w-4" />
             </Button>
             <span className="text-base font-semibold tabular">
-              {year} 年 {month + 1} 月
+              {year} / {month + 1}
             </span>
             <Button
               variant="ghost"
@@ -384,7 +384,7 @@ function CalendarView({
           </div>
           {monthOffset !== 0 && (
             <Button variant="outline" size="sm" onClick={() => onOffsetChange(0)} className="h-7 text-xs">
-              回到本月
+              Volver a este mes
             </Button>
           )}
         </header>
@@ -436,8 +436,8 @@ function CalendarView({
                     onAddDay(cell.date!);
                   }}
                   className="h-5 w-5 rounded-sm p-0 text-muted-foreground opacity-0 transition-opacity hover:bg-muted hover:text-primary group-hover:opacity-100 group-focus-within:opacity-100"
-                  aria-label={`Agregar ${month + 1} 月 ${cell.date.getDate()} 日的Calendario`}
-                  title="AgregarCalendario"
+                  aria-label={`Agregar evento el ${cell.date.getDate()}/${month + 1}`}
+                  title="Agregar al calendario"
                 >
                   <Plus className="mx-auto h-3 w-3" />
                 </button>
@@ -488,7 +488,7 @@ function ScheduleSideRail({
           </span>
         </header>
         {todayItems.length === 0 ? (
-          <p className="px-4 py-8 text-center text-xs text-muted-foreground">Hoy没有Calendario</p>
+          <p className="px-4 py-8 text-center text-xs text-muted-foreground">No hay eventos hoy</p>
         ) : (
           <ul className="divide-y divide-border px-4">
             {todayItems.map((item) => (
@@ -502,14 +502,14 @@ function ScheduleSideRail({
         <header className="ll-panel-head">
           <h3 className="ll-panel-title">
             <span className="h-2 w-2 rounded-full bg-red-500" />
-            即将到期
+            Próximos a vencer
           </h3>
           <span className="font-mono text-xs text-muted-foreground tabular">
             {upcomingDeadlines.length} ítems
           </span>
         </header>
         {upcomingDeadlines.length === 0 ? (
-          <p className="px-4 py-8 text-center text-xs text-muted-foreground">暂无近期到期事ítems</p>
+          <p className="px-4 py-8 text-center text-xs text-muted-foreground">No hay tareas próximas a vencer</p>
         ) : (
           <ul className="divide-y divide-border px-4">
             {upcomingDeadlines.map((item) => (
@@ -606,10 +606,10 @@ function ScheduleItemDialog({
             </DialogHeader>
 
             <div className="space-y-2 rounded-lg border border-border bg-muted/20 p-3">
-              <DetailLine label="时间" value={`${formatFullDate(item.occurredAt)} ${formatTime(item.occurredAt)}`} />
-              <DetailLine label="Cliente" value={item.clientName ?? "未填写Cliente"} />
+              <DetailLine label="Hora" value={`${formatFullDate(item.occurredAt)} ${formatTime(item.occurredAt)}`} />
+              <DetailLine label="Cliente" value={item.clientName ?? "Cliente sin completar"} />
               <DetailLine
-                label="关联Caso"
+                label="Caso asociado"
                 value={
                   <Link
                     href={matterHref(item.matter)}
@@ -620,20 +620,20 @@ function ScheduleItemDialog({
                 }
               />
               {item.procedureLabel && (
-                <DetailLine label="程序" value={formatProcedureLabel(item.procedureLabel)} />
+                <DetailLine label="Procedimiento" value={formatProcedureLabel(item.procedureLabel)} />
               )}
               {item.type === "deadline" && item.category && (
-                <DetailLine label="Plazo类型" value={item.category} />
+                <DetailLine label="Tipo de vencimiento" value={item.category} />
               )}
               {item.type === "deadline" && item.remindDays !== undefined && (
-                <DetailLine label="Recordatorios" value={`提前 ${item.remindDays} días`} />
+                <DetailLine label="Recordatorio" value={`Con ${item.remindDays} días de anticipación`} />
               )}
               {item.type === "task" && item.priority !== undefined && (
-                <DetailLine label="优先级" value={priorityLabel(item.priority)} />
+                <DetailLine label="Prioridad" value={priorityLabel(item.priority)} />
               )}
               {item.description && (
                 <div className="space-y-1 border-t border-border pt-2">
-                  <div className="text-[11px] text-muted-foreground">详情</div>
+                  <div className="text-[11px] text-muted-foreground">Detalle</div>
                   <p className="whitespace-pre-wrap text-sm leading-6">{item.description}</p>
                 </div>
               )}
@@ -644,7 +644,7 @@ function ScheduleItemDialog({
                 Cerrar
               </Button>
               <Button asChild>
-                <Link href={matterHref(item.matter)}>VerCaso</Link>
+                <Link href={matterHref(item.matter)}>Ver caso</Link>
               </Button>
             </DialogFooter>
           </>
@@ -695,7 +695,7 @@ function dateKey(d: Date) {
 }
 
 function formatTime(value: Date) {
-  return new Date(value).toLocaleTimeString("zh-CN", {
+  return new Date(value).toLocaleTimeString("es-AR", {
     hour: "2-digit",
     minute: "2-digit",
     hour12: false
@@ -703,7 +703,7 @@ function formatTime(value: Date) {
 }
 
 function formatFullDate(value: Date) {
-  return new Date(value).toLocaleDateString("zh-CN", {
+  return new Date(value).toLocaleDateString("es-AR", {
     year: "numeric",
     month: "long",
     day: "numeric",
@@ -712,7 +712,7 @@ function formatFullDate(value: Date) {
 }
 
 function formatMonthDay(value: Date) {
-  return new Date(value).toLocaleDateString("zh-CN", {
+  return new Date(value).toLocaleDateString("es-AR", {
     month: "2-digit",
     day: "2-digit"
   });
@@ -724,8 +724,8 @@ function formatProcedureLabel(value: string) {
 
 function priorityLabel(value: number) {
   if (value >= 2) return "Urgente";
-  if (value === 1) return "高";
-  return "普通";
+  if (value === 1) return "Alta";
+  return "Normal";
 }
 
 function displaySubject(item: ScheduleItem) {
