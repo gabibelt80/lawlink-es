@@ -1,10 +1,10 @@
 "use server";
 
 /**
- * v0.44: OCR de citación judicial
+ * v0.44: OCR de cédula de notificación judicial
  *
- * Abogado carga imagen de citación → aiVision extrae fecha de audiencia, hora, sala, número de caso, juez, partes
- * Si falla, retorna campos null para que Abogado complete manualmente
+ * El abogado carga una imagen de la cédula → aiVision extrae fecha de audiencia, hora, sala, número de caso, juez, partes
+ * Si falla, retorna campos null para que el abogado complete manualmente
  */
 import { requireSession } from "@/lib/auth/session";
 import { aiVision, extractJson, AiNotConfiguredError } from "@/lib/ai/client";
@@ -12,10 +12,10 @@ import { aiVision, extractJson, AiNotConfiguredError } from "@/lib/ai/client";
 export type ParsedSummons = {
   hearingDate: string | null; // YYYY-MM-DD
   hearingTime: string | null; // HH:mm
-  courtRoom: string | null; // 法庭（如：第三法庭）
-  caseNumber: string | null; // 案号（如：(2024)京0105民初1234号）
-  judge: string | null; // 法官Nombre y apellido
-  parties: string[] | null; // 当事人列表
+  courtRoom: string | null; // Sala (ej.: Sala 3)
+  caseNumber: string | null; // Número de expediente
+  judge: string | null; // Nombre del juez
+  parties: string[] | null; // Lista de partes
 };
 
 const SUPPORTED = new Set([
@@ -26,21 +26,21 @@ const SUPPORTED = new Set([
   "application/pdf",
 ]);
 
-const PROMPT = `下方图片是一张中国法院传票（开庭传票）。请严格Volver JSON：
+const PROMPT = `La siguiente imagen es una cédula de notificación judicial argentina (cédula de audiencia). Devolvé estrictamente JSON:
 {
-  "hearingDate": "开庭Fecha（YYYY-MM-DD）",
-  "hearingTime": "开庭时间（HH:mm，24小时制）",
-  "courtRoom": "开庭地点/法庭（如：本院第三法庭）",
-  "caseNumber": "案号（如：(2024)京0105民初1234号）",
-  "judge": "审判员/法官Nombre y apellido",
-  "parties": ["原告/上诉人Nombre", "被告/被上诉人Nombre"]
+  "hearingDate": "Fecha de audiencia (YYYY-MM-DD)",
+  "hearingTime": "Hora de audiencia (HH:mm, formato 24h)",
+  "courtRoom": "Lugar de audiencia / sala (ej.: Sala 3)",
+  "caseNumber": "Número de expediente",
+  "judge": "Nombre del juez",
+  "parties": ["Nombre del actor/apelante", "Nombre del demandado/apelado"]
 }
-规则：
-- 严格按照传票上的内容提取，不Aceptar的字段Volver null
-- hearingDate 格式必须为 YYYY-MM-DD，如原始Fecha为"二〇二四年Junio十五日"则转为 2024-06-15
-- hearingTime 格式为 HH:mm，如"上午九时三十分"转为 09:30
-- parties 为数组，包含传票上列明的当事人
-- 仅 JSON，不要解释`;
+Reglas:
+- Extraé estrictamente según el contenido de la cédula, los campos no reconocidos van null
+- hearingDate debe tener formato YYYY-MM-DD
+- hearingTime formato HH:mm
+- parties es un array con las partes indicadas en la cédula
+- Solo JSON, sin explicaciones`;
 
 export async function parseSummons(form: FormData): Promise<ParsedSummons> {
   await requireSession();
@@ -76,6 +76,6 @@ export async function parseSummons(form: FormData): Promise<ParsedSummons> {
     };
   } catch (err) {
     if (err instanceof AiNotConfiguredError) throw err;
-    throw new Error(err instanceof Error ? err.message : "传票识别Error");
+    throw new Error(err instanceof Error ? err.message : "Error al reconocer la cédula");
   }
 }

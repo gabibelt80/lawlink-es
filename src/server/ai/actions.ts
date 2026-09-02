@@ -23,26 +23,26 @@ export interface RecognizedInvoice {
   remark?: string;
 }
 
-const PROMPT = `请识别这张中国增值税Factura图片中的信息，输出 JSON：
+const PROMPT = `Reconocé la información de esta imagen de factura argentina y devolvé JSON:
 
 {
-  "invoiceType": "Factura类型（如：增值税普通Factura、增值税专用Factura、电子Factura）",
-  "invoiceCode": "Factura代码（如有）",
-  "invoiceNumber": "Factura号码（8 位或 20 位）",
-  "invoiceDate": "开票Fecha YYYY-MM-DD",
-  "sellerName": "销售方Nombre",
-  "sellerTaxId": "销售方纳税人识别号",
-  "buyerName": "购买方Nombre",
-  "buyerTaxId": "购买方纳税人识别号",
-  "totalAmount": "合计Monto（数字）",
-  "taxAmount": "税额（数字）",
-  "totalWithTax": "价税合计（数字）",
-  "items": [{"name": "ítems目Nombre", "amount": Monto数字, "taxRate": "税率字符串"}],
-  "checkCode": "校验码（后 6 位）",
+  "invoiceType": "Tipo de factura (ej.: Factura A, Factura B, Factura C, Factura electrónica)",
+  "invoiceCode": "Código de factura (si tiene)",
+  "invoiceNumber": "Número de factura",
+  "invoiceDate": "Fecha de emisión YYYY-MM-DD",
+  "sellerName": "Nombre del vendedor",
+  "sellerTaxId": "CUIT del vendedor",
+  "buyerName": "Nombre del comprador",
+  "buyerTaxId": "CUIT del comprador",
+  "totalAmount": "Monto total (número)",
+  "taxAmount": "Monto de impuestos (número)",
+  "totalWithTax": "Total con impuestos (número)",
+  "items": [{"name": "Nombre del ítem", "amount": Monto numérico, "taxRate": "Tasa de impuesto como texto"}],
+  "checkCode": "Código de verificación (últimos 6 dígitos)",
   "remark": "Observaciones"
 }
 
-只回复 JSON，不要其他文字。无法识别的字段填空字符串或省略。`;
+Respondé solo JSON, sin texto adicional. Los campos no reconocidos van vacíos u omitidos.`;
 
 export async function recognizeInvoiceFromImage(
   formData: FormData,
@@ -54,7 +54,7 @@ export async function recognizeInvoiceFromImage(
 
   const file = formData.get("file");
   if (!(file instanceof File) || file.size === 0) {
-    return { ok: false, message: "Por favor, sube la imagen de la factura" };
+    return { ok: false, message: "Por favor, subí la imagen de la factura" };
   }
   if (file.size > MAX_IMAGE_SIZE) {
     return {
@@ -62,8 +62,8 @@ export async function recognizeInvoiceFromImage(
       message: `La imagen supera ${MAX_IMAGE_SIZE / 1024 / 1024} MB`,
     };
   }
-  // v0.11: PDF 也允许上传，但识别效果取决于 vision 模型是否原生支持 PDF
-  // 若模型不认 PDF，aiVision 会Error并Volver明确错误
+  // v0.11: PDF también permitido, pero el reconocimiento depende de si el modelo de visión soporta PDF nativamente
+  // Si el modelo no reconoce PDF, aiVision devolverá un error claro
   const isImage = file.type.startsWith("image/");
   const isPdf = file.type === "application/pdf";
   if (!isImage && !isPdf) {
