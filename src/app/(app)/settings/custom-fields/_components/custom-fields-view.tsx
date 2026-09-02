@@ -85,7 +85,7 @@ export function CustomFieldsView({
             Campos personalizados del caso
           </h2>
           <p className="mt-1 text-[13px] text-muted-foreground">
-            Agrega campos exclusivos de tu institución para completar al crear o
+            Agregá campos exclusivos de tu institución para completar al crear o
             editar el detalle del caso.
           </p>
         </div>
@@ -114,7 +114,7 @@ export function CustomFieldsView({
                   colSpan={6}
                   className="px-4 py-10 text-center text-muted-foreground"
                 >
-                  Todavía no hay campos personalizados. Haz clic en «Agregar
+                  Todavía no hay campos personalizados. Hacé clic en «Agregar
                   campo» en la esquina superior derecha.
                 </td>
               </tr>
@@ -131,7 +131,7 @@ export function CustomFieldsView({
                     {TYPE_LABEL[f.fieldType]}
                   </td>
                   <td className="px-4 py-2.5 text-muted-foreground">
-                    {f.required ? "是" : "—"}
+                    {f.required ? "Sí" : "—"}
                   </td>
                   <td className="px-4 py-2.5 text-muted-foreground">
                     {f.fieldType === "SELECT" && f.options.length > 0
@@ -207,7 +207,7 @@ function FieldFormDialog({
 
   function submit() {
     if (!label.trim()) {
-      toast.warning("请填写字段Nombre");
+      toast.warning("Completá el nombre del campo");
       return;
     }
     const options =
@@ -218,7 +218,7 @@ function FieldFormDialog({
             .filter(Boolean)
         : [];
     if (fieldType === "SELECT" && options.length === 0) {
-      toast.warning("下拉类型请至少填写一个选ítems（每行一个）");
+      toast.warning("Para el tipo desplegable completá al menos una opción (una por línea)");
       return;
     }
     startTransition(async () => {
@@ -240,10 +240,10 @@ function FieldFormDialog({
             options,
           });
         }
-        toast.success(field ? "已Actualizar" : "已Agregar");
+        toast.success(field ? "Actualizado" : "Agregado");
         onClose();
       } catch (err) {
-        toast.error("GuardarError", {
+        toast.error("Error al guardar", {
           description: err instanceof Error ? err.message : "",
         });
       }
@@ -254,26 +254,26 @@ function FieldFormDialog({
     <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
       <DialogContent className="max-w-md">
         <DialogHeader>
-          <DialogTitle>{field ? "Editar字段" : "Agregar字段"}</DialogTitle>
+          <DialogTitle>{field ? "Editar campo" : "Agregar campo"}</DialogTitle>
           <DialogDescription>
-            字段将出现在Caso详情的「自定义信息」中。
+            El campo aparecerá en «Información personalizada» del detalle del caso.
           </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-3">
           <div className="space-y-1">
             <label className="text-xs font-medium text-muted-foreground">
-              字段Nombre
+              Nombre del campo
             </label>
             <Input
               value={label}
               onChange={(e) => setLabel(e.target.value)}
-              placeholder="如：内部承办编号"
+              placeholder="Ej.: número interno de gestión"
             />
           </div>
           <div className="space-y-1">
             <label className="text-xs font-medium text-muted-foreground">
-              字段类型
+              Tipo de campo
             </label>
             <Select
               value={fieldType}
@@ -285,30 +285,30 @@ function FieldFormDialog({
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="TEXT">文本</SelectItem>
-                <SelectItem value="NUMBER">数字</SelectItem>
+                <SelectItem value="TEXT">Texto</SelectItem>
+                <SelectItem value="NUMBER">Número</SelectItem>
                 <SelectItem value="DATE">Fecha</SelectItem>
-                <SelectItem value="SELECT">下拉</SelectItem>
+                <SelectItem value="SELECT">Desplegable</SelectItem>
               </SelectContent>
             </Select>
           </div>
           {fieldType === "SELECT" && (
             <div className="space-y-1">
               <label className="text-xs font-medium text-muted-foreground">
-                选ítems值（每行一个）
+                Valores de opciones (una por línea)
               </label>
               <textarea
                 value={optionsText}
                 onChange={(e) => setOptionsText(e.target.value)}
                 rows={4}
                 className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm"
-                placeholder={"选ítems一\n选ítems二"}
+                placeholder={"Opción uno\nOpción dos"}
               />
             </div>
           )}
           <label className="flex items-center gap-2 text-sm">
             <Switch checked={required} onCheckedChange={setRequired} />
-            必填
+            Obligatorio
           </label>
         </div>
 

@@ -19,7 +19,7 @@ export default async function FirmProfilePage() {
   const profile = await getFirmProfile();
   const toggles = await getWorkflowToggles();
   const keys = Object.keys(CATEGORY_WORD_DEFAULTS) as MatterCategory[];
-  // 服务端构造类别清单（label/简称/当前词）传给Cliente端表单，避免 client 直接 import 含 prisma 的模块
+  // Construcción en el servidor de la lista de categorías (etiqueta/abreviatura/palabra actual) para pasarla al formulario del cliente, evitando que el cliente importe directamente módulos que contienen prisma
   const categories = keys.map((key) => ({
     key,
     label: matterCategoryLabel[key],

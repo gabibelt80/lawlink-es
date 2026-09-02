@@ -1,182 +1,599 @@
 <!doctype html>
-<html lang="zh-CN">
-<head>
-<meta charset="utf-8" />
-<title>LawLink · 案件列表</title>
-<link rel="stylesheet" href="design-system.css" />
-<style>
-  .page-head { display: flex; align-items: flex-end; justify-content: space-between; margin-bottom: 14px; }
-  .page-title { font-family: var(--font-display); font-size: 20px; font-weight: 600; letter-spacing: -0.022em; line-height: 1.2; margin: 0 0 4px; }
-  .page-sub { font-size: 13px; color: var(--t-muted); }
+<html lang="es-AR">
+  <head>
+    <meta charset="utf-8" />
+    <title>LawLink · Lista de casos</title>
+    <link rel="stylesheet" href="design-system.css" />
+    <style>
+      .page-head {
+        display: flex;
+        align-items: flex-end;
+        justify-content: space-between;
+        margin-bottom: 14px;
+      }
+      .page-title {
+        font-family: var(--font-display);
+        font-size: 20px;
+        font-weight: 600;
+        letter-spacing: -0.022em;
+        line-height: 1.2;
+        margin: 0 0 4px;
+      }
+      .page-sub {
+        font-size: 13px;
+        color: var(--t-muted);
+      }
 
-  .toolbar { display: flex; align-items: center; gap: 10px; margin-bottom: 16px; flex-wrap: wrap; }
-  .filter-chip {
-    display: inline-flex; align-items: center; gap: 6px;
-    height: 30px; padding: 0 12px; border-radius: var(--r-full);
-    font-size: 12.5px; font-weight: 500; cursor: pointer;
-    border: 1px solid var(--bd-default); background: var(--bg-card);
-    transition: all .15s; color: var(--t-secondary);
-  }
-  .filter-chip:hover { border-color: var(--bd-strong); color: var(--t-primary); }
-  .filter-chip.active { background: var(--t-primary); color: #fff; border-color: var(--t-primary); }
-  .filter-chip .count { font-family: var(--font-mono); font-size: 11px; opacity: 0.7; }
+      .toolbar {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 16px;
+        flex-wrap: wrap;
+      }
+      .filter-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        height: 30px;
+        padding: 0 12px;
+        border-radius: var(--r-full);
+        font-size: 12.5px;
+        font-weight: 500;
+        cursor: pointer;
+        border: 1px solid var(--bd-default);
+        background: var(--bg-card);
+        transition: all 0.15s;
+        color: var(--t-secondary);
+      }
+      .filter-chip:hover {
+        border-color: var(--bd-strong);
+        color: var(--t-primary);
+      }
+      .filter-chip.active {
+        background: var(--t-primary);
+        color: #fff;
+        border-color: var(--t-primary);
+      }
+      .filter-chip .count {
+        font-family: var(--font-mono);
+        font-size: 11px;
+        opacity: 0.7;
+      }
 
-  .list-row {
-    display: grid; grid-template-columns: 24px 1.4fr 1fr 120px 140px 100px 80px;
-    gap: 14px; align-items: center;
-    padding: 14px 20px; border-bottom: 1px solid var(--bd-subtle);
-    cursor: pointer; transition: background .12s;
-  }
-  .list-row:hover { background: var(--bg-hover); }
-  .list-row:last-child { border-bottom: none; border-radius: 0 0 var(--r-xl) var(--r-xl); }
-  .list-row.header { cursor: default; background: var(--bg-hover); border-radius: var(--r-xl) var(--r-xl) 0 0; }
-  .list-row.header:hover { background: var(--bg-hover); }
-  .lh { font-size: 11px; font-weight: 600; color: var(--t-muted); letter-spacing: 0.04em; text-transform: uppercase; }
+      .list-row {
+        display: grid;
+        grid-template-columns: 24px 1.4fr 1fr 120px 140px 100px 80px;
+        gap: 14px;
+        align-items: center;
+        padding: 14px 20px;
+        border-bottom: 1px solid var(--bd-subtle);
+        cursor: pointer;
+        transition: background 0.12s;
+      }
+      .list-row:hover {
+        background: var(--bg-hover);
+      }
+      .list-row:last-child {
+        border-bottom: none;
+        border-radius: 0 0 var(--r-xl) var(--r-xl);
+      }
+      .list-row.header {
+        cursor: default;
+        background: var(--bg-hover);
+        border-radius: var(--r-xl) var(--r-xl) 0 0;
+      }
+      .list-row.header:hover {
+        background: var(--bg-hover);
+      }
+      .lh {
+        font-size: 11px;
+        font-weight: 600;
+        color: var(--t-muted);
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+      }
 
-  .matter-cell { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
-  .matter-name { font-size: 13.5px; font-weight: 500; color: var(--t-primary); }
-  .matter-code { font-family: var(--font-mono); font-size: 11px; color: var(--t-muted); letter-spacing: 0.02em; }
+      .matter-cell {
+        display: flex;
+        flex-direction: column;
+        gap: 3px;
+        min-width: 0;
+      }
+      .matter-name {
+        font-size: 13.5px;
+        font-weight: 500;
+        color: var(--t-primary);
+      }
+      .matter-code {
+        font-family: var(--font-mono);
+        font-size: 11px;
+        color: var(--t-muted);
+        letter-spacing: 0.02em;
+      }
 
-  .client-cell { display: flex; align-items: center; gap: 8px; min-width: 0; }
-  .client-av { width: 24px; height: 24px; border-radius: var(--r-sm); display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:600;flex-shrink:0 }
-  .client-name { font-size: 12.5px; color: var(--t-secondary); }
+      .client-cell {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        min-width: 0;
+      }
+      .client-av {
+        width: 24px;
+        height: 24px;
+        border-radius: var(--r-sm);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 10px;
+        font-weight: 600;
+        flex-shrink: 0;
+      }
+      .client-name {
+        font-size: 12.5px;
+        color: var(--t-secondary);
+      }
 
-  .proc-mini { display: flex; align-items: center; gap: 4px; }
-  .proc-mini-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--t-faint); }
-  .proc-mini-dot.done { background: var(--green); }
-  .proc-mini-dot.active { background: var(--indigo); box-shadow: 0 0 0 2px var(--indigo-soft); }
+      .proc-mini {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+      }
+      .proc-mini-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: var(--t-faint);
+      }
+      .proc-mini-dot.done {
+        background: var(--green);
+      }
+      .proc-mini-dot.active {
+        background: var(--indigo);
+        box-shadow: 0 0 0 2px var(--indigo-soft);
+      }
 
-  .next-step { font-size: 12px; color: var(--t-secondary); }
-  .next-step.warn { color: var(--amber); font-weight: 500; }
-  .next-step.urgent { color: var(--red); font-weight: 500; }
+      .next-step {
+        font-size: 12px;
+        color: var(--t-secondary);
+      }
+      .next-step.warn {
+        color: var(--amber);
+        font-weight: 500;
+      }
+      .next-step.urgent {
+        color: var(--red);
+        font-weight: 500;
+      }
 
-  /* 卡片视图 */
-  .card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 16px; }
-  .matter-card { padding: 14px; cursor: pointer; transition: all .15s; }
-  .matter-card:hover { box-shadow: var(--sh-hover); border-color: var(--bd-default); transform: translateY(-1px); }
-  .mc-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; margin-bottom: 12px; }
-  .mc-title { font-size: 14px; font-weight: 600; line-height: 1.35; letter-spacing: -0.01em; }
-  .mc-code { font-family: var(--font-mono); font-size: 11px; color: var(--t-muted); margin-top: 4px; letter-spacing: 0.02em; }
-  .mc-meta { display: flex; align-items: center; gap: 8px; padding: 10px 0; border-top: 1px solid var(--bd-subtle); margin-top: 12px; }
-  .mc-foot { display: flex; align-items: center; justify-content: space-between; margin-top: 10px; }
-</style>
-</head>
-<body>
-<div class="shell">
-  <aside class="sidebar">
-    <div class="brand"><div class="brand-mark">L</div><div><div class="brand-name">立正律师事务所</div><div class="brand-sub">LawLink · v3</div></div></div>
-    <nav class="nav">
-      <div class="nav-section-label">工作区</div>
-      <div class="nav-item"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 12l9-9 9 9M5 10v10h14V10"/></svg>工作台</div>
-      <div class="nav-item active"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>案件 <span class="count">18</span></div>
-      <div class="nav-item"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="9" cy="8" r="3.5"/><path d="M2 20c0-3.5 3-6 7-6s7 2.5 7 6"/></svg>客户</div>
-      <div class="nav-item"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="6" width="18" height="13" rx="2"/><path d="M3 10h18"/></svg>财务</div>
-      <div class="nav-item"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 9h18M8 3v4M16 3v4"/></svg>日程</div>
-      <div class="nav-item"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>审批</div>
-      <div class="nav-section-label">资料</div>
-      <div class="nav-item"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="4" rx="1"/><path d="M5 8v11a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V8"/></svg>归档</div>
-      <div class="nav-item"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 3v18h18"/><rect x="7" y="11" width="3" height="6"/><rect x="12" y="7" width="3" height="10"/></svg>报表</div>
-    </nav>
-  </aside>
-
-  <div class="main">
-    <header class="topbar">
-      <div class="searchbox"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>搜索案件、客户、材料...<span class="kbd">⌘K</span></div>
-      <div style="flex:1"></div>
-      <button class="btn btn-primary btn-sm"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 5v14M5 12h14"/></svg>新建收案</button>
-      <div style="width:1px;height:24px;background:var(--bd-default);margin:0 4px"></div>
-      <div style="display:flex;align-items:center;gap:8px;padding:0 10px 0 4px;height:34px;border-radius:var(--r-full);border:1px solid var(--bd-default);background:var(--bg-card);cursor:pointer"><div class="avatar av-indigo">叶</div><span style="font-size:13px;font-weight:500">叶森</span></div>
-    </header>
-
-    <div class="content">
-      <div class="page-head">
-        <div>
-          <h1 class="page-title">案件</h1>
-          <p class="page-sub">全部 18 个办理中案件 · 按下次期限排序</p>
+      /* 卡片视图 */
+      .card-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+        gap: 16px;
+      }
+      .matter-card {
+        padding: 14px;
+        cursor: pointer;
+        transition: all 0.15s;
+      }
+      .matter-card:hover {
+        box-shadow: var(--sh-hover);
+        border-color: var(--bd-default);
+        transform: translateY(-1px);
+      }
+      .mc-head {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 8px;
+        margin-bottom: 12px;
+      }
+      .mc-title {
+        font-size: 14px;
+        font-weight: 600;
+        line-height: 1.35;
+        letter-spacing: -0.01em;
+      }
+      .mc-code {
+        font-family: var(--font-mono);
+        font-size: 11px;
+        color: var(--t-muted);
+        margin-top: 4px;
+        letter-spacing: 0.02em;
+      }
+      .mc-meta {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 0;
+        border-top: 1px solid var(--bd-subtle);
+        margin-top: 12px;
+      }
+      .mc-foot {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-top: 10px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="shell">
+      <aside class="sidebar">
+        <div class="brand">
+          <div class="brand-mark">L</div>
+          <div>
+            <div class="brand-name">Estudio Jurídico Lizheng</div>
+            <div class="brand-sub">LawLink · v3</div>
+          </div>
         </div>
-        <div class="segmented">
-          <button class="seg active">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:inline-block;vertical-align:middle"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
-            列表
+        <nav class="nav">
+          <div class="nav-section-label">Área de trabajo</div>
+          <div class="nav-item">
+            <svg
+              class="ic"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.8"
+            >
+              <path d="M3 12l9-9 9 9M5 10v10h14V10" /></svg
+            >Panel de trabajo
+          </div>
+          <div class="nav-item active">
+            <svg
+              class="ic"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.8"
+            >
+              <path
+                d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"
+              /></svg
+            >Casos <span class="count">18</span>
+          </div>
+          <div class="nav-item">
+            <svg
+              class="ic"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.8"
+            >
+              <circle cx="9" cy="8" r="3.5" />
+              <path d="M2 20c0-3.5 3-6 7-6s7 2.5 7 6" /></svg
+            >Clientes
+          </div>
+          <div class="nav-item">
+            <svg
+              class="ic"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.8"
+            >
+              <rect x="3" y="6" width="18" height="13" rx="2" />
+              <path d="M3 10h18" /></svg
+            >Finanzas
+          </div>
+          <div class="nav-item">
+            <svg
+              class="ic"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.8"
+            >
+              <rect x="3" y="5" width="18" height="16" rx="2" />
+              <path d="M3 9h18M8 3v4M16 3v4" /></svg
+            >Calendario
+          </div>
+          <div class="nav-item">
+            <svg
+              class="ic"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.8"
+            >
+              <path d="M9 11l3 3L22 4" />
+              <path
+                d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"
+              /></svg
+            >Aprobaciones
+          </div>
+          <div class="nav-section-label">Archivos</div>
+          <div class="nav-item">
+            <svg
+              class="ic"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.8"
+            >
+              <rect x="3" y="4" width="18" height="4" rx="1" />
+              <path d="M5 8v11a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V8" /></svg
+            >Expediente
+          </div>
+          <div class="nav-item">
+            <svg
+              class="ic"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.8"
+            >
+              <path d="M3 3v18h18" />
+              <rect x="7" y="11" width="3" height="6" />
+              <rect x="12" y="7" width="3" height="10" /></svg
+            >Informes
+          </div>
+        </nav>
+      </aside>
+
+      <div class="main">
+        <header class="topbar">
+          <div class="searchbox">
+            <svg
+              width="14"
+              height="14"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <circle cx="11" cy="11" r="7" />
+              <path d="M21 21l-4.3-4.3" /></svg
+            >Buscar casos, clientes, documentos...<span class="kbd">⌘K</span>
+          </div>
+          <div style="flex: 1"></div>
+          <button class="btn btn-primary btn-sm">
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2.2"
+            >
+              <path d="M12 5v14M5 12h14" /></svg
+            >Nueva recepción
           </button>
-          <button class="seg">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:inline-block;vertical-align:middle"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
-            卡片
-          </button>
+          <div
+            style="
+              width: 1px;
+              height: 24px;
+              background: var(--bd-default);
+              margin: 0 4px;
+            "
+          ></div>
+          <div
+            style="
+              display: flex;
+              align-items: center;
+              gap: 8px;
+              padding: 0 10px 0 4px;
+              height: 34px;
+              border-radius: var(--r-full);
+              border: 1px solid var(--bd-default);
+              background: var(--bg-card);
+              cursor: pointer;
+            "
+          >
+            <div class="avatar av-indigo">Y</div>
+            <span style="font-size: 13px; font-weight: 500">Ye Sen</span>
+          </div>
+        </header>
+
+        <div class="content">
+          <div class="page-head">
+            <div>
+              <h1 class="page-title">Casos</h1>
+              <p class="page-sub">
+                18 casos en curso · Ordenados por próximo plazo
+              </p>
+            </div>
+            <div class="segmented">
+              <button class="seg active">
+                <svg
+                  width="13"
+                  height="13"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  style="display: inline-block; vertical-align: middle"
+                >
+                  <line x1="8" y1="6" x2="21" y2="6" />
+                  <line x1="8" y1="12" x2="21" y2="12" />
+                  <line x1="8" y1="18" x2="21" y2="18" />
+                  <line x1="3" y1="6" x2="3.01" y2="6" />
+                  <line x1="3" y1="12" x2="3.01" y2="12" />
+                  <line x1="3" y1="18" x2="3.01" y2="18" />
+                </svg>
+                Lista
+              </button>
+              <button class="seg">
+                <svg
+                  width="13"
+                  height="13"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  style="display: inline-block; vertical-align: middle"
+                >
+                  <rect x="3" y="3" width="7" height="7" />
+                  <rect x="14" y="3" width="7" height="7" />
+                  <rect x="3" y="14" width="7" height="7" />
+                  <rect x="14" y="14" width="7" height="7" />
+                </svg>
+                Tarjetas
+              </button>
+            </div>
+          </div>
+
+          <div class="toolbar">
+            <div class="filter-chip active">
+              Todos<span class="count">18</span>
+            </div>
+            <div class="filter-chip">
+              Por confirmar<span class="count">5</span>
+            </div>
+            <div class="filter-chip">En curso<span class="count">11</span></div>
+            <div class="filter-chip">
+              Pendiente de subsanar<span class="count">2</span>
+            </div>
+            <div class="filter-chip">
+              Archivados<span class="count">42</span>
+            </div>
+            <div style="margin-left: auto; display: flex; gap: 8px">
+              <div class="filter-chip">
+                <svg
+                  width="12"
+                  height="12"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <path d="M22 3H2l8 9.46V19l4 2v-8.54L22 3z" /></svg
+                >Tipo
+              </div>
+              <div class="filter-chip">
+                <svg
+                  width="12"
+                  height="12"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <circle cx="11" cy="11" r="8" />
+                  <path d="M21 21l-4.35-4.35" /></svg
+                >Buscar
+              </div>
+            </div>
+          </div>
+
+          <div class="card" style="overflow: hidden">
+            <div class="list-row header">
+              <span></span>
+              <span class="lh">Caso</span>
+              <span class="lh">Cliente</span>
+              <span class="lh">Progreso del procedimiento</span>
+              <span class="lh">Próximo plazo</span>
+              <span class="lh">Cobrado</span>
+              <span class="lh" style="text-align: right">Estado</span>
+            </div>
+            <div class="list-row">
+              <span class="dot dot-red dot-pulse-red"></span>
+              <div class="matter-cell">
+                <span class="matter-name"
+                  >Qingshi ConstructionLHuadong Huadong Property: conflicto por contrato de construcción</span
+                ><span class="matter-code">LL-2026-L-0015</span>
+              </div>
+              <div class="client-cell">
+                <div class="client-av av-indigo">Q</div>
+                <span class="client-name">Shanghai Qingshi Construction Construction</span>
+              </div>
+              <div class="proc-mini">
+                <span class="proc-mini-dot done"></span
+                ><span class="proc-mini-dot active"></span
+                ><span class="proc-mini-dot"></span
+                ><span class="t-xs t-mute" style="margin-left: 4px">Primera instancia</span>
+              </div>
+              <span class="next-step urgent">prueba 17/06/2026 · 3días</span>
+              <span class="num-sm">$120K / 180K</span>
+              <span class="badge b-cyan" style="justify-self: end"
+                ><span class="dot dot-cyan"></span>En curso</span
+              >
+            </div>
+            <div class="list-row">
+              <span class="dot dot-amber dot-pulse-amber"></span>
+              <div class="matter-cell">
+                <span class="matter-name">Mingyuan Technology: transferencia de acciones especial</span
+                ><span class="matter-code">LL-2026-N-0011</span>
+              </div>
+              <div class="client-cell">
+                <div class="client-av av-violet">M</div>
+                <span class="client-name">Hangzhou Mingyuan Technology Technology</span>
+              </div>
+              <div class="proc-mini">
+                <span class="proc-mini-dot active"></span
+                ><span class="t-xs t-mute" style="margin-left: 4px">Especial</span>
+              </div>
+              <span class="next-step warn">Primera instancia 21/06/2026 · 7días</span>
+              <span class="num-sm">$80K / 200K</span>
+              <span class="badge b-cyan" style="justify-self: end"
+                ><span class="dot dot-cyan"></span>En curso</span
+              >
+            </div>
+            <div class="list-row">
+              <span class="dot dot-indigo"></span>
+              <div class="matter-cell">
+                <span class="matter-name">Arbitraje por conflicto laboral posterior a primera instancia instancia</span
+                ><span class="matter-code">LL-2026-L-0006</span>
+              </div>
+              <div class="client-cell">
+                <div class="client-av av-green">L</div>
+                <span class="client-name">Lin</span>
+              </div>
+              <div class="proc-mini">
+                <span class="proc-mini-dot done"></span
+                ><span class="proc-mini-dot active"></span
+                ><span class="t-xs t-mute" style="margin-left: 4px">Primera instancia</span>
+              </div>
+              <span class="next-step">audiencia 19/06/2026</span>
+              <span class="num-sm">$45K / 45K</span>
+              <span class="badge b-cyan" style="justify-self: end"
+                ><span class="dot dot-cyan"></span>En curso</span
+              >
+            </div>
+            <div class="list-row">
+              <span class="dot dot-slate"></span>
+              <div class="matter-cell">
+                <span class="matter-name">Wanda Comercio: conflicto contractual</span
+                ><span class="matter-code">LL-2026-L-0018</span>
+              </div>
+              <div class="client-cell">
+                <div class="client-av av-amber">W</div>
+                <span class="client-name">Wanda Comercio</span>
+              </div>
+              <div class="proc-mini">
+                <span class="proc-mini-dot active"></span
+                ><span class="t-xs t-mute" style="margin-left: 4px">Primera instancia</span>
+              </div>
+              <span class="next-step">prueba 28/06/2026</span>
+              <span class="num-sm">$0 / 60K</span>
+              <span class="badge b-amber" style="justify-self: end"
+                ><span class="dot dot-amber"></span>Por confirmar</span
+              >
+            </div>
+            <div class="list-row">
+              <span class="dot dot-slate"></span>
+              <div class="matter-cell">
+                <span class="matter-name">Chenconflicto por préstamo entre particulares</span
+                ><span class="matter-code">LL-2025-L-0098</span>
+              </div>
+              <div class="client-cell">
+                <div class="client-av av-slate">C</div>
+                <span class="client-name">Chen</span>
+              </div>
+              <div class="proc-mini">
+                <span class="proc-mini-dot done"></span
+                ><span class="proc-mini-dot done"></span
+                ><span class="t-xs t-mute" style="margin-left: 4px">Concluido</span>
+              </div>
+              <span class="next-step t-mute">—</span>
+              <span class="num-sm">$30K / 30K</span>
+              <span class="badge b-violet" style="justify-self: end"
+                ><span class="dot dot-violet"></span>Archivado</span
+              >
+            </div>
+          </div>
         </div>
       </div>
-
-      <div class="toolbar">
-        <div class="filter-chip active">全部<span class="count">18</span></div>
-        <div class="filter-chip">待确认<span class="count">5</span></div>
-        <div class="filter-chip">办理中<span class="count">11</span></div>
-        <div class="filter-chip">待补正<span class="count">2</span></div>
-        <div class="filter-chip">已归档<span class="count">42</span></div>
-        <div style="margin-left:auto;display:flex;gap:8px">
-          <div class="filter-chip"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 3H2l8 9.46V19l4 2v-8.54L22 3z"/></svg>类型</div>
-          <div class="filter-chip"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>搜索</div>
-        </div>
-      </div>
-
-      <div class="card" style="overflow:hidden">
-        <div class="list-row header">
-          <span></span>
-          <span class="lh">案件</span>
-          <span class="lh">客户</span>
-          <span class="lh">程序进度</span>
-          <span class="lh">下次期限</span>
-          <span class="lh">实收</span>
-          <span class="lh" style="text-align:right">状态</span>
-        </div>
-        <div class="list-row">
-          <span class="dot dot-red dot-pulse-red"></span>
-          <div class="matter-cell"><span class="matter-name">青石建设诉华东置业建设工程合同纠纷</span><span class="matter-code">LL-2026-诉-0015</span></div>
-          <div class="client-cell"><div class="client-av av-indigo">青</div><span class="client-name">上海青石建设</span></div>
-          <div class="proc-mini"><span class="proc-mini-dot done"></span><span class="proc-mini-dot active"></span><span class="proc-mini-dot"></span><span class="t-xs t-mute" style="margin-left:4px">一审</span></div>
-          <span class="next-step urgent">举证 6/17 · 3天</span>
-          <span class="num-sm">$120K / 180K</span>
-          <span class="badge b-cyan" style="justify-self:end"><span class="dot dot-cyan"></span>进行中</span>
-        </div>
-        <div class="list-row">
-          <span class="dot dot-amber dot-pulse-amber"></span>
-          <div class="matter-cell"><span class="matter-name">明远科技股权转让专项</span><span class="matter-code">LL-2026-非-0011</span></div>
-          <div class="client-cell"><div class="client-av av-violet">明</div><span class="client-name">杭州明远科技</span></div>
-          <div class="proc-mini"><span class="proc-mini-dot active"></span><span class="t-xs t-mute" style="margin-left:4px">专项</span></div>
-          <span class="next-step warn">上诉 6/21 · 7天</span>
-          <span class="num-sm">$80K / 200K</span>
-          <span class="badge b-cyan" style="justify-self:end"><span class="dot dot-cyan"></span>进行中</span>
-        </div>
-        <div class="list-row">
-          <span class="dot dot-indigo"></span>
-          <div class="matter-cell"><span class="matter-name">劳动争议仲裁后一审</span><span class="matter-code">LL-2026-诉-0006</span></div>
-          <div class="client-cell"><div class="client-av av-green">林</div><span class="client-name">林某</span></div>
-          <div class="proc-mini"><span class="proc-mini-dot done"></span><span class="proc-mini-dot active"></span><span class="t-xs t-mute" style="margin-left:4px">一审</span></div>
-          <span class="next-step">开庭 6/19</span>
-          <span class="num-sm">$45K / 45K</span>
-          <span class="badge b-cyan" style="justify-self:end"><span class="dot dot-cyan"></span>进行中</span>
-        </div>
-        <div class="list-row">
-          <span class="dot dot-slate"></span>
-          <div class="matter-cell"><span class="matter-name">万达商贸合同纠纷</span><span class="matter-code">LL-2026-诉-0018</span></div>
-          <div class="client-cell"><div class="client-av av-amber">万</div><span class="client-name">万达商贸</span></div>
-          <div class="proc-mini"><span class="proc-mini-dot active"></span><span class="t-xs t-mute" style="margin-left:4px">一审</span></div>
-          <span class="next-step">举证 6/28</span>
-          <span class="num-sm">$0 / 60K</span>
-          <span class="badge b-amber" style="justify-self:end"><span class="dot dot-amber"></span>待确认</span>
-        </div>
-        <div class="list-row">
-          <span class="dot dot-slate"></span>
-          <div class="matter-cell"><span class="matter-name">陈某民间借贷纠纷</span><span class="matter-code">LL-2025-诉-0098</span></div>
-          <div class="client-cell"><div class="client-av av-slate">陈</div><span class="client-name">陈某</span></div>
-          <div class="proc-mini"><span class="proc-mini-dot done"></span><span class="proc-mini-dot done"></span><span class="t-xs t-mute" style="margin-left:4px">已结</span></div>
-          <span class="next-step t-mute">—</span>
-          <span class="num-sm">$30K / 30K</span>
-          <span class="badge b-violet" style="justify-self:end"><span class="dot dot-violet"></span>已归档</span>
-        </div>
-      </div>
-
     </div>
-  </div>
-</div>
-</body>
+  </body>
 </html>

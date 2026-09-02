@@ -112,10 +112,10 @@ export function AuditView({
           }}
         >
           <SelectTrigger className="h-9 w-44 bg-background">
-            <SelectValue placeholder="动作" />
+            <SelectValue placeholder="Acción" />
           </SelectTrigger>
           <SelectContent className="max-h-80">
-            <SelectItem value="ALL">Ver todos动作</SelectItem>
+            <SelectItem value="ALL">Ver todas las acciones</SelectItem>
             {distinctActions.map((a) => (
               <SelectItem key={a} value={a}>
                 {a}
@@ -132,10 +132,10 @@ export function AuditView({
           }}
         >
           <SelectTrigger className="h-9 w-40 bg-background">
-            <SelectValue placeholder="用户" />
+            <SelectValue placeholder="Usuario" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="ALL">Ver todos用户</SelectItem>
+            <SelectItem value="ALL">Ver todos los usuarios</SelectItem>
             {userOptions.map((u) => (
               <SelectItem key={u.id} value={u.id}>
                 {u.name}
@@ -155,10 +155,10 @@ export function AuditView({
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="7">近 7 días</SelectItem>
-            <SelectItem value="30">近 30 días</SelectItem>
-            <SelectItem value="90">近 90 días</SelectItem>
-            <SelectItem value="365">近 1 年</SelectItem>
+            <SelectItem value="7">Últimos 7 días</SelectItem>
+            <SelectItem value="30">Últimos 30 días</SelectItem>
+            <SelectItem value="90">Últimos 90 días</SelectItem>
+            <SelectItem value="365">Último año</SelectItem>
           </SelectContent>
         </Select>
 
@@ -172,7 +172,7 @@ export function AuditView({
 
       {items.length === 0 ? (
         <div className="rounded-xl border border-dashed border-border bg-card py-16 text-center">
-          <p className="text-sm text-muted-foreground">Sin coincidencias的审计记录</p>
+          <p className="text-sm text-muted-foreground">Sin registros de auditoría que coincidan</p>
         </div>
       ) : (
         <ul className="space-y-1.5">
@@ -219,7 +219,7 @@ export function AuditView({
                 <div className="text-right text-xs">
                   <div>{it.user?.name ?? "—"}</div>
                   <div className="font-mono text-[10px] text-muted-foreground tabular">
-                    {new Date(it.createdAt).toLocaleString("zh-CN", {
+                    {new Date(it.createdAt).toLocaleString("es-AR", {
                       month: "2-digit",
                       day: "2-digit",
                       hour: "2-digit",

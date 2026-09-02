@@ -1,8 +1,8 @@
 "use client";
 
 /**
- * v0.50: Recordatorios推送（企业微信 / 钉钉群机器人）配置卡片。
- * 每日 09:00 到期扫描产生新Recordatorios时，向机器人推一条汇Total消息。
+ * v0.50: Tarjeta de configuración de envío de recordatorios (robot de grupo de WeChat Empresarial / DingTalk).
+ * Todos los días a las 09:00, cuando el escaneo de vencimientos genera nuevos recordatorios, se envía un mensaje resumen al robot.
  */
 import { useState, useTransition } from "react";
 import { Loader2, Send, Webhook } from "lucide-react";
@@ -32,9 +32,9 @@ export function WebhookSettingsCard({
     startSaving(async () => {
       try {
         await saveWebhookSettingsAction({ enabled, url: url.trim() });
-        toast.success("推送配置已Guardar");
+        toast.success("Configuración de envío guardada");
       } catch (err) {
-        toast.error("GuardarError", { description: err instanceof Error ? err.message : "" });
+        toast.error("Error al guardar", { description: err instanceof Error ? err.message : "" });
       }
     });
   }
@@ -43,9 +43,9 @@ export function WebhookSettingsCard({
     startTesting(async () => {
       try {
         await sendTestWebhookAction();
-        toast.success("测试消息已发送，请到群里Confirmar");
+        toast.success("Mensaje de prueba enviado, confirmá en el grupo");
       } catch (err) {
-        toast.error("测试Error", { description: err instanceof Error ? err.message : "" });
+        toast.error("Error en la prueba", { description: err instanceof Error ? err.message : "" });
       }
     });
   }
@@ -54,27 +54,27 @@ export function WebhookSettingsCard({
     <div className="rounded-xl border border-border bg-card p-4">
       <div className="flex items-center gap-2">
         <Webhook className="h-4 w-4 text-primary" strokeWidth={1.8} />
-        <div className="text-sm font-medium">群机器人推送（企业微信 / 钉钉）</div>
+        <div className="text-sm font-medium">Envío por robot de grupo (WeChat Empresarial / DingTalk)</div>
       </div>
       <p className="mt-1 text-[12px] leading-5 text-muted-foreground">
-        每日到期扫描发现新Recordatorios时，向群机器人推送一条汇Total（只含事ítems标题yCaso编号，不含当事人详情）。
-        在企业微信 / 钉钉群里Agregar「自定义机器人」，把 Webhook 地址粘贴到下方；
-        钉钉机器人建议用「自定义关键词」安全Configuración并填 <code className="font-mono">LawLink</code>。
+        Cuando el escaneo diario de vencimientos encuentra nuevos recordatorios, se envía un resumen al robot del grupo (solo incluye títulos de asuntos y números de caso, sin datos de las partes).
+        Agregá un «robot personalizado» en el grupo de WeChat Empresarial / DingTalk y pegá la dirección Webhook abajo;
+        para el robot de DingTalk se recomienda usar la configuración de seguridad de «palabra clave personalizada» y completar <code className="font-mono">LawLink</code>.
       </p>
 
       <div className="mt-3 space-y-3">
         <div className="space-y-1.5">
-          <Label className="text-xs">机器人 Webhook 地址</Label>
+          <Label className="text-xs">Dirección Webhook del robot</Label>
           <Input
             value={url}
             onChange={(e) => setUrl(e.target.value)}
-            placeholder="https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=... 或 https://oapi.dingtalk.com/robot/send?access_token=..."
+            placeholder="https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=... o https://oapi.dingtalk.com/robot/send?access_token=..."
             className="font-mono text-[12px]"
           />
         </div>
         <label className="flex items-center gap-2 text-[12.5px]">
           <Checkbox checked={enabled} onCheckedChange={(v) => setEnabled(v === true)} />
-          启用每日Recordatorios推送
+          Activar envío diario de recordatorios
         </label>
         <div className="flex items-center gap-2">
           <Button size="sm" onClick={save} disabled={saving} className="h-8 gap-1.5">
@@ -89,7 +89,7 @@ export function WebhookSettingsCard({
             className="h-8 gap-1.5"
           >
             {testing ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Send className="h-3.5 w-3.5" />}
-            发送测试消息
+            Enviar mensaje de prueba
           </Button>
         </div>
       </div>

@@ -1,8 +1,8 @@
 "use client";
 
 /**
- * v1.0: 工作流开关卡片（律所信息页，仅 ADMIN）。
- * 目前只有一个开关：外部联系人审核流（默认关——小所信任环境直接Aprobar）。
+ * v1.0: Tarjeta de interruptores de flujo de trabajo (página de información del estudio, solo ADMIN).
+ * Actualmente solo hay un interruptor: flujo de revisión de contactos externos (desactivado por defecto: en un entorno de confianza de un estudio pequeño se aprueba directamente).
  */
 import { useState, useTransition } from "react";
 import { Loader2, SlidersHorizontal } from "lucide-react";
@@ -26,10 +26,10 @@ export function WorkflowTogglesCard({
     startTransition(async () => {
       try {
         await saveWorkflowTogglesAction({ externalContactReview: next });
-        toast.success(next ? "已开启联系人审核" : "已Cerrar联系人审核（新增直接Aprobar）");
+        toast.success(next ? "Revisión de contactos activada" : "Revisión de contactos desactivada (los nuevos se aprueban directamente)");
       } catch (err) {
         setExternalContactReview(prev);
-        toast.error("GuardarError", { description: err instanceof Error ? err.message : "" });
+        toast.error("Error al guardar", { description: err instanceof Error ? err.message : "" });
       }
     });
   }
@@ -38,11 +38,11 @@ export function WorkflowTogglesCard({
     <section className="rounded-xl border border-border bg-card p-6">
       <div className="mb-1 flex items-center gap-2">
         <SlidersHorizontal className="h-4 w-4 text-primary" strokeWidth={1.8} />
-        <h2 className="text-base font-semibold">工作流开关</h2>
+        <h2 className="text-base font-semibold">Interruptores de flujo de trabajo</h2>
         {pending && <Loader2 className="h-3.5 w-3.5 animate-spin text-muted-foreground" />}
       </div>
       <p className="mb-4 text-[12px] text-muted-foreground">
-        按团队规模选择流程松紧；改动即时生效。
+        Elegí la rigurosidad del flujo según el tamaño del equipo; los cambios se aplican de inmediato.
       </p>
       <label className="flex items-start gap-2.5 text-sm">
         <Checkbox
@@ -51,10 +51,10 @@ export function WorkflowTogglesCard({
           className="mt-0.5"
         />
         <span>
-          <span className="font-medium">外部联系人需Administrar员审核</span>
+          <span className="font-medium">Los contactos externos requieren aprobación de un administrador</span>
           <span className="mt-0.5 block text-[12px] leading-5 text-muted-foreground">
-            Cerrar（默认）：任何人新增法院/仲裁机构etc.外部联系人后全所直接可见。
-            开启：普通Abogado新增的联系人需Administrar员/主任Abogado审核后展示。
+            Desactivado (por defecto): cualquier persona que agregue un contacto externo (tribunal, institución arbitral, etc.) lo hace visible para todo el estudio de inmediato.
+            Activado: los contactos externos agregados por abogados comunes requieren la aprobación de un administrador o del abogado principal antes de mostrarse.
           </span>
         </span>
       </label>

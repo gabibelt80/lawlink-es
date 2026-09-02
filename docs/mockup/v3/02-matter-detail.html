@@ -1,490 +1,1109 @@
 <!doctype html>
-<html lang="zh-CN">
-<head>
-<meta charset="utf-8" />
-<title>LawLink · 案件详情</title>
-<link rel="stylesheet" href="design-system.css" />
-<style>
-  .breadcrumb {
-    display: inline-flex; align-items: center; gap: 5px;
-    color: var(--t-muted); font-size: 12.5px; margin-bottom: 10px; cursor: pointer;
-  }
-  .breadcrumb:hover { color: var(--indigo); }
+<html lang="es-AR">
+  <head>
+    <meta charset="utf-8" />
+    <title>LawLink · Detalle del caso</title>
+    <link rel="stylesheet" href="design-system.css" />
+    <style>
+      .breadcrumb {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        color: var(--t-muted);
+        font-size: 12.5px;
+        margin-bottom: 10px;
+        cursor: pointer;
+      }
+      .breadcrumb:hover {
+        color: var(--indigo);
+      }
 
-  /* v3.1 案件 Hero：高密度 */
-  .matter-hero {
-    position: relative; overflow: hidden;
-    background: linear-gradient(135deg, #FFFFFF 0%, var(--bg-tint) 100%);
-    border: 1px solid var(--bd-subtle);
-    border-radius: var(--r-lg);
-    padding: 18px 22px 16px;
-    box-shadow: var(--sh-card), var(--sh-inset);
-    margin-bottom: 14px;
-  }
-  .matter-hero::after {
-    content:""; position:absolute; top:-60px; right:-60px;
-    width: 220px; height: 220px; border-radius: 50%;
-    background: radial-gradient(circle, var(--indigo-glow), transparent 65%);
-    pointer-events: none;
-  }
-  .matter-meta-row {
-    display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
-    font-family: var(--font-mono); font-size: 11px; color: var(--t-muted);
-    letter-spacing: 0.01em; margin-bottom: 6px;
-  }
-  .matter-meta-row .sep { color: var(--t-faint); }
-  .matter-title {
-    font-family: var(--font-display); font-size: 20px; font-weight: 600;
-    letter-spacing: -0.018em; line-height: 1.25; margin: 0 0 10px;
-  }
-  .matter-badges { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin-bottom: 12px; }
-  .matter-actions { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+      /* v3.1 案件 Hero：高密度 */
+      .matter-hero {
+        position: relative;
+        overflow: hidden;
+        background: linear-gradient(135deg, #ffffff 0%, var(--bg-tint) 100%);
+        border: 1px solid var(--bd-subtle);
+        border-radius: var(--r-lg);
+        padding: 18px 22px 16px;
+        box-shadow: var(--sh-card), var(--sh-inset);
+        margin-bottom: 14px;
+      }
+      .matter-hero::after {
+        content: "";
+        position: absolute;
+        top: -60px;
+        right: -60px;
+        width: 220px;
+        height: 220px;
+        border-radius: 50%;
+        background: radial-gradient(
+          circle,
+          var(--indigo-glow),
+          transparent 65%
+        );
+        pointer-events: none;
+      }
+      .matter-meta-row {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex-wrap: wrap;
+        font-family: var(--font-mono);
+        font-size: 11px;
+        color: var(--t-muted);
+        letter-spacing: 0.01em;
+        margin-bottom: 6px;
+      }
+      .matter-meta-row .sep {
+        color: var(--t-faint);
+      }
+      .matter-title {
+        font-family: var(--font-display);
+        font-size: 20px;
+        font-weight: 600;
+        letter-spacing: -0.018em;
+        line-height: 1.25;
+        margin: 0 0 10px;
+      }
+      .matter-badges {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        flex-wrap: wrap;
+        margin-bottom: 12px;
+      }
+      .matter-actions {
+        display: flex;
+        gap: 6px;
+        align-items: center;
+        flex-wrap: wrap;
+      }
 
-  /* 关键节点条：4 列，告警态突出（v3.1 紧凑）*/
-  .keypoints {
-    display: grid; grid-template-columns: repeat(4, 1fr); gap: 0;
-    background: var(--bg-hover); border-radius: var(--r-md); padding: 3px;
-    margin-top: 14px;
-  }
-  .kp {
-    padding: 10px 12px; border-radius: var(--r-sm);
-    display: flex; flex-direction: column; gap: 2px;
-  }
-  .kp-label { font-size: 10.5px; color: var(--t-muted); }
-  .kp-value {
-    font-family: var(--font-mono); font-size: 14px; font-weight: 500;
-    font-variant-numeric: tabular-nums; letter-spacing: -0.015em;
-    color: var(--t-primary);
-  }
-  .kp-sub { font-size: 10.5px; color: var(--t-muted); font-family: var(--font-mono); }
-  .kp.alert {
-    background: var(--amber-bg);
-    box-shadow: inset 0 0 0 1px #EDD9A6;
-  }
-  .kp.alert .kp-label { color: var(--amber); font-weight: 600; }
-  .kp.alert .kp-value { color: var(--amber); }
+      /* 关键节点条：4 列，告警态突出（v3.1 紧凑）*/
+      .keypoints {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 0;
+        background: var(--bg-hover);
+        border-radius: var(--r-md);
+        padding: 3px;
+        margin-top: 14px;
+      }
+      .kp {
+        padding: 10px 12px;
+        border-radius: var(--r-sm);
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+      }
+      .kp-label {
+        font-size: 10.5px;
+        color: var(--t-muted);
+      }
+      .kp-value {
+        font-family: var(--font-mono);
+        font-size: 14px;
+        font-weight: 500;
+        font-variant-numeric: tabular-nums;
+        letter-spacing: -0.015em;
+        color: var(--t-primary);
+      }
+      .kp-sub {
+        font-size: 10.5px;
+        color: var(--t-muted);
+        font-family: var(--font-mono);
+      }
+      .kp.alert {
+        background: var(--amber-bg);
+        box-shadow: inset 0 0 0 1px #edd9a6;
+      }
+      .kp.alert .kp-label {
+        color: var(--amber);
+        font-weight: 600;
+      }
+      .kp.alert .kp-value {
+        color: var(--amber);
+      }
 
-  /* 主区 + 侧栏（v3.1 侧栏收窄）*/
-  .matter-body { display: grid; grid-template-columns: 1fr 300px; gap: 14px; align-items: start; }
-  .main-col { display: flex; flex-direction: column; gap: 14px; min-width: 0; }
-  .side-col { display: flex; flex-direction: column; gap: 14px; position: sticky; top: 60px; }
+      /* 主区 + 侧栏（v3.1 侧栏收窄）*/
+      .matter-body {
+        display: grid;
+        grid-template-columns: 1fr 300px;
+        gap: 14px;
+        align-items: start;
+      }
+      .main-col {
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+        min-width: 0;
+      }
+      .side-col {
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+        position: sticky;
+        top: 60px;
+      }
 
-  /* 程序链：程序本位核心（v3.1 紧凑）*/
-  .procedure-chain {
-    display: flex; align-items: center; gap: 4px; padding: 10px 14px;
-    border-bottom: 1px solid var(--bd-subtle);
-  }
-  .proc-chip {
-    display: inline-flex; align-items: center; gap: 5px;
-    height: 26px; padding: 0 10px; border-radius: var(--r-full);
-    font-size: 11.5px; font-weight: 500; cursor: pointer;
-    border: 1px solid var(--bd-default); background: var(--bg-card);
-    transition: all .15s; white-space: nowrap;
-  }
-  .proc-chip:hover { border-color: var(--bd-strong); }
-  .proc-chip.active {
-    background: var(--indigo); color: #fff; border-color: var(--indigo);
-    box-shadow: var(--sh-glow);
-  }
-  .proc-chip.done { background: var(--bg-hover); color: var(--t-muted); border-color: transparent; }
-  .proc-chip .roman { font-family: var(--font-mono); font-size: 10px; opacity: 0.8; }
-  .proc-arrow { color: var(--t-faint); flex-shrink: 0; }
-  .proc-add {
-    width: 26px; height: 26px; border-radius: var(--r-full);
-    border: 1px dashed var(--bd-strong); display: flex; align-items: center; justify-content: center;
-    color: var(--t-muted); cursor: pointer; background: transparent;
-  }
-  .proc-add:hover { color: var(--indigo); border-color: var(--indigo); }
+      /* 程序链：程序本位核心（v3.1 紧凑）*/
+      .procedure-chain {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        padding: 10px 14px;
+        border-bottom: 1px solid var(--bd-subtle);
+      }
+      .proc-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        height: 26px;
+        padding: 0 10px;
+        border-radius: var(--r-full);
+        font-size: 11.5px;
+        font-weight: 500;
+        cursor: pointer;
+        border: 1px solid var(--bd-default);
+        background: var(--bg-card);
+        transition: all 0.15s;
+        white-space: nowrap;
+      }
+      .proc-chip:hover {
+        border-color: var(--bd-strong);
+      }
+      .proc-chip.active {
+        background: var(--indigo);
+        color: #fff;
+        border-color: var(--indigo);
+        box-shadow: var(--sh-glow);
+      }
+      .proc-chip.done {
+        background: var(--bg-hover);
+        color: var(--t-muted);
+        border-color: transparent;
+      }
+      .proc-chip .roman {
+        font-family: var(--font-mono);
+        font-size: 10px;
+        opacity: 0.8;
+      }
+      .proc-arrow {
+        color: var(--t-faint);
+        flex-shrink: 0;
+      }
+      .proc-add {
+        width: 26px;
+        height: 26px;
+        border-radius: var(--r-full);
+        border: 1px dashed var(--bd-strong);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--t-muted);
+        cursor: pointer;
+        background: transparent;
+      }
+      .proc-add:hover {
+        color: var(--indigo);
+        border-color: var(--indigo);
+      }
 
-  /* 信息卡片：当事人区分（v3.1 紧凑）*/
-  .party-block {
-    display: flex; align-items: center; gap: 10px;
-    padding: 9px 11px; background: var(--bg-hover); border-radius: var(--r-sm);
-    margin-bottom: 6px; cursor: pointer; transition: background .12s;
-  }
-  .party-block:hover { background: rgba(0,0,0,0.06); }
-  .party-av {
-    width: 30px; height: 30px; border-radius: var(--r-sm);
-    display: flex; align-items: center; justify-content: center;
-    font-size: 12px; font-weight: 600; flex-shrink: 0;
-  }
-  .party-name { font-size: 12.5px; font-weight: 500; }
-  .party-meta { font-size: 10.5px; color: var(--t-muted); font-family: var(--font-mono); margin-top: 1px; }
-  .party-role { margin-left: auto; flex-shrink: 0; }
+      /* 信息卡片：当事人区分（v3.1 紧凑）*/
+      .party-block {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 9px 11px;
+        background: var(--bg-hover);
+        border-radius: var(--r-sm);
+        margin-bottom: 6px;
+        cursor: pointer;
+        transition: background 0.12s;
+      }
+      .party-block:hover {
+        background: rgba(0, 0, 0, 0.06);
+      }
+      .party-av {
+        width: 30px;
+        height: 30px;
+        border-radius: var(--r-sm);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 12px;
+        font-weight: 600;
+        flex-shrink: 0;
+      }
+      .party-name {
+        font-size: 12.5px;
+        font-weight: 500;
+      }
+      .party-meta {
+        font-size: 10.5px;
+        color: var(--t-muted);
+        font-family: var(--font-mono);
+        margin-top: 1px;
+      }
+      .party-role {
+        margin-left: auto;
+        flex-shrink: 0;
+      }
 
-  /* 阶段任务列表（v3.1 紧凑）*/
-  .stage-row {
-    display: flex; align-items: center; gap: 10px;
-    padding: 7px 0; border-bottom: 1px solid var(--bd-subtle);
-  }
-  .stage-row:last-child { border-bottom: none; }
-  .stage-check {
-    width: 16px; height: 16px; border-radius: var(--r-xs);
-    border: 1.5px solid var(--bd-strong); flex-shrink: 0; cursor: pointer;
-    display: flex; align-items: center; justify-content: center;
-  }
-  .stage-check.done { background: var(--green); border-color: var(--green); }
-  .stage-name { font-size: 12.5px; flex: 1; }
-  .stage-name.done { color: var(--t-muted); text-decoration: line-through; }
-  .stage-meta { font-size: 10.5px; color: var(--t-muted); font-family: var(--font-mono); }
-</style>
-</head>
-<body>
-<div class="shell">
-
-  <!-- 侧栏（同工作台，活动项变为案件）-->
-  <aside class="sidebar">
-    <div class="brand">
-      <div class="brand-mark">L</div>
-      <div>
-        <div class="brand-name">立正律师事务所</div>
-        <div class="brand-sub">LawLink · v3</div>
-      </div>
-    </div>
-    <nav class="nav">
-      <div class="nav-section-label">工作区</div>
-      <div class="nav-item">
-        <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 12l9-9 9 9M5 10v10h14V10"/></svg>
-        工作台
-      </div>
-      <div class="nav-item active">
-        <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
-        案件 <span class="count">18</span>
-      </div>
-      <div class="nav-item">
-        <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="9" cy="8" r="3.5"/><path d="M2 20c0-3.5 3-6 7-6s7 2.5 7 6"/></svg>
-        客户
-      </div>
-      <div class="nav-item">
-        <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="6" width="18" height="13" rx="2"/><path d="M3 10h18"/></svg>
-        财务
-      </div>
-      <div class="nav-item">
-        <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 9h18M8 3v4M16 3v4"/></svg>
-        日程
-      </div>
-      <div class="nav-item">
-        <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
-        审批
-      </div>
-      <div class="nav-section-label">资料</div>
-      <div class="nav-item">
-        <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="4" rx="1"/><path d="M5 8v11a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V8"/></svg>
-        归档
-      </div>
-      <div class="nav-item">
-        <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 3v18h18"/><rect x="7" y="11" width="3" height="6"/><rect x="12" y="7" width="3" height="10"/></svg>
-        报表
-      </div>
-    </nav>
-    <div class="nav-bottom">
-      <div class="nav-item">
-        <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/></svg>
-        设置
-      </div>
-    </div>
-  </aside>
-
-  <div class="main">
-    <header class="topbar">
-      <div class="searchbox">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
-        搜索案件、客户、材料...
-        <span class="kbd">⌘K</span>
-      </div>
-      <div style="flex:1"></div>
-      <button class="btn btn-secondary btn-sm">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/></svg>
-      </button>
-      <button class="btn btn-primary btn-sm">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 5v14M5 12h14"/></svg>
-        新建收案
-      </button>
-      <div style="width:1px;height:24px;background:var(--bd-default);margin:0 4px"></div>
-      <div style="display:flex;align-items:center;gap:8px;padding:0 10px 0 4px;height:34px;border-radius:var(--r-full);border:1px solid var(--bd-default);background:var(--bg-card);cursor:pointer">
-        <div class="avatar av-indigo">叶</div>
-        <span style="font-size:13px;font-weight:500">叶森</span>
-      </div>
-    </header>
-
-    <div class="content">
-
-      <a class="breadcrumb">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg>
-        案件列表
-      </a>
-
-      <!-- 案件 Hero -->
-      <div class="matter-hero">
-        <div class="matter-meta-row">
-          <span>LL-2026-诉-0015</span>
-          <span class="sep">·</span>
-          <span>建设工程施工合同纠纷</span>
-          <span class="sep">·</span>
-          <span>上海长宁法院</span>
-          <span class="sep">·</span>
-          <span>标的 $4,580,000</span>
+      /* 阶段任务列表（v3.1 紧凑）*/
+      .stage-row {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 7px 0;
+        border-bottom: 1px solid var(--bd-subtle);
+      }
+      .stage-row:last-child {
+        border-bottom: none;
+      }
+      .stage-check {
+        width: 16px;
+        height: 16px;
+        border-radius: var(--r-xs);
+        border: 1.5px solid var(--bd-strong);
+        flex-shrink: 0;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .stage-check.done {
+        background: var(--green);
+        border-color: var(--green);
+      }
+      .stage-name {
+        font-size: 12.5px;
+        flex: 1;
+      }
+      .stage-name.done {
+        color: var(--t-muted);
+        text-decoration: line-through;
+      }
+      .stage-meta {
+        font-size: 10.5px;
+        color: var(--t-muted);
+        font-family: var(--font-mono);
+      }
+    </style>
+  </head>
+  <body>
+    <div class="shell">
+      <!-- 侧栏（同工作台，活动项变为案件）-->
+      <aside class="sidebar">
+        <div class="brand">
+          <div class="brand-mark">L</div>
+          <div>
+            <div class="brand-name">Estudio Jurídico Lizheng</div>
+            <div class="brand-sub">LawLink · v3</div>
+          </div>
         </div>
-        <h1 class="matter-title">青石建设诉华东置业建设工程合同纠纷案</h1>
-
-        <div class="matter-badges">
-          <span class="badge b-cyan"><span class="dot dot-cyan"></span>进行中</span>
-          <span class="badge b-slate">民商事</span>
-          <span class="badge b-amber">
-            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.3 3.86 1.82 18a2 2 0 0 0 1.7 3h16.96a2 2 0 0 0 1.71-3L13.29 3.86a2 2 0 0 0-3.42 0z"/></svg>
-            举证截止 3 天
-          </span>
-          <span class="badge b-slate">主办：叶森 + 2</span>
+        <nav class="nav">
+          <div class="nav-section-label">Área de trabajo</div>
+          <div class="nav-item">
+            <svg
+              class="ic"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.8"
+            >
+              <path d="M3 12l9-9 9 9M5 10v10h14V10" />
+            </svg>
+            Panel de trabajo
+          </div>
+          <div class="nav-item active">
+            <svg
+              class="ic"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.8"
+            >
+              <path
+                d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"
+              />
+            </svg>
+            Casos <span class="count">18</span>
+          </div>
+          <div class="nav-item">
+            <svg
+              class="ic"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.8"
+            >
+              <circle cx="9" cy="8" r="3.5" />
+              <path d="M2 20c0-3.5 3-6 7-6s7 2.5 7 6" />
+            </svg>
+            Clientes
+          </div>
+          <div class="nav-item">
+            <svg
+              class="ic"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.8"
+            >
+              <rect x="3" y="6" width="18" height="13" rx="2" />
+              <path d="M3 10h18" />
+            </svg>
+            Finanzas
+          </div>
+          <div class="nav-item">
+            <svg
+              class="ic"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.8"
+            >
+              <rect x="3" y="5" width="18" height="16" rx="2" />
+              <path d="M3 9h18M8 3v4M16 3v4" />
+            </svg>
+            Calendario
+          </div>
+          <div class="nav-item">
+            <svg
+              class="ic"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.8"
+            >
+              <path d="M9 11l3 3L22 4" />
+              <path
+                d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"
+              />
+            </svg>
+            Aprobaciones
+          </div>
+          <div class="nav-section-label">Archivos</div>
+          <div class="nav-item">
+            <svg
+              class="ic"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.8"
+            >
+              <rect x="3" y="4" width="18" height="4" rx="1" />
+              <path d="M5 8v11a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V8" />
+            </svg>
+            Expediente
+          </div>
+          <div class="nav-item">
+            <svg
+              class="ic"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.8"
+            >
+              <path d="M3 3v18h18" />
+              <rect x="7" y="11" width="3" height="6" />
+              <rect x="12" y="7" width="3" height="10" />
+            </svg>
+            Informes
+          </div>
+        </nav>
+        <div class="nav-bottom">
+          <div class="nav-item">
+            <svg
+              class="ic"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.8"
+            >
+              <circle cx="12" cy="12" r="3" />
+            </svg>
+            Configuración
+          </div>
         </div>
+      </aside>
 
-        <div class="matter-actions">
+      <div class="main">
+        <header class="topbar">
+          <div class="searchbox">
+            <svg
+              width="14"
+              height="14"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <circle cx="11" cy="11" r="7" />
+              <path d="M21 21l-4.3-4.3" />
+            </svg>
+            Buscar casos, clientes, documentos...
+            <span class="kbd">⌘K</span>
+          </div>
+          <div style="flex: 1"></div>
+          <button class="btn btn-secondary btn-sm">
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.8"
+            >
+              <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
+            </svg>
+          </button>
           <button class="btn btn-primary btn-sm">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 5v14M5 12h14"/></svg>
-            添加记录
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2.2"
+            >
+              <path d="M12 5v14M5 12h14" />
+            </svg>
+            Nueva recepción
           </button>
-          <button class="btn btn-secondary btn-sm">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 20h9M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4z"/></svg>
-            编辑
-          </button>
-          <button class="btn btn-secondary btn-sm">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
-            导出
-          </button>
-        </div>
+          <div
+            style="
+              width: 1px;
+              height: 24px;
+              background: var(--bd-default);
+              margin: 0 4px;
+            "
+          ></div>
+          <div
+            style="
+              display: flex;
+              align-items: center;
+              gap: 8px;
+              padding: 0 10px 0 4px;
+              height: 34px;
+              border-radius: var(--r-full);
+              border: 1px solid var(--bd-default);
+              background: var(--bg-card);
+              cursor: pointer;
+            "
+          >
+            <div class="avatar av-indigo">Y</div>
+            <span style="font-size: 13px; font-weight: 500">Ye Sen</span>
+          </div>
+        </header>
 
-        <div class="keypoints">
-          <div class="kp alert">
-            <span class="kp-label">举证截止</span>
-            <span class="kp-value">3 天</span>
-            <span class="kp-sub">2026-06-17</span>
-          </div>
-          <div class="kp">
-            <span class="kp-label">立案日期</span>
-            <span class="kp-value">04-12</span>
-            <span class="kp-sub">2026</span>
-          </div>
-          <div class="kp">
-            <span class="kp-label">首次开庭</span>
-            <span class="kp-value">06-19</span>
-            <span class="kp-sub">周四 09:30</span>
-          </div>
-          <div class="kp">
-            <span class="kp-label">实收进度</span>
-            <span class="kp-value">66%</span>
-            <span class="kp-sub">$120K / 180K</span>
-          </div>
-        </div>
-      </div>
+        <div class="content">
+          <a class="breadcrumb">
+            <svg
+              width="14"
+              height="14"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <path d="M15 18l-6-6 6-6" />
+            </svg>
+            Lista de casos
+          </a>
 
-      <!-- 程序链（程序本位核心设计）-->
-      <div class="card" style="margin-bottom:20px">
-        <div class="procedure-chain">
-          <span class="t-xs t-mute" style="margin-right:4px;font-weight:600;letter-spacing:0.05em;text-transform:uppercase">程序</span>
-          <div class="proc-chip done"><span class="roman">I</span>诉前调解</div>
-          <svg class="proc-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
-          <div class="proc-chip active">
-            <span class="roman">II</span>一审
-            <span class="dot dot-amber" style="background:rgba(255,255,255,0.6)"></span>
-          </div>
-          <svg class="proc-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
-          <div class="proc-add" title="添加程序">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
-          </div>
-          <div style="margin-left:auto;display:flex;gap:8px;align-items:center">
-            <span class="t-xs t-mute">当前：(2026)沪0105民初1288号</span>
-            <button class="btn btn-ghost btn-sm">切换</button>
-          </div>
-        </div>
-      </div>
+          <!-- 案件 Hero -->
+          <div class="matter-hero">
+            <div class="matter-meta-row">
+              <span>LL-2026-L-0015</span>
+              <span class="sep">·</span>
+              <span>Conflicto por contrato de construcción</span>
+              <span class="sep">·</span>
+              <span>Tribunal de Changning, Shanghái</span>
+              <span class="sep">·</span>
+              <span>Monto $4,580,000</span>
+            </div>
+            <h1 class="matter-title">
+              Caso de conflicto contractual de construcción de Qingshi
+              Construction contra Huadong Property
+            </h1>
 
-      <!-- 主区 + 侧栏 -->
-      <div class="matter-body">
-        <div class="main-col">
+            <div class="matter-badges">
+              <span class="badge b-cyan"
+                ><span class="dot dot-cyan"></span>En curso</span
+              >
+              <span class="badge b-slate">Civil/Comercial</span>
+              <span class="badge b-amber">
+                <svg
+                  width="11"
+                  height="11"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <path
+                    d="M10.3 3.86 1.82 18a2 2 0 0 0 1.7 3h16.96a2 2 0 0 0 1.71-3L13.29 3.86a2 2 0 0 0-3.42 0z"
+                  />
+                </svg>
+                Plazo de prueba: 3 días
+              </span>
+              <span class="badge b-slate">Responsable: Ye Sen + 2</span>
+            </div>
 
-          <!-- Segmented Tab -->
-          <div class="segmented" style="align-self:flex-start;margin-bottom:4px">
-            <button class="seg active">概览</button>
-            <button class="seg">阶段任务<span class="count">8</span></button>
-            <button class="seg">期限开庭<span class="count">5</span></button>
-            <button class="seg">沟通<span class="count">12</span></button>
-            <button class="seg">材料<span class="count">34</span></button>
-            <button class="seg">财务<span class="count">6</span></button>
-          </div>
-
-          <!-- 基本信息 -->
-          <div class="card">
-            <div class="panel-head">
-              <div class="panel-title">
-                <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
-                案件基本信息
-              </div>
-              <button class="btn btn-ghost btn-sm">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 20h9M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4z"/></svg>
-                编辑
+            <div class="matter-actions">
+              <button class="btn btn-primary btn-sm">
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2.2"
+                >
+                  <path d="M12 5v14M5 12h14" />
+                </svg>
+                Agregar registro
+              </button>
+              <button class="btn btn-secondary btn-sm">
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.8"
+                >
+                  <path
+                    d="M12 20h9M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4z"
+                  />
+                </svg>
+                Editar
+              </button>
+              <button class="btn btn-secondary btn-sm">
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.8"
+                >
+                  <path
+                    d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"
+                  />
+                </svg>
+                Exportar
               </button>
             </div>
-            <div class="panel-body">
-              <div style="display:grid;grid-template-columns:1fr 1fr;gap:0 32px">
-                <div>
-                  <div class="field"><span class="field-label">案号</span><span class="field-value mono">(2026)沪0105民初1288号</span></div>
-                  <div class="field"><span class="field-label">案由</span><span class="field-value">建设工程施工合同纠纷</span></div>
-                  <div class="field"><span class="field-label">诉讼地位</span><span class="field-value">原告</span></div>
-                </div>
-                <div>
-                  <div class="field"><span class="field-label">标的额</span><span class="field-value mono t-indigo" style="font-weight:500">$4,580,000</span></div>
-                  <div class="field"><span class="field-label">受理法院</span><span class="field-value">上海市长宁区人民法院</span></div>
-                  <div class="field"><span class="field-label">收案时间</span><span class="field-value mono">2026-04-10</span></div>
-                </div>
+
+            <div class="keypoints">
+              <div class="kp alert">
+                <span class="kp-label">Plazo de prueba</span>
+                <span class="kp-value">3 días</span>
+                <span class="kp-sub">17/06/2026</span>
+              </div>
+              <div class="kp">
+                <span class="kp-label">Fecha de inicio</span>
+                <span class="kp-value">12/04/2026</span>
+                <span class="kp-sub">2026</span>
+              </div>
+              <div class="kp">
+                <span class="kp-label">Primera audiencia</span>
+                <span class="kp-value">19/06/2026</span>
+                <span class="kp-sub">jueves 09:30</span>
+              </div>
+              <div class="kp">
+                <span class="kp-label">Progreso de cobranza</span>
+                <span class="kp-value">66%</span>
+                <span class="kp-sub">$120K / 180K</span>
               </div>
             </div>
           </div>
 
-          <!-- 当事人（程序本位：区分委托方/对方）-->
-          <div class="card">
-            <div class="panel-head">
-              <div class="panel-title">
-                <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="9" cy="8" r="3.5"/><path d="M2 20c0-3.5 3-6 7-6s7 2.5 7 6"/></svg>
-                当事人
+          <!-- 程序链（程序本位核心设计）-->
+          <div class="card" style="margin-bottom: 20px">
+            <div class="procedure-chain">
+              <span
+                class="t-xs t-mute"
+                style="
+                  margin-right: 4px;
+                  font-weight: 600;
+                  letter-spacing: 0.05em;
+                  text-transform: uppercase;
+                "
+                >Procedimiento</span
+              >
+              <div class="proc-chip done">
+                <span class="roman">I</span>Conciliación previa
               </div>
-              <button class="btn btn-ghost btn-sm">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
-                添加
-              </button>
+              <svg
+                class="proc-arrow"
+                width="14"
+                height="14"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <path d="M9 18l6-6-6-6" />
+              </svg>
+              <div class="proc-chip active">
+                <span class="roman">II</span>Primera instancia
+                <span
+                  class="dot dot-amber"
+                  style="background: rgba(255, 255, 255, 0.6)"
+                ></span>
+              </div>
+              <svg
+                class="proc-arrow"
+                width="14"
+                height="14"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <path d="M9 18l6-6-6-6" />
+              </svg>
+              <div class="proc-add" title="添加程序">
+                <svg
+                  width="12"
+                  height="12"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <path d="M12 5v14M5 12h14" />
+                </svg>
+              </div>
+              <div
+                style="
+                  margin-left: auto;
+                  display: flex;
+                  gap: 8px;
+                  align-items: center;
+                "
+              >
+                <span class="t-xs t-mute">Actual: (2026)SH0105MC1288N</span>
+                <button class="btn btn-ghost btn-sm">Cambiar</button>
+              </div>
             </div>
-            <div class="panel-body">
-              <div class="eyebrow" style="margin-bottom:8px">委托方</div>
-              <div class="party-block">
-                <div class="party-av av-indigo">青</div>
-                <div style="flex:1;min-width:0">
-                  <div class="party-name">上海青石建设有限公司</div>
-                  <div class="party-meta">公司 · 91310115MA1K3P2X</div>
+          </div>
+
+          <!-- 主区 + 侧栏 -->
+          <div class="matter-body">
+            <div class="main-col">
+              <!-- Segmented Tab -->
+              <div
+                class="segmented"
+                style="align-self: flex-start; margin-bottom: 4px"
+              >
+                <button class="seg active">Vista general</button>
+                <button class="seg">
+                  Tareas por etapa<span class="count">8</span>
+                </button>
+                <button class="seg">
+                  Plazos y audiencias<span class="count">5</span>
+                </button>
+                <button class="seg">
+                  Comunicaciones<span class="count">12</span>
+                </button>
+                <button class="seg">
+                  Documentos<span class="count">34</span>
+                </button>
+                <button class="seg">
+                  Finanzas<span class="count">6</span>
+                </button>
+              </div>
+
+              <!-- 基本信息 -->
+              <div class="card">
+                <div class="panel-head">
+                  <div class="panel-title">
+                    <svg
+                      class="ic"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="1.8"
+                    >
+                      <rect x="3" y="3" width="18" height="18" rx="2" />
+                      <path d="M3 9h18M9 21V9" />
+                    </svg>
+                    Información básica del caso
+                  </div>
+                  <button class="btn btn-ghost btn-sm">
+                    <svg
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="1.8"
+                    >
+                      <path
+                        d="M12 20h9M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4z"
+                      />
+                    </svg>
+                    Editar
+                  </button>
                 </div>
-                <span class="badge b-indigo party-role">原告</span>
-              </div>
-              <div class="eyebrow" style="margin:14px 0 8px">诉讼对方</div>
-              <div class="party-block">
-                <div class="party-av av-orange">华</div>
-                <div style="flex:1;min-width:0">
-                  <div class="party-name">华东置业集团有限公司</div>
-                  <div class="party-meta">公司 · 91310104MA1FL8K7</div>
+                <div class="panel-body">
+                  <div
+                    style="
+                      display: grid;
+                      grid-template-columns: 1fr 1fr;
+                      gap: 0 32px;
+                    "
+                  >
+                    <div>
+                      <div class="field">
+                        <span class="field-label">Número de expediente</span
+                        ><span class="field-value mono"
+                          >(2026)SH0105MC1288N</span
+                        >
+                      </div>
+                      <div class="field">
+                        <span class="field-label">Causa</span
+                        ><span class="field-value"
+                          >Conflicto por contrato de construcción</span
+                        >
+                      </div>
+                      <div class="field">
+                        <span class="field-label">Posición procesal</span
+                        ><span class="field-value">Demandante</span>
+                      </div>
+                    </div>
+                    <div>
+                      <div class="field">
+                        <span class="field-label">Monto del litigio</span
+                        ><span
+                          class="field-value mono t-indigo"
+                          style="font-weight: 500"
+                          >$4,580,000</span
+                        >
+                      </div>
+                      <div class="field">
+                        <span class="field-label">Tribunal interviniente</span
+                        ><span class="field-value"
+                          >Tribunal Popular del distrito de Changning,
+                          Shanghái</span
+                        >
+                      </div>
+                      <div class="field">
+                        <span class="field-label">Fecha de recepción</span
+                        ><span class="field-value mono">10/04/2026</span>
+                      </div>
+                    </div>
+                  </div>
                 </div>
-                <span class="badge b-orange party-role">被告</span>
               </div>
-            </div>
-          </div>
 
-          <!-- 当前程序阶段任务 -->
-          <div class="card">
-            <div class="panel-head">
-              <div class="panel-title">
-                <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
-                一审 · 阶段任务
-              </div>
-              <span class="t-xs t-mute">完成 5 / 8</span>
-            </div>
-            <div class="panel-body">
-              <div class="stage-row">
-                <div class="stage-check done"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3"><path d="M5 12l5 5L20 7"/></svg></div>
-                <span class="stage-name done">立案登记</span>
-                <span class="stage-meta">04-12</span>
-              </div>
-              <div class="stage-row">
-                <div class="stage-check done"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3"><path d="M5 12l5 5L20 7"/></svg></div>
-                <span class="stage-name done">提交起诉状</span>
-                <span class="stage-meta">04-15</span>
-              </div>
-              <div class="stage-row">
-                <div class="stage-check"></div>
-                <span class="stage-name">举证材料整理 <span class="badge b-amber" style="margin-left:6px">紧急</span></span>
-                <span class="stage-meta">截止 06-17</span>
-              </div>
-              <div class="stage-row">
-                <div class="stage-check"></div>
-                <span class="stage-name">交换证据</span>
-                <span class="stage-meta">待定</span>
-              </div>
-              <div class="stage-row">
-                <div class="stage-check"></div>
-                <span class="stage-name">庭前会议</span>
-                <span class="stage-meta">06-19</span>
-              </div>
-            </div>
-          </div>
-
-        </div>
-
-        <!-- 侧栏 -->
-        <div class="side-col">
-          <!-- 财务速览 -->
-          <div class="card">
-            <div class="panel-head">
-              <div class="panel-title">
-                <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="6" width="18" height="13" rx="2"/><path d="M3 10h18"/></svg>
-                财务速览
-              </div>
-              <button class="btn btn-ghost btn-sm">详情</button>
-            </div>
-            <div class="panel-body">
-              <div class="field"><span class="field-label">合同金额</span><span class="field-value mono">$180,000</span></div>
-              <div class="field"><span class="field-label">应收</span><span class="field-value mono">$60,000</span></div>
-              <div class="field"><span class="field-label">实收</span><span class="field-value mono" style="color:var(--green);font-weight:500">$120,000</span></div>
-              <div style="margin-top:14px">
-                <div style="display:flex;justify-content:space-between;font-size:11.5px;color:var(--t-muted);margin-bottom:6px">
-                  <span>收款进度</span><span class="mono">66%</span>
+              <!-- 当事人（程序本位：区分委托方/对方）-->
+              <div class="card">
+                <div class="panel-head">
+                  <div class="panel-title">
+                    <svg
+                      class="ic"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="1.8"
+                    >
+                      <circle cx="9" cy="8" r="3.5" />
+                      <path d="M2 20c0-3.5 3-6 7-6s7 2.5 7 6" />
+                    </svg>
+                    Partes
+                  </div>
+                  <button class="btn btn-ghost btn-sm">
+                    <svg
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                    >
+                      <path d="M12 5v14M5 12h14" />
+                    </svg>
+                    Agregar
+                  </button>
                 </div>
-                <div class="progress"><div class="progress-fill green" style="width:66%"></div></div>
+                <div class="panel-body">
+                  <div class="eyebrow" style="margin-bottom: 8px">Cliente</div>
+                  <div class="party-block">
+                    <div class="party-av av-indigo">Q</div>
+                    <div style="flex: 1; min-width: 0">
+                      <div class="party-name">
+                        Shanghai Qingshi Construction Co., Ltd.
+                      </div>
+                      <div class="party-meta">Empresa · 91310115MA1K3P2X</div>
+                    </div>
+                    <span class="badge b-indigo party-role">Demandante</span>
+                  </div>
+                  <div class="eyebrow" style="margin: 14px 0 8px">
+                    Contraparte
+                  </div>
+                  <div class="party-block">
+                    <div class="party-av av-orange">H</div>
+                    <div style="flex: 1; min-width: 0">
+                      <div class="party-name">
+                        Huadong Property Group Co., Ltd.
+                      </div>
+                      <div class="party-meta">Empresa · 91310104MA1FL8K7</div>
+                    </div>
+                    <span class="badge b-orange party-role">Demandado</span>
+                  </div>
+                </div>
               </div>
-            </div>
-          </div>
 
-          <!-- 办案团队 -->
-          <div class="card">
-            <div class="panel-head">
-              <div class="panel-title">
-                <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="9" cy="8" r="3"/><path d="M2 20c0-3 3-5 7-5s7 2 7 5"/><circle cx="17" cy="9" r="2"/></svg>
-                办案团队
+              <!-- 当前程序阶段任务 -->
+              <div class="card">
+                <div class="panel-head">
+                  <div class="panel-title">
+                    <svg
+                      class="ic"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="1.8"
+                    >
+                      <path d="M9 11l3 3L22 4" />
+                      <path
+                        d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"
+                      />
+                    </svg>
+                    Primera instancia · Tareas por etapa
+                  </div>
+                  <span class="t-xs t-mute">Completado 5 / 8</span>
+                </div>
+                <div class="panel-body">
+                  <div class="stage-row">
+                    <div class="stage-check done">
+                      <svg
+                        width="11"
+                        height="11"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="white"
+                        stroke-width="3"
+                      >
+                        <path d="M5 12l5 5L20 7" />
+                      </svg>
+                    </div>
+                    <span class="stage-name done">Registro de inicio</span>
+                    <span class="stage-meta">12/04/2026</span>
+                  </div>
+                  <div class="stage-row">
+                    <div class="stage-check done">
+                      <svg
+                        width="11"
+                        height="11"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="white"
+                        stroke-width="3"
+                      >
+                        <path d="M5 12l5 5L20 7" />
+                      </svg>
+                    </div>
+                    <span class="stage-name done"
+                      >Presentación de la demanda</span
+                    >
+                    <span class="stage-meta">15/04/2026</span>
+                  </div>
+                  <div class="stage-row">
+                    <div class="stage-check"></div>
+                    <span class="stage-name"
+                      >Organización de material probatorio
+                      <span class="badge b-amber" style="margin-left: 6px"
+                        >Urgente</span
+                      ></span
+                    >
+                    <span class="stage-meta">Vence 06-17</span>
+                  </div>
+                  <div class="stage-row">
+                    <div class="stage-check"></div>
+                    <span class="stage-name">Intercambio de pruebas</span>
+                    <span class="stage-meta">Pendiente</span>
+                  </div>
+                  <div class="stage-row">
+                    <div class="stage-check"></div>
+                    <span class="stage-name">Audiencia preliminar</span>
+                    <span class="stage-meta">19/06/2026</span>
+                  </div>
+                </div>
               </div>
-              <button class="btn btn-ghost btn-sm">管理</button>
             </div>
-            <div class="panel-body" style="padding-top:8px;padding-bottom:8px">
-              <div style="display:flex;align-items:center;gap:10px;padding:8px 0">
-                <div class="avatar av-indigo">叶</div>
-                <div style="flex:1"><div style="font-size:13px;font-weight:500">叶森</div><div class="t-xs t-mute">主办律师</div></div>
-                <span class="badge b-indigo">主办</span>
-              </div>
-              <div style="display:flex;align-items:center;gap:10px;padding:8px 0">
-                <div class="avatar av-violet">李</div>
-                <div style="flex:1"><div style="font-size:13px;font-weight:500">李明华</div><div class="t-xs t-mute">协办律师</div></div>
-                <span class="badge b-violet">协办</span>
-              </div>
-              <div style="display:flex;align-items:center;gap:10px;padding:8px 0">
-                <div class="avatar av-green">王</div>
-                <div style="flex:1"><div style="font-size:13px;font-weight:500">王晓彤</div><div class="t-xs t-mute">律师助理</div></div>
-                <span class="badge b-green">助理</span>
-              </div>
-            </div>
-          </div>
 
-          <!-- 关联 -->
-          <div class="card">
-            <div class="panel-head">
-              <div class="panel-title">
-                <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M10 13a5 5 0 0 0 7.5.5l3-3a5 5 0 0 0-7-7l-1.5 1.5"/><path d="M14 11a5 5 0 0 0-7.5-.5l-3 3a5 5 0 0 0 7 7l1.5-1.5"/></svg>
-                关联与文档
+            <!-- 侧栏 -->
+            <div class="side-col">
+              <!-- 财务速览 -->
+              <div class="card">
+                <div class="panel-head">
+                  <div class="panel-title">
+                    <svg
+                      class="ic"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="1.8"
+                    >
+                      <rect x="3" y="6" width="18" height="13" rx="2" />
+                      <path d="M3 10h18" />
+                    </svg>
+                    Resumen financiero
+                  </div>
+                  <button class="btn btn-ghost btn-sm">Detalles</button>
+                </div>
+                <div class="panel-body">
+                  <div class="field">
+                    <span class="field-label">Monto del contrato</span
+                    ><span class="field-value mono">$180,000</span>
+                  </div>
+                  <div class="field">
+                    <span class="field-label">Pendiente de cobro</span
+                    ><span class="field-value mono">$60,000</span>
+                  </div>
+                  <div class="field">
+                    <span class="field-label">Cobrado</span
+                    ><span
+                      class="field-value mono"
+                      style="color: var(--green); font-weight: 500"
+                      >$120,000</span
+                    >
+                  </div>
+                  <div style="margin-top: 14px">
+                    <div
+                      style="
+                        display: flex;
+                        justify-content: space-between;
+                        font-size: 11.5px;
+                        color: var(--t-muted);
+                        margin-bottom: 6px;
+                      "
+                    >
+                      <span>Progreso de cobranza</span
+                      ><span class="mono">66%</span>
+                    </div>
+                    <div class="progress">
+                      <div class="progress-fill green" style="width: 66%"></div>
+                    </div>
+                  </div>
+                </div>
               </div>
-            </div>
-            <div class="panel-body">
-              <div class="field"><span class="field-label">关联案件</span><span class="field-value mono">2</span></div>
-              <div class="field"><span class="field-label">卷宗材料</span><span class="field-value mono">34</span></div>
-              <div class="field"><span class="field-label">用章申请</span><span class="field-value mono">3</span></div>
-              <div class="field"><span class="field-label">快递记录</span><span class="field-value mono">5</span></div>
+
+              <!-- 办案团队 -->
+              <div class="card">
+                <div class="panel-head">
+                  <div class="panel-title">
+                    <svg
+                      class="ic"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="1.8"
+                    >
+                      <circle cx="9" cy="8" r="3" />
+                      <path d="M2 20c0-3 3-5 7-5s7 2 7 5" />
+                      <circle cx="17" cy="9" r="2" />
+                    </svg>
+                    Equipo del caso
+                  </div>
+                  <button class="btn btn-ghost btn-sm">Gestionar</button>
+                </div>
+                <div
+                  class="panel-body"
+                  style="padding-top: 8px; padding-bottom: 8px"
+                >
+                  <div
+                    style="
+                      display: flex;
+                      align-items: center;
+                      gap: 10px;
+                      padding: 8px 0;
+                    "
+                  >
+                    <div class="avatar av-indigo">Y</div>
+                    <div style="flex: 1">
+                      <div style="font-size: 13px; font-weight: 500">
+                        Ye Sen
+                      </div>
+                      <div class="t-xs t-mute">Abogado responsable</div>
+                    </div>
+                    <span class="badge b-indigo">Responsable</span>
+                  </div>
+                  <div
+                    style="
+                      display: flex;
+                      align-items: center;
+                      gap: 10px;
+                      padding: 8px 0;
+                    "
+                  >
+                    <div class="avatar av-violet">L</div>
+                    <div style="flex: 1">
+                      <div style="font-size: 13px; font-weight: 500">
+                        Li Minghua
+                      </div>
+                      <div class="t-xs t-mute">Abogado colaborador</div>
+                    </div>
+                    <span class="badge b-violet">Colaborador</span>
+                  </div>
+                  <div
+                    style="
+                      display: flex;
+                      align-items: center;
+                      gap: 10px;
+                      padding: 8px 0;
+                    "
+                  >
+                    <div class="avatar av-green">W</div>
+                    <div style="flex: 1">
+                      <div style="font-size: 13px; font-weight: 500">
+                        Wang Xiaotong
+                      </div>
+                      <div class="t-xs t-mute">Asistente legal</div>
+                    </div>
+                    <span class="badge b-green">Asistente</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- 关联 -->
+              <div class="card">
+                <div class="panel-head">
+                  <div class="panel-title">
+                    <svg
+                      class="ic"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="1.8"
+                    >
+                      <path
+                        d="M10 13a5 5 0 0 0 7.5.5l3-3a5 5 0 0 0-7-7l-1.5 1.5"
+                      />
+                      <path
+                        d="M14 11a5 5 0 0 0-7.5-.5l-3 3a5 5 0 0 0 7 7l1.5-1.5"
+                      />
+                    </svg>
+                    Vinculaciones y documentos
+                  </div>
+                </div>
+                <div class="panel-body">
+                  <div class="field">
+                    <span class="field-label">Casos vinculados</span
+                    ><span class="field-value mono">2</span>
+                  </div>
+                  <div class="field">
+                    <span class="field-label">Documentos del expediente</span
+                    ><span class="field-value mono">34</span>
+                  </div>
+                  <div class="field">
+                    <span class="field-label">Solicitudes de sello</span
+                    ><span class="field-value mono">3</span>
+                  </div>
+                  <div class="field">
+                    <span class="field-label">Registros de envíos</span
+                    ><span class="field-value mono">5</span>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
       </div>
-
     </div>
-  </div>
-</div>
-</body>
+  </body>
 </html>

@@ -45,8 +45,8 @@ async function seedAdmin() {
       name,
       role: UserRole.ADMIN,
       passwordHash,
-      active: true
-    }
+      active: true,
+    },
   });
 
   console.log(`✓ ADMIN 已就绪：${admin.email}`);
@@ -60,10 +60,10 @@ async function seedCauses(category: MatterCategory, causes: CauseSeed[]) {
   const codeToId = new Map<string, string>();
   const sourceNote =
     category === MatterCategory.CIVIL_COMMERCIAL
-      ? "最高法《民事案件案由规定》2020 修正（样本）"
+      ? "Reglamento de causas de asuntos civiles del Tribunal Supremo Popular, revisado en 2020 (muestra)"
       : category === MatterCategory.CRIMINAL
-        ? "刑法分则罪名（样本）"
-        : "最高法《行政案件案由暂行规定》2021（样本）";
+        ? "Tipos penales de la parte especial del Código Penal (muestra)"
+        : "Reglamento provisional de causas de asuntos administrativos del Tribunal Supremo Popular de 2021 (muestra)";
 
   for (const c of causes) {
     const upserted = await prisma.causeOfAction.upsert({
@@ -73,7 +73,7 @@ async function seedCauses(category: MatterCategory, causes: CauseSeed[]) {
         shortName: c.shortName,
         level: c.level,
         keywords: c.keywords ?? [],
-        sourceNote
+        sourceNote,
       },
       create: {
         category,
@@ -82,8 +82,8 @@ async function seedCauses(category: MatterCategory, causes: CauseSeed[]) {
         shortName: c.shortName,
         level: c.level,
         keywords: c.keywords ?? [],
-        sourceNote
-      }
+        sourceNote,
+      },
     });
     codeToId.set(c.code, upserted.id);
   }
@@ -98,7 +98,7 @@ async function seedCauses(category: MatterCategory, causes: CauseSeed[]) {
     }
     await prisma.causeOfAction.update({
       where: { category_code: { category, code: c.code } },
-      data: { parentId }
+      data: { parentId },
     });
   }
 
@@ -111,43 +111,119 @@ async function seedStageTemplates() {
   const templates = [
     {
       procedureType: "FIRST_INSTANCE" as const,
-      name: "一审标准阶段",
+      name: "Etapas estándar de primera instancia",
       steps: [
-        { name: "立案", order: 1, defaultTasks: ["提交起诉状", "缴纳诉讼费"] },
-        { name: "应诉", order: 2, defaultTasks: ["确认收到应诉通知"] },
-        { name: "证据交换", order: 3, defaultTasks: ["提交证据目录", "举证期限内补充证据"] },
-        { name: "开庭", order: 4, defaultTasks: ["庭前会议", "正式开庭"] },
-        { name: "判决", order: 5, defaultTasks: ["收到判决书", "确认是否上诉"] }
-      ]
+        {
+          name: "Presentación del caso",
+          order: 1,
+          defaultTasks: ["Enviar la demanda", "Pagar las tasas judiciales"],
+        },
+        {
+          name: "Contestación",
+          order: 2,
+          defaultTasks: ["Confirmar la recepción de la notificación judicial"],
+        },
+        {
+          name: "Intercambio de pruebas",
+          order: 3,
+          defaultTasks: [
+            "Enviar el índice de pruebas",
+            "Completar las pruebas dentro del plazo",
+          ],
+        },
+        {
+          name: "Audiencia",
+          order: 4,
+          defaultTasks: [
+            "Conferencia previa a la audiencia",
+            "Celebrar la audiencia formal",
+          ],
+        },
+        {
+          name: "Sentencia",
+          order: 5,
+          defaultTasks: ["Recibir la sentencia", "Confirmar si se apelará"],
+        },
+      ],
     },
     {
       procedureType: "SECOND_INSTANCE" as const,
-      name: "二审标准阶段",
+      name: "Etapas estándar de segunda instancia",
       steps: [
-        { name: "立案", order: 1, defaultTasks: ["提交上诉状"] },
-        { name: "答辩", order: 2, defaultTasks: ["收到对方上诉状", "提交答辩状"] },
-        { name: "开庭/询问", order: 3, defaultTasks: ["开庭或书面审理"] },
-        { name: "判决", order: 4, defaultTasks: ["收到二审判决书"] }
-      ]
+        {
+          name: "Presentación del caso",
+          order: 1,
+          defaultTasks: ["Enviar el escrito de apelación"],
+        },
+        {
+          name: "Contestación",
+          order: 2,
+          defaultTasks: [
+            "Recibir el escrito de apelación de la contraparte",
+            "Enviar el escrito de contestación",
+          ],
+        },
+        {
+          name: "Audiencia/consulta",
+          order: 3,
+          defaultTasks: ["Celebrar la audiencia o el juicio escrito"],
+        },
+        {
+          name: "Sentencia",
+          order: 4,
+          defaultTasks: ["Recibir la sentencia de segunda instancia"],
+        },
+      ],
     },
     {
       procedureType: "INVESTIGATION" as const,
-      name: "侦查阶段标准流程",
+      name: "Procedimiento estándar de la etapa de investigación",
       steps: [
-        { name: "会见", order: 1, defaultTasks: ["首次会见", "持续会见"] },
-        { name: "强制措施", order: 2, defaultTasks: ["申请取保候审", "羁押必要性审查"] },
-        { name: "侦查终结", order: 3, defaultTasks: ["提出辩护意见"] }
-      ]
+        {
+          name: "Entrevistas",
+          order: 1,
+          defaultTasks: ["Primera entrevista", "Entrevistas de seguimiento"],
+        },
+        {
+          name: "Medidas cautelares",
+          order: 2,
+          defaultTasks: [
+            "Solicitar libertad bajo fianza",
+            "Revisión de la necesidad de la prisión preventiva",
+          ],
+        },
+        {
+          name: "Cierre de la investigación",
+          order: 3,
+          defaultTasks: ["Presentar las observaciones de la defensa"],
+        },
+      ],
     },
     {
       procedureType: "PROSECUTION_REVIEW" as const,
-      name: "审查起诉阶段标准流程",
+      name: "Procedimiento estándar de la etapa de revisión de la acusación",
       steps: [
-        { name: "阅卷", order: 1, defaultTasks: ["阅卷", "复制证据"] },
-        { name: "辩护意见", order: 2, defaultTasks: ["提交不起诉/罪轻辩护意见"] },
-        { name: "认罪认罚", order: 3, defaultTasks: ["签署具结书（如认罪）"] }
-      ]
-    }
+        {
+          name: "Revisión del expediente",
+          order: 1,
+          defaultTasks: ["Revisar el expediente", "Copiar las pruebas"],
+        },
+        {
+          name: "Observaciones de la defensa",
+          order: 2,
+          defaultTasks: [
+            "Presentar observaciones para el sobreseimiento o una pena menor",
+          ],
+        },
+        {
+          name: "Reconocimiento de culpabilidad y aceptación de la pena",
+          order: 3,
+          defaultTasks: [
+            "Firmar el acta de compromiso (si se reconoce la culpabilidad)",
+          ],
+        },
+      ],
+    },
   ];
 
   for (const t of templates) {
@@ -159,8 +235,8 @@ async function seedStageTemplates() {
         procedureType: t.procedureType,
         name: t.name,
         isDefault: true,
-        steps: t.steps as unknown as object
-      }
+        steps: t.steps as unknown as object,
+      },
     });
   }
   console.log(`✓ 阶段模板：${templates.length} 个已就绪`);
@@ -172,8 +248,8 @@ async function seedSystemSettings() {
     update: {},
     create: {
       key: "appearance",
-      value: { primaryColor: "#5B8DEF", theme: "dark" }
-    }
+      value: { primaryColor: "#5B8DEF", theme: "dark" },
+    },
   });
   console.log("✓ 系统设置：默认外观已就绪");
 }
@@ -189,7 +265,8 @@ async function main() {
   await seedSystemSettings();
 
   // v0.8: 文档模板 + 用章配置
-  const { seedV08Templates, seedV08SealConfigs } = await import("./seeds/v08-templates-and-seals");
+  const { seedV08Templates, seedV08SealConfigs } =
+    await import("./seeds/v08-templates-and-seals");
   await seedV08SealConfigs(prisma);
   await seedV08Templates(prisma);
 

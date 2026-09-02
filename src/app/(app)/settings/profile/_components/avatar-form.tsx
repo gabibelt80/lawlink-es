@@ -18,11 +18,11 @@ export function AvatarForm({ name, initialAvatar }: { name: string; initialAvata
   const onPick = (file: File | undefined) => {
     if (!file) return;
     if (!/^image\//.test(file.type)) {
-      toast.error("请选择图片文件（PNG / JPG / WebP / SVG）");
+      toast.error("Seleccioná una imagen (PNG / JPG / WebP / SVG)");
       return;
     }
     if (file.size > AVATAR_MAX_BYTES) {
-      toast.error("头像过大，请控制在约 180KB 以内");
+      toast.error("El avatar es demasiado grande, usá una imagen de aproximadamente 180 KB");
       return;
     }
     const reader = new FileReader();
@@ -31,7 +31,7 @@ export function AvatarForm({ name, initialAvatar }: { name: string; initialAvata
       setAvatar(dataUrl);
       save(dataUrl);
     };
-    reader.onerror = () => toast.error("读取图片Error");
+    reader.onerror = () => toast.error("Error al leer la imagen");
     reader.readAsDataURL(file);
   };
 
@@ -39,10 +39,10 @@ export function AvatarForm({ name, initialAvatar }: { name: string; initialAvata
     startTransition(async () => {
       try {
         await saveMyAvatar({ avatar: value });
-        toast.success(value ? "头像已Actualizar" : "头像已清除");
+        toast.success(value ? "Avatar actualizado" : "Avatar eliminado");
         router.refresh();
       } catch (e) {
-        toast.error(e instanceof Error ? e.message : "GuardarError");
+        toast.error(e instanceof Error ? e.message : "Error al guardar");
       }
     });
   };
@@ -51,7 +51,6 @@ export function AvatarForm({ name, initialAvatar }: { name: string; initialAvata
     <div className="flex items-center gap-4">
       <div className="flex h-16 w-16 items-center justify-center overflow-hidden rounded-full border border-border bg-primary/10">
         {avatar ? (
-          // eslint-disable-next-line @next/next/no-img-element
           <img src={avatar} alt={name} className="h-full w-full object-cover" />
         ) : (
           <span className="text-2xl font-semibold text-primary">{initial}</span>
@@ -73,7 +72,7 @@ export function AvatarForm({ name, initialAvatar }: { name: string; initialAvata
             className="inline-flex items-center gap-1 rounded-md border border-border px-2.5 py-1 text-[12px] hover:bg-muted/60 disabled:opacity-50"
           >
             {pending ? <Loader2 className="h-3 w-3 animate-spin" /> : <ImageUp className="h-3 w-3" />}
-            上传头像
+            Subir avatar
           </button>
           {avatar && (
             <button
@@ -87,12 +86,12 @@ export function AvatarForm({ name, initialAvatar }: { name: string; initialAvata
               className="inline-flex items-center gap-1 text-[12px] text-destructive hover:underline disabled:opacity-50"
             >
               <Trash2 className="h-3 w-3" />
-              清除
+              Eliminar
             </button>
           )}
         </div>
         <p className="text-[11px] text-muted-foreground">
-          未上传时显示Nombre y apellido首字「{initial}」。建议方形图片，≤ 180KB。
+          Si no subís una imagen, se muestra la primera letra de tu nombre y apellido «{initial}». Usá una imagen cuadrada de menos de 180 KB.
         </p>
       </div>
     </div>

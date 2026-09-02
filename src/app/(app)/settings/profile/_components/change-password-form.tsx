@@ -13,12 +13,12 @@ import { changeMyPassword } from "@/server/users/actions";
 
 const schema = z
   .object({
-    currentPassword: z.string().min(1, "请输入当前Contraseña"),
-    newPassword: z.string().min(8, "新Contraseña至少 8 位").max(128),
+    currentPassword: z.string().min(1, "Ingresá tu contraseña actual"),
+    newPassword: z.string().min(8, "La nueva contraseña debe tener al menos 8 caracteres").max(128),
     confirmPassword: z.string()
   })
   .refine((v) => v.newPassword === v.confirmPassword, {
-    message: "两次输入的新Contraseña不一致",
+    message: "Las contraseñas no coinciden",
     path: ["confirmPassword"]
   });
 
@@ -43,28 +43,28 @@ export function ChangePasswordForm() {
           currentPassword: values.currentPassword,
           newPassword: values.newPassword
         });
-        toast.success("Contraseña已修改");
+        toast.success("Contraseña actualizada");
         reset();
       } catch (err) {
-        toast.error("修改Error", { description: err instanceof Error ? err.message : "" });
+        toast.error("Error al actualizar", { description: err instanceof Error ? err.message : "" });
       }
     });
   }
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="max-w-md space-y-4">
-      <Field label="当前Contraseña" error={errors.currentPassword?.message}>
+      <Field label="Contraseña actual" error={errors.currentPassword?.message}>
         <Input type="password" autoComplete="current-password" {...register("currentPassword")} />
       </Field>
-      <Field label="新Contraseña（至少 8 位）" error={errors.newPassword?.message}>
+      <Field label="Nueva contraseña (mínimo 8 caracteres)" error={errors.newPassword?.message}>
         <Input type="password" autoComplete="new-password" {...register("newPassword")} />
       </Field>
-      <Field label="Confirmar新Contraseña" error={errors.confirmPassword?.message}>
+      <Field label="Confirmar nueva contraseña" error={errors.confirmPassword?.message}>
         <Input type="password" autoComplete="new-password" {...register("confirmPassword")} />
       </Field>
       <Button type="submit" disabled={isPending} className="gap-1.5">
         {isPending && <Loader2 className="h-4 w-4 animate-spin" />}
-        修改Contraseña
+        Actualizar contraseña
       </Button>
     </form>
   );

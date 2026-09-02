@@ -14,11 +14,11 @@ export function ReminderScanButton() {
       try {
         const r = await triggerDueReminderScan();
         const total = r.deadlineNotified + r.hearingNotified;
-        toast.success(`扫描完成：新推送 ${total} 条`, {
-          description: `Plazo ${r.deadlineNotified}·开庭 ${r.hearingNotified}（去重跳过 ${r.suppressed}）`
+        toast.success(`Escaneo completado: ${total} notificaciones nuevas`, {
+          description: `Vencimientos ${r.deadlineNotified} · Audiencias ${r.hearingNotified} (omitidos por duplicados ${r.suppressed})`
         });
       } catch (err) {
-        toast.error("扫描Error", { description: err instanceof Error ? err.message : "" });
+        toast.error("Error al escanear", { description: err instanceof Error ? err.message : "" });
       }
     });
   }
@@ -30,7 +30,7 @@ export function ReminderScanButton() {
       ) : (
         <RefreshCw className="h-3.5 w-3.5" />
       )}
-      立即扫描
+      Escanear ahora
     </Button>
   );
 }

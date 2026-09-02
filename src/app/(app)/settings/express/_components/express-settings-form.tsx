@@ -29,7 +29,7 @@ export function ExpressSettingsForm({ initial }: { initial: Initial }) {
           kuaidi100Customer: k100Customer,
           kuaidi100Key: k100Key
         });
-        toast.success("配置已Guardar");
+        toast.success("Configuración guardada");
         setKdAppKey("");
         setK100Key("");
       } catch (e) {
@@ -39,11 +39,11 @@ export function ExpressSettingsForm({ initial }: { initial: Initial }) {
   };
 
   const clearKdniao = () => {
-    if (!confirm("清除快递鸟密钥？")) return;
+    if (!confirm("¿Borrar la clave de KDNiao?")) return;
     startTransition(async () => {
       try {
         await saveExpressSettingsAction({ kdniaoClearKey: true });
-        toast.success("已清除");
+        toast.success("Eliminada");
       } catch (e) {
         toast.error(e instanceof Error ? e.message : "Error");
       }
@@ -51,11 +51,11 @@ export function ExpressSettingsForm({ initial }: { initial: Initial }) {
   };
 
   const clearKd100 = () => {
-    if (!confirm("清除快递100密钥？")) return;
+    if (!confirm("¿Borrar la clave de Kuaidi100?")) return;
     startTransition(async () => {
       try {
         await saveExpressSettingsAction({ kuaidi100ClearKey: true });
-        toast.success("已清除");
+        toast.success("Eliminada");
       } catch (e) {
         toast.error(e instanceof Error ? e.message : "Error");
       }
@@ -67,22 +67,22 @@ export function ExpressSettingsForm({ initial }: { initial: Initial }) {
       <section className="ll-surface rounded-lg border border-border p-5">
         <header className="mb-3 flex items-center gap-2">
           <Package className="h-4 w-4 text-primary" />
-          <h2 className="text-lg">快递接入</h2>
+          <h2 className="text-lg">Integración de envíos</h2>
         </header>
         <p className="mb-4 text-[12px] text-muted-foreground">
-          双 provider：优先 <span className="text-foreground/85">快递鸟</span>（500 条/日免费），
-          Error时降级到 <span className="text-foreground/85">快递100</span>。
-          配置任一即可使用。
+          Doble proveedor: prioridad <span className="text-foreground/85">KDNiao</span> (500 consultas/día gratis),
+          ante error se degrada a <span className="text-foreground/85">Kuaidi100</span>.
+          Con configurar cualquiera de los dos ya se puede usar.
         </p>
 
-        {/* 快递鸟 */}
+        {/* KDNiao */}
         <div className="mb-5 rounded-md border border-border bg-muted/20 p-4">
           <div className="mb-2 flex items-center gap-2">
-            <h3 className="text-[13px] font-medium">快递鸟（主，推荐）</h3>
+            <h3 className="text-[13px] font-medium">KDNiao (principal, recomendado)</h3>
             {initial.kdniao.configured && (
               <span className="inline-flex items-center gap-1 rounded bg-emerald-500/15 px-1.5 py-0.5 text-[10px] text-emerald-700">
                 <CheckCircle2 className="h-3 w-3" />
-                已配置
+                Configurado
               </span>
             )}
             <a
@@ -91,17 +91,17 @@ export function ExpressSettingsForm({ initial }: { initial: Initial }) {
               rel="noreferrer"
               className="ml-auto inline-flex items-center gap-1 text-[11px] text-primary hover:underline"
             >
-              申请
+              Solicitar
               <ExternalLink className="h-3 w-3" />
             </a>
           </div>
           <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
             <div>
-              <Label className="text-[11px]">EBusinessID（用户 ID）</Label>
+              <Label className="text-[11px]">EBusinessID (ID de usuario)</Label>
               <Input
                 value={kdEbId}
                 onChange={(e) => setKdEbId(e.target.value)}
-                placeholder="数字 ID"
+                placeholder="ID numérico"
                 className="mt-1 font-mono"
               />
             </div>
@@ -110,7 +110,7 @@ export function ExpressSettingsForm({ initial }: { initial: Initial }) {
                 AppKey
                 {initial.kdniao.configured && (
                   <span className="ml-2 font-mono text-[10px] text-muted-foreground">
-                    当前 {initial.kdniao.appKeyMasked}（留空保留）
+                    Actual {initial.kdniao.appKeyMasked} (dejar vacío para conservar)
                   </span>
                 )}
               </Label>
@@ -118,7 +118,7 @@ export function ExpressSettingsForm({ initial }: { initial: Initial }) {
                 type="password"
                 value={kdAppKey}
                 onChange={(e) => setKdAppKey(e.target.value)}
-                placeholder={initial.kdniao.configured ? "如需更换请粘贴新 AppKey" : "AppKey"}
+                placeholder={initial.kdniao.configured ? "Pegá una nueva AppKey si querés cambiarla" : "AppKey"}
                 className="mt-1 font-mono"
                 autoComplete="off"
               />
@@ -132,20 +132,20 @@ export function ExpressSettingsForm({ initial }: { initial: Initial }) {
                 className="inline-flex items-center gap-1 text-[10px] text-destructive hover:underline"
               >
                 <Trash2 className="h-3 w-3" />
-                清除 AppKey
+                Borrar AppKey
               </button>
             </div>
           )}
         </div>
 
-        {/* 快递100 */}
+        {/* Kuaidi100 */}
         <div className="rounded-md border border-border bg-muted/20 p-4">
           <div className="mb-2 flex items-center gap-2">
-            <h3 className="text-[13px] font-medium">快递100（备用）</h3>
+            <h3 className="text-[13px] font-medium">Kuaidi100 (respaldo)</h3>
             {initial.kuaidi100.configured && (
               <span className="inline-flex items-center gap-1 rounded bg-emerald-500/15 px-1.5 py-0.5 text-[10px] text-emerald-700">
                 <CheckCircle2 className="h-3 w-3" />
-                已配置
+                Configurado
               </span>
             )}
             <a
@@ -154,13 +154,13 @@ export function ExpressSettingsForm({ initial }: { initial: Initial }) {
               rel="noreferrer"
               className="ml-auto inline-flex items-center gap-1 text-[11px] text-primary hover:underline"
             >
-              申请
+              Solicitar
               <ExternalLink className="h-3 w-3" />
             </a>
           </div>
           <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
             <div>
-              <Label className="text-[11px]">Customer（授权码）</Label>
+              <Label className="text-[11px]">Customer (código de autorización)</Label>
               <Input
                 value={k100Customer}
                 onChange={(e) => setK100Customer(e.target.value)}
@@ -172,7 +172,7 @@ export function ExpressSettingsForm({ initial }: { initial: Initial }) {
                 Key
                 {initial.kuaidi100.configured && (
                   <span className="ml-2 font-mono text-[10px] text-muted-foreground">
-                    当前 {initial.kuaidi100.keyMasked}（留空保留）
+                    Actual {initial.kuaidi100.keyMasked} (dejar vacío para conservar)
                   </span>
                 )}
               </Label>
@@ -180,7 +180,7 @@ export function ExpressSettingsForm({ initial }: { initial: Initial }) {
                 type="password"
                 value={k100Key}
                 onChange={(e) => setK100Key(e.target.value)}
-                placeholder={initial.kuaidi100.configured ? "如需更换请粘贴新 key" : "key"}
+                placeholder={initial.kuaidi100.configured ? "Pegá una nueva key si querés cambiarla" : "key"}
                 className="mt-1 font-mono"
                 autoComplete="off"
               />
@@ -194,7 +194,7 @@ export function ExpressSettingsForm({ initial }: { initial: Initial }) {
                 className="inline-flex items-center gap-1 text-[10px] text-destructive hover:underline"
               >
                 <Trash2 className="h-3 w-3" />
-                清除 Key
+                Borrar Key
               </button>
             </div>
           )}
@@ -203,13 +203,13 @@ export function ExpressSettingsForm({ initial }: { initial: Initial }) {
         <div className="mt-4 flex justify-end">
           <Button onClick={save} disabled={pending} className="gap-1.5">
             {pending && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
-            Guardar配置
+            Guardar configuración
           </Button>
         </div>
 
         <p className="mt-3 text-[11px] text-muted-foreground">
-          密钥使用 AES-256-GCM 加密存入 SystemSetting，y文档加密复用同一密钥（
-          <span className="font-mono">STORAGE_ENCRYPTION_KEY</span>）。前端永远不显示明文。
+          Las claves se guardan cifradas con AES-256-GCM en SystemSetting y el cifrado de documentos reutiliza la misma clave (
+          <span className="font-mono">STORAGE_ENCRYPTION_KEY</span>). El frontend nunca muestra el texto plano.
         </p>
       </section>
     </div>

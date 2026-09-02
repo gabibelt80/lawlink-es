@@ -46,20 +46,20 @@ export function YuandianSettingsForm({
     startTransition(async () => {
       try {
         await saveYuandianSettingsAction({ apiKey, baseUrl, caseDetailHost });
-        toast.success("pesos典配置已Guardar");
+        toast.success("Configuración de Yuandian guardada");
         setApiKey("");
       } catch (e) {
-        toast.error(e instanceof Error ? e.message : "GuardarError");
+        toast.error(e instanceof Error ? e.message : "Error al guardar");
       }
     });
   };
 
   const clearKey = () => {
-    if (!confirm("Confirmar清除pesos典 API key？类案检索功能将停止工作。")) return;
+    if (!confirm("¿Confirmás que querés borrar la API key de Yuandian? La búsqueda de casos similares dejará de funcionar.")) return;
     startTransition(async () => {
       try {
         await clearYuandianKeyAction({ confirm: true });
-        toast.success("pesos典 API key 已清除");
+        toast.success("API key de Yuandian eliminada");
       } catch (e) {
         toast.error(e instanceof Error ? e.message : "Error");
       }
@@ -73,7 +73,7 @@ export function YuandianSettingsForm({
       const res = await testYuandianConnection();
       setTestResult({ ok: res.ok, msg: res.message ?? "" });
     } catch (e) {
-      setTestResult({ ok: false, msg: e instanceof Error ? e.message : "网络错误" });
+      setTestResult({ ok: false, msg: e instanceof Error ? e.message : "Error de red" });
     } finally {
       setTesting(false);
     }
@@ -83,18 +83,18 @@ export function YuandianSettingsForm({
     <section className="ll-surface rounded-lg border border-border p-5">
       <header className="mb-3 flex items-center gap-2">
         <Scale className="h-4 w-4 text-primary" strokeWidth={1.8} />
-        <h2 className="text-lg">pesos典案例库 API</h2>
+        <h2 className="text-lg">API de base de casos Yuandian</h2>
         {initial.configured && (
           <span className="ml-2 inline-flex items-center gap-1 rounded-full bg-emerald-500/15 px-2 py-0.5 text-[10px] text-emerald-700">
-            <CheckCircle2 className="h-3 w-3" /> 已配置
+            <CheckCircle2 className="h-3 w-3" /> Configurada
           </span>
         )}
       </header>
 
       <p className="mb-4 text-[12px] text-muted-foreground">
-        pesos典开放平台（chineselaw.com）法律案例检索 API，配置后启用：
-        <span className="text-foreground/85"> Caso详情 → 类案 tab 类案检索</span>。
-        按次计费（普通案例 10 POINT/次）。
+        API de búsqueda de jurisprudencia de la plataforma abierta Yuandian (chineselaw.com). Una vez configurada, se habilita:
+        <span className="text-foreground/85"> Detalle del caso → pestaña Casos similares → búsqueda de casos similares</span>.
+        Se factura por consulta (caso común: 10 POINT/consulta).
       </p>
 
       <div className="space-y-3">
@@ -103,7 +103,7 @@ export function YuandianSettingsForm({
             API Key
             {initial.configured && (
               <span className="ml-2 font-mono text-[10px] text-muted-foreground">
-                当前：{initial.apiKeyMasked}（留空保留原值）
+                Actual: {initial.apiKeyMasked} (dejar vacío para conservar el valor actual)
               </span>
             )}
           </Label>
@@ -111,7 +111,7 @@ export function YuandianSettingsForm({
             type="password"
             value={apiKey}
             onChange={(e) => setApiKey(e.target.value)}
-            placeholder={initial.configured ? "如需更换粘贴新 key" : "粘贴pesos典 API key"}
+            placeholder={initial.configured ? "Pegá una nueva key si querés cambiarla" : "Pegá la API key de Yuandian"}
             className="mt-1 font-mono"
             autoComplete="off"
           />
@@ -128,7 +128,7 @@ export function YuandianSettingsForm({
         </div>
 
         <div>
-          <Label className="text-[11px]">案例详情前端域名</Label>
+          <Label className="text-[11px]">Dominio frontend de detalle de casos</Label>
           <Input
             value={caseDetailHost}
             onChange={(e) => setCaseDetailHost(e.target.value)}
@@ -136,7 +136,7 @@ export function YuandianSettingsForm({
             className="mt-1 font-mono text-[12px]"
           />
           <p className="mt-1 text-[10px] text-muted-foreground">
-            用于「Ver全文」外跳，y接口 URL 区分
+            Se usa para el enlace externo de «Ver texto completo» y para distinguir la URL de la API
           </p>
         </div>
       </div>
@@ -144,7 +144,7 @@ export function YuandianSettingsForm({
       <div className="mt-4 flex items-center gap-2">
         <Button onClick={save} disabled={pending} className="gap-1.5">
           {pending && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
-          Guardar配置
+          Guardar configuración
         </Button>
         <Button
           variant="outline"
@@ -153,7 +153,7 @@ export function YuandianSettingsForm({
           className="gap-1.5"
         >
           {testing && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
-          测试连接（扣 10 POINT）
+          Probar conexión (descuenta 10 POINT)
         </Button>
         {initial.configured && (
           <Button
@@ -163,7 +163,7 @@ export function YuandianSettingsForm({
             className="ml-auto gap-1 text-destructive"
           >
             <Trash2 className="h-3 w-3" />
-            清除 key
+            Borrar key
           </Button>
         )}
       </div>
@@ -187,14 +187,14 @@ export function YuandianSettingsForm({
       )}
 
       <p className="mt-4 text-[11px] text-muted-foreground">
-        申请 key：
+        Solicitar key:
         <a
           href="https://open.chineselaw.com"
           target="_blank"
           rel="noreferrer"
           className="ml-1 inline-flex items-center gap-1 text-primary hover:underline"
         >
-          pesos典开放平台
+          Plataforma abierta Yuandian
           <ExternalLink className="h-3 w-3" />
         </a>
       </p>
