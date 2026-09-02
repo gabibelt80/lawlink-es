@@ -104,12 +104,12 @@ export function PreservationCaseDialog({
       try {
         const sd = startDate ? new Date(startDate) : new Date();
         const custom = parseInt(duration);
-        // 未手填天数时按法定年限算（民诉法解释第 485 条），手填则以手填天数为准
+        // Si no se completan los días, se usa el plazo legal (art. 485 del Código Procesal); si se completan, se usa el valor ingresado
         const ed =
           Number.isFinite(custom) && custom > 0
             ? addDays(sd, custom)
             : defaultExpiryDate(sd, propertyType);
-        // 落库的天数必须与 ed 同源，否则两个字段会互相矛盾
+        // Los días guardados deben ser consistentes con la fecha de vencimiento
         const dur =
           Number.isFinite(custom) && custom > 0
             ? custom
@@ -279,7 +279,7 @@ export function PreservationCaseDialog({
                     <Input
                       value={propertyDetail}
                       onChange={(e) => setPropertyDetail(e.target.value)}
-                      placeholder="Ej.: cuenta / dirección / placa"
+                      placeholder="Ej.: cuenta / dirección / patente"
                       className="h-9 text-xs"
                     />
                   </Field>
@@ -417,7 +417,7 @@ export function AddPropertyDialog({
   function handleSubmit() {
     const sd = startDate ? new Date(startDate) : new Date();
     const custom = parseInt(duration);
-    // 同上：默认按法定年限，手填天数优先
+    // Igual que arriba: por defecto se usa el plazo legal; si se ingresan días, se usa ese valor
     const ed =
       Number.isFinite(custom) && custom > 0
         ? addDays(sd, custom)
