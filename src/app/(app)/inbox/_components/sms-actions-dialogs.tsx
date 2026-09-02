@@ -24,7 +24,7 @@ import type { SmsRow, MatterOption, ParsedJson } from "./sms-types";
 import { toDate } from "@/lib/sms-parser";
 import { procedureTypeLabel } from "@/lib/enums";
 
-// v0.51: 程序默认选中——优先取案号ySMS解析案号一致的程序
+// v0.51: Selección predeterminada de procedimiento: prioriza el procedimiento cuyo número de caso coincide con el número analizado del SMS
 function preferredProcedureId(
   procedures: NonNullable<SmsRow["matchedMatter"]>["procedures"],
   parsed: ParsedJson,
@@ -36,7 +36,7 @@ function preferredProcedureId(
 }
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-// 生成 Hearing
+// Generar Audiencia
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 export function GenerateHearingDialog({
@@ -54,9 +54,7 @@ export function GenerateHearingDialog({
   const [procedureId, setProcedureId] = useState(
     preferredProcedureId(matter.procedures, parsed),
   );
-  const [title, setTitle] = useState(
-    parsed.smsType === "HEARING_NOTICE" ? "Audiencia" : "Audiencia",
-  );
+  const [title, setTitle] = useState("Audiencia");
   const initDate = parsed.hearingDate ? toDate(parsed.hearingDate) : null;
   const [dateStr, setDateStr] = useState(initDate ? formatLocal(initDate) : "");
   const [room, setRoom] = useState(parsed.courtRoom ?? "");
@@ -66,12 +64,12 @@ export function GenerateHearingDialog({
 
   const submit = () => {
     if (!procedureId) {
-      toast.error("Selecciona un procedimiento");
+      toast.error("Seleccioná un procedimiento");
       return;
     }
     const d = dateStr ? new Date(dateStr) : null;
     if (!d || isNaN(d.getTime())) {
-      toast.error("Ingresa una hora de audiencia válida");
+      toast.error("Ingresá una hora de audiencia válida");
       return;
     }
     startTransition(async () => {
@@ -79,13 +77,13 @@ export function GenerateHearingDialog({
         await generateHearingFromSms({
           smsId: sms.id,
           procedureId,
-          title: title.trim() || "庭审",
+          title: title.trim() || "Audiencia",
           startsAt: d,
           room: room.trim(),
           judge: judge.trim(),
           notes: notes.trim(),
         });
-        toast.success("已生成开庭并标记此SMS处理完成");
+        toast.success("Se generó la audiencia y se marcó este SMS como procesado");
         onOpenChange(false);
       } catch (e) {
         toast.error(e instanceof Error ? e.message : "Error");
@@ -99,13 +97,13 @@ export function GenerateHearingDialog({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Gavel className="h-4 w-4 text-primary" />
-            生成开庭 · {matter.internalCode} {matter.title}
+            Generar audiencia · {matter.internalCode} {matter.title}
           </DialogTitle>
         </DialogHeader>
 
         <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
           <div className="md:col-span-2">
-            <Label className="text-[11px]">关联程序 *</Label>
+            <Label className="text-[11px]">Procedimiento asociado *</Label>
             <RadioChips
               size="sm"
               className="mt-2"
@@ -119,17 +117,17 @@ export function GenerateHearingDialog({
           </div>
 
           <div>
-            <Label className="text-[11px]">标题 *</Label>
+            <Label className="text-[11px]">Título *</Label>
             <Input
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              placeholder="开庭 / 二审庭审 / 询问"
+              placeholder="Audiencia / Juicio de segunda instancia / Consulta"
               className="mt-1"
             />
           </div>
 
           <div>
-            <Label className="text-[11px]">开庭时间 *</Label>
+            <Label className="text-[11px]">Hora de audiencia *</Label>
             <Input
               type="datetime-local"
               value={dateStr}
@@ -139,7 +137,7 @@ export function GenerateHearingDialog({
           </div>
 
           <div>
-            <Label className="text-[11px]">法庭</Label>
+            <Label className="text-[11px]">Sala</Label>
             <Input
               value={room}
               onChange={(e) => setRoom(e.target.value)}
@@ -148,7 +146,7 @@ export function GenerateHearingDialog({
           </div>
 
           <div>
-            <Label className="text-[11px]">承办法官</Label>
+            <Label className="text-[11px]">Juez a cargo</Label>
             <Input
               value={judge}
               onChange={(e) => setJudge(e.target.value)}
@@ -177,7 +175,7 @@ export function GenerateHearingDialog({
           </Button>
           <Button onClick={submit} disabled={pending}>
             {pending && <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />}
-            生成开庭
+            Generar audiencia
           </Button>
         </DialogFooter>
       </DialogContent>
@@ -186,22 +184,22 @@ export function GenerateHearingDialog({
 }
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-// 生成 Deadline
+// Generar Vencimiento
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 const DEADLINE_CATEGORIES = [
-  { value: "APPEAL", label: "上诉期" },
-  { value: "EVIDENCE", label: "举证期" },
-  { value: "RESPONSE", label: "答辩期" },
-  { value: "PERFORMANCE", label: "履行期" },
-  { value: "ENFORCEMENT", label: "执行期" },
-  { value: "LIMITATION", label: "诉讼时效" },
-  { value: "ARBITRATION_SET_ASIDE", label: "撤裁期" },
-  { value: "CUSTOM", label: "其他" },
+  { value: "APPEAL", label: "Plazo de apelación" },
+  { value: "EVIDENCE", label: "Plazo de prueba" },
+  { value: "RESPONSE", label: "Plazo de contestación" },
+  { value: "PERFORMANCE", label: "Plazo de cumplimiento" },
+  { value: "ENFORCEMENT", label: "Plazo de ejecución" },
+  { value: "LIMITATION", label: "Prescripción" },
+  { value: "ARBITRATION_SET_ASIDE", label: "Plazo de anulación de laudo" },
+  { value: "CUSTOM", label: "Otro" },
 ] as const;
 type DeadlineCategory = (typeof DEADLINE_CATEGORIES)[number]["value"];
 
-// v0.51: Elementos importantes分类 → Plazo类别（importantItems 比 smsType 更细）
+// v0.51: Clasificación de elementos importantes → Categoría de vencimiento (importantItems es más detallado que smsType)
 const ITEM_KIND_TO_CATEGORY: Partial<Record<string, DeadlineCategory>> = {
   EVIDENCE_DEADLINE: "EVIDENCE",
   FEE_DEADLINE: "PERFORMANCE",
@@ -228,24 +226,24 @@ function pickDefaultDeadlineTitle(parsed: ParsedJson): {
     };
   }
   if (parsed.appealDeadline)
-    return { title: `上诉期 ${parsed.appealDeadline}`, category: "APPEAL" };
+    return { title: `Plazo de apelación ${parsed.appealDeadline}`, category: "APPEAL" };
   if (parsed.smsType === "EVIDENCE_SUBMIT")
-    return { title: "举证Plazo", category: "EVIDENCE" };
+    return { title: "Plazo de prueba", category: "EVIDENCE" };
   if (parsed.smsType === "FEE_NOTICE")
-    return { title: "诉讼费缴纳", category: "PERFORMANCE" };
+    return { title: "Pago de costas judiciales", category: "PERFORMANCE" };
   if (parsed.smsType === "JUDGMENT_NOTICE")
-    return { title: "判决书生效 / 履行期", category: "PERFORMANCE" };
-  return { title: parsed.summary.slice(0, 30) || "Plazo", category: "CUSTOM" };
+    return { title: "Sentencia firme / Plazo de cumplimiento", category: "PERFORMANCE" };
+  return { title: parsed.summary.slice(0, 30) || "Vencimiento", category: "CUSTOM" };
 }
 
 function pickDefaultDueDate(parsed: ParsedJson): Date | null {
-  // v0.51: 优先用Elementos importantes自带的Fecha
+  // v0.51: Prioriza la fecha incluida en los elementos importantes
   const item = firstDeadlineItem(parsed);
   if (item?.dateText) {
     const d = toDate(item.dateText);
     if (d) return d;
   }
-  // 上诉期：默认从判决日 + N 日；若无判决日则空
+  // Plazo de apelación: por defecto desde la fecha de sentencia + N días; si no hay fecha de sentencia queda vacío
   if (parsed.appealDeadline && parsed.judgmentDate) {
     const base = toDate(parsed.judgmentDate);
     const days = parseInt(parsed.appealDeadline);
@@ -255,7 +253,7 @@ function pickDefaultDueDate(parsed: ParsedJson): Date | null {
       return d;
     }
   }
-  // 其他：取 dates 中第一个Fecha
+  // Otros: toma la primera fecha de dates
   for (const s of parsed.dates) {
     const d = toDate(s);
     if (d) return d;
@@ -292,12 +290,12 @@ export function GenerateDeadlineDialog({
 
   const submit = () => {
     if (!procedureId) {
-      toast.error("请选择程序");
+      toast.error("Seleccioná un procedimiento");
       return;
     }
     const d = dateStr ? new Date(dateStr) : null;
     if (!d || isNaN(d.getTime())) {
-      toast.error("请填写有效的截止Fecha");
+      toast.error("Completá una fecha de vencimiento válida");
       return;
     }
     startTransition(async () => {
@@ -305,13 +303,13 @@ export function GenerateDeadlineDialog({
         await generateDeadlineFromSms({
           smsId: sms.id,
           procedureId,
-          title: title.trim() || "Plazo",
+          title: title.trim() || "Vencimiento",
           category,
           dueAt: d,
           basis: basis.trim(),
           remindDays,
         });
-        toast.success("已生成Plazo并标记此SMS处理完成");
+        toast.success("Se generó el vencimiento y se marcó este SMS como procesado");
         onOpenChange(false);
       } catch (e) {
         toast.error(e instanceof Error ? e.message : "Error");
@@ -325,13 +323,13 @@ export function GenerateDeadlineDialog({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Clock className="h-4 w-4 text-primary" />
-            生成Plazo · {matter.internalCode} {matter.title}
+            Generar vencimiento · {matter.internalCode} {matter.title}
           </DialogTitle>
         </DialogHeader>
 
         <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
           <div className="md:col-span-2">
-            <Label className="text-[11px]">关联程序 *</Label>
+            <Label className="text-[11px]">Procedimiento asociado *</Label>
             <RadioChips
               size="sm"
               className="mt-2"
@@ -345,7 +343,7 @@ export function GenerateDeadlineDialog({
           </div>
 
           <div className="md:col-span-2">
-            <Label className="text-[11px]">Plazo类别 *</Label>
+            <Label className="text-[11px]">Categoría de vencimiento *</Label>
             <RadioChips
               size="sm"
               className="mt-2"
@@ -359,17 +357,17 @@ export function GenerateDeadlineDialog({
           </div>
 
           <div className="md:col-span-2">
-            <Label className="text-[11px]">标题 *</Label>
+            <Label className="text-[11px]">Título *</Label>
             <Input
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              placeholder="上诉期 15 日 / 举证Plazo 30 日"
+              placeholder="Plazo de apelación 15 días / Plazo de prueba 30 días"
               className="mt-1"
             />
           </div>
 
           <div>
-            <Label className="text-[11px]">截止Fecha *</Label>
+            <Label className="text-[11px]">Fecha de vencimiento *</Label>
             <Input
               type="date"
               value={dateStr}
@@ -379,7 +377,7 @@ export function GenerateDeadlineDialog({
           </div>
 
           <div>
-            <Label className="text-[11px]">提前Recordatorios（días）</Label>
+            <Label className="text-[11px]">Recordatorio anticipado (días)</Label>
             <Input
               type="number"
               min={1}
@@ -393,7 +391,7 @@ export function GenerateDeadlineDialog({
           </div>
 
           <div className="md:col-span-2">
-            <Label className="text-[11px]">Plazo依据</Label>
+            <Label className="text-[11px]">Base del vencimiento</Label>
             <Textarea
               value={basis}
               onChange={(e) => setBasis(e.target.value)}
@@ -413,7 +411,7 @@ export function GenerateDeadlineDialog({
           </Button>
           <Button onClick={submit} disabled={pending}>
             {pending && <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />}
-            生成Plazo
+            Generar vencimiento
           </Button>
         </DialogFooter>
       </DialogContent>
@@ -422,7 +420,7 @@ export function GenerateDeadlineDialog({
 }
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-// v0.51: 案号回填
+// v0.51: Completar número de caso
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 export function BackfillCaseNumberDialog({
@@ -451,7 +449,7 @@ export function BackfillCaseNumberDialog({
 
   const submit = () => {
     if (!caseNumber || !procedureId) {
-      toast.error("请选择案号和目标程序");
+      toast.error("Seleccioná el número de caso y el procedimiento destino");
       return;
     }
     startTransition(async () => {
@@ -461,10 +459,10 @@ export function BackfillCaseNumberDialog({
           procedureId,
           caseNumber,
         });
-        toast.success(`案号已回填：${caseNumber}`);
+        toast.success(`Número de caso completado: ${caseNumber}`);
         onOpenChange(false);
       } catch (e) {
-        toast.error(e instanceof Error ? e.message : "回填Error");
+        toast.error(e instanceof Error ? e.message : "Error al completar");
       }
     });
   };
@@ -475,13 +473,13 @@ export function BackfillCaseNumberDialog({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <FileDigit className="h-4 w-4 text-primary" />
-            案号回填 · {matter.internalCode}
+            Completar número de caso · {matter.internalCode}
           </DialogTitle>
         </DialogHeader>
 
         <div className="space-y-3">
           <div>
-            <Label className="text-[11px]">SMS解析出的案号 *</Label>
+            <Label className="text-[11px]">Número de caso analizado del SMS *</Label>
             <RadioChips
               size="sm"
               className="mt-2"
@@ -492,7 +490,7 @@ export function BackfillCaseNumberDialog({
           </div>
           <div>
             <Label className="text-[11px]">
-              回填到程序（仅列出尚无案号的程序） *
+              Completar en procedimiento (solo se listan los que no tienen número de caso) *
             </Label>
             <RadioChips
               size="sm"
@@ -506,7 +504,7 @@ export function BackfillCaseNumberDialog({
             />
           </div>
           <p className="text-[11px] text-muted-foreground">
-            已有案号的程序不可覆盖；如需更正请到Caso详情的程序信息中修改。
+            Los procedimientos con número de caso no se pueden sobrescribir; si necesitás corregirlo, modificalo en la información del procedimiento del detalle del caso.
           </p>
         </div>
 
@@ -523,7 +521,7 @@ export function BackfillCaseNumberDialog({
             disabled={pending || !caseNumber || !procedureId}
           >
             {pending && <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />}
-            回填案号
+            Completar número
           </Button>
         </DialogFooter>
       </DialogContent>
@@ -545,5 +543,5 @@ function formatLocalDateOnly(d: Date): string {
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
 }
 
-// 让 MatterCombobox 类型在该模块可见（重导以便 inbox-view 使用）
+// Hace visible el tipo MatterCombobox en este módulo (re-exportado para uso en inbox-view)
 export type { MatterOption };

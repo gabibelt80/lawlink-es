@@ -17,11 +17,11 @@ function getGreeting(hour: number) {
 }
 
 const typeMeta = {
-  deadline: { icon: AlertTriangle, color: "text-amber-600", label: "Plazo" },
+  deadline: { icon: AlertTriangle, color: "text-amber-600", label: "Vencimiento" },
   hearing: { icon: Calendar, color: "text-primary", label: "Audiencia" },
 };
 
-/** v0.47：Panel de trabajo顶部问候区 + 右侧近期Calendario */
+/** v0.47: Zona de saludo superior del panel de trabajo + calendario próximo a la derecha */
 export function DashboardGreeting({
   name,
   summary,
@@ -38,7 +38,7 @@ export function DashboardGreeting({
   const router = useRouter();
   const today = new Date();
   const greeting = getGreeting(today.getHours());
-  const dateLabel = today.toLocaleDateString("zh-CN", {
+  const dateLabel = today.toLocaleDateString("es-AR", {
     year: "numeric",
     month: "2-digit",
     day: "2-digit",
@@ -57,12 +57,12 @@ export function DashboardGreeting({
           </div>
           <h1 className="text-[22px] font-semibold leading-tight">
             {greeting}
-            {name && <span className="text-primary">，{name}</span>}
+            {name && <span className="text-primary">, {name}</span>}
           </h1>
           <p className="mt-1.5 max-w-xl text-[13px] leading-relaxed text-muted-foreground">
-            Hoy有 <Num>{summary.todayDeadlineCount}</Num> 件事需处理；本周开庭{" "}
-            <Num>{summary.weekHearingCount}</Num> 场；近期Plazo{" "}
-            <Num>{summary.nearTermCount}</Num> ítems。
+            Hoy hay <Num>{summary.todayDeadlineCount}</Num> asuntos para procesar; audiencias esta semana{" "}
+            <Num>{summary.weekHearingCount}</Num>; Vencimientos próximos{" "}
+            <Num>{summary.nearTermCount}</Num> ítems.
           </p>
         </div>
 
@@ -72,7 +72,7 @@ export function DashboardGreeting({
             className="gap-1.5 px-4"
           >
             <Plus className="h-4 w-4" strokeWidth={2} />
-            新建收案
+            Nuevo caso
           </Button>
           <ConflictSearchButton />
         </div>
@@ -93,7 +93,7 @@ export function DashboardGreeting({
         <div className="relative z-[1]">
           <div className="flex items-center gap-2 text-[10.5px] font-semibold uppercase text-muted-foreground">
             <span className="ll-dot bg-[#B91C1C] shadow-[0_0_0_3px_rgba(185,28,28,0.14)]" />
-            今日焦点
+            Foco de hoy
           </div>
           {focusItem ? (
             <>
@@ -104,22 +104,22 @@ export function DashboardGreeting({
                 <span className="text-[12px] text-muted-foreground">días</span>
               </div>
               <div className="text-[11.5px] text-muted-foreground">
-                距 {focusItem.title}
+                Para {focusItem.title}
               </div>
             </>
           ) : (
             <div className="mt-8 text-sm text-muted-foreground">
-              暂无近期Plazo
+              Sin vencimientos próximos
             </div>
           )}
         </div>
         <div className="relative z-[1] min-w-0">
           <div className="truncate text-[13px] font-medium text-foreground">
-            {focusItem?.matter ?? "Calendario看板"}
+            {focusItem?.matter ?? "Panel de calendario"}
           </div>
           <div className="mt-1 flex items-center gap-1 text-[10.5px] text-muted-foreground">
             <span className="font-mono tabular">
-              {focusItem?.date ?? "未来 30 días"}
+              {focusItem?.date ?? "Próximos 30 días"}
             </span>
             <ArrowRight className="h-3 w-3 transition-transform group-hover:translate-x-0.5" />
           </div>
@@ -130,14 +130,14 @@ export function DashboardGreeting({
         <div className="mb-2 flex items-start justify-between gap-2">
           <div>
             <h3 className="text-[12px] font-medium text-foreground">
-              近期Calendario
+              Calendario próximo
             </h3>
           </div>
           <Link
             href="/schedule"
             className="inline-flex shrink-0 items-center gap-1 text-[10px] text-muted-foreground hover:text-foreground"
           >
-            日历
+            Calendario
             <ArrowRight className="h-3 w-3" strokeWidth={1.8} />
           </Link>
         </div>
@@ -150,7 +150,7 @@ export function DashboardGreeting({
           </ul>
         ) : (
           <div className="flex h-[150px] items-center justify-center text-[12px] text-muted-foreground">
-            暂无近期事ítems
+            Sin tareas próximas
           </div>
         )}
       </div>

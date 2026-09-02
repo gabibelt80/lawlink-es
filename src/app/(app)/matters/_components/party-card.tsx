@@ -1,17 +1,17 @@
 "use client";
 
 /**
- * Caso当事人表格行（intake-sheet 专用）
+ * Fila de tabla de partes del caso (exclusivo de intake-sheet)
  *
- * 参考"Caso云"建案表单的当事人表格：一行一当事人，列对齐，次要字段折叠。
- * 列：Rol | 类型 | Nombre y apellido/Nombre | 诉讼地位 | 证件号/信用代码 | Acciones
- * - Rol / 诉讼地位两列由调用方注入（roleSlot / standingSlot），本组件不关心其取值逻辑
- * - 类型（自然人 / 单位）、证件（身份证号 / 统一社会信用代码 + AI 查找）、展开次要字段、Eliminar由本组件负责
- * - 次要字段（法代 / 电话 / 联系人 / 地址 / Observaciones）默认折叠，点"更多"在行下方展开
+ * Referencia al formulario de creación de caso de «Caso cloud»: una fila por parte, columnas alineadas, campos secundarios plegados.
+ * Columnas: Rol | Tipo | Nombre / Razón social | Posición procesal | N° documento / código de crédito | Acciones
+ * - Las columnas Rol / Posición procesal son inyectadas por el llamador (roleSlot / standingSlot), este componente no se encarga de su lógica
+ * - Tipo (persona física / entidad), documento (DNI / código de crédito social unificado + búsqueda IA), expandir campos secundarios, Eliminar son responsabilidad de este componente
+ * - Campos secundarios (rep. legal / teléfono / contacto / dirección / notas) plegados por defecto, hacé clic en «Más» para expandir debajo de la fila
  *
- * PARTY_GRID 同时给表头y每一行使用，保证列对齐。
+ * PARTY_GRID se usa tanto en el encabezado como en cada fila para asegurar la alineación de columnas.
  *
- * 校验落在 zod superRefine（partyInputSchema）；本组件只负责 UI + 字段联动。
+ * La validación está en zod superRefine (partyInputSchema); este componente solo se encarga de UI + interacción de campos.
  */
 import { useRef, useState, useTransition, type ReactNode } from "react";
 import { useFormContext, type FieldErrors } from "react-hook-form";
@@ -40,10 +40,10 @@ import {
   type EnterpriseSearchItem,
 } from "@/server/yuandian/enterprise";
 
-/** 表头y每一行共用，保证列对齐。诉讼/仲裁类含「诉讼地位」列（置于联系人前）。Nombre y apellido/证件列较 v0 收窄约 15% */
+/** Compartido entre encabezado y cada fila para asegurar la alineación de columnas. Litigio/arbitraje incluye columna «Posición procesal» (antes de contacto). Columnas de nombre/documento son ~15% más angostas que v0 */
 export const PARTY_GRID =
   "grid grid-cols-[70px_92px_minmax(136px,1fr)_minmax(160px,1.08fr)_102px_92px_112px_36px] items-center gap-1.5";
-/** 非诉/顾问/专ítems：无「诉讼地位」列 */
+/** No contencioso/consultoría/proyectos: sin columna «Posición procesal» */
 export const PARTY_GRID_NO_STANDING =
   "grid grid-cols-[70px_92px_minmax(136px,1fr)_minmax(160px,1.08fr)_92px_112px_36px] items-center gap-1.5";
 
@@ -57,15 +57,15 @@ type Props = {
   fieldPrefix: string; // e.g. "parties"
   onRemove: () => void;
   errors?: FieldErrors<Record<string, unknown>>;
-  /** Rol单pesos格内容（委托方徽标 / 对方·第三人下拉） */
+  /** Contenido de la celda de Rol (insignia de cliente / desplegable de contraparte y tercero) */
   roleSlot: ReactNode;
-  /** 诉讼地位单pesos格内容（showStanding 为 false 时忽略） */
+  /** Contenido de la celda de Posición procesal (se ignora si showStanding es false) */
   standingSlot?: ReactNode;
-  /** 是否显示「诉讼地位」列。诉讼/仲裁类 true，非诉/顾问/专ítems false。默认 true */
+  /** Si se muestra la columna «Posición procesal». Litigio/arbitraje true, no contencioso/consultoría/proyectos false. Por defecto true */
   showStanding?: boolean;
-  /** false 时隐藏Eliminar按钮（如委托方行恒存在）。默认 true */
+  /** Si es false se oculta el botón Eliminar (por ejemplo, la fila del cliente siempre existe). Por defecto true */
   removable?: boolean;
-  /** 提供时替换内置"Nombre y apellido/Nombre"输入框（如委托方行注入Cliente选择器）。 */
+  /** Si se proporciona, reemplaza el campo «Nombre / Razón social» integrado (por ejemplo, la fila del cliente inyecta el selector de Cliente). */
   nameSlot?: ReactNode;
 };
 
@@ -93,7 +93,7 @@ export function PartyCard({
   const [expanded, setExpanded] = useState(false);
   const searchTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // 次要字段是否已有内容（折叠态给个小提示）
+  // Si los campos secundarios ya tienen contenido (pequeño indicador en estado plegado)
   const secondaryFilled = [
     watch(`${p}.address`),
     watch(`${p}.notes`),
@@ -105,7 +105,7 @@ export function PartyCard({
       shouldDirty: true,
       shouldValidate: true,
     });
-    // 切换类型时清空对侧的必填字段，避免提示串台
+    // Al cambiar de tipo, limpiar los campos obligatorios del otro lado para evitar confusiones
     if (next === "NATURAL_PERSON") {
       setValue(`${p}.enterpriseSocialCode`, "");
       setValue(`${p}.enterpriseName`, "");
@@ -114,7 +114,7 @@ export function PartyCard({
     }
   }
 
-  // v0.43：输入单位Nombre时自动Coincidenciapesos典企业（防抖），无需 AI 按钮
+  // v0.43: Al ingresar la razón social, autocompletar con empresas de Yuandian (con debounce), sin necesidad de botón IA
   function scheduleSearch(value: string) {
     if (searchTimer.current) clearTimeout(searchTimer.current);
     const q = value.trim();
@@ -126,7 +126,7 @@ export function PartyCard({
       startSearch(async () => {
         try {
           const r = await searchEnterpriseCandidates(q);
-          // 未配置pesos典 / 无结果 → 静默不打扰（信用代码仍可手填）
+          // Yuandian no configurado / sin resultados → silencio, sin molestar (el código de crédito aún se puede completar manualmente)
           setCandidates(r.configured && r.items.length > 0 ? r.items : null);
         } catch {
           setCandidates(null);
@@ -137,7 +137,7 @@ export function PartyCard({
 
   function handlePickCandidate(item: EnterpriseSearchItem) {
     startFill(async () => {
-      // 先回填 social code + 企业Nombre（Buscar结果已有）
+      // Primero completar código social + razón social (ya vienen en el resultado de búsqueda)
       setValue(`${p}.enterpriseSocialCode`, item.creditCode, {
         shouldDirty: true,
         shouldValidate: true,
@@ -146,7 +146,7 @@ export function PartyCard({
       setValue(`${p}.name`, item.name, { shouldDirty: true });
       setCandidates(null);
 
-      // 再调详情接口拿法代 + 地址（10 POINT/次）
+      // Luego llamar a la API de detalle para obtener rep. legal + dirección (10 POINT/vez)
       try {
         const r = await getEnterpriseDetail(item.id);
         if (r.configured && r.info) {
@@ -154,13 +154,13 @@ export function PartyCard({
             setValue(`${p}.legalRep`, r.info.legalRep, { shouldDirty: true });
           if (r.info.address)
             setValue(`${p}.address`, r.info.address, { shouldDirty: true });
-          setExpanded(true); // 展开让用户核对回填的法代 / 地址
+          setExpanded(true); // Expandir para que el usuario verifique el rep. legal / dirección completados
           toast.success(`Se rellenó: ${item.name}`);
         }
       } catch (err) {
-        // 详情Error不阻塞，已填的 social code 仍有效
+        // El error de detalle no bloquea, el código social ya completado sigue siendo válido
         toast.warning(
-          "La autocompletación de representante legal / dirección falló; puedes completarlo manualmente",
+          "La autocompletación de representante legal / dirección falló; podés completarlo manualmente",
           {
             description: err instanceof Error ? err.message : "",
           },
@@ -185,7 +185,7 @@ export function PartyCard({
         {/* Rol */}
         <div className="min-w-0 text-center">{roleSlot}</div>
 
-        {/* 主体类型 */}
+        {/* Tipo de sujeto */}
         <Select
           value={partyType}
           onValueChange={(v) => changeType(v as PartyType)}
@@ -202,7 +202,7 @@ export function PartyCard({
           </SelectContent>
         </Select>
 
-        {/* Nombre y apellido / Nombre（单位类型：输入自动Coincidenciapesos典企业） */}
+        {/* Nombre / Razón social (tipo entidad: al escribir se autocompleta con empresas de Yuandian) */}
         <div className="min-w-0">
           {nameSlot ??
             (!isOrg ? (
@@ -249,7 +249,7 @@ export function PartyCard({
                 >
                   <div className="mb-1 flex items-center gap-1 px-1 text-[10px] text-muted-foreground">
                     <Search className="h-3 w-3" />
-                    pesos典Coincidencia，点击回填Nombre + 信用代码
+                    Coincidencia Yuandian, clic para completar nombre + código de crédito
                   </div>
                   <ul className="max-h-64 space-y-1 overflow-y-auto">
                     {candidates?.map((c) => (
@@ -273,11 +273,11 @@ export function PartyCard({
             ))}
         </div>
 
-        {/* 证件号 / 信用代码（自动Coincidencia后回填，亦可手填） */}
+        {/* N° documento / código de crédito (se completa tras la coincidencia, también manual) */}
         <div className="min-w-0">
           {!isOrg ? (
             <Input
-              placeholder="身份证号（必填）"
+              placeholder="DNI (obligatorio)"
               className={cn(
                 PARTY_CELL_CONTROL_CLASS,
                 "font-mono",
@@ -287,7 +287,7 @@ export function PartyCard({
             />
           ) : (
             <Input
-              placeholder="统一社会信用代码（必填）"
+              placeholder="Código de crédito social unificado (obligatorio)"
               className={cn(
                 PARTY_CELL_CONTROL_CLASS,
                 "font-mono",
@@ -298,30 +298,30 @@ export function PartyCard({
           )}
         </div>
 
-        {/* 诉讼地位（仅诉讼/仲裁类）—— 移到联系人前 */}
+        {/* Posición procesal (solo litigio/arbitraje) — movida antes de contacto */}
         {showStanding && <div className="min-w-0">{standingSlot}</div>}
 
-        {/* 联系人 */}
+        {/* Contacto */}
         <Input
           className={PARTY_CELL_CONTROL_CLASS}
-          placeholder="联系人"
+          placeholder="Contacto"
           {...register(`${p}.contactName`)}
         />
 
-        {/* 联系电话 */}
+        {/* Teléfono */}
         <Input
           className={cn(PARTY_CELL_CONTROL_CLASS, "font-mono")}
-          placeholder="联系电话"
+          placeholder="Teléfono"
           {...register(`${p}.phone`)}
         />
 
-        {/* Acciones：更多 + Eliminar */}
+        {/* Acciones: Más + Eliminar */}
         <div className="flex items-center justify-end gap-0.5">
           <button
             type="button"
             onClick={() => setExpanded((v) => !v)}
             title={
-              expanded ? "收起" : "更多（法定代表人 / 地址 / Observaciones）"
+              expanded ? "Contraer" : "Más (rep. legal / dirección / notas)"
             }
             className={cn(
               "flex h-7 w-7 items-center justify-center rounded-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground",
@@ -349,34 +349,34 @@ export function PartyCard({
         </div>
       </div>
 
-      {/* 必填ítems错误（折叠态也要可见） */}
+      {/* Errores de campos obligatorios (visible incluso plegado) */}
       {(nameErr || idErr) && (
         <p className="px-2 pb-1.5 text-[10px] text-destructive">
-          {[nameErr?.message, idErr?.message].filter(Boolean).join("；")}
+          {[nameErr?.message, idErr?.message].filter(Boolean).join("; ")}
         </p>
       )}
 
-      {/* 次要字段（展开） */}
+      {/* Campos secundarios (expandido) */}
       {expanded && (
         <div className="grid grid-cols-1 gap-2 border-t border-[#cbd5e2] bg-[#e9eef5] px-2 py-2 sm:grid-cols-2">
           {isOrg && (
             <Input
               className="h-[34px] rounded-sm border-[#c6d0dd] bg-white text-[12.5px]"
-              placeholder="法定代表人 / 负责人（可选）"
+              placeholder="Representante legal / responsable (opcional)"
               {...register(`${p}.legalRep`)}
             />
           )}
           <div className="sm:col-span-2">
             <Input
               className="h-[34px] rounded-sm border-[#c6d0dd] bg-white text-[12.5px]"
-              placeholder={isOrg ? "Registrarse地址（可选）" : "住址（可选）"}
+              placeholder={isOrg ? "Domicilio registrado (opcional)" : "Domicilio (opcional)"}
               {...register(`${p}.address`)}
             />
           </div>
           <div className="sm:col-span-2">
             <Input
               className="h-[34px] rounded-sm border-[#c6d0dd] bg-white text-[12.5px]"
-              placeholder="Observaciones（可选）"
+              placeholder="Notas (opcional)"
               {...register(`${p}.notes`)}
             />
           </div>

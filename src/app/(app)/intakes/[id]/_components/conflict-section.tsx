@@ -161,7 +161,7 @@ export function ConflictSection({
     if (queries.length === 0) {
       toast.warning("No hay partes para buscar", {
         description:
-          "Primero agrega al cliente o la contraparte en la admisión",
+          "Primero agregá al cliente o la contraparte en la admisión",
       });
       return;
     }
@@ -187,9 +187,9 @@ export function ConflictSection({
       needsHighRiskNote &&
       !conclusionNote.trim()
     ) {
-      toast.warning("Primero completa el motivo de aceptación", {
+      toast.warning("Primero completá el motivo de aceptación", {
         description:
-          "Cuando haya coincidencias de alto riesgo o bloqueantes, debes indicar el motivo de exclusión o dejar constancia de consentimiento por escrito",
+          "Cuando haya coincidencias de alto riesgo o bloqueantes, debés indicar el motivo de exclusión o dejar constancia de consentimiento por escrito",
       });
       return;
     }
@@ -241,14 +241,14 @@ export function ConflictSection({
 
       {!latestCheck ? (
         <div className="rounded-md border border-dashed border-border py-8 text-center text-sm text-muted-foreground">
-          Aún no se ha ejecutado la búsqueda de conflicto
+          Aún no se ejecutó la búsqueda de conflicto
         </div>
       ) : (
         <div className="space-y-3">
           {/* Vista general */}
           <div className="flex flex-wrap items-center gap-2 rounded-md border border-border bg-muted/20 p-2.5 text-[12px]">
             <span className="font-mono text-[11px] text-muted-foreground">
-              {new Date(latestCheck.checkedAt).toLocaleString("zh-CN")}
+              {new Date(latestCheck.checkedAt).toLocaleString("es-AR")}
             </span>
             <span className="text-muted-foreground">·</span>
             <span>
@@ -275,13 +275,13 @@ export function ConflictSection({
               <span className="ml-auto text-[11px] text-muted-foreground">
                 {latestCheck.decidedBy.name} ·{" "}
                 {latestCheck.decidedAt
-                  ? new Date(latestCheck.decidedAt).toLocaleDateString("zh-CN")
+                  ? new Date(latestCheck.decidedAt).toLocaleDateString("es-AR")
                   : ""}
               </span>
             )}
           </div>
 
-          {/* Cliente库同名提示（非冲突） */}
+          {/* Aviso de nombres duplicados en Cliente (no es conflicto) */}
           {latestCheck.sameNameClients.length > 0 && (
             <InfoBar
               icon={<Info className="h-3.5 w-3.5" />}
@@ -303,12 +303,12 @@ export function ConflictSection({
             </InfoBar>
           )}
 
-          {/* 身份证号一致Cliente提示（强提示） */}
+          {/* Aviso de coincidencia exacta de DNI en Cliente (aviso fuerte) */}
           {latestCheck.idMatchedClients.length > 0 && (
             <InfoBar
               icon={<AlertTriangle className="h-3.5 w-3.5" />}
               tone="warn"
-              text={`La cédula / código de crédito coincide exactamente con ${latestCheck.idMatchedClients.length} registros de Cliente; revisa manualmente si es la misma persona`}
+              text={`La cédula / código de crédito coincide exactamente con ${latestCheck.idMatchedClients.length} registros de Cliente; revisá manualmente si es la misma persona`}
             >
               <div className="mt-1.5 flex flex-wrap gap-1.5">
                 {latestCheck.idMatchedClients.map((c) => (
@@ -326,7 +326,7 @@ export function ConflictSection({
             </InfoBar>
           )}
 
-          {/* 冲突命中列表 */}
+          {/* Lista de coincidencias de conflicto */}
           {latestCheck.hits.length === 0 ? (
             <div className="rounded-md border border-[#65A30D]/30 bg-[#65A30D]/10 p-3 text-sm">
               <div className="flex items-center gap-2">
@@ -345,7 +345,7 @@ export function ConflictSection({
             </ul>
           )}
 
-          {/* 结论 */}
+          {/* Conclusión */}
           {canEditConclusion && (
             <div className="rounded-md border border-border bg-background p-3">
               <div className="mb-2 flex items-center gap-2">
@@ -486,7 +486,7 @@ function HitCard({ hit }: { hit: Hit }) {
         backgroundColor: style.bg,
       }}
     >
-      {/* 头：严重度 + 命中字段 */}
+      {/* Encabezado: severidad + campo coincidente */}
       <div className="flex items-center gap-2 text-[11px]">
         <span
           className="inline-flex items-center gap-1 rounded px-1.5 py-0.5 font-medium"
@@ -509,7 +509,7 @@ function HitCard({ hit }: { hit: Hit }) {
         )}
       </div>
 
-      {/* 主：Caso信息 */}
+      {/* Principal: información del caso */}
       {m ? (
         m.canViewMatter ? (
           <Link
@@ -534,7 +534,7 @@ function formatDate(value: Date | string | null) {
   if (!value) return "—";
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return "—";
-  return date.toLocaleDateString("zh-CN");
+  return date.toLocaleDateString("es-AR");
 }
 
 function Field({
@@ -546,7 +546,7 @@ function Field({
 }) {
   return (
     <div className="flex gap-1.5">
-      <span className="shrink-0 text-muted-foreground/70">{label}：</span>
+      <span className="shrink-0 text-muted-foreground/70">{label}:</span>
       <span className="truncate text-foreground/85">{children}</span>
     </div>
   );

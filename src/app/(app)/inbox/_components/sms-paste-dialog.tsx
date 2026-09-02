@@ -61,7 +61,7 @@ export function SmsPasteDialog({
         });
         const aiHint =
           useAi && res.aiEnrichedCount > 0
-            ? `, IA mejorado ${res.aiEnrichedCount} mensajes`
+            ? `, IA mejoró ${res.aiEnrichedCount} mensajes`
             : "";
         toast.success(`Se analizaron ${res.count} mensajes${aiHint}`);
         setText("");
@@ -87,11 +87,10 @@ export function SmsPasteDialog({
         <DialogHeader className="border-b border-border px-6 py-4">
           <DialogTitle className="flex items-center gap-2">
             <Inbox className="h-4 w-4 text-primary" />
-            粘贴法院SMS
+            Pegar SMS judicial
           </DialogTitle>
           <DialogDescription className="text-xs">
-            将 12368 / 法院 /
-            电子送达SMS粘贴进来。多条SMS用空行分隔，勾选&ldquo;批量&rdquo;逐条解析。
+            Pegá el SMS de 12368 / tribunal / notificación electrónica. Varios SMS se separan con línea en blanco; marcá «Lote» para analizarlos uno por uno.
           </DialogDescription>
         </DialogHeader>
 
@@ -99,7 +98,7 @@ export function SmsPasteDialog({
           <Textarea
             value={text}
             onChange={(e) => setText(e.target.value)}
-            placeholder="原文粘贴在此..."
+            placeholder="Pegá el texto original aquí..."
             rows={8}
             className="text-[12px] leading-relaxed"
             autoFocus
@@ -111,7 +110,7 @@ export function SmsPasteDialog({
                 checked={batch}
                 onCheckedChange={(v) => setBatch(v === true)}
               />
-              <span>多条SMS（按空行分隔）—— 一次Enviar，逐条解析yCoincidencia</span>
+              <span>Varios SMS (separados por línea en blanco) — Enviar una vez, analizar y coincidir uno por uno</span>
             </label>
             <label className="flex items-center gap-2 text-[12px] text-muted-foreground">
               <Checkbox
@@ -119,12 +118,12 @@ export function SmsPasteDialog({
                 onCheckedChange={(v) => setUseAi(v === true)}
               />
               <span>
-                用 AI 增强解析{" "}
-                <Sparkles className="inline h-3 w-3 text-primary" /> —— 补{" "}
+                Usar IA para mejorar el análisis{" "}
+                <Sparkles className="inline h-3 w-3 text-primary" /> — Completa{" "}
                 <span className="text-foreground/80">
-                  摘要 / Abogado动作 / Urgente程度
+                  resumen / acción del abogado / nivel de urgencia
                 </span>
-                （需先到 Configuración → AI 接入 配置）
+                (Primero configurá en Configuración → Integración de IA)
               </span>
             </label>
             <label className="flex items-center gap-2 text-[12px] text-muted-foreground">
@@ -133,9 +132,9 @@ export function SmsPasteDialog({
                 onCheckedChange={(v) => setExtractAttachments(v === true)}
               />
               <span>
-                尝试提取电子送达Adjunto{" "}
-                <FileDown className="inline h-3 w-3 text-primary" /> ——
-                已CoincidenciaCaso时Guardar为Caso材料；需Iniciar sesión或验证码的平台会标记待处理
+                Intentar extraer adjuntos de notificación electrónica{" "}
+                <FileDown className="inline h-3 w-3 text-primary" /> —
+                Si ya coincide con un caso, se guarda como material del caso; las plataformas que requieren inicio de sesión o código de verificación se marcan como pendientes
               </span>
             </label>
           </div>
@@ -144,7 +143,7 @@ export function SmsPasteDialog({
             <div className="rounded-md border border-border bg-muted/20 p-3">
               <div className="mb-2 flex items-center gap-1.5 text-[11px] text-muted-foreground">
                 <Sparkles className="h-3 w-3 text-primary" />
-                解析预览（前 {preview.length} 条）
+                Vista previa del análisis (primeros {preview.length})
               </div>
               <ul className="space-y-2">
                 {preview.map((p, i) => {
@@ -179,16 +178,16 @@ export function SmsPasteDialog({
                       )}
                       <div className="mt-1 flex flex-wrap gap-2 text-[10px] text-muted-foreground/80">
                         {p.parsed.hearingDate && (
-                          <span>开庭：{p.parsed.hearingDate}</span>
+                          <span>Audiencia: {p.parsed.hearingDate}</span>
                         )}
                         {p.parsed.courtRoom && (
                           <span>{p.parsed.courtRoom}</span>
                         )}
-                        {p.parsed.judge && <span>法官：{p.parsed.judge}</span>}
+                        {p.parsed.judge && <span>Juez: {p.parsed.judge}</span>}
                         {p.parsed.importantItems.length > 0 && (
                           <span className="inline-flex items-center gap-1">
                             <CalendarClock className="h-3 w-3" />
-                            {p.parsed.importantItems.length} 个事ítems
+                            {p.parsed.importantItems.length} ítems
                           </span>
                         )}
                         {p.parsed.credentials.length > 0 && (
@@ -200,7 +199,7 @@ export function SmsPasteDialog({
                           </span>
                         )}
                         {p.parsed.urls.length > 0 && (
-                          <span>{p.parsed.urls.length} 个Enlace</span>
+                          <span>{p.parsed.urls.length} enlaces</span>
                         )}
                       </div>
                     </li>
@@ -221,7 +220,7 @@ export function SmsPasteDialog({
           </Button>
           <Button onClick={submit} disabled={pending || !text.trim()}>
             {pending && <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />}
-            解析并Guardar
+            Analizar y guardar
           </Button>
         </DialogFooter>
       </DialogContent>

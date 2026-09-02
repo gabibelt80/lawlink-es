@@ -32,7 +32,7 @@ const typeIcons: Record<string, string> = {
 const typeLabels: Record<string, string> = {
   PRESERVATION_EXPIRY: "Vencimiento de medida cautelar",
   HEARING_REMINDER: "Audiencia",
-  DEADLINE_REMINDER: "Plazo",
+  DEADLINE_REMINDER: "Vencimiento",
   SEAL_STATUS_CHANGE: "Uso de sello",
   SMS_ARRIVAL: "SMS",
   TASK_ASSIGNED: "Sistema",
@@ -57,11 +57,11 @@ export function NotificationPopover() {
   const [typeFilter, setTypeFilter] = useState<string | null>(null);
   const router = useRouter();
 
-  // 已弹过桌面Notificaciones的 id（含挂载时已存在的，避免刷新页面就刷屏）
+  // IDs de notificaciones de escritorio ya mostradas (incluye las existentes al montar, para evitar spam al refrescar la página)
   const seenIds = useRef<Set<string>>(new Set());
   const seededRef = useRef(false);
 
-  // 轮询：刷新未读数 + 对新到的未读Notificaciones弹浏览器桌面Notificaciones
+  // Sondeo: refrescar contador de no leídas + mostrar notificación de escritorio para las nuevas no leídas
   const poll = useCallback(async () => {
     try {
       const [count, list] = await Promise.all([
@@ -73,7 +73,7 @@ export function NotificationPopover() {
 
       const unreadList = list.filter((n) => !n.read);
       if (!seededRef.current) {
-        // 首次轮询：只记录现有 id，不弹（否则每次进站都炸一堆SistemaNotificaciones）
+        // Primer sondeo: solo registrar IDs existentes, sin mostrar (para no bombardear con notificaciones del sistema al entrar)
         unreadList.forEach((n) => seenIds.current.add(n.id));
         seededRef.current = true;
         return;
@@ -104,7 +104,7 @@ export function NotificationPopover() {
   }, [router]);
 
   useEffect(() => {
-    // 请求桌面Notificaciones授权（用户可拒绝；拒绝后仅站内铃铛生效）
+    // Solicitar permiso para notificaciones de escritorio (el usuario puede rechazar; si rechaza, solo funciona la campanita interna)
     if (
       typeof window !== "undefined" &&
       "Notification" in window &&
@@ -173,7 +173,7 @@ export function NotificationPopover() {
               onClick={handleMarkAllRead}
               className="text-xs text-muted-foreground hover:text-foreground"
             >
-              Ver todos已读
+              Marcar todas como leídas
             </button>
           )}
         </div>
@@ -193,7 +193,7 @@ export function NotificationPopover() {
                     : "border-border text-muted-foreground hover:border-input hover:bg-muted hover:text-foreground",
                 )}
               >
-                Ver todos
+                Ver todas
               </button>
               {presentTypes.map((t) => (
                 <button
@@ -221,8 +221,8 @@ export function NotificationPopover() {
               return (
                 <div className="px-3 py-8 text-center text-sm text-muted-foreground">
                   {typeFilter
-                    ? `没有「${typeLabels[typeFilter] ?? typeFilter}」类Notificaciones`
-                    : "暂无Notificaciones"}
+                    ? `No hay notificaciones de tipo «${typeLabels[typeFilter] ?? typeFilter}»`
+                    : "No hay notificaciones"}
                 </div>
               );
             }
@@ -271,7 +271,7 @@ export function NotificationPopover() {
               className="text-xs text-muted-foreground hover:text-foreground"
               onClick={() => setOpen(false)}
             >
-              VerVer todosNotificaciones
+              Ver todas las notificaciones
             </Link>
           </div>
         )}
@@ -285,11 +285,11 @@ function formatTime(date: Date | string): string {
   const now = new Date();
   const diffMs = now.getTime() - d.getTime();
   const diffMin = Math.floor(diffMs / 60000);
-  if (diffMin < 1) return "刚刚";
-  if (diffMin < 60) return `${diffMin}分钟前`;
+  if (diffMin < 1) return "Ahora";
+  if (diffMin < 60) return `${diffMin} min atrás`;
   const diffHr = Math.floor(diffMin / 60);
-  if (diffHr < 24) return `${diffHr}小时前`;
+  if (diffHr < 24) return `${diffHr} h atrás`;
   const diffDay = Math.floor(diffHr / 24);
-  if (diffDay < 7) return `${diffDay}días前`;
-  return d.toLocaleDateString("zh-CN", { month: "short", day: "numeric" });
+  if (diffDay < 7) return `${diffDay} días atrás`;
+  return d.toLocaleDateString("es-AR", { month: "short", day: "numeric" });
 }

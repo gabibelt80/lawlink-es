@@ -122,7 +122,7 @@ const CATEGORIES: MatterCategory[] = [
 
 const FEE_TYPES: FeeType[] = ["FIXED", "CONTINGENCY", "TIMED"];
 
-// 我方为被动方时，可上传起诉状/申请书 OCR 识别对方
+// Cuando somos la parte pasiva, se puede subir la demanda/solicitud para que el OCR reconozca a la contraparte
 const RECEIVING_STANDINGS = new Set<LitigationStanding>([
   "DEFENDANT",
   "JOINT_DEFENDANT",
@@ -279,13 +279,13 @@ export function IntakeSheet({
   const coUserIds = watch<string[]>("coUserIds") ?? [];
   const receivedAt = watch("receivedAt");
   const jurisdiction = watch("jurisdiction") ?? "";
-  // 争议解决机构按管辖地Coincidencia
+  // Órgano de resolución de disputas según jurisdicción
   const agencyOpts = useMemo(
     () => agencyOptionsForProcedure(jurisdiction, firstProcedureType),
     [jurisdiction, firstProcedureType],
   );
 
-  // v0.31: Caso类别决定表单结构（诉讼/仲裁 vs 非诉/专ítems vs 顾问）
+  // v0.31: La categoría del caso determina la estructura del formulario (litigio/arbitraje vs no contencioso/proyectos vs consultoría)
   const kind: CategoryKind = matterCategoryKind(category);
   const nameLabel =
     kind === "counsel"
@@ -294,7 +294,7 @@ export function IntakeSheet({
         ? "Nombre del proyecto"
         : "Nombre del caso";
 
-  // 标题自动生成：填完当事人 + Causa后按「委托方 y 对方 Causa」生成，用户手改后不再覆盖
+  // Generación automática del título: después de completar partes + Causa, se genera según «Parte cliente y parte contraria Causa»; no se sobrescribe después de que el usuario lo modifique manualmente
   const [titleTouched, setTitleTouched] = useState(false);
   const [causeName, setCauseName] = useState("");
   const watchedParties = watch("parties");
@@ -307,7 +307,7 @@ export function IntakeSheet({
     const oppNm = list.find((p) => p.role === "OPPOSING_PARTY")?.name?.trim();
     const causeNm = (causeName || watchedCauseFree || "").trim();
     if (!clientNm && !oppNm) return;
-    // CasoNombre不含空格（产品要求）
+    // El nombre del caso no contiene espacios (requisito del producto)
     const suggested =
       `${clientNm ?? ""}${oppNm ? `y${oppNm}` : ""}${causeNm}`.replace(
         /\s+/g,
@@ -325,24 +325,24 @@ export function IntakeSheet({
     setValue,
   ]);
 
-  // 当前类别下可选程序
+  // Procedimientos disponibles para la categoría actual
   const procedureOptions: ProcedureType[] = useMemo(
     () => proceduresByCategory[category] ?? [],
     [category],
   );
 
-  // 当前程序下可选诉讼地位
+  // Posiciones procesales disponibles para el procedimiento actual
   const ourStandingOptions: LitigationStanding[] = useMemo(
     () => procedureToStandingOptions(firstProcedureType, "ours"),
     [firstProcedureType],
   );
-  // 相对方 / 第三人 诉讼地位也随当前程序联动
+  // La posición procesal de la parte contraria / tercero también se actualiza según el procedimiento actual
   const oppositeStandingOptions: LitigationStanding[] = useMemo(
     () => procedureToStandingOptions(firstProcedureType, "opposite"),
     [firstProcedureType],
   );
 
-  // 切类别时如果当前程序不在新类别列表里，清掉
+  // Al cambiar de categoría, si el procedimiento actual no está en la nueva lista, se limpia
   useEffect(() => {
     if (firstProcedureType && !procedureOptions.includes(firstProcedureType)) {
       setValue("firstProcedureType", undefined);
@@ -350,9 +350,9 @@ export function IntakeSheet({
     }
   }, [category, firstProcedureType, procedureOptions, setValue]);
 
-  // v0.31: 切类别时同步当事人行
-  // 顾问 / 非诉 / 专ítems：默认只留委托方一行（相对方按需Agregar）
-  // 诉讼/仲裁：确保至少有一个相对方行
+  // v0.31: Al cambiar de categoría, sincronizar filas de partes
+  // Consultoría / no contencioso / proyectos: por defecto solo queda la fila del cliente (la parte contraria se agrega según necesidad)
+  // Litigio/arbitraje: asegurar al menos una fila de parte contraria
   useEffect(() => {
     const cur = (watch("parties") ?? []) as { role?: string }[];
     if (kind === "counsel" || kind === "project") {
@@ -377,19 +377,19 @@ export function IntakeSheet({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [kind]);
 
-  // 设默认 owner
+  // Establecer propietario por defecto
   useEffect(() => {
     if (!ownerUserId && session?.user?.id) {
       setValue("ownerUserId", session.user.id);
     }
   }, [ownerUserId, session, setValue]);
 
-  // 切程序时自动填充建议机构（仅在为空时）
+  // Al cambiar de procedimiento, autocompletar el organismo sugerido (solo si está vacío)
   function handleProcedureChange(p: ProcedureType) {
     setValue("firstProcedureType", p, { shouldDirty: true });
     setValue("ourStanding", undefined);
-    // 机构可自由手输（专门法院、异地仲裁委不在生成列表里），
-    // 只在新程序下不合法时清空（商事仲裁下选了法院），不按"是否在列表中"清
+    // El organismo se puede ingresar manualmente (tribunales especializados, comisiones de arbitraje de otras jurisdicciones no están en la lista generada),
+    // solo se limpia si no es válido para el nuevo procedimiento (se seleccionó un tribunal en arbitraje comercial), no según si está en la lista
     let currentAgency = getValues("firstAgency");
     if (currentAgency && !isAgencyAllowedForProcedure(currentAgency, p)) {
       setValue("firstAgency", "", { shouldDirty: true });
@@ -460,8 +460,8 @@ export function IntakeSheet({
   }
 
   function onSubmit(values: IntakeCreateInput) {
-    // 委托方恒为 parties[0]（role=CLIENT_PARTY）：拆回顶层 client* 字段，其余进 parties。
-    // Nombre + 证件号必填由 zodResolver(partyInputSchema) 对每行统一校验。
+    // La parte cliente siempre es parties[0] (role=CLIENT_PARTY): se separan los campos client* al nivel superior, el resto va a parties.
+    // Nombre + número de documento obligatorios son validados por zodResolver(partyInputSchema) para cada fila.
     const all = values.parties ?? [];
     const client = all.find((p) => p.role === "CLIENT_PARTY");
     if (!client || !client.name?.trim()) {
@@ -511,7 +511,7 @@ export function IntakeSheet({
       const res = await parsePleading(fd);
       let added = 0;
       for (const p of res.plaintiffs) {
-        // OCR 时按 idNumber 长度/legalRep 是否存在猜主体类型：18 位含字母通常是社会信用代码 → 公司
+        // En OCR, según la longitud del idNumber / si existe legalRep se adivina el tipo de sujeto: 18 dígitos con letras suele ser código de crédito social → empresa
         const guessed: "NATURAL_PERSON" | "ORGANIZATION" =
           (p.legalRep && p.legalRep.trim()) ||
           (p.idNumber && p.idNumber.length === 18 && /[A-Z]/.test(p.idNumber))
@@ -587,7 +587,7 @@ export function IntakeSheet({
         { description: "Revise manualmente si los campos son correctos" },
       );
 
-      // OCR 后联动 AI Causa推荐（仅当 OCR 抽到 cause / claimDescription 时触发）
+      // Después del OCR, activar recomendación de Causa por IA (solo se activa cuando el OCR extrae cause / claimDescription)
       const situationParts: string[] = [];
       if (res.cause)
         situationParts.push(`Causa reconocida por OCR: ${res.cause}`);
@@ -667,7 +667,7 @@ export function IntakeSheet({
   }
 
   async function handlePickYuandian(candidate: EnterpriseSearchItem) {
-    // 委托方行恒为 parties[0]
+    // La fila del cliente siempre es parties[0]
     setValue("clientId", "", { shouldDirty: true });
     setValue("parties.0.partyType", "ORGANIZATION", { shouldDirty: true });
     setValue("parties.0.name", candidate.name, { shouldDirty: true });
@@ -713,7 +713,7 @@ export function IntakeSheet({
     }
   }
 
-  // 主办 / 协办 / 律协备案 / 反诉 字段（多处复用）
+  // Campos de abogado principal / co-abogado / inscripción en colegio / reconvención (reutilizados en varios lugares)
   function leadField() {
     return (
       <Field label="Abogado principal" required>
@@ -844,7 +844,7 @@ export function IntakeSheet({
     );
   }
 
-  // 当事人/相关方录入表格（按类别复用，诉讼/仲裁含诉讼地位列）
+  // Tabla de ingreso de partes / partes relacionadas (reutilizada por categoría, litigio/arbitraje incluye columna de posición procesal)
   function renderParties(mode: CategoryKind) {
     const showStanding = mode === "litigation";
     const grid = showStanding ? PARTY_GRID : PARTY_GRID_NO_STANDING;
@@ -862,7 +862,7 @@ export function IntakeSheet({
             showStanding ? "min-w-[880px]" : "min-w-[760px]",
           )}
         >
-          {/* 表头 */}
+          {/* Encabezado */}
           <div
             className={cn(
               grid,
@@ -888,7 +888,7 @@ export function IntakeSheet({
             const all = (watch("parties") ?? []) as { role?: string }[];
             const role = (all[idx]?.role as PartyRole) ?? "OPPOSING_PARTY";
             const isClient = role === "CLIENT_PARTY";
-            // 顾问类只显示委托方
+            // En consultoría solo se muestra la parte cliente
             if (mode === "counsel" && !isClient) return null;
             const ourStanding = watch("ourStanding");
             return (
@@ -1129,9 +1129,9 @@ export function IntakeSheet({
                     </div>
                   </div>
                 )}
-                {/* ① 基本信息（共用：类别 / Nombre / 收案 / 经办）*/}
+                {/* ① Información básica (compartida: categoría / nombre / admisión / gestión) */}
                 <Section title="① Información básica" required>
-                  {/* Caso类别 | 收案时间（y类别etc.宽）| CasoNombre（Restan余）*/}
+                  {/* Categoría del caso | Fecha de admisión (ancho según categoría, etc.) | Nombre del caso (resto) */}
                   <div className="grid grid-cols-1 gap-3 lg:grid-cols-[160px_160px_minmax(0,1fr)]">
                     <Field label="Categoría del caso" required>
                       <Select
@@ -1186,10 +1186,10 @@ export function IntakeSheet({
                     </Field>
                   </div>
 
-                  {/* 诉讼/仲裁：案情信息（并入基本信息）*/}
+                  {/* Litigio/arbitraje: información del caso (integrada en información básica) */}
                   {kind === "litigation" && (
                     <>
-                      {/* 当前程序 | Causa | 管辖地 | 争议解决机构 */}
+                      {/* Procedimiento actual | Causa | Jurisdicción | Órgano de resolución de disputas */}
                       <div className="grid grid-cols-1 gap-3 lg:grid-cols-4">
                         <Field
                           label="Trámite actual"
@@ -1266,10 +1266,10 @@ export function IntakeSheet({
                         </Field>
                       </div>
 
-                      {/* 标的额（1/4）| 标的Descripción（3/4）*/}
+                      {/* Monto del objeto (1/4) | Descripción del objeto (3/4) */}
                       <div className="grid grid-cols-1 gap-3 lg:grid-cols-4">
                         <Field
-                          label="Monto del objeto (CNY)"
+                          label="Monto del objeto (ARS)"
                           error={errors.claimAmount?.message}
                         >
                           <Input
@@ -1295,7 +1295,7 @@ export function IntakeSheet({
                         </Field>
                       </div>
 
-                      {/* 主办 | 协办 | 是否需向律协备案 | 是否反诉（各 1/4）*/}
+                      {/* Abogado principal | Co-abogado | Inscripción en colegio | Reconvención (cada uno 1/4) */}
                       <div className="grid grid-cols-1 gap-3 lg:grid-cols-4">
                         {leadField()}
                         {coLeadField()}
@@ -1305,7 +1305,7 @@ export function IntakeSheet({
                     </>
                   )}
 
-                  {/* 非诉/专ítems：ítems目信息（并入基本信息）*/}
+                  {/* No contencioso/proyectos: información del proyecto (integrada en información básica) */}
                   {kind === "project" && (
                     <>
                       <div className="grid grid-cols-1 gap-3 lg:grid-cols-4">
@@ -1329,7 +1329,7 @@ export function IntakeSheet({
                           </Select>
                         </Field>
                         <Field
-                          label="Monto del proyecto (CNY)"
+                          label="Monto del proyecto (ARS)"
                           error={errors.claimAmount?.message}
                         >
                           <Input
@@ -1404,7 +1404,7 @@ export function IntakeSheet({
                           />
                         </Field>
                       </div>
-                      {/* 主办 | 协办（各 1/2）*/}
+                      {/* Abogado principal | Co-abogado (cada uno 1/2) */}
                       <div className="grid grid-cols-1 gap-3 lg:grid-cols-2">
                         {leadField()}
                         {coLeadField()}
@@ -1412,7 +1412,7 @@ export function IntakeSheet({
                     </>
                   )}
 
-                  {/* 顾问：顾问信息（并入基本信息）*/}
+                  {/* Consultoría: información de consultoría (integrada en información básica) */}
                   {kind === "counsel" && (
                     <>
                       <div className="grid grid-cols-1 gap-3 lg:grid-cols-4">
@@ -1491,7 +1491,7 @@ export function IntakeSheet({
                           {...register("serviceScope")}
                         />
                       </Field>
-                      {/* 主办 | 协办（各 1/2）*/}
+                      {/* Abogado principal | Co-abogado (cada uno 1/2) */}
                       <div className="grid grid-cols-1 gap-3 lg:grid-cols-2">
                         {leadField()}
                         {coLeadField()}
@@ -1500,7 +1500,7 @@ export function IntakeSheet({
                   )}
                 </Section>
 
-                {/* ③ 当事人 / 相关方（按类别）*/}
+                {/* ② Partes del caso (según categoría) */}
                 {kind === "litigation" && (
                   <Section
                     title="② Partes del caso"
@@ -1557,7 +1557,7 @@ export function IntakeSheet({
                   </Section>
                 )}
 
-                {/* ③ 非诉/专ítems：委托方y相对方（无诉讼地位）*/}
+                {/* ② Cliente y parte contraria (sin posición procesal) */}
                 {kind === "project" && (
                   <Section
                     title="② Cliente y parte contraria"
@@ -1567,14 +1567,14 @@ export function IntakeSheet({
                   </Section>
                 )}
 
-                {/* ③ 顾问：顾问单位 */}
+                {/* ② Entidad consultora */}
                 {kind === "counsel" && (
                   <Section title="② Entidad consultora" required>
                     {renderParties("counsel")}
                   </Section>
                 )}
 
-                {/* 3. Abogado费 */}
+                {/* ③ Honorarios */}
                 <Section
                   title={
                     kind === "counsel"
@@ -1597,7 +1597,7 @@ export function IntakeSheet({
                           kind === "counsel" ? "grid-cols-2" : "grid-cols-3",
                         )}
                       >
-                        {/* 顾问费不含风险代理 */}
+                        {/* Los honorarios de consultoría no incluyen representación de riesgo */}
                         {FEE_TYPES.filter(
                           (t) => kind !== "counsel" || t !== "CONTINGENCY",
                         ).map((t) => (
@@ -1624,10 +1624,10 @@ export function IntakeSheet({
                       <Field
                         label={
                           feeType === "TIMED"
-                            ? "Tarifa por hora (CNY/hora)"
+                            ? "Tarifa por hora (ARS/hora)"
                             : feeType === "CONTINGENCY"
-                              ? "Honorario base del caso (CNY)"
-                              : "Monto total (CNY)"
+                              ? "Honorario base del caso (ARS)"
+                              : "Monto total (ARS)"
                         }
                         required
                         error={errors.feeAmount?.message}
@@ -1657,7 +1657,7 @@ export function IntakeSheet({
                         <Input
                           placeholder={
                             feeType === "TIMED"
-                              ? "Ej.: liquidación mensual, socio a 2000 CNY/hora"
+                              ? "Ej.: liquidación mensual, socio a 2000 ARS/hora"
                               : feeType === "CONTINGENCY"
                                 ? "Ej.: honorario base pagado al firmar; honorario de riesgo pagado dentro de 7 días después del cobro"
                                 : "Ej.: 50% al firmar, 30% antes del juicio, 20% al cierre del caso"
@@ -1703,7 +1703,7 @@ export function IntakeSheet({
                   )}
                 </Section>
 
-                {/* 4. 合同 */}
+                {/* ④ Contrato de mandato / anexos relacionados */}
                 <Section
                   title="④ Contrato de mandato / anexos relacionados"
                   headerAction={

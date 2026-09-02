@@ -26,7 +26,7 @@ type Props = {
   onOpenChange: (open: boolean) => void;
   category: MatterCategory;
   procedureType?: ProcedureType | null;
-  /** 用现有字段 tab 的预填内容（父组件按场景拼好） */
+  /** Contenido prellenado para la pestaña de campos existentes (el componente padre lo arma según el escenario) */
   contextHints?: string;
   onSelect: (causeId: string, causeName: string) => void;
 };
@@ -63,7 +63,7 @@ export function CauseAiManualDialog({
   const [candidates, setCandidates] = useState<CauseRecommendation[]>([]);
   const [error, setError] = useState<string | null>(null);
 
-  // 打开/重开时Restablecer
+  // Restablecer al abrir/reabrir
   useEffect(() => {
     if (!open) return;
     const initTab: Tab = hasHints ? "preset" : "free";
@@ -90,7 +90,7 @@ export function CauseAiManualDialog({
       const list = await recommendCause({ category, procedureType, situation });
       setCandidates(list);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "AI 推荐Error");
+      setError(err instanceof Error ? err.message : "Error de recomendación de IA");
     } finally {
       setLoading(false);
     }
@@ -111,7 +111,7 @@ export function CauseAiManualDialog({
         </DialogHeader>
 
         <div className="space-y-3 px-5 py-4">
-          {/* Tab 切换（仅有 hints 时显示） */}
+          {/* Cambio de pestaña (solo se muestra si hay hints) */}
           {hasHints && (
             <div className="flex rounded-md border border-border bg-card p-0.5">
               <TabBtn
@@ -149,10 +149,10 @@ export function CauseAiManualDialog({
             ) : (
               <Sparkles className="h-4 w-4" />
             )}
-            {candidates.length > 0 ? "重新推荐" : "AI 推荐"}
+            {candidates.length > 0 ? "Recomendar de nuevo" : "Recomendación IA"}
           </Button>
 
-          {/* 结果区 */}
+          {/* Zona de resultados */}
           {error && (
             <div className="rounded border border-rose-200 bg-rose-50 p-3 text-xs text-rose-700">
               {error}
