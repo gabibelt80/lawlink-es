@@ -1,10 +1,11 @@
 /**
- * v0.50: Recordatorios webhook 配置（企业微信 / 钉钉群机器人）。
+ * v0.50: Configuración de webhook de recordatorios (bot de Telegram).
  *
- * 单 SystemSetting key `notifyWebhook`。两家的自定义机器人都接受
- * POST {"msgtype":"text","text":{"content":"..."}}，无需区分厂商；
- * 钉钉机器人若配置了「自定义关键词」安全Configuración，消息以「LawLink」开头即可命中。
- * 沿用 firm-profile 的「单 key + 类型化读写」范式。
+ * Una sola clave SystemSetting `notifyWebhook`.
+ * La URL del webhook es la de la API de Telegram:
+ * https://api.telegram.org/bot<TOKEN>/sendMessage
+ * El cuerpo se envía como JSON: { chat_id: "<CHAT_ID>", text: "..." }
+ * Se usa el mismo patrón de «clave única + lectura/escritura tipada» que firm-profile.
  */
 import { prisma } from "@/lib/prisma";
 
@@ -40,8 +41,8 @@ export async function saveWebhookSettings(next: WebhookSettings): Promise<void> 
 const WEBHOOK_TIMEOUT_MS = 8000;
 
 /**
- * 发送文本消息到已配置的 webhook。未启用/未配置时静默跳过（Volver skipped）。
- * 不抛异常：Recordatorios推送Error不能影响主流程，ErrorMotivoVolver给调用方记录。
+ * Envía un mensaje de texto al webhook configurado. Si no está habilitado o configurado, se omite silenciosamente (devuelve skipped).
+ * No lanza excepciones: el error de envío de recordatorios no debe afectar el flujo principal, el motivo se devuelve para que el llamador lo registre.
  */
 export async function sendWebhookText(
   content: string
@@ -52,10 +53,13 @@ export async function sendWebhookText(
   let url: URL;
   try {
     url = new URL(settings.url);
-    if (url.protocol !== "https:") throw new Error("仅支持 HTTPS");
+    if (url.protocol !== "https:") throw new Error("Solo se admite HTTPS");
   } catch (err) {
-    return { ok: false, error: err instanceof Error ? err.message : "webhook URL 无效" };
+    return { ok: false, error: err instanceof Error ? err.message : "URL de webhook inválida" };
   }
+
+  // Extraer chat_id de la URL si está presente
+  const chatId = url.searchParams.get("chat_id") ?? "";
 
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), WEBHOOK_TIMEOUT_MS);
@@ -63,20 +67,23 @@ export async function sendWebhookText(
     const response = await fetch(url.toString(), {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ msgtype: "text", text: { content } }),
+      body: JSON.stringify({
+        chat_id: chatId,
+        text: content,
+      }),
       signal: controller.signal
     });
     if (!response.ok) {
       return { ok: false, error: `HTTP ${response.status}` };
     }
-    // 企微/钉钉都Volver {errcode:0,...} 表示成功
-    const data = (await response.json().catch(() => null)) as { errcode?: number; errmsg?: string } | null;
-    if (data && typeof data.errcode === "number" && data.errcode !== 0) {
-      return { ok: false, error: `errcode ${data.errcode}: ${data.errmsg ?? ""}` };
+    // Telegram devuelve { ok: true, result: {...} } cuando tiene éxito
+    const data = (await response.json().catch(() => null)) as { ok?: boolean; description?: string } | null;
+    if (data && data.ok === false) {
+      return { ok: false, error: data.description ?? "Error de Telegram" };
     }
     return { ok: true };
   } catch (err) {
-    return { ok: false, error: err instanceof Error ? err.message : "请求Error" };
+    return { ok: false, error: err instanceof Error ? err.message : "Error de solicitud" };
   } finally {
     clearTimeout(timer);
   }

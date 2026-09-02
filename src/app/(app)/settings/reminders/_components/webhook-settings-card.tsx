@@ -1,8 +1,8 @@
 "use client";
 
 /**
- * v0.50: Tarjeta de configuración de envío de recordatorios (robot de grupo de WeChat Empresarial / DingTalk).
- * Todos los días a las 09:00, cuando el escaneo de vencimientos genera nuevos recordatorios, se envía un mensaje resumen al robot.
+ * v0.50: Tarjeta de configuración de envío de recordatorios (bot de Telegram).
+ * Todos los días a las 09:00, cuando el escaneo de vencimientos genera nuevos recordatorios, se envía un mensaje resumen al bot.
  */
 import { useState, useTransition } from "react";
 import { Loader2, Send, Webhook } from "lucide-react";
@@ -43,7 +43,7 @@ export function WebhookSettingsCard({
     startTesting(async () => {
       try {
         await sendTestWebhookAction();
-        toast.success("Mensaje de prueba enviado, confirmá en el grupo");
+        toast.success("Mensaje de prueba enviado, confirmá en Telegram");
       } catch (err) {
         toast.error("Error en la prueba", { description: err instanceof Error ? err.message : "" });
       }
@@ -54,21 +54,21 @@ export function WebhookSettingsCard({
     <div className="rounded-xl border border-border bg-card p-4">
       <div className="flex items-center gap-2">
         <Webhook className="h-4 w-4 text-primary" strokeWidth={1.8} />
-        <div className="text-sm font-medium">Envío por robot de grupo (WeChat Empresarial / DingTalk)</div>
+        <div className="text-sm font-medium">Envío por bot de Telegram</div>
       </div>
       <p className="mt-1 text-[12px] leading-5 text-muted-foreground">
-        Cuando el escaneo diario de vencimientos encuentra nuevos recordatorios, se envía un resumen al robot del grupo (solo incluye títulos de asuntos y números de caso, sin datos de las partes).
-        Agregá un «robot personalizado» en el grupo de WeChat Empresarial / DingTalk y pegá la dirección Webhook abajo;
-        para el robot de DingTalk se recomienda usar la configuración de seguridad de «palabra clave personalizada» y completar <code className="font-mono">LawLink</code>.
+        Cuando el escaneo diario de vencimientos encuentra nuevos recordatorios, se envía un resumen al bot de Telegram (solo incluye títulos de asuntos y números de caso, sin datos de las partes).
+        Creá un bot con @BotFather en Telegram y pegá la URL del webhook abajo.
+        Podés obtener la URL usando el token del bot y tu chat_id.
       </p>
 
       <div className="mt-3 space-y-3">
         <div className="space-y-1.5">
-          <Label className="text-xs">Dirección Webhook del robot</Label>
+          <Label className="text-xs">URL del webhook de Telegram</Label>
           <Input
             value={url}
             onChange={(e) => setUrl(e.target.value)}
-            placeholder="https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=... o https://oapi.dingtalk.com/robot/send?access_token=..."
+            placeholder="https://api.telegram.org/bot<TOKEN>/sendMessage?chat_id=<CHAT_ID>&text="
             className="font-mono text-[12px]"
           />
         </div>

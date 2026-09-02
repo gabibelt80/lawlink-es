@@ -10,14 +10,16 @@ import {
   CommandGroup,
   CommandItem,
 } from "@/components/ui/command";
+import { VisuallyHidden } from "@/components/ui/visually-hidden";
+import { DialogTitle } from "@/components/ui/dialog";
 import { globalSearch, type GlobalSearchResult } from "@/server/search/actions";
 import { FolderOpen, Users, FileText, Inbox } from "lucide-react";
 
 const groupConfig = [
-  { key: "matters" as const, label: "Caso", icon: FolderOpen },
-  { key: "clients" as const, label: "Cliente", icon: Users },
-  { key: "intakes" as const, label: "收案", icon: Inbox },
-  { key: "documents" as const, label: "材料", icon: FileText },
+  { key: "matters" as const, label: "Casos", icon: FolderOpen },
+  { key: "clients" as const, label: "Clientes", icon: Users },
+  { key: "intakes" as const, label: "Admisiones", icon: Inbox },
+  { key: "documents" as const, label: "Materiales", icon: FileText },
 ];
 
 export function SearchDialog({
@@ -84,15 +86,18 @@ export function SearchDialog({
 
   return (
     <CommandDialog open={open} onOpenChange={onOpenChange}>
+      <VisuallyHidden>
+        <DialogTitle>Búsqueda global</DialogTitle>
+      </VisuallyHidden>
       <CommandInput
-        placeholder="BuscarCaso、Cliente、材料..."
+        placeholder="Buscar casos, clientes, materiales..."
         value={query}
         onValueChange={setQuery}
         className="ll-command-input"
       />
       <CommandList>
         {query && !loading && !hasResults && (
-          <CommandEmpty>未找到相关结果</CommandEmpty>
+          <CommandEmpty>No se encontraron resultados</CommandEmpty>
         )}
         {results &&
           groupConfig.map(({ key, label, icon: Icon }) => {

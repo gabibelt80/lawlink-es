@@ -59,7 +59,7 @@ export function NavContent({ firm }: { firm: FirmBrand }) {
 
       <nav className="flex-1 overflow-y-auto px-2 py-1">
         <div className="px-2 pb-1 pt-2 text-[10px] font-semibold uppercase text-muted-foreground/70">
-          工作区
+          Área de trabajo
         </div>
         <div className="space-y-0.5">
           {primaryNav.map((item) => (

@@ -7,7 +7,7 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
+  provider = "mysql"
   url      = env("DATABASE_URL")
 }
 
@@ -402,7 +402,7 @@ model Client {
   phone       String?
   email       String?
   source      String?
-  tags        String[]
+  tags        Json
   notes       String?
   legalRep    String?
   // v0.39: 案件云式补充字段
@@ -456,7 +456,7 @@ model CauseOfAction {
   children   CauseOfAction[] @relation("CauseHierarchy")
   active     Boolean         @default(true)
   pinyin     String?
-  keywords   String[]
+  keywords   Json
   matters    Matter[]
   intakes    Intake[]
   sourceNote String?
@@ -523,7 +523,7 @@ model Intake {
   // v0.5: 主办律师 + 共同律师（转化时生成 MatterMember）
   ownerUserId String?
   ownerUser   User?    @relation("IntakeOwner", fields: [ownerUserId], references: [id])
-  coUserIds   String[] @default([])
+  coUserIds   Json @default("[]")
 
   parties        Party[]
   conflictChecks ConflictCheck[]
@@ -644,7 +644,7 @@ model CustomFieldDef {
   key        String // 稳定键，写入实体 customValues 的属性名
   label      String
   fieldType  CustomFieldType   @default(TEXT)
-  options    String[] // SELECT 类型的可选值
+  options    Json // SELECT 类型的可选值
   required   Boolean           @default(false)
   order      Int               @default(0)
   enabled    Boolean           @default(true)
@@ -838,8 +838,8 @@ model DeadlineRule {
   legalBasisUrl String?
   verifiedAt    DateTime? // 元典核验时间
 
-  applicableProcedures ProcedureType[] // 空 = 全部程序
-  applicableCategories MatterCategory[] // 空 = 全部案件类别
+  applicableProcedures Json // 空 = 全部程序
+  applicableCategories Json // 空 = 全部案件类别
 
   remindDays Int     @default(7) // 生成 Deadline 时的建议提前提醒天数
   enabled    Boolean @default(true)
@@ -998,8 +998,8 @@ model Note {
   withWhom    String?
   occurredAt  DateTime    @default(now())
   content     String
-  tags        String[]
-  attachments String[]
+  tags        Json
+  attachments Json
   deletedAt   DateTime?
   createdAt   DateTime    @default(now())
   updatedAt   DateTime    @updatedAt
@@ -1049,7 +1049,7 @@ model Document {
   iv        String?
   authTag   String?
 
-  tags         String[]
+  tags         Json
   uploadedById String
   uploadedBy   User      @relation("DocumentUploader", fields: [uploadedById], references: [id])
   deletedAt    DateTime?
@@ -1115,7 +1115,7 @@ model InvoiceRequest {
   buyerPhone       String? // 购方电话（专票必填）
   buyerBank        String? // 购方开户银行（专票必填）
   buyerBankAccount String? // 购方银行账号（专票必填）
-  evidenceDocIds String[] @default([]) // 开票依据 Document id 列表
+  evidenceDocIds Json @default("[]") // 开票依据 Document id 列表
 
   // v0.14: 真实发票号（财务开票完成时回填）
   invoiceNo String?
@@ -1250,7 +1250,7 @@ model ArchiveRecord {
   closedReason    ArchiveClosedReason?
   completedAt     DateTime?
   checklistJson   Json
-  missingItems    String[]
+  missingItems    Json
 
   coverDocId   String?
   catalogDocId String?
@@ -1330,7 +1330,7 @@ model DocumentTemplate {
   name                 String
   category             TemplateCategory
   description          String?
-  applicableCategories MatterCategory[] // 空数组 = 适用全部案件类别
+  applicableCategories Json // 空数组 = 适用全部案件类别
   docxBlobId           String           @unique
   docxBlob             Document         @relation("TemplateBlob", fields: [docxBlobId], references: [id])
   variables            Json // 变量清单 ["client.name", "matter.caseNumber", ...] 用于缺失提示
@@ -1371,7 +1371,7 @@ model SealTypeConfig {
   type             SealType   @id
   label            String // 中文显示名
   description      String?
-  approverRoles    UserRole[] // 多角色 OR 关系；空数组 = 仅 requiresLegalRep 生效
+  approverRoles    Json // 多角色 OR 关系；空数组 = 仅 requiresLegalRep 生效
   requiresLegalRep Boolean    @default(false) // 必须法定代表人本人审批（取 SystemSetting key=firmLegalRepUserId）
   enabled          Boolean    @default(true)
   updatedAt        DateTime   @updatedAt
@@ -1544,7 +1544,7 @@ model PreservationCase {
   ownerId String?
   owner   User?   @relation("PreservationCaseOwner", fields: [ownerId], references: [id], onDelete: SetNull)
 
-  remindDays Int[] @default([30, 15, 7, 3, 1])
+  remindDays Json @default("[30, 15, 7, 3, 1]")
 
   targets   PreservationTarget[]
   createdAt DateTime @default(now())
@@ -1724,7 +1724,7 @@ model FirmFile {
   name        String
   description String?
   category    FirmFileCategory
-  tags        String[]
+  tags        Json
 
   path     String
   mimeType String?
@@ -1795,7 +1795,7 @@ model ExternalContact {
   wechat       String?
   address      String?
   notes        String?
-  tags         String[]
+  tags         Json
 
   createdById  String
   createdBy    User     @relation("ExternalContactCreator", fields: [createdById], references: [id])
@@ -1812,4 +1812,38 @@ model ExternalContact {
   @@index([status, archivedAt, createdAt])
   @@index([reviewedById])
   @@index([name])
+}
+// ============================================================
+// Multi-tenant: Estudio jurídico (schema central)
+// ============================================================
+
+model Firm {
+  id          String   @id @default(cuid())
+  name        String
+  slug        String   @unique
+  email       String   @unique
+  phone       String?
+  logoDataUrl String?
+  active      Boolean  @default(true)
+  plan        String   @default("trial")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  users FirmUser[]
+}
+
+model FirmUser {
+  id           String   @id @default(cuid())
+  name         String
+  email        String   @unique
+  passwordHash String
+  phone        String?
+  avatar       String?
+  active       Boolean  @default(true)
+  lastLoginAt  DateTime?
+  calendarToken String? @unique
+  firmId       String?
+  firm         Firm?    @relation(fields: [firmId], references: [id])
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 }

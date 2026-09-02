@@ -143,7 +143,7 @@ export async function createFeeEntry(input: FeeEntryCreateInput) {
         data: {
           matterId: data.matterId,
           eventType: "FEE_RECEIVED",
-          title: `实收 $${data.amount.toLocaleString("zh-CN")}`,
+          title: `Cobrado $${data.amount.toLocaleString("es-AR")}`,
           content: data.note ?? undefined,
           occurredAt: data.occurredAt
         }
@@ -483,7 +483,7 @@ export async function createInvoiceRequest(input: {
     title: "新的FacturaAprobación待处理",
     content: `${session.user.name ?? "有用户"} Enviar了开票申请：${
       matter ? `${matter.internalCode} ${matter.title}` : input.noMatterReason?.trim() || "无关联Caso"
-    }，Monto ${input.amount.toLocaleString("zh-CN")} pesos`,
+    }，Monto ${input.amount.toLocaleString("es-AR")} ARS`,
     href: "/finance",
     refType: "InvoiceRequest",
     refId: created.id,
@@ -547,7 +547,7 @@ export async function getMonthlyRevenue(months = 6) {
   for (let i = 0; i < months; i++) {
     const d = new Date(start.getFullYear(), start.getMonth() + i, 1);
     buckets.push({
-      month: `${d.getMonth() + 1}月`,
+      month: `${d.getMonth() + 1}M`,
       received: 0,
       receivable: 0
     });

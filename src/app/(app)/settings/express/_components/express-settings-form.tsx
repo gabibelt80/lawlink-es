@@ -39,7 +39,7 @@ export function ExpressSettingsForm({ initial }: { initial: Initial }) {
   };
 
   const clearKdniao = () => {
-    if (!confirm("¿Borrar la clave de KDNiao?")) return;
+    if (!confirm("¿Borrar la clave de Andreani?")) return;
     startTransition(async () => {
       try {
         await saveExpressSettingsAction({ kdniaoClearKey: true });
@@ -51,7 +51,7 @@ export function ExpressSettingsForm({ initial }: { initial: Initial }) {
   };
 
   const clearKd100 = () => {
-    if (!confirm("¿Borrar la clave de Kuaidi100?")) return;
+    if (!confirm("¿Borrar la clave de Correo Argentino?")) return;
     startTransition(async () => {
       try {
         await saveExpressSettingsAction({ kuaidi100ClearKey: true });
@@ -70,15 +70,15 @@ export function ExpressSettingsForm({ initial }: { initial: Initial }) {
           <h2 className="text-lg">Integración de envíos</h2>
         </header>
         <p className="mb-4 text-[12px] text-muted-foreground">
-          Doble proveedor: prioridad <span className="text-foreground/85">KDNiao</span> (500 consultas/día gratis),
-          ante error se degrada a <span className="text-foreground/85">Kuaidi100</span>.
+          Doble proveedor: prioridad <span className="text-foreground/85">Andreani</span> (cobertura nacional),
+          ante error se degrada a <span className="text-foreground/85">Correo Argentino</span>.
           Con configurar cualquiera de los dos ya se puede usar.
         </p>
 
-        {/* KDNiao */}
+        {/* Andreani */}
         <div className="mb-5 rounded-md border border-border bg-muted/20 p-4">
           <div className="mb-2 flex items-center gap-2">
-            <h3 className="text-[13px] font-medium">KDNiao (principal, recomendado)</h3>
+            <h3 className="text-[13px] font-medium">Andreani (principal, recomendado)</h3>
             {initial.kdniao.configured && (
               <span className="inline-flex items-center gap-1 rounded bg-emerald-500/15 px-1.5 py-0.5 text-[10px] text-emerald-700">
                 <CheckCircle2 className="h-3 w-3" />
@@ -86,7 +86,7 @@ export function ExpressSettingsForm({ initial }: { initial: Initial }) {
               </span>
             )}
             <a
-              href="https://www.kdniao.com/"
+              href="https://www.andreani.com/"
               target="_blank"
               rel="noreferrer"
               className="ml-auto inline-flex items-center gap-1 text-[11px] text-primary hover:underline"
@@ -97,17 +97,17 @@ export function ExpressSettingsForm({ initial }: { initial: Initial }) {
           </div>
           <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
             <div>
-              <Label className="text-[11px]">EBusinessID (ID de usuario)</Label>
+              <Label className="text-[11px]">API Key (clave pública)</Label>
               <Input
                 value={kdEbId}
                 onChange={(e) => setKdEbId(e.target.value)}
-                placeholder="ID numérico"
+                placeholder="API Key"
                 className="mt-1 font-mono"
               />
             </div>
             <div>
               <Label className="text-[11px]">
-                AppKey
+                API Secret (clave privada)
                 {initial.kdniao.configured && (
                   <span className="ml-2 font-mono text-[10px] text-muted-foreground">
                     Actual {initial.kdniao.appKeyMasked} (dejar vacío para conservar)
@@ -118,7 +118,7 @@ export function ExpressSettingsForm({ initial }: { initial: Initial }) {
                 type="password"
                 value={kdAppKey}
                 onChange={(e) => setKdAppKey(e.target.value)}
-                placeholder={initial.kdniao.configured ? "Pegá una nueva AppKey si querés cambiarla" : "AppKey"}
+                placeholder={initial.kdniao.configured ? "Pegá una nueva API Secret si querés cambiarla" : "API Secret"}
                 className="mt-1 font-mono"
                 autoComplete="off"
               />
@@ -132,16 +132,16 @@ export function ExpressSettingsForm({ initial }: { initial: Initial }) {
                 className="inline-flex items-center gap-1 text-[10px] text-destructive hover:underline"
               >
                 <Trash2 className="h-3 w-3" />
-                Borrar AppKey
+                Borrar API Secret
               </button>
             </div>
           )}
         </div>
 
-        {/* Kuaidi100 */}
+        {/* Correo Argentino */}
         <div className="rounded-md border border-border bg-muted/20 p-4">
           <div className="mb-2 flex items-center gap-2">
-            <h3 className="text-[13px] font-medium">Kuaidi100 (respaldo)</h3>
+            <h3 className="text-[13px] font-medium">Correo Argentino (respaldo)</h3>
             {initial.kuaidi100.configured && (
               <span className="inline-flex items-center gap-1 rounded bg-emerald-500/15 px-1.5 py-0.5 text-[10px] text-emerald-700">
                 <CheckCircle2 className="h-3 w-3" />
@@ -149,7 +149,7 @@ export function ExpressSettingsForm({ initial }: { initial: Initial }) {
               </span>
             )}
             <a
-              href="https://api.kuaidi100.com/"
+              href="https://www.correoargentino.com.ar/"
               target="_blank"
               rel="noreferrer"
               className="ml-auto inline-flex items-center gap-1 text-[11px] text-primary hover:underline"
@@ -160,7 +160,7 @@ export function ExpressSettingsForm({ initial }: { initial: Initial }) {
           </div>
           <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
             <div>
-              <Label className="text-[11px]">Customer (código de autorización)</Label>
+              <Label className="text-[11px]">Usuario (código de cliente)</Label>
               <Input
                 value={k100Customer}
                 onChange={(e) => setK100Customer(e.target.value)}
@@ -169,7 +169,7 @@ export function ExpressSettingsForm({ initial }: { initial: Initial }) {
             </div>
             <div>
               <Label className="text-[11px]">
-                Key
+                Contraseña
                 {initial.kuaidi100.configured && (
                   <span className="ml-2 font-mono text-[10px] text-muted-foreground">
                     Actual {initial.kuaidi100.keyMasked} (dejar vacío para conservar)
@@ -180,7 +180,7 @@ export function ExpressSettingsForm({ initial }: { initial: Initial }) {
                 type="password"
                 value={k100Key}
                 onChange={(e) => setK100Key(e.target.value)}
-                placeholder={initial.kuaidi100.configured ? "Pegá una nueva key si querés cambiarla" : "key"}
+                placeholder={initial.kuaidi100.configured ? "Pegá una nueva contraseña si querés cambiarla" : "Contraseña"}
                 className="mt-1 font-mono"
                 autoComplete="off"
               />
@@ -194,7 +194,7 @@ export function ExpressSettingsForm({ initial }: { initial: Initial }) {
                 className="inline-flex items-center gap-1 text-[10px] text-destructive hover:underline"
               >
                 <Trash2 className="h-3 w-3" />
-                Borrar Key
+                Borrar contraseña
               </button>
             </div>
           )}
@@ -208,8 +208,7 @@ export function ExpressSettingsForm({ initial }: { initial: Initial }) {
         </div>
 
         <p className="mt-3 text-[11px] text-muted-foreground">
-          Las claves se guardan cifradas con AES-256-GCM en SystemSetting y el cifrado de documentos reutiliza la misma clave (
-          <span className="font-mono">STORAGE_ENCRYPTION_KEY</span>). El frontend nunca muestra el texto plano.
+          Las claves se guardan cifradas de forma segura en el sistema. El frontend nunca muestra el texto plano.
         </p>
       </section>
     </div>

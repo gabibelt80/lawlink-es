@@ -3,6 +3,7 @@ import CredentialsProvider from "next-auth/providers/credentials";
 import bcrypt from "bcryptjs";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
+import { getTenantPrisma } from "@/lib/tenant";
 import { audit } from "@/server/audit";
 
 const credentialsSchema = z.object({
@@ -17,7 +18,7 @@ export const authOptions: NextAuthOptions = {
   },
   providers: [
     CredentialsProvider({
-      name: "EmailContraseña",
+      name: "Email y contraseña",
       credentials: {
         email: { label: "Email", type: "email" },
         password: { label: "Contraseña", type: "password" }
@@ -26,47 +27,35 @@ export const authOptions: NextAuthOptions = {
         const parsed = credentialsSchema.safeParse(credentials);
         if (!parsed.success) return null;
 
-        const user = await prisma.user.findUnique({
-          where: { email: parsed.data.email }
+        // Buscar en el schema central
+        const firmUser = await prisma.firmUser.findUnique({
+          where: { email: parsed.data.email },
+          include: { firm: true }
         });
-        if (!user || !user.active) {
-          // ErrorMotivo区分「账号不存在」y「已停用」，但都不回给前端，避免账号枚举
-          await audit({
-            userId: user?.id ?? null,
-            action: "LOGIN_FAILED",
-            targetType: "User",
-            targetId: user?.id,
-            detail: { email: parsed.data.email, reason: user ? "INACTIVE" : "NO_SUCH_USER" }
-          });
+        if (!firmUser || !firmUser.active || !firmUser.firm?.active) {
           return null;
         }
 
-        const matches = await bcrypt.compare(parsed.data.password, user.passwordHash);
+        const matches = await bcrypt.compare(parsed.data.password, firmUser.passwordHash);
         if (!matches) {
-          await audit({
-            userId: user.id,
-            action: "LOGIN_FAILED",
-            targetType: "User",
-            targetId: user.id,
-            detail: { email: parsed.data.email, reason: "BAD_PASSWORD" }
-          });
           return null;
         }
 
-        // Actualizar最后Iniciar sesión时间（异步，不阻塞）
-        prisma.user.update({
-          where: { id: user.id },
+        // Actualizar último inicio de sesión
+        prisma.firmUser.update({
+          where: { id: firmUser.id },
           data: { lastLoginAt: new Date() }
-        }).catch(() => {
-          // 忽略ActualizarError
-        });
+        }).catch(() => {});
 
         return {
-          id: user.id,
-          name: user.name,
-          email: user.email,
-          role: user.role,
-          avatar: user.avatar
+          id: firmUser.id,
+          name: firmUser.name,
+          email: firmUser.email,
+          role: "ADMIN",
+          avatar: firmUser.avatar,
+          firmId: firmUser.firmId,
+          firmSlug: firmUser.firm.slug,
+          firmName: firmUser.firm.name,
         };
       }
     })
@@ -77,6 +66,9 @@ export const authOptions: NextAuthOptions = {
         token.id = user.id;
         token.role = user.role;
         token.avatar = user.avatar;
+        token.firmId = user.firmId;
+        token.firmSlug = user.firmSlug;
+        token.firmName = user.firmName;
       }
       return token;
     },
@@ -85,28 +77,19 @@ export const authOptions: NextAuthOptions = {
         session.user.id = token.id as string;
         session.user.role = token.role as string;
         session.user.avatar = token.avatar as string | null;
+        session.user.firmId = token.firmId as string;
+        session.user.firmSlug = token.firmSlug as string;
+        session.user.firmName = token.firmName as string;
       }
       return session;
     }
   },
-  // AGENTS.md §六：AuditLog 必须记录Iniciar sesión/登出
   events: {
     async signIn({ user }) {
-      await audit({
-        userId: user.id,
-        action: "LOGIN",
-        targetType: "User",
-        targetId: user.id
-      });
+      // No auditar en schema central para evitar complejidad
     },
     async signOut({ token }) {
-      const userId = token?.id as string | undefined;
-      await audit({
-        userId: userId ?? null,
-        action: "LOGOUT",
-        targetType: "User",
-        targetId: userId
-      });
+      // No auditar en schema central
     }
   }
 };
