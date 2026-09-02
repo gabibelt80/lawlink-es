@@ -32,16 +32,34 @@ export const authOptions: NextAuthOptions = {
           where: { email: parsed.data.email },
           include: { firm: true }
         });
-        if (!firmUser || !firmUser.active || !firmUser.firm?.active) {
-          return null;
-        }
+
+        if (!firmUser || !firmUser.active) return null;
 
         const matches = await bcrypt.compare(parsed.data.password, firmUser.passwordHash);
-        if (!matches) {
-          return null;
+        if (!matches) return null;
+
+        // Admin del sistema (firmId = null)
+        if (firmUser.firmId === null) {
+          prisma.firmUser.update({
+            where: { id: firmUser.id },
+            data: { lastLoginAt: new Date() }
+          }).catch(() => {});
+
+          return {
+            id: firmUser.id,
+            name: firmUser.name,
+            email: firmUser.email,
+            role: "SYSTEM_ADMIN",
+            avatar: firmUser.avatar,
+            firmId: null as string | null,
+            firmSlug: "",
+            firmName: "Sistema",
+          };
         }
 
-        // Actualizar último inicio de sesión
+        // Usuario de estudio
+        if (!firmUser.firm || !firmUser.firm.active) return null;
+
         prisma.firmUser.update({
           where: { id: firmUser.id },
           data: { lastLoginAt: new Date() }
@@ -53,7 +71,7 @@ export const authOptions: NextAuthOptions = {
           email: firmUser.email,
           role: "ADMIN",
           avatar: firmUser.avatar,
-          firmId: firmUser.firmId,
+          firmId: firmUser.firmId as string,
           firmSlug: firmUser.firm.slug,
           firmName: firmUser.firm.name,
         };
