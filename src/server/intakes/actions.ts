@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { Prisma, type ClientType, type LitigationStanding, type PartyType } from "@prisma/client";
-import { prisma } from "@/lib/prisma";
+import { getTenantPrisma } from "@/lib/tenant-prisma";
 import { requireSession } from "@/lib/auth/session";
 import { audit } from "@/server/audit";
 import { intakeVisibilityFilter } from "@/lib/permissions";
@@ -30,21 +30,19 @@ function emptyToNull<T extends Record<string, unknown>>(obj: T): T {
 
 function requireApprover(role: string) {
   if (role !== "ADMIN" && role !== "PRINCIPAL_LAWYER") {
-    throw new Error("仅Administrar员或主任Abogado可Aprobación收案");
+    throw new Error("Solo el administrador o el abogado principal puede aprobar admisiones");
   }
 }
 
-/** 按 {委托方} y {对方} {Causa} 自动生成标题 — Causa本身通常已含"纠纷"二字 */
 function generateTitle(
   clientName: string | null,
   opposingNames: string[],
   causeName: string | null
 ): string {
-  const left = clientName || "待补充委托方";
-  const right = opposingNames.length > 0 ? opposingNames.join("、") : "待补充对方";
+  const left = clientName || "Cliente pendiente";
+  const right = opposingNames.length > 0 ? opposingNames.join(" y ") : "Contraparte pendiente";
   const cause = causeName ?? "Caso";
-  // CasoNombre不含空格（产品要求，y matterCreateSchema 去空白一致）
-  return `${left}y${right}${cause}`.replace(/\s+/g, "");
+  return `${left} y ${right} ${cause}`.replace(/\s+/g, "");
 }
 
 function clientTypeToPartyType(type: ClientType): PartyType {
@@ -92,11 +90,11 @@ function conflictQueryKey(q: IntakeConflictQuery) {
 
 function formatConflictQuery(q: IntakeConflictQuery) {
   const roleLabel: Record<IntakeConflictRole, string> = {
-    CLIENT_PARTY: "委托方",
-    OPPOSING_PARTY: "对方",
-    THIRD_PARTY: "第三人"
+    CLIENT_PARTY: "Cliente",
+    OPPOSING_PARTY: "Contraparte",
+    THIRD_PARTY: "Tercero"
   };
-  return `${roleLabel[q.role]}「${q.name || q.idNumber}」`;
+  return `${roleLabel[q.role]} «${q.name || q.idNumber}»`;
 }
 
 function buildExpectedConflictQueries(intake: IntakeConflictGateInput) {
@@ -141,12 +139,12 @@ function getCheckedConflictQueries(payload: Prisma.JsonValue) {
 function assertConflictReviewAllowsConversion(intake: IntakeConflictGateInput) {
   const expectedQueries = buildExpectedConflictQueries(intake);
   if (expectedQueries.length === 0) {
-    throw new Error("请先补充委托方或相对方，再运行利益冲突检索");
+    throw new Error("Completá primero el cliente o la contraparte y luego ejecutá la búsqueda de conflictos");
   }
 
   const latestCheck = intake.conflictChecks[0];
   if (!latestCheck) {
-    throw new Error("转为正式Caso前必须先运行利益冲突检索");
+    throw new Error("Antes de convertir a caso formal debés ejecutar la búsqueda de conflictos");
   }
 
   const checkedKeys = new Set(
@@ -155,35 +153,36 @@ function assertConflictReviewAllowsConversion(intake: IntakeConflictGateInput) {
   const missingQueries = expectedQueries.filter((q) => !checkedKeys.has(conflictQueryKey(q)));
   if (missingQueries.length > 0) {
     throw new Error(
-      `收案当事人已变更，请重新运行利益冲突检索。缺少：${missingQueries
+      `Las partes de la admisión cambiaron, ejecutá nuevamente la búsqueda de conflictos. Faltan: ${missingQueries
         .map(formatConflictQuery)
-        .join("、")}`
+        .join(", ")}`
     );
   }
 
   if (latestCheck.conclusion === "PENDING") {
-    throw new Error("利益冲突检索还没有结论，请先标记是否可承接");
+    throw new Error("La búsqueda de conflictos no tiene conclusión, marcá si se puede aceptar");
   }
   if (latestCheck.conclusion === "NEED_INFO") {
-    throw new Error("利益冲突检索结论为信息不足，不能转为正式Caso");
+    throw new Error("La conclusión de la búsqueda de conflictos es información insuficiente, no se puede convertir a caso formal");
   }
   if (latestCheck.conclusion === "SAME_SUBJECT") {
-    throw new Error("已Confirmar存在利益冲突，不能直接转为正式Caso");
+    throw new Error("Se confirmó que existe conflicto de intereses, no se puede convertir directamente a caso formal");
   }
   if (latestCheck.conclusion !== "DIFFERENT") {
-    throw new Error("利益冲突检索结论异常，请重新检索后再转为正式Caso");
+    throw new Error("Conclusión de conflicto anómala, ejecutá nuevamente la búsqueda");
   }
 
   const hasHighRiskHit = latestCheck.hits.some(
     (h) => h.severity === "HIGH" || h.severity === "BLOCKING"
   );
   if (hasHighRiskHit && !latestCheck.note?.trim()) {
-    throw new Error("存在高风险或阻塞命中，请在冲突结论Observaciones中写明排除理由或书面同意留痕");
+    throw new Error("Existen coincidencias de alto riesgo o bloqueantes, escribí el motivo de exclusión o el consentimiento por escrito en las notas de la conclusión");
   }
 }
 
 export async function listIntakes(input: Partial<IntakeListQuery> = {}) {
   const session = await requireSession();
+  const prisma = await getTenantPrisma();
   const query = intakeListQuerySchema.parse(input);
 
   const statusWhere: Prisma.IntakeWhereInput = query.statusIn?.length
@@ -248,7 +247,7 @@ export async function listIntakes(input: Partial<IntakeListQuery> = {}) {
 
 export async function getIntakeById(id: string) {
   const session = await requireSession();
-  // 单条收案权限检查：manager 看Ver todos，其他人只能看自己参y或Crear的
+  const prisma = await getTenantPrisma();
   if (session.user.role !== "ADMIN" && session.user.role !== "PRINCIPAL_LAWYER") {
     const owned = await prisma.intake.findFirst({
       where: {
@@ -261,7 +260,7 @@ export async function getIntakeById(id: string) {
       },
       select: { id: true }
     });
-    if (!owned) throw new Error("收案记录不存在");
+    if (!owned) throw new Error("Registro de admisión no encontrado");
   }
   const intake = await prisma.intake.findUnique({
     where: { id },
@@ -295,6 +294,7 @@ export async function getIntakeById(id: string) {
 
 export async function createIntake(input: IntakeCreateInput) {
   const session = await requireSession();
+  const prisma = await getTenantPrisma();
   const data = intakeCreateSchema.parse(input);
   assertAgencyAllowedForProcedure(data.firstAgency, data.firstProcedureType);
   await assertCauseAllowedForSelection({
@@ -303,7 +303,6 @@ export async function createIntake(input: IntakeCreateInput) {
     procedureType: data.firstProcedureType
   });
 
-  // ----- 解析Cliente：已选 / 自由输入新建 -----
   let resolvedClientId: string | null = data.clientId || null;
   let resolvedClientName: string | null = null;
 
@@ -317,7 +316,6 @@ export async function createIntake(input: IntakeCreateInput) {
         address: data.clientAddress || null,
         legalRep: data.clientLegalRep || null,
         phone: data.contactPhone || null,
-        // 同步建一个主联系人
         contacts:
           data.contactName?.trim() || data.contactPhone?.trim()
             ? {
@@ -346,7 +344,6 @@ export async function createIntake(input: IntakeCreateInput) {
     });
     resolvedClientName = c?.name ?? null;
 
-    // 已有Cliente也补一条联系人（如果填了且现有不存在同名联系人）
     if (data.contactName?.trim() || data.contactPhone?.trim()) {
       const existing = await prisma.contact.findFirst({
         where: {
@@ -358,7 +355,7 @@ export async function createIntake(input: IntakeCreateInput) {
         await prisma.contact.create({
           data: {
             clientId: resolvedClientId,
-            name: (data.contactName || resolvedClientName || "联系人").trim(),
+            name: (data.contactName || resolvedClientName || "Contacto").trim(),
             phone: data.contactPhone?.trim() || null,
             isPrimary: false
           }
@@ -367,7 +364,6 @@ export async function createIntake(input: IntakeCreateInput) {
     }
   }
 
-  // ----- Causa名（用于自动 title）-----
   let causeName: string | null = data.causeFreeText || null;
   if (data.causeId) {
     const cause = await prisma.causeOfAction.findUnique({
@@ -466,8 +462,8 @@ export async function createIntake(input: IntakeCreateInput) {
   await notifyRoleApprovers({
     roles: ["ADMIN", "PRINCIPAL_LAWYER"],
     excludeUserId: session.user.id,
-    title: "新的CasoAprobación待处理",
-    content: `${session.user.name ?? "有用户"} Enviar了CasoAprobación：${created.title}`,
+    title: "Nueva aprobación de caso pendiente",
+    content: `${session.user.name ?? "Usuario"} envió una aprobación de caso: ${created.title}`,
     href: `/intakes/${created.id}`,
     refType: "Intake",
     refId: created.id,
@@ -481,6 +477,7 @@ export async function createIntake(input: IntakeCreateInput) {
 
 export async function declineIntake(input: DeclineIntakeInput) {
   const session = await requireSession();
+  const prisma = await getTenantPrisma();
   requireApprover(session.user.role);
   const data = declineIntakeSchema.parse(input);
 
@@ -506,11 +503,11 @@ export async function declineIntake(input: DeclineIntakeInput) {
   return { ok: true };
 }
 
-/** v0.14: 标记需补正 — 让Abogado补充材料后可再次Enviar（区别于 DECLINED Estado final） */
 export async function markIntakeNeedsRevision(input: { id: string; reason: string }) {
   const session = await requireSession();
+  const prisma = await getTenantPrisma();
   requireApprover(session.user.role);
-  if (!input.reason.trim()) throw new Error("请填写补正Motivo");
+  if (!input.reason.trim()) throw new Error("Completá el motivo de corrección");
 
   await prisma.intake.update({
     where: { id: input.id },
@@ -534,16 +531,16 @@ export async function markIntakeNeedsRevision(input: { id: string; reason: strin
   return { ok: true };
 }
 
-/** v0.14: Abogado补完材料后重新Enviar（NEEDS_REVISION → PENDING_CONFIRMATION） */
 export async function resubmitIntake(id: string) {
   const session = await requireSession();
+  const prisma = await getTenantPrisma();
 
   const intake = await prisma.intake.findUnique({
     where: { id },
     select: { status: true, title: true, createdById: true, ownerUserId: true }
   });
-  if (!intake) throw new Error("收案不存在");
-  if (intake.status !== "NEEDS_REVISION") throw new Error("只有Pendiente de correcciónEstado可重新Enviar");
+  if (!intake) throw new Error("Admisión no encontrada");
+  if (intake.status !== "NEEDS_REVISION") throw new Error("Solo el estado Pendiente de corrección puede reenviarse");
 
   await prisma.intake.update({
     where: { id },
@@ -564,8 +561,8 @@ export async function resubmitIntake(id: string) {
   await notifyRoleApprovers({
     roles: ["ADMIN", "PRINCIPAL_LAWYER"],
     excludeUserId: session.user.id,
-    title: "CasoAprobación已重新Enviar",
-    content: `${session.user.name ?? "有用户"} 重新Enviar了CasoAprobación：${intake.title}`,
+    title: "Aprobación de caso reenviada",
+    content: `${session.user.name ?? "Usuario"} reenvió la aprobación: ${intake.title}`,
     href: `/intakes/${id}`,
     refType: "Intake",
     refId: id,
@@ -578,9 +575,9 @@ export async function resubmitIntake(id: string) {
   return { ok: true };
 }
 
-/** 转 Matter：把 intake 上的Ver todos字段铺到 Matter / 首程序 / 程序当事人 / Billing / MatterMember / Document */
 export async function convertIntakeToMatter(intakeId: string) {
   const session = await requireSession();
+  const prisma = await getTenantPrisma();
   requireApprover(session.user.role);
   const intake = await prisma.intake.findUnique({
     where: { id: intakeId },
@@ -600,15 +597,14 @@ export async function convertIntakeToMatter(intakeId: string) {
       documents: { select: { id: true } }
     }
   });
-  if (!intake) throw new Error("Intake 不存在");
-  if (intake.status === "CONVERTED") throw new Error("此 Intake 已转化");
+  if (!intake) throw new Error("Admisión no encontrada");
+  if (intake.status === "CONVERTED") throw new Error("Esta admisión ya fue convertida");
   assertConflictReviewAllowsConversion(intake);
 
   const { generateInternalCode, generateFirmCaseNo } = await import("@/server/matters/code-generator");
   const internalCode = await generateInternalCode(intake.category);
   const firmCaseNo = await generateFirmCaseNo(intake.category);
 
-  // 首程序类型：优先用 intake 选的，缺失按Caso类别推断
   const firstProcedureType =
     intake.firstProcedureType ??
     (intake.category === "CIVIL_COMMERCIAL" ||
@@ -640,7 +636,6 @@ export async function convertIntakeToMatter(intakeId: string) {
         intakeDate: intake.receivedAt,
         ourStanding: intake.ourStanding,
         claimAmount: intake.claimAmount,
-        // 是否反诉：按我方地位推断Rol（被告提反诉→反诉原告；原告被反诉→反诉被告）
         counterclaimAsPlaintiff:
           !!intake.counterclaim &&
           (intake.ourStanding === "DEFENDANT" || intake.ourStanding === "JOINT_DEFENDANT"),
@@ -648,14 +643,12 @@ export async function convertIntakeToMatter(intakeId: string) {
           !!intake.counterclaim &&
           (intake.ourStanding === "PLAINTIFF" || intake.ourStanding === "JOINT_PLAINTIFF"),
         barFiling: intake.barFiling,
-        // v0.35: 非诉/顾问/专ítems 专属字段带入
         businessType: intake.businessType,
         serviceScope: intake.serviceScope,
         deliverables: intake.deliverables,
         counselType: intake.counselType,
         serviceStart: intake.serviceStart,
         serviceEnd: intake.serviceEnd,
-        // 主办自动作为 LEAD；coUserIds 作为 CO_LEAD
         members: {
           create: [
             { userId: ownerId, role: "LEAD" },
@@ -665,7 +658,7 @@ export async function convertIntakeToMatter(intakeId: string) {
           ]
         },
         clientLinks: intake.clientId
-          ? { create: { clientId: intake.clientId, isPrimary: true, label: "主要委托方" } }
+          ? { create: { clientId: intake.clientId, isPrimary: true, label: "Cliente principal" } }
           : undefined,
       }
     });
@@ -689,7 +682,7 @@ export async function convertIntakeToMatter(intakeId: string) {
           contactName: intake.contactName,
           enterpriseSocialCode: intake.client.type === "INDIVIDUAL" ? null : intake.client.idNumber,
           enterpriseName: intake.client.type === "INDIVIDUAL" ? null : intake.client.name,
-          notes: "由收案委托方自动带入首程序"
+          notes: "Incorporado automáticamente desde la admisión"
         },
         select: { id: true }
       });
@@ -737,7 +730,6 @@ export async function convertIntakeToMatter(intakeId: string) {
         order: 1,
         status: "IN_PROGRESS",
         handlingAgency: intake.firstAgency,
-        // 程序级信息从收案带入首程序（原先丢失）
         jurisdiction: intake.jurisdiction,
         ourStanding: intake.ourStanding
       },
@@ -756,16 +748,15 @@ export async function convertIntakeToMatter(intakeId: string) {
       });
     }
 
-    // Abogado费 → Billing
     if (intake.feeAmount && intake.feeType) {
       const feeTypeLabel: Record<string, string> = {
-        FIXED: "固定收费",
-        CONTINGENCY: "风险代理"
+        FIXED: "Honorario fijo",
+        CONTINGENCY: "Representación de riesgo"
       };
       await tx.billing.create({
         data: {
           matterId: m.id,
-          title: `委托代理合同 - ${feeTypeLabel[intake.feeType] ?? intake.feeType}`,
+          title: `Contrato de mandato - ${feeTypeLabel[intake.feeType] ?? intake.feeType}`,
           contractAmount: intake.feeAmount,
           schedule: intake.feeSchedule,
           status: "ACTIVE"
@@ -773,7 +764,6 @@ export async function convertIntakeToMatter(intakeId: string) {
       });
     }
 
-    // 把 Intake 上传的合同回填 matterId（保留 intakeId 溯源）
     if (intake.documents.length > 0) {
       await tx.document.updateMany({
         where: { intakeId: intake.id },
@@ -790,12 +780,11 @@ export async function convertIntakeToMatter(intakeId: string) {
       data: {
         matterId: m.id,
         eventType: "MATTER_CREATED",
-        title: `Caso已Crear（来自 Intake）`,
+        title: `Caso creado (desde admisión)`,
         occurredAt: new Date()
       }
     });
 
-    // v0.8: 默认卷宗
     await seedDefaultFolders(tx, m.id, intake.category);
 
     return m;

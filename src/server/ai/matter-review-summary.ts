@@ -1,9 +1,9 @@
 /**
  * v0.22: Resumen de revisión de IA a nivel de caso (agregación de todos los registros de revisión del caso)
  *
- * solo lectura, sin "use server", llamado directamente por server component.
+ * Solo lectura, sin "use server", llamado directamente por server component.
  */
-import { prisma } from "@/lib/prisma";
+import { getTenantPrisma } from "@/lib/tenant-prisma";
 import type {
   ReviewItem,
   ReviewSeverity,
@@ -25,13 +25,14 @@ export type MatterReviewSummary = {
   documentCount: number;
   totalItems: number;
   bySeverity: Record<ReviewSeverity, number>;
-  topHighItems: MatterReviewTopItem[]; // 最多 3 条
+  topHighItems: MatterReviewTopItem[]; // máximo 3
   latestReviewedAt: Date | null;
 };
 
 export async function getMatterReviewSummary(
   matterId: string,
 ): Promise<MatterReviewSummary> {
+  const prisma = await getTenantPrisma();
   const records = await prisma.reviewRecord.findMany({
     where: { matterId },
     orderBy: { reviewedAt: "desc" },
@@ -51,7 +52,7 @@ export async function getMatterReviewSummary(
     LOW: 0,
   };
   let totalItems = 0;
-  // 收集所有 HIGH，按 reviewedAt 倒序（records 已倒序），取最近 3 条不重复 title
+  // Recolecta todos los HIGH, en orden descendente por reviewedAt (los registros ya están en orden), toma los 3 títulos distintos más recientes
   const seenTitles = new Set<string>();
   const topHigh: MatterReviewTopItem[] = [];
   let latest: Date | null = null;

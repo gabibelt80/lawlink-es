@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { Prisma } from "@prisma/client";
-import { prisma } from "@/lib/prisma";
+import { getTenantPrisma } from "@/lib/tenant-prisma";
 import { requireSession } from "@/lib/auth/session";
 import { audit } from "@/server/audit";
 import { clientVisibilityFilter, isManager } from "@/lib/permissions";
@@ -18,7 +18,7 @@ import {
   type ClientListQuery,
 } from "./schemas";
 
-// 空字符串归 null（Prisma 不接受 "" 给可空字段）
+// Los strings vacíos se convierten a null (Prisma no acepta "" en campos anulables)
 function emptyToNull<T extends Record<string, unknown>>(obj: T): T {
   const out: Record<string, unknown> = {};
   for (const [k, v] of Object.entries(obj)) {
@@ -29,6 +29,7 @@ function emptyToNull<T extends Record<string, unknown>>(obj: T): T {
 
 export async function listClients(input: Partial<ClientListQuery> = {}) {
   const session = await requireSession();
+  const prisma = await getTenantPrisma();
   const query = clientListQuerySchema.parse(input);
 
   const where: Prisma.ClientWhereInput = {
@@ -67,7 +68,8 @@ export async function listClients(input: Partial<ClientListQuery> = {}) {
 
 export async function getClientById(id: string) {
   const session = await requireSession();
-  // 权限检查：manager/finance 看Ver todos，其他人需有关联Caso
+  const prisma = await getTenantPrisma();
+  // Control de permisos: manager/finance ven todo, los demás necesitan casos asociados
   if (!isManager(session.user.role) && session.user.role !== "FINANCE") {
     const accessible = await prisma.client.findFirst({
       where: {
@@ -110,10 +112,11 @@ export async function getClientById(id: string) {
   return client;
 }
 
-// v0.37: ClienteFinanzas汇Total —— 跨该Cliente名下所有Caso聚合合同/应收/已收
+// v0.37: Resumen financiero del cliente — agrega contratos/por cobrar/cobrado de todos los casos del cliente
 export async function getClientFinanceSummary(clientId: string) {
   const session = await requireSession();
-  // 权限：y getClientById 一致
+  const prisma = await getTenantPrisma();
+  // Permisos: igual que getClientById
   if (!isManager(session.user.role) && session.user.role !== "FINANCE") {
     const accessible = await prisma.client.findFirst({
       where: {
@@ -172,6 +175,7 @@ export async function getClientFinanceSummary(clientId: string) {
 
 export async function createClient(input: ClientCreateInput) {
   const session = await requireSession();
+  const prisma = await getTenantPrisma();
   const data = clientCreateSchema.parse(input);
 
   const internalCode = await generateClientCode();
@@ -223,6 +227,7 @@ export async function createClient(input: ClientCreateInput) {
 
 export async function updateClient(input: ClientUpdateInput) {
   const session = await requireSession();
+  const prisma = await getTenantPrisma();
   if (!isManager(session.user.role)) {
     throw new Error(
       "Solo el Administrador o el Abogado Principal puede editar la información del cliente",
@@ -231,7 +236,7 @@ export async function updateClient(input: ClientUpdateInput) {
   const data = clientUpdateSchema.parse(input);
   const { id, contacts, gender, ...rest } = data;
 
-  // 简单策略：Eliminar所有联系人 + 重新Crear。后续可优化为 diff
+  // Estrategia simple: eliminar todos los contactos + crearlos de nuevo. Se puede optimizar con diff más adelante
   await prisma.$transaction([
     prisma.contact.deleteMany({ where: { clientId: id } }),
     prisma.client.update({
@@ -271,6 +276,7 @@ export async function updateClient(input: ClientUpdateInput) {
 
 export async function softDeleteClient(id: string) {
   const session = await requireSession();
+  const prisma = await getTenantPrisma();
   if (
     session.user.role !== "ADMIN" &&
     session.user.role !== "PRINCIPAL_LAWYER"
@@ -296,9 +302,10 @@ export async function softDeleteClient(id: string) {
   return { ok: true };
 }
 
-// 单独的 contact Acciones（用于详情页快速Editar联系人，不Aprobar整 client 重写）
+// Acciones de contacto separadas (para editar rápidamente contactos desde la página de detalle, sin reescribir todo el cliente)
 export async function addContact(clientId: string, input: ContactInput) {
   const session = await requireSession();
+  const prisma = await getTenantPrisma();
   if (!isManager(session.user.role)) {
     throw new Error(
       "Solo el Administrador o el Abogado Principal puede editar contactos",
@@ -321,6 +328,7 @@ export async function addContact(clientId: string, input: ContactInput) {
 
 export async function deleteContact(id: string) {
   const session = await requireSession();
+  const prisma = await getTenantPrisma();
   if (!isManager(session.user.role)) {
     throw new Error(
       "Solo el Administrador o el Abogado Principal puede eliminar contactos",

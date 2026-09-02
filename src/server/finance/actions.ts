@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { Prisma } from "@prisma/client";
-import { prisma } from "@/lib/prisma";
+import { getTenantPrisma } from "@/lib/tenant-prisma";
 import { requireSession } from "@/lib/auth/session";
 import { audit } from "@/server/audit";
 import { assertMatterWritable } from "@/lib/archive/guard";
@@ -33,6 +33,7 @@ import { revalidateMatter } from "@/server/matters/route";
 
 export async function createBilling(input: BillingCreateInput) {
   const session = await requireSession();
+  const prisma = await getTenantPrisma();
   const data = billingCreateSchema.parse(input);
   await assertMatterWritable(data.matterId, { allowFinanceRole: true });
 
@@ -61,6 +62,7 @@ export async function createBilling(input: BillingCreateInput) {
 
 export async function deleteBilling(id: string) {
   const session = await requireSession();
+  const prisma = await getTenantPrisma();
   const billing = await prisma.billing.findUnique({
     where: { id },
     select: { matterId: true }
@@ -71,7 +73,7 @@ export async function deleteBilling(id: string) {
     await assertMatterWritable(billing.matterId, { allowFinanceRole: true });
   } else {
     await assertMatterWritable(billing.matterId);
-    await assertCanLeadMatter(session.user.id, billing.matterId, "仅Caso主办/协办或Finanzas可Eliminar合同");
+    await assertCanLeadMatter(session.user.id, billing.matterId, "Solo el titular/co-titular del caso o Finanzas puede eliminar contratos");
   }
 
   await prisma.billing.delete({ where: { id } });
@@ -85,15 +87,16 @@ export async function deleteBilling(id: string) {
   return { ok: true };
 }
 
-// ============ FeeEntry + 自动分成 ============
+// ============ FeeEntry + comisión automática ============
 
 /**
- * Crear一条收付记录。
- * - Crear RECEIVED 时自动按 CommissionPlan 派生 COMMISSION 子条目（每位受益人一条）
- * - parent / children Aprobar parentFeeEntryId 关联
+ * Crea un registro de cobro/pago.
+ * - Al crear RECEIVED se deriva automáticamente un subregistro COMMISSION por cada beneficiario según CommissionPlan
+ * - parent / children se vinculan por parentFeeEntryId
  */
 export async function createFeeEntry(input: FeeEntryCreateInput) {
   const session = await requireSession();
+  const prisma = await getTenantPrisma();
   const data = feeEntryCreateSchema.parse(input);
   await assertMatterWritable(data.matterId, { allowFinanceRole: true });
 
@@ -113,7 +116,7 @@ export async function createFeeEntry(input: FeeEntryCreateInput) {
       }
     });
 
-    // 自动分成
+    // Comisión automática
     if (data.type === "RECEIVED" && data.amount > 0) {
       const plans = await tx.commissionPlan.findMany({
         where: { matterId: data.matterId, active: true }
@@ -130,14 +133,14 @@ export async function createFeeEntry(input: FeeEntryCreateInput) {
             occurredAt: data.occurredAt,
             parentFeeEntryId: entry.id,
             beneficiaryUserId: plan.userId,
-            note: plan.label ? `按方案 [${plan.label}] 自动分成 ${plan.percent}%` : `自动分成 ${plan.percent}%`,
+            note: plan.label ? `Según plan [${plan.label}] comisión automática ${plan.percent}%` : `Comisión automática ${plan.percent}%`,
             recordedById: session.user.id
           }
         });
       }
     }
 
-    // 实收事件入时间线
+    // Evento de cobro al timeline
     if (data.type === "RECEIVED") {
       await tx.timelineEvent.create({
         data: {
@@ -168,8 +171,9 @@ export async function createFeeEntry(input: FeeEntryCreateInput) {
 
 export async function deleteFeeEntry(id: string) {
   const session = await requireSession();
+  const prisma = await getTenantPrisma();
   if (!isManager(session.user.role) && session.user.role !== "FINANCE") {
-    throw new Error("仅Administrar员、主办Abogado或Finanzas可Eliminar收付记录");
+    throw new Error("Solo el administrador, el abogado principal o Finanzas puede eliminar registros de cobro/pago");
   }
   const entry = await prisma.feeEntry.findUnique({
     where: { id },
@@ -178,7 +182,7 @@ export async function deleteFeeEntry(id: string) {
   if (!entry) return { ok: false };
   await assertMatterWritable(entry.matterId, { allowFinanceRole: true });
 
-  // 删父条目时同时Eliminar自动派生的分成
+  // Al eliminar el registro padre también se eliminan las comisiones derivadas
   await prisma.$transaction(async (tx) => {
     if (entry.commissionChildren.length > 0) {
       await tx.feeEntry.deleteMany({
@@ -206,14 +210,15 @@ export async function deleteFeeEntry(id: string) {
 // ============ CommissionPlan ============
 
 /**
- * 整体替换Caso的分成方案。
- * 简单策略：Eliminar所有现有 plan，按 items Crear新的。
+ * Reemplaza por completo el plan de comisiones del caso.
+ * Estrategia simple: elimina todos los planes existentes y crea nuevos según los items.
  */
 export async function setCommissionPlan(input: CommissionPlanSetInput) {
   const session = await requireSession();
+  const prisma = await getTenantPrisma();
   const data = commissionPlanSetSchema.parse(input);
   await assertMatterWritable(data.matterId);
-  await assertCanLeadMatter(session.user.id, data.matterId, "仅Caso主办/协办可Configuración分成方案");
+  await assertCanLeadMatter(session.user.id, data.matterId, "Solo el titular/co-titular del caso puede configurar el plan de comisiones");
 
   await prisma.$transaction([
     prisma.commissionPlan.deleteMany({ where: { matterId: data.matterId } }),
@@ -240,10 +245,11 @@ export async function setCommissionPlan(input: CommissionPlanSetInput) {
   return { ok: true };
 }
 
-// ============ 全局Finanzas统计 ============
+// ============ Estadísticas financieras globales ============
 
 export async function getMatterFinance(matterId: string) {
   const session = await requireSession();
+  const prisma = await getTenantPrisma();
   await assertCanAccessMatter(session.user.id, session.user.role, matterId);
 
   const [billings, entries, plans, issuedInvoices] = await Promise.all([
@@ -264,7 +270,7 @@ export async function getMatterFinance(matterId: string) {
       include: { user: { select: { id: true, name: true, role: true } } },
       orderBy: { createdAt: "asc" }
     }),
-    // 开票Monto：已开具Factura合计
+    // Monto facturado: total de facturas emitidas
     prisma.invoiceRequest.findMany({
       where: { matterId, status: "ISSUED" },
       select: { amount: true }
@@ -288,10 +294,11 @@ export async function getMatterFinance(matterId: string) {
 }
 
 /**
- * v0.11: 列出Caso下的申请Factura
+ * v0.11: Lista las solicitudes de facturación del caso
  */
 export async function listMatterInvoiceRequests(matterId: string) {
   const session = await requireSession();
+  const prisma = await getTenantPrisma();
   await assertCanAccessMatter(session.user.id, session.user.role, matterId);
   const rows = await prisma.invoiceRequest.findMany({
     where: { matterId },
@@ -317,10 +324,11 @@ export async function listMatterInvoiceRequests(matterId: string) {
 }
 
 /**
- * v0.12: 获取Caso用于开票的默认信息（Cliente抬头 + 关联 Intake id）
+ * v0.12: Obtiene la información por defecto del caso para facturar (titular del cliente + id de admisión asociada)
  */
 export async function getMatterInvoiceContext(matterId: string) {
   const session = await requireSession();
+  const prisma = await getTenantPrisma();
   await assertCanAccessMatter(session.user.id, session.user.role, matterId);
   const m = await prisma.matter.findUnique({
     where: { id: matterId },
@@ -346,9 +354,8 @@ export async function getMatterInvoiceContext(matterId: string) {
       }
     }
   });
-  if (!m) throw new Error("Caso不存在");
+  if (!m) throw new Error("Caso no encontrado");
 
-  // v0.42 ítems3：开票抬头下拉 = 本案关联的Ver todosCliente（去重，主要Cliente置顶）
   const clientMap = new Map<
     string,
     { id: string; name: string; taxNo: string | null; isPrimary: boolean }
@@ -398,10 +405,9 @@ export async function getMatterInvoiceContext(matterId: string) {
 }
 
 /**
- * v0.12: Crear开票申请（带类型/名目/抬头/依据）
+ * v0.12: Crear solicitud de facturación (con tipo/concepto/titular/respaldo)
  */
 export async function createInvoiceRequest(input: {
-  // v0.43 ítems5：matterId 可空——无关联Caso开票须填 noMatterReason
   matterId: string | null;
   noMatterReason?: string | null;
   amount: number;
@@ -409,7 +415,6 @@ export async function createInvoiceRequest(input: {
   invoiceItem: "LAWYER_FEE" | "CONSULTING_FEE" | "AGENCY_FEE" | "OTHER";
   buyerName: string;
   buyerTaxNo?: string | null;
-  // v0.42 ítems4：增值税专用Factura购方六要素（专票必填）
   buyerAddress?: string | null;
   buyerPhone?: string | null;
   buyerBank?: string | null;
@@ -418,34 +423,32 @@ export async function createInvoiceRequest(input: {
   requestNote?: string | null;
 }) {
   const session = await requireSession();
+  const prisma = await getTenantPrisma();
   if (input.matterId) {
     await assertCanAssociateMatter(session.user.id, input.matterId);
   } else {
-    // 无关联Caso开票仅Finanzas / Administrar员 / 主任可发起，且必须说明Motivo
     if (!isManager(session.user.role) && session.user.role !== "FINANCE") {
-      throw new Error("无关联Caso开票仅Finanzas / Administrar员 / 主任Abogado可发起");
+      throw new Error("La facturación sin caso asociado solo puede iniciarla Finanzas / Administrador / Abogado principal");
     }
     if (!input.noMatterReason?.trim()) {
-      throw new Error("无关联Caso时必须填写Motivo说明");
+      throw new Error("Cuando no hay caso asociado se debe completar el motivo");
     }
   }
 
-  if (input.amount <= 0) throw new Error("Monto必须大于 0");
+  if (input.amount <= 0) throw new Error("El monto debe ser mayor a 0");
   if (input.invoiceType !== "PLAIN" && input.invoiceType !== "SPECIAL") {
-    throw new Error("请选择开票类型");
+    throw new Error("Seleccioná el tipo de factura");
   }
-  if (!input.buyerName.trim()) throw new Error("请填写开票抬头");
-  // 专票合规校验（《增值税专用Factura使用yAdministrarNotificaciones》第一条 + 购方六要素）
+  if (!input.buyerName.trim()) throw new Error("Completá el titular de la factura");
   if (input.invoiceType === "SPECIAL") {
-    if (!input.buyerTaxNo?.trim()) throw new Error("增值税专用Factura必须填写纳税人识别号");
-    if (!input.buyerAddress?.trim()) throw new Error("增值税专用Factura必须填写购方地址");
-    if (!input.buyerPhone?.trim()) throw new Error("增值税专用Factura必须填写购方电话");
-    if (!input.buyerBank?.trim()) throw new Error("增值税专用Factura必须填写开户银行");
-    if (!input.buyerBankAccount?.trim()) throw new Error("增值税专用Factura必须填写银行账号");
+    if (!input.buyerTaxNo?.trim()) throw new Error("La factura especial debe incluir el número de identificación fiscal");
+    if (!input.buyerAddress?.trim()) throw new Error("La factura especial debe incluir la dirección del comprador");
+    if (!input.buyerPhone?.trim()) throw new Error("La factura especial debe incluir el teléfono del comprador");
+    if (!input.buyerBank?.trim()) throw new Error("La factura especial debe incluir el banco");
+    if (!input.buyerBankAccount?.trim()) throw new Error("La factura especial debe incluir la cuenta bancaria");
   }
-  // 关联Caso时必须上传开票依据（委托合同etc.）；无关联Caso以Motivo说明替代，依据可选
   if (input.matterId && input.evidenceDocIds.length === 0) {
-    throw new Error("请上传至少一份开票依据（扫描版委托合同etc.）");
+    throw new Error("Subí al menos un respaldo de facturación (contrato de mandato escaneado, etc.)");
   }
 
   const isSpecial = input.invoiceType === "SPECIAL";
@@ -480,9 +483,9 @@ export async function createInvoiceRequest(input: {
   await notifyRoleApprovers({
     roles: ["ADMIN", "PRINCIPAL_LAWYER", "FINANCE"],
     excludeUserId: session.user.id,
-    title: "新的FacturaAprobación待处理",
-    content: `${session.user.name ?? "有用户"} Enviar了开票申请：${
-      matter ? `${matter.internalCode} ${matter.title}` : input.noMatterReason?.trim() || "无关联Caso"
+    title: "Nueva aprobación de factura pendiente",
+    content: `${session.user.name ?? "Usuario"} envió una solicitud de facturación: ${
+      matter ? `${matter.internalCode} ${matter.title}` : input.noMatterReason?.trim() || "Sin caso asociado"
     }，Monto ${input.amount.toLocaleString("es-AR")} ARS`,
     href: "/finance",
     refType: "InvoiceRequest",
@@ -495,9 +498,9 @@ export async function createInvoiceRequest(input: {
   return created;
 }
 
-/** v0.43 ítems5：Finanzas页开票弹窗用——Buscar当前用户可关联Caso（轻量，Volver编号+标题） */
 export async function searchMattersForInvoice(q?: string) {
   const session = await requireSession();
+  const prisma = await getTenantPrisma();
   return prisma.matter.findMany({
     where: invoiceMatterSearchWhere(session.user.id, q),
     select: { id: true, internalCode: true, title: true },
@@ -511,6 +514,7 @@ export async function listAllFeeEntries(params: {
   limit?: number;
 }) {
   const session = await requireSession();
+  const prisma = await getTenantPrisma();
   const visFilter = matterVisibilityFilter(session.user.id, session.user.role);
   const rows = await prisma.feeEntry.findMany({
     where: {
@@ -530,6 +534,7 @@ export async function listAllFeeEntries(params: {
 
 export async function getMonthlyRevenue(months = 6) {
   const session = await requireSession();
+  const prisma = await getTenantPrisma();
   const visFilter = matterVisibilityFilter(session.user.id, session.user.role);
   const now = new Date();
   const start = new Date(now.getFullYear(), now.getMonth() - (months - 1), 1);
@@ -566,8 +571,9 @@ export async function getMonthlyRevenue(months = 6) {
 
 export async function getPersonalRevenue(userId: string) {
   const session = await requireSession();
+  const prisma = await getTenantPrisma();
   if (!isManager(session.user.role) && session.user.id !== userId) {
-    throw new Error("只能Ver自己的Ingresos数据");
+    throw new Error("Solo podés ver tus propios datos de ingresos");
   }
   const monthStart = new Date();
   monthStart.setDate(1);
