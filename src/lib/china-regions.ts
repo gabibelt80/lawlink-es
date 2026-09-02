@@ -28,88 +28,275 @@ const ARGENTINA_DATA: Record<string, Record<string, string[]>> = {
     "Lomas de Zamora": ["Lomas de Zamora"],
     "Almirante Brown": ["Almirante Brown"],
     "Florencio Varela": ["Florencio Varela"],
-    "Berazategui": ["Berazategui"]
+    "Berazategui": ["Berazategui"],
+    "San Martín": ["San Martín"],
+    "Tres de Febrero": ["Tres de Febrero"],
+    "Tigre": ["Tigre"],
+    "Escobar": ["Escobar"],
+    "Pilar": ["Pilar"],
+    "Moreno": ["Moreno"],
+    "La Matanza": ["La Matanza", "San Justo", "Ramos Mejía"],
+    "Merlo": ["Merlo"],
+    "Ituzaingó": ["Ituzaingó"],
+    "Hurlingham": ["Hurlingham"],
+    "Ezeiza": ["Ezeiza"],
+    "Esteban Echeverría": ["Esteban Echeverría"],
+    "Presidente Perón": ["Presidente Perón"],
+    "San Vicente": ["San Vicente"],
+    "Cañuelas": ["Cañuelas"],
+    "Lobos": ["Lobos"],
+    "Chascomús": ["Chascomús"],
+    "Dolores": ["Dolores"],
+    "Azul": ["Azul"],
+    "Necochea": ["Necochea"],
+    "Tres Arroyos": ["Tres Arroyos"],
+    "Coronel Rosales": ["Coronel Rosales"],
+    "Patagones": ["Patagones"],
+    "Chivilcoy": ["Chivilcoy"],
+    "Chacabuco": ["Chacabuco"],
+    "Bragado": ["Bragado"],
+    "Lincoln": ["Lincoln"],
+    "Pehuajó": ["Pehuajó"],
+    "Trenque Lauquen": ["Trenque Lauquen"],
+    "Bolívar": ["Bolívar"],
+    "25 de Mayo": ["25 de Mayo"],
+    "9 de Julio": ["9 de Julio"]
   },
   "Ciudad Autónoma de Buenos Aires": {
     "CABA": ["Comuna 1", "Comuna 2", "Comuna 3", "Comuna 4", "Comuna 5", "Comuna 6", "Comuna 7", "Comuna 8", "Comuna 9", "Comuna 10", "Comuna 11", "Comuna 12", "Comuna 13", "Comuna 14", "Comuna 15"]
   },
   "Catamarca": {
-    "San Fernando del Valle de Catamarca": ["San Fernando del Valle de Catamarca"]
+    "Capital": ["San Fernando del Valle de Catamarca"],
+    "Valle Viejo": ["Valle Viejo"],
+    "Andalgalá": ["Andalgalá"],
+    "Belén": ["Belén"],
+    "Tinogasta": ["Tinogasta"],
+    "La Paz": ["La Paz"],
+    "Santa María": ["Santa María"]
   },
   "Chaco": {
-    "Resistencia": ["Resistencia"]
+    "San Fernando": ["Resistencia", "Barranqueras"],
+    "Comandante Fernández": ["Presidencia Roque Sáenz Peña"],
+    "General Güemes": ["General Güemes"],
+    "Libertad": ["Villa Ángela"],
+    "General San Martín": ["General San Martín"],
+    "Quitilipi": ["Quitilipi"],
+    "Castelli": ["Castelli"]
   },
   "Chubut": {
-    "Rawson": ["Rawson"],
-    "Comodoro Rivadavia": ["Comodoro Rivadavia"],
-    "Trelew": ["Trelew"]
+    "Rawson": ["Rawson", "Trelew", "Puerto Madryn"],
+    "Escalante": ["Comodoro Rivadavia"],
+    "Futaleufú": ["Esquel"],
+    "Cushamen": ["Lago Puelo", "El Bolsón"],
+    "Biedma": ["Puerto Madryn"]
   },
   "Córdoba": {
-    "Córdoba": ["Córdoba", "Villa Carlos Paz"],
+    "Capital": ["Córdoba", "Villa Carlos Paz"],
     "Río Cuarto": ["Río Cuarto"],
-    "Villa María": ["Villa María"]
+    "General San Martín": ["Villa María"],
+    "General Roca": ["Laboulaye"],
+    "San Justo": ["San Francisco"],
+    "Juárez Celman": ["General Cabrera"],
+    "Marcos Juárez": ["Marcos Juárez"],
+    "Unión": ["Bell Ville"],
+    "Colón": ["Colonia Caroya", "Jesús María"],
+    "Punilla": ["Cosquín", "La Falda"],
+    "Calamuchita": ["Embalse", "Santa Rosa de Calamuchita"],
+    "Tercero Arriba": ["Río Tercero"],
+    "Presidente Roque Sáenz Peña": ["Laboulaye"],
+    "Río Segundo": ["Río Segundo"],
+    "Santa María": ["Alta Gracia"],
+    "Totoral": ["Villa del Totoral"],
+    "Ischilín": ["Deán Funes"],
+    "Cruz del Eje": ["Cruz del Eje"],
+    "Sobremonte": ["San Francisco del Chañar"]
   },
   "Corrientes": {
-    "Corrientes": ["Corrientes"]
+    "Capital": ["Corrientes"],
+    "Goya": ["Goya"],
+    "Mercedes": ["Mercedes"],
+    "Curuzú Cuatiá": ["Curuzú Cuatiá"],
+    "Paso de los Libres": ["Paso de los Libres"],
+    "Ituzaingó": ["Ituzaingó"],
+    "Bella Vista": ["Bella Vista"],
+    "Esquina": ["Esquina"]
   },
   "Entre Ríos": {
     "Paraná": ["Paraná"],
     "Concordia": ["Concordia"],
-    "Gualeguaychú": ["Gualeguaychú"]
+    "Gualeguaychú": ["Gualeguaychú"],
+    "Uruguay": ["Concepción del Uruguay"],
+    "Gualeguay": ["Gualeguay"],
+    "Victoria": ["Victoria"],
+    "Colón": ["Colón"],
+    "Federación": ["Federación", "Chajarí"],
+    "La Paz": ["La Paz"],
+    "Villaguay": ["Villaguay"],
+    "Nogoyá": ["Nogoyá"],
+    "Diamante": ["Diamante"],
+    "Tala": ["Tala"],
+    "Federal": ["Federal"],
+    "Islas del Ibicuy": ["Villa Paranacito"]
   },
   "Formosa": {
-    "Formosa": ["Formosa"]
+    "Formosa": ["Formosa"],
+    "Pirané": ["Pirané"],
+    "Pilcomayo": ["Clorinda"],
+    "Pilagás": ["El Espinillo"]
   },
   "Jujuy": {
-    "San Salvador de Jujuy": ["San Salvador de Jujuy"]
+    "Doctor Manuel Belgrano": ["San Salvador de Jujuy"],
+    "El Carmen": ["El Carmen", "Perico"],
+    "Ledesma": ["Libertador General San Martín"],
+    "San Pedro": ["San Pedro de Jujuy"],
+    "Palpalá": ["Palpalá"],
+    "Tilcara": ["Tilcara"],
+    "Humahuaca": ["Humahuaca"],
+    "Susques": ["Susques"],
+    "Yavi": ["La Quiaca"]
   },
   "La Pampa": {
-    "Santa Rosa": ["Santa Rosa"]
+    "Capital": ["Santa Rosa"],
+    "General Pico": ["General Pico"],
+    "Toay": ["Toay"],
+    "Realicó": ["Realicó"],
+    "Utracán": ["General Acha"],
+    "Conhelo": ["Eduardo Castex"]
   },
   "La Rioja": {
-    "La Rioja": ["La Rioja"]
+    "Capital": ["La Rioja"],
+    "Chilecito": ["Chilecito"],
+    "Chamical": ["Chamical"],
+    "General Lamadrid": ["Villa Castelli"],
+    "Arauco": ["Aimogasta"]
   },
   "Mendoza": {
-    "Mendoza": ["Mendoza", "Godoy Cruz", "Guaymallén", "Las Heras", "Luján de Cuyo"]
+    "Capital": ["Mendoza"],
+    "Godoy Cruz": ["Godoy Cruz"],
+    "Guaymallén": ["Guaymallén"],
+    "Las Heras": ["Las Heras"],
+    "Luján de Cuyo": ["Luján de Cuyo", "Chacras de Coria"],
+    "Maipú": ["Maipú"],
+    "San Martín": ["San Martín"],
+    "Rivadavia": ["Rivadavia"],
+    "Junín": ["Junín"],
+    "Tupungato": ["Tupungato"],
+    "Tunuyán": ["Tunuyán"],
+    "San Rafael": ["San Rafael"],
+    "General Alvear": ["General Alvear"],
+    "Malargüe": ["Malargüe"]
   },
   "Misiones": {
-    "Posadas": ["Posadas"],
-    "Oberá": ["Oberá"]
+    "Capital": ["Posadas"],
+    "Oberá": ["Oberá"],
+    "Eldorado": ["Eldorado"],
+    "Iguazú": ["Puerto Iguazú"],
+    "San Ignacio": ["San Ignacio"],
+    "Apóstoles": ["Apóstoles"],
+    "Leandro N. Alem": ["Leandro N. Alem"],
+    "Montecarlo": ["Montecarlo"]
   },
   "Neuquén": {
-    "Neuquén": ["Neuquén"]
+    "Confluencia": ["Neuquén", "Plottier", "Centenario"],
+    "Lácar": ["San Martín de los Andes"],
+    "Aluminé": ["Aluminé"],
+    "Zapala": ["Zapala"],
+    "Chos Malal": ["Chos Malal"],
+    "Los Lagos": ["Villa La Angostura"],
+    "Añelo": ["Añelo"]
   },
   "Río Negro": {
-    "Viedma": ["Viedma"],
-    "San Carlos de Bariloche": ["San Carlos de Bariloche"],
-    "General Roca": ["General Roca"]
+    "Adolfo Alsina": ["Viedma"],
+    "Bariloche": ["San Carlos de Bariloche"],
+    "General Roca": ["General Roca"],
+    "Avellaneda": ["Choele Choel"],
+    "Conesa": ["General Conesa"],
+    "Pichi Mahuida": ["Río Colorado"],
+    "San Antonio": ["San Antonio Oeste"],
+    "Valcheta": ["Valcheta"]
   },
   "Salta": {
-    "Salta": ["Salta"]
+    "Capital": ["Salta"],
+    "General Güemes": ["General Güemes"],
+    "Orán": ["San Ramón de la Nueva Orán"],
+    "Anta": ["Joaquín V. González"],
+    "Cafayate": ["Cafayate"],
+    "Rosario de Lerma": ["Rosario de Lerma"],
+    "Cerrillos": ["Cerrillos"],
+    "Metán": ["San José de Metán"],
+    "Rivadavia": ["Rivadavia Banda Sur"],
+    "San Martín": ["Tartagal"]
   },
   "San Juan": {
-    "San Juan": ["San Juan"]
+    "Capital": ["San Juan"],
+    "Caucete": ["Caucete"],
+    "Jáchal": ["Jáchal"],
+    "Sarmiento": ["Media Agua"],
+    "Rawson": ["Rawson"],
+    "Santa Lucía": ["Santa Lucía"],
+    "Rivadavia": ["Rivadavia"],
+    "Pocito": ["Pocito"],
+    "Chimbas": ["Chimbas"]
   },
   "San Luis": {
-    "San Luis": ["San Luis"]
+    "Juan Martín de Pueyrredón": ["San Luis"],
+    "General Pedernera": ["Villa Mercedes"],
+    "Junín": ["Santa Rosa de Conlara"],
+    "Chacabuco": ["Concarán"],
+    "Ayacucho": ["Luján"]
   },
   "Santa Cruz": {
-    "Río Gallegos": ["Río Gallegos"]
+    "Güer Aike": ["Río Gallegos"],
+    "Corpen Aike": ["Puerto Santa Cruz"],
+    "Deseado": ["Puerto Deseado", "Caleta Olivia"],
+    "Lago Buenos Aires": ["Los Antiguos"],
+    "Río Chico": ["Gobernador Gregores"],
+    "Lago Argentino": ["El Calafate"],
+    "Magallanes": ["Puerto San Julián"]
   },
   "Santa Fe": {
-    "Santa Fe": ["Santa Fe"],
+    "La Capital": ["Santa Fe"],
     "Rosario": ["Rosario"],
-    "Rafaela": ["Rafaela"]
+    "Castellanos": ["Rafaela"],
+    "General López": ["Venado Tuerto"],
+    "General Obligado": ["Reconquista"],
+    "San Justo": ["San Justo"],
+    "Caseros": ["Casilda"],
+    "San Lorenzo": ["San Lorenzo"],
+    "Constitución": ["Villa Constitución"],
+    "Iriondo": ["Cañada de Gómez"],
+    "Belgrano": ["Las Rosas"],
+    "San Martín": ["San Jorge", "El Trébol"],
+    "San Jerónimo": ["Coronda"],
+    "Las Colonias": ["Esperanza"]
   },
   "Santiago del Estero": {
-    "Santiago del Estero": ["Santiago del Estero"]
+    "Capital": ["Santiago del Estero"],
+    "Banda": ["La Banda"],
+    "Río Hondo": ["Termas de Río Hondo"],
+    "Robles": ["Fernández"],
+    "Avellaneda": ["Herrera"],
+    "General Taboada": ["Añatuya"],
+    "Jiménez": ["El Rincón"]
   },
   "Tierra del Fuego": {
     "Ushuaia": ["Ushuaia"],
-    "Río Grande": ["Río Grande"]
+    "Río Grande": ["Río Grande"],
+    "Tolhuin": ["Tolhuin"]
   },
   "Tucumán": {
-    "San Miguel de Tucumán": ["San Miguel de Tucumán"]
+    "Capital": ["San Miguel de Tucumán"],
+    "Yerba Buena": ["Yerba Buena"],
+    "Tafí Viejo": ["Tafí Viejo"],
+    "Cruz Alta": ["Banda del Río Salí"],
+    "Monteros": ["Monteros"],
+    "Chicligasta": ["Concepción"],
+    "Río Chico": ["Aguilares"],
+    "Famaillá": ["Famaillá"],
+    "Lules": ["Lules"],
+    "Burruyacú": ["Burruyacú"],
+    "La Cocha": ["La Cocha"],
+    "Leales": ["Bella Vista"]
   }
 };
 
@@ -127,7 +314,6 @@ export function areasOf(province: string, city: string): string[] {
   return province && city && DATA[province]?.[city] ? DATA[province][city] : [];
 }
 
-/** Serializar jurisdicción: provincia/ciudad/departamento (departamento opcional). */
 export function joinJurisdiction(province?: string, city?: string, area?: string): string {
   return [province, city, area].filter(Boolean).join("/");
 }
@@ -190,12 +376,6 @@ function arbitrationCityName(cityName: string): string {
   return cityName.replace(/(Ciudad|Autónoma|Federal|Capital|Provincia)$/, "").trim();
 }
 
-/**
- * Generar opciones de organismos según jurisdicción:
- * - Sin jurisdicción seleccionada: organismos nacionales
- * - Con departamento/partido seleccionado: Juzgado local + Tribunal departamental + Tribunal provincial
- * - Solo ciudad: Tribunal departamental + Juzgados locales + Tribunal provincial
- */
 export function agencyOptions(value?: string | null): string[] {
   const { province, city, area } = parseJurisdiction(value);
   if (!province) return [...NATIONAL_AGENCY_OPTIONS];

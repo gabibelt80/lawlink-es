@@ -27,12 +27,12 @@ type Props = {
 };
 
 /**
- * Causa级联选择器
- * - 一次性拉本 category Ver todosCausa
- * - 去掉一级，从二级起级联：二级 / 三级 / 四级，渐进展开（选了上一级才出现下一列）
- * - 单击即选：有子级 → 展开下一列；无子级（叶子）→ 直接选中。两次点击可选到常见三级Causa。
- * - 列宽收窄，弹层随列数增长，避免一打开就铺满整页
- * - Nombre过长截断，hover 显示全名
+ * Selector en cascada de causas
+ * - Carga todas las causas de la categoría de una vez
+ * - Elimina el primer nivel, la cascada comienza desde el segundo: nivel 2 / nivel 3 / nivel 4, expansión progresiva (la siguiente columna aparece al elegir la anterior)
+ * - Un clic selecciona: si tiene hijos → expande la siguiente columna; si no tiene hijos (hoja) → selecciona directamente. Dos clics alcanzan causas comunes de tercer nivel.
+ * - Anchos de columna reducidos, el panel crece según la cantidad de columnas, evita ocupar toda la página al abrir
+ * - Nombres largos truncados, hover muestra el nombre completo
  */
 export function CauseCombobox({
   value,
@@ -63,7 +63,7 @@ export function CauseCombobox({
   }, [category, procedureType]);
   const previousCauseScopeKey = useRef(causeScopeKey);
 
-  // 打开时拉全量
+  // Al abrir carga todo
   function handleOpen(o: boolean) {
     setOpen(o);
     if (o && allNodes.length === 0) {
@@ -77,15 +77,15 @@ export function CauseCombobox({
       });
     }
     if (o) {
-      // Restablecer picked Estado（避免上次残留）
+      // Restablecer estado seleccionado (evitar residuos de la vez anterior)
       setPickedL2(null);
       setPickedL3(null);
       setSearchInput("");
     }
   }
 
-  // 仅在Causa可选范围真正变化时Restablecer。
-  // 一审切二审etc.审级调整共用同一Causa范围，不应误清空用户已经选好的Causa。
+  // Solo restablecer cuando cambia realmente el rango de causas seleccionables.
+  // Cambios de instancia (primera a segunda instancia) comparten el mismo rango, no deben limpiar la causa ya elegida por el usuario.
   useEffect(() => {
     if (previousCauseScopeKey.current === causeScopeKey) return;
     previousCauseScopeKey.current = causeScopeKey;
@@ -97,7 +97,7 @@ export function CauseCombobox({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [causeScopeKey]);
 
-  // 同步显示已选名字 / l2 路径
+  // Sincronizar nombre seleccionado / ruta l2
   useEffect(() => {
     if (value && allNodes.length > 0) {
       const found = allNodes.find((o) => o.id === value);
@@ -107,7 +107,7 @@ export function CauseCombobox({
     }
   }, [value, allNodes]);
 
-  // 去掉一级：二级直接平铺为第一列
+  // Eliminar primer nivel: el segundo nivel se muestra plano como primera columna
   const l2Nodes = useMemo(
     () => allNodes.filter((n) => n.level === 2),
     [allNodes],
@@ -127,7 +127,7 @@ export function CauseCombobox({
     [allNodes, pickedL3],
   );
 
-  // Buscar过滤（跨级模糊）
+  // Filtro de búsqueda (difusa entre niveles)
   const searchMatched = useMemo(() => {
     const q = searchInput.trim();
     if (!q) return null;
@@ -141,8 +141,8 @@ export function CauseCombobox({
     return allNodes.some((x) => x.parentId === n.id);
   }
 
-  // 选用一个Causa：任意层级都可直接选中。
-  // 有子级 → 选中并展开下一列（可继续下钻，也可就此停下）；叶子 → 选中并Cerrar。
+  // Elegir una causa: cualquier nivel se puede seleccionar directamente.
+  // Si tiene hijos → selecciona y expande la siguiente columna (se puede seguir o detenerse); si es hoja → selecciona y cierra.
   function selectNode(node: Node, level: number) {
     onChange(node.id, node.name);
     setSelectedName(node.name);
@@ -158,7 +158,7 @@ export function CauseCombobox({
     }
   }
 
-  // Buscar结果直接选中并Cerrar
+  // Resultado de búsqueda: selecciona y cierra
   function pickNode(node: Node) {
     onChange(node.id, node.name);
     setSelectedName(node.name);
@@ -195,7 +195,7 @@ export function CauseCombobox({
         portalled={false}
         className="w-auto max-w-[92vw] p-0"
       >
-        {/* Buscar栏 */}
+        {/* Barra de búsqueda */}
         <div className="border-b border-border p-2">
           <div className="relative w-[240px]">
             <Input
@@ -222,7 +222,7 @@ export function CauseCombobox({
             <span className="ml-2">Cargando catálogo de causas...</span>
           </div>
         ) : searchMatched ? (
-          // Buscar模式：扁平结果带路径
+          // Modo búsqueda: resultados planos con ruta
           <div className="max-h-[360px] w-[320px] overflow-y-auto p-1">
             {searchMatched.length === 0 ? (
               <p className="py-6 text-center text-xs text-muted-foreground">
@@ -246,11 +246,11 @@ export function CauseCombobox({
             )}
           </div>
         ) : (
-          // 级联模式：渐进展开（选了上一级才出现下一列）
-          // 单击任意层级即选中；有子级则同时展开下一列，可继续下钻或就此停下
+          // Modo cascada: expansión progresiva (la siguiente columna aparece al elegir la anterior)
+          // Un clic en cualquier nivel selecciona; si tiene hijos expande la siguiente columna, se puede continuar o detenerse
           <div className="flex divide-x divide-border">
             <Column
-              title="二级"
+              title="Nivel 2"
               items={l2Nodes}
               activeId={pickedL2}
               hasChildren={hasChildren}
@@ -258,17 +258,17 @@ export function CauseCombobox({
             />
             {pickedL2 && (
               <Column
-                title="三级"
+                title="Nivel 3"
                 items={l3Nodes}
                 activeId={pickedL3}
-                empty="该二级下无三级"
+                empty="Sin nivel 3 bajo este nivel 2"
                 hasChildren={hasChildren}
                 onPick={(n) => selectNode(n, 3)}
               />
             )}
             {pickedL3 && l4Nodes.length > 0 && (
               <Column
-                title="四级"
+                title="Nivel 4"
                 items={l4Nodes}
                 activeId={null}
                 hasChildren={() => false}
