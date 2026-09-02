@@ -81,10 +81,10 @@ export const partyRoleSchema = z.enum([
   "OTHER"
 ]);
 
-// v0.27 / v0.30: 当事人主体类型（自然人填身份证号，其余主体填统一社会信用代码）
+// v0.27 / v0.30: Tipo de sujeto de la parte (persona física completa DNI, los demás completan código de crédito social unificado)
 export const partyTypeSchema = z.enum([
   "NATURAL_PERSON",
-  "ORGANIZATION", // 旧数据兼容
+  "ORGANIZATION", // Compatibilidad con datos antiguos
   "COMPANY",
   "PARTNERSHIP",
   "INDIVIDUAL_BUSINESS",
@@ -97,13 +97,13 @@ export const partyTypeSchema = z.enum([
 export const partyInputSchema = z
   .object({
     role: partyRoleSchema,
-    // v0.5: 具体诉讼地位（按首程序联动）
+    // v0.5: Posición procesal específica (según el procedimiento)
     standing: litigationStandingSchema.optional(),
     ordinal: z.number().int().min(1).default(1),
-    // v0.27: 主体类型决定必填字段
+    // v0.27: El tipo de sujeto determina los campos obligatorios
     partyType: partyTypeSchema.default("NATURAL_PERSON"),
-    name: z.string().min(1, "当事人Nombre y apellido/Nombre必填").max(120),
-    // 自然人路径必填：身份证号；公司路径必填：enterpriseSocialCode（superRefine 校验）
+    name: z.string().min(1, "El nombre y apellido / razón social es obligatorio").max(120),
+    // Persona física obligatorio: DNI; Empresa obligatorio: enterpriseSocialCode (validado en superRefine)
     idNumber: z.string().max(50).optional().or(z.literal("")),
     enterpriseSocialCode: z.string().max(50).optional().or(z.literal("")),
     enterpriseName: z.string().max(120).optional().or(z.literal("")),
@@ -119,7 +119,7 @@ export const partyInputSchema = z
         ctx.addIssue({
           path: ["idNumber"],
           code: z.ZodIssueCode.custom,
-          message: "自然人需填写身份证号码（用于利益冲突检索）"
+          message: "La persona física debe completar el DNI (para búsqueda de conflictos)"
         });
       }
     } else {
@@ -127,17 +127,17 @@ export const partyInputSchema = z
         ctx.addIssue({
           path: ["enterpriseSocialCode"],
           code: z.ZodIssueCode.custom,
-          message: "公司/组织需填写统一社会信用代码"
+          message: "La empresa/organización debe completar el código de crédito social unificado"
         });
       }
     }
   });
 
 export const matterCreateSchema = z.object({
-  // v0.27: CasoNombre去除所有空白字符（产品要求，避免列表/详情显示空格）
+  // v0.27: El nombre del caso elimina todos los espacios en blanco (requisito del producto, para evitar espacios en listas/detalles)
   title: z.preprocess(
     (v) => (typeof v === "string" ? v.replace(/\s+/g, "") : v),
-    z.string().min(1, "CasoNombre必填").max(200)
+    z.string().min(1, "El nombre del caso es obligatorio").max(200)
   ),
   category: matterCategorySchema,
 
@@ -153,13 +153,13 @@ export const matterCreateSchema = z.object({
 
   intakeDate: z.coerce.date().optional(),
 
-  // Cliente：至少一个，第一个默认 primary
-  clientIds: z.array(z.string().cuid()).min(1, "至少选择一个委托方"),
+  // Cliente: al menos uno, el primero es primary por defecto
+  clientIds: z.array(z.string().cuid()).min(1, "Seleccioná al menos un cliente"),
 
-  // 当事人列表（委托方、对方、第三人）
+  // Lista de partes (cliente, contraparte, tercero)
   parties: z.array(partyInputSchema).default([]),
 
-  // 首程序
+  // Primer procedimiento
   firstProcedure: z.object({
     type: procedureTypeSchema,
     customLabel: z.string().max(40).optional().or(z.literal("")),
@@ -172,12 +172,12 @@ export const matterCreateSchema = z.object({
 export type MatterCreateInput = z.infer<typeof matterCreateSchema>;
 export type PartyInput = z.infer<typeof partyInputSchema>;
 
-// v0.27: Caso基本信息Editar（Sistema编号 / 收案Fecha readonly，不在此处）
+// v0.27: Edición de información básica del caso (N° de sistema / fecha de admisión son solo lectura, no están aquí)
 export const matterUpdateBasicSchema = z.object({
   id: z.string().cuid(),
   title: z.preprocess(
     (v) => (typeof v === "string" ? v.replace(/\s+/g, "") : v),
-    z.string().min(1, "CasoNombre必填").max(200)
+    z.string().min(1, "El nombre del caso es obligatorio").max(200)
   ),
   causeId: z.string().cuid().optional().or(z.literal("")),
   causeFreeText: z.string().max(200).optional().or(z.literal("")),

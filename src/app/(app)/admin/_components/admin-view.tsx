@@ -12,9 +12,17 @@ import {
   XCircle,
   ExternalLink,
   Users,
+  Calendar,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import {
   Dialog,
   DialogContent,
@@ -25,10 +33,12 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { PLANS, getPlan } from "@/lib/plans";
 import {
   createFirmAction,
   deleteFirmAction,
   toggleFirmActiveAction,
+  updateFirmPlanAction,
 } from "@/server/tenant/admin-actions";
 
 type FirmRow = {
@@ -38,6 +48,9 @@ type FirmRow = {
   email: string;
   active: boolean;
   plan: string;
+  planExpiresAt: Date | null;
+  maxUsers: number;
+  maxBranch: number;
   createdAt: Date;
   _count: { users: number };
 };
@@ -99,6 +112,20 @@ export function AdminView({ firms }: { firms: FirmRow[] }) {
     });
   }
 
+  function handlePlanChange(firmId: string, plan: string) {
+    startTransition(async () => {
+      try {
+        await updateFirmPlanAction({ firmId, plan });
+        toast.success("Plan actualizado");
+        router.refresh();
+      } catch (err) {
+        toast.error("Error al actualizar plan", {
+          description: err instanceof Error ? err.message : "",
+        });
+      }
+    });
+  }
+
   return (
     <div className="space-y-5">
       <header className="flex flex-wrap items-end justify-between gap-3">
@@ -124,7 +151,10 @@ export function AdminView({ firms }: { firms: FirmRow[] }) {
           label="Usuarios totales"
           value={firms.reduce((acc, f) => acc + f._count.users, 0)}
         />
-        <StatCard label="Plan trial" value={firms.filter((f) => f.plan === "trial").length} />
+        <StatCard
+          label="Plan trial"
+          value={firms.filter((f) => f.plan === "trial").length}
+        />
       </div>
 
       <div className="rounded-xl border border-border bg-card overflow-hidden">
@@ -132,71 +162,105 @@ export function AdminView({ firms }: { firms: FirmRow[] }) {
           <thead className="bg-muted/30 text-xs text-muted-foreground">
             <tr>
               <th className="px-4 py-2 text-left font-normal">Estudio</th>
-              <th className="px-4 py-2 text-left font-normal">Slug</th>
-              <th className="px-4 py-2 text-left font-normal">Email</th>
               <th className="px-4 py-2 text-left font-normal">Plan</th>
               <th className="px-4 py-2 text-left font-normal">Usuarios</th>
+              <th className="px-4 py-2 text-left font-normal">Límite</th>
+              <th className="px-4 py-2 text-left font-normal">Vence</th>
               <th className="px-4 py-2 text-left font-normal">Estado</th>
               <th className="px-4 py-2 text-right font-normal">Acciones</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-border">
-            {firms.map((f) => (
-              <tr key={f.id} className="hover:bg-muted/20 transition-colors">
-                <td className="px-4 py-2.5 font-medium">{f.name}</td>
-                <td className="px-4 py-2.5 font-mono text-xs">{f.slug}</td>
-                <td className="px-4 py-2.5 text-xs">{f.email}</td>
-                <td className="px-4 py-2.5">
-                  <Badge variant="outline" className="text-[10px]">
-                    {f.plan}
-                  </Badge>
-                </td>
-                <td className="px-4 py-2.5">
-                  <span className="inline-flex items-center gap-1 text-xs">
-                    <Users className="h-3 w-3" />
-                    {f._count.users}
-                  </span>
-                </td>
-                <td className="px-4 py-2.5">
-                  <button
-                    onClick={() => handleToggle(f.id)}
-                    className="inline-flex items-center gap-1"
-                  >
-                    {f.active ? (
-                      <Badge variant="success" className="text-[10px] gap-1">
-                        <CheckCircle2 className="h-3 w-3" />
-                        Activo
-                      </Badge>
+            {firms.map((f) => {
+              const plan = getPlan(f.plan);
+              return (
+                <tr key={f.id} className="hover:bg-muted/20 transition-colors">
+                  <td className="px-4 py-2.5">
+                    <div className="font-medium">{f.name}</div>
+                    <div className="font-mono text-[10px] text-muted-foreground">
+                      {f.slug}
+                    </div>
+                    <div className="text-[10px] text-muted-foreground">{f.email}</div>
+                  </td>
+                  <td className="px-4 py-2.5">
+                    <Select
+                      value={f.plan}
+                      onValueChange={(v) => handlePlanChange(f.id, v)}
+                    >
+                      <SelectTrigger className="h-8 w-36 bg-background text-xs">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {(Object.keys(PLANS) as Array<keyof typeof PLANS>).map((key) => (
+                          <SelectItem key={key} value={key}>
+                            {PLANS[key].label} {PLANS[key].price > 0 ? `- $${(PLANS[key].price / 1000).toFixed(1)}k` : "Gratis"}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </td>
+                  <td className="px-4 py-2.5">
+                    <span className="inline-flex items-center gap-1 text-xs">
+                      <Users className="h-3 w-3" />
+                      {f._count.users}
+                    </span>
+                  </td>
+                  <td className="px-4 py-2.5 text-xs">
+                    <span className="font-mono">{f.maxUsers} usuarios</span>
+                    <br />
+                    <span className="text-muted-foreground">{f.maxBranch} sucursales</span>
+                  </td>
+                  <td className="px-4 py-2.5 text-xs">
+                    {f.plan === "trial" && f.planExpiresAt ? (
+                      <span className="inline-flex items-center gap-1 text-amber-600">
+                        <Calendar className="h-3 w-3" />
+                        {new Date(f.planExpiresAt).toLocaleDateString("es-AR")}
+                      </span>
                     ) : (
-                      <Badge variant="destructive" className="text-[10px] gap-1">
-                        <XCircle className="h-3 w-3" />
-                        Inactivo
-                      </Badge>
+                      <span className="text-muted-foreground">—</span>
                     )}
-                  </button>
-                </td>
-                <td className="px-4 py-2.5">
-                  <div className="flex justify-end gap-1">
-                    <a
-                      href={`http://juridictas.ar/${f.slug}`}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="rounded-md p-1.5 text-muted-foreground hover:bg-popover hover:text-primary"
-                      title="Abrir estudio"
-                    >
-                      <ExternalLink className="h-3.5 w-3.5" />
-                    </a>
+                  </td>
+                  <td className="px-4 py-2.5">
                     <button
-                      onClick={() => handleDelete(f.id, f.name)}
-                      className="rounded-md p-1.5 text-muted-foreground hover:bg-popover hover:text-destructive"
-                      title="Eliminar estudio"
+                      onClick={() => handleToggle(f.id)}
+                      className="inline-flex items-center gap-1"
                     >
-                      <Trash2 className="h-3.5 w-3.5" />
+                      {f.active ? (
+                        <Badge variant="success" className="text-[10px] gap-1">
+                          <CheckCircle2 className="h-3 w-3" />
+                          Activo
+                        </Badge>
+                      ) : (
+                        <Badge variant="destructive" className="text-[10px] gap-1">
+                          <XCircle className="h-3 w-3" />
+                          Inactivo
+                        </Badge>
+                      )}
                     </button>
-                  </div>
-                </td>
-              </tr>
-            ))}
+                  </td>
+                  <td className="px-4 py-2.5">
+                    <div className="flex justify-end gap-1">
+                      <a
+                        href={`http://juridictas.ar/${f.slug}`}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="rounded-md p-1.5 text-muted-foreground hover:bg-popover hover:text-primary"
+                        title="Abrir estudio"
+                      >
+                        <ExternalLink className="h-3.5 w-3.5" />
+                      </a>
+                      <button
+                        onClick={() => handleDelete(f.id, f.name)}
+                        className="rounded-md p-1.5 text-muted-foreground hover:bg-popover hover:text-destructive"
+                        title="Eliminar estudio"
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              );
+            })}
           </tbody>
         </table>
       </div>

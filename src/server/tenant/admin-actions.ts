@@ -77,3 +77,8 @@ export async function deleteFirmAction({ firmId }: { firmId: string }) {
 
   return { ok: true };
 }
+export async function updateFirmPlanAction({ firmId, plan }: { firmId: string; plan: string }) {
+  const { activatePlan } = await import("@/lib/plan-limits");
+  await activatePlan(firmId, plan);
+  return { ok: true };
+}

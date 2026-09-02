@@ -1826,6 +1826,9 @@ model Firm {
   logoDataUrl String?
   active      Boolean  @default(true)
   plan        String   @default("trial")
+  planExpiresAt DateTime? // Fecha de vencimiento del trial
+  maxUsers    Int      @default(1)
+  maxBranch   Int      @default(1)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 

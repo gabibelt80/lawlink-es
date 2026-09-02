@@ -2,7 +2,8 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Scale } from "lucide-react";
+import { useSession } from "next-auth/react";
+import { Scale, LayoutDashboard } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { primaryNav, secondaryNav, type NavItem } from "./nav-config";
 
@@ -25,6 +26,12 @@ export function Sidebar({ firm }: { firm: FirmBrand }) {
 /** 导航内容 — 桌面侧边栏和移动 Sheet 共用 */
 export function NavContent({ firm }: { firm: FirmBrand }) {
   const pathname = usePathname();
+  const { data: session } = useSession();
+  const isSystemAdmin = session?.user?.firmId === null;
+
+  const navItems = isSystemAdmin
+    ? [...primaryNav, { label: "Administración", href: "/admin", icon: LayoutDashboard }]
+    : primaryNav;
 
   return (
     <>
@@ -59,10 +66,10 @@ export function NavContent({ firm }: { firm: FirmBrand }) {
 
       <nav className="flex-1 overflow-y-auto px-2 py-1">
         <div className="px-2 pb-1 pt-2 text-[10px] font-semibold uppercase text-muted-foreground/70">
-          Área de trabajo
+          {isSystemAdmin ? "Sistema" : "Área de trabajo"}
         </div>
         <div className="space-y-0.5">
-          {primaryNav.map((item) => (
+          {navItems.map((item) => (
             <NavLink
               key={item.href}
               item={item}
@@ -72,17 +79,19 @@ export function NavContent({ firm }: { firm: FirmBrand }) {
         </div>
       </nav>
 
-      <div className="border-t border-border px-2 py-2">
-        <div className="space-y-0.5">
-          {secondaryNav.map((item) => (
-            <NavLink
-              key={item.href}
-              item={item}
-              active={isActive(pathname, item.href)}
-            />
-          ))}
+      {!isSystemAdmin && (
+        <div className="border-t border-border px-2 py-2">
+          <div className="space-y-0.5">
+            {secondaryNav.map((item) => (
+              <NavLink
+                key={item.href}
+                item={item}
+                active={isActive(pathname, item.href)}
+              />
+            ))}
+          </div>
         </div>
-      </div>
+      )}
     </>
   );
 }
