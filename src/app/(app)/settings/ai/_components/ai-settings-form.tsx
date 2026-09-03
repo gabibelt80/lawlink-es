@@ -29,44 +29,36 @@ type Initial = {
 
 const PROVIDER_PRESETS = [
   {
-    name: "Tongyi Qianwen (recomendado)",
-    baseUrl: "https://dashscope.aliyuncs.com/compatible-mode/v1",
-    text: "qwen-turbo",
-    vision: "qwen-vl-max",
-    apply: "Obtené la clave desde la consola de Alibaba Bailian",
-    link: "https://bailian.console.aliyun.com/",
-  },
-  {
     name: "DeepSeek",
     baseUrl: "https://api.deepseek.com/v1",
-    text: "deepseek-v4-flash",
-    vision: "deepseek-v4-flash",
-    apply: "Obtené la clave en la plataforma de DeepSeek",
+    text: "deepseek-chat",
+    vision: "deepseek-chat",
+    apply: "Obtene la clave en la plataforma de DeepSeek",
     link: "https://platform.deepseek.com/api_keys",
-  },
-  {
-    name: "Moonshot Kimi",
-    baseUrl: "https://api.moonshot.cn/v1",
-    text: "moonshot-v1-8k",
-    vision: "moonshot-v1-8k-vision-preview",
-    apply: "Obtené la clave en la plataforma de Moonshot",
-    link: "https://platform.moonshot.cn/",
-  },
-  {
-    name: "Zhipu GLM",
-    baseUrl: "https://open.bigmodel.cn/api/paas/v4",
-    text: "glm-4-flash",
-    vision: "glm-4v",
-    apply: "Obtené la clave en la plataforma abierta de Zhipu",
-    link: "https://open.bigmodel.cn/",
   },
   {
     name: "Ollama local",
     baseUrl: "http://localhost:11434/v1",
-    text: "qwen2.5:7b",
-    vision: "llava:7b",
-    apply: "Iniciá Ollama en tu máquina y usalo directamente, sin clave",
+    text: "llama3.2",
+    vision: "llava",
+    apply: "Inicia Ollama en tu maquina y usalo directamente, sin clave",
     link: "https://ollama.com/",
+  },
+  {
+    name: "Claude (Anthropic)",
+    baseUrl: "https://api.anthropic.com/v1",
+    text: "claude-3-5-sonnet-20241022",
+    vision: "claude-3-5-sonnet-20241022",
+    apply: "Obtene la clave en la consola de Anthropic",
+    link: "https://console.anthropic.com/",
+  },
+  {
+    name: "ChatGPT (OpenAI)",
+    baseUrl: "https://api.openai.com/v1",
+    text: "gpt-4o-mini",
+    vision: "gpt-4o",
+    apply: "Obtene la clave en la plataforma de OpenAI",
+    link: "https://platform.openai.com/api-keys",
   },
 ] as const;
 
@@ -96,7 +88,7 @@ export function AiSettingsForm({
     setBaseUrl(p.baseUrl);
     setTextModel(p.text);
     setVisionModel(p.vision);
-    toast.info(`Se aplicó la configuración predeterminada de ${p.name}, completá la API key correspondiente`);
+    toast.info(`Se aplico la configuracion predeterminada de ${p.name}, completa la API key correspondiente`);
   };
 
   const save = () => {
@@ -108,8 +100,8 @@ export function AiSettingsForm({
           textModel,
           visionModel,
         });
-        toast.success("Configuración guardada");
-        setApiKey(""); // No persistir la key en el frontend
+        toast.success("Configuracion guardada");
+        setApiKey("");
       } catch (e) {
         toast.error(e instanceof Error ? e.message : "Error al guardar");
       }
@@ -117,7 +109,7 @@ export function AiSettingsForm({
   };
 
   const clearKey = () => {
-    if (!confirm("¿Confirmás que querés borrar la API key guardada? Todas las funciones que dependen de IA dejarán de funcionar."))
+    if (!confirm("Confirma que queres borrar la API key guardada? Todas las funciones que dependen de IA dejaran de funcionar."))
       return;
     startTransition(async () => {
       try {
@@ -135,7 +127,7 @@ export function AiSettingsForm({
     try {
       const res = await testAiConnection();
       if (res.ok) {
-        setTestResult({ ok: true, msg: `Conexión exitosa, el modelo respondió: "${res.reply}"` });
+        setTestResult({ ok: true, msg: `Conexion exitosa, el modelo respondio: "${res.reply}"` });
       } else {
         setTestResult({ ok: false, msg: res.message ?? "Error desconocido" });
       }
@@ -154,7 +146,7 @@ export function AiSettingsForm({
       <section className="ll-surface rounded-lg border border-border p-5">
         <header className="mb-3 flex items-center gap-2">
           <Sparkles className="h-4 w-4 text-primary" strokeWidth={1.8} />
-          <h2 className="text-lg">Integración de IA</h2>
+          <h2 className="text-lg">Integracion de IA</h2>
           {initial.configured && (
             <span className="ml-2 inline-flex items-center gap-1 rounded-full bg-emerald-500/15 px-2 py-0.5 text-[10px] text-emerald-700">
               <CheckCircle2 className="h-3 w-3" /> Configurada
@@ -163,17 +155,17 @@ export function AiSettingsForm({
         </header>
 
         <p className="mb-4 text-[12px] text-muted-foreground">
-          Usa protocolo compatible con OpenAI y admite cualquier endpoint compatible. Una vez configurada, podés habilitar:
+          Usa protocolo compatible con OpenAI y admite cualquier endpoint compatible. Una vez configurada, podes habilitar:
           <span className="text-foreground/85">
             {" "}
-            OCR de facturas · Análisis mejorado de SMS judiciales con IA
+            OCR de facturas · Analisis mejorado de SMS judiciales con IA
           </span>
-          (los módulos posteriores también reutilizarán la misma configuración)
+          (los modulos posteriores tambien reutilizaran la misma configuracion)
         </p>
 
         {/* Presets de proveedores */}
         <div className="mb-4">
-          <Label className="text-[11px]">Presets rápidos</Label>
+          <Label className="text-[11px]">Presets rapidos</Label>
           <div className="mt-2 flex flex-wrap gap-1.5">
             {PROVIDER_PRESETS.map((p) => (
               <button
@@ -194,7 +186,7 @@ export function AiSettingsForm({
               API Key
               {initial.configured && (
                 <span className="ml-2 font-mono text-[10px] text-muted-foreground">
-                  Actual: {initial.apiKeyMasked} (dejar vacío para conservar el valor actual)
+                  Actual: {initial.apiKeyMasked} (dejar vacio para conservar el valor actual)
                 </span>
               )}
             </Label>
@@ -203,7 +195,7 @@ export function AiSettingsForm({
               value={apiKey}
               onChange={(e) => setApiKey(e.target.value)}
               placeholder={
-                initial.configured ? "Pegá una nueva key si querés cambiarla" : "Pegá la API key"
+                initial.configured ? "Pega una nueva key si queres cambiarla" : "Pega la API key"
               }
               className="mt-1 font-mono"
               autoComplete="off"
@@ -230,7 +222,7 @@ export function AiSettingsForm({
                 className="mt-1 font-mono text-[12px]"
               />
               <p className="mt-1 text-[10px] text-muted-foreground">
-                Se usa para análisis de SMS judiciales con IA, etc.
+                Se usa para analisis de SMS judiciales con IA, etc.
               </p>
             </div>
             <div>
@@ -251,7 +243,7 @@ export function AiSettingsForm({
         <div className="mt-4 flex items-center gap-2">
           <Button onClick={save} disabled={pending} className="gap-1.5">
             {pending && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
-            Guardar configuración
+            Guardar configuracion
           </Button>
           <Button
             variant="outline"
@@ -260,7 +252,7 @@ export function AiSettingsForm({
             className="gap-1.5"
           >
             {testing && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
-            Probar conexión
+            Probar conexion
           </Button>
           {initial.configured && (
             <Button
