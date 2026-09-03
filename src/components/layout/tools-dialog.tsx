@@ -36,7 +36,7 @@ export function ToolsDialog({
         <DialogHeader className="border-b border-border px-5 py-3">
           <DialogTitle className="flex items-center gap-2">
             <Calculator className="h-4 w-4 text-primary" />
-            实务工具
+            Herramientas practicas
           </DialogTitle>
         </DialogHeader>
 

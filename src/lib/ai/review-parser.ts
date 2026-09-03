@@ -1,6 +1,6 @@
-/**
- * AI 文书审查Volver内容的解析逻辑（纯函数，便于单测）
- * 实际调用走 src/server/ai/review-document.ts
+﻿/**
+ * AI æ–‡ä¹¦å®¡æŸ¥Volverå†…å®¹çš„è§£æžé€»è¾‘ï¼ˆçº¯å‡½æ•°ï¼Œä¾¿äºŽå•æµ‹ï¼‰
+ * å®žé™…è°ƒç”¨èµ° src/server/ai/review-document.ts
  */
 import { extractJson } from "./client";
 
@@ -32,17 +32,17 @@ const SEV_ORDER: Record<ReviewSeverity, number> = {
 };
 
 /**
- * 把 AI Volver文本解析为规范化 ReviewItem 数组。
- * - JSON 解析Error抛错（调用方决定怎么处理）
- * - 非法 type/severity 回退为 ISSUE/MEDIUM
- * - title/detail 任一为空的条目丢弃
- * - 按 severity HIGH→LOW 排序
+ * æŠŠ AI Volveræ–‡æœ¬è§£æžä¸ºè§„èŒƒåŒ– ReviewItem æ•°ç»„ã€‚
+ * - JSON è§£æžErroræŠ›é”™ï¼ˆè°ƒç”¨æ–¹å†³å®šæ€Žä¹ˆå¤„ç†ï¼‰
+ * - éžæ³• type/severity å›žé€€ä¸º ISSUE/MEDIUM
+ * - title/detail ä»»ä¸€ä¸ºç©ºçš„æ¡ç›®ä¸¢å¼ƒ
+ * - æŒ‰ severity HIGHâ†’LOW æŽ’åº
  */
 export function parseReviewItems(content: string): ReviewItem[] {
   const parsed = extractJson<unknown>(content);
   if (!Array.isArray(parsed)) {
     throw new Error(
-      "No se pudo analizar el contenido de AI Volver como una lista de revisión",
+      "No se pudo analizar el contenido de AI Volver como una lista de revisiÃ³n",
     );
   }
   const items: ReviewItem[] = [];
@@ -68,3 +68,4 @@ export function parseReviewItems(content: string): ReviewItem[] {
   items.sort((a, b) => SEV_ORDER[a.severity] - SEV_ORDER[b.severity]);
   return items;
 }
+

@@ -1,39 +1,39 @@
-/**
- * v0.9.2 Abogado常用速算
+﻿/**
+ * v0.9.2 Abogadoå¸¸ç”¨é€Ÿç®—
  *
- * 三大场景：
- *  - 诉讼费：依据《诉讼Gastos交纳办法》全国统一分段累进 + 简易程序减半
- *  - 迟延履行金：判决Monto × (LPR + 5%) × 实际履行 - 应履行 días数 / 365
- *  - días数：两Fecha间 / 加减 N 日
+ * ä¸‰å¤§åœºæ™¯ï¼š
+ *  - è¯‰è®¼è´¹ï¼šä¾æ®ã€Šè¯‰è®¼Gastosäº¤çº³åŠžæ³•ã€‹å…¨å›½ç»Ÿä¸€åˆ†æ®µç´¯è¿› + ç®€æ˜“ç¨‹åºå‡åŠ
+ *  - è¿Ÿå»¶å±¥è¡Œé‡‘ï¼šåˆ¤å†³Monto Ã— (LPR + 5%) Ã— å®žé™…å±¥è¡Œ - åº”å±¥è¡Œ dÃ­asæ•° / 365
+ *  - dÃ­asæ•°ï¼šä¸¤Fechaé—´ / åŠ å‡ N æ—¥
  *
- * 大写Monto：numberToChinese（万 / 亿 / 万亿 完整支持）
+ * å¤§å†™Montoï¼šnumberToChineseï¼ˆä¸‡ / äº¿ / ä¸‡äº¿ å®Œæ•´æ”¯æŒï¼‰
  *
- * 不依赖网络、不依赖 server。
+ * ä¸ä¾èµ–ç½‘ç»œã€ä¸ä¾èµ– serverã€‚
  */
 
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-// 1. 诉讼费
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”
+// 1. è¯‰è®¼è´¹
+// â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”
 
 export type CourtFeeCaseType =
-  | "PROPERTY"       // 财产Caso
-  | "DIVORCE"        // 离婚Caso
-  | "LABOR"          // 劳动争议
-  | "IP"             // 知识产权（无争议Monto）
-  | "OTHER";         // 其他非财产Caso
+  | "PROPERTY"       // è´¢äº§Caso
+  | "DIVORCE"        // ç¦»å©šCaso
+  | "LABOR"          // åŠ³åŠ¨äº‰è®®
+  | "IP"             // çŸ¥è¯†äº§æƒï¼ˆæ— äº‰è®®Montoï¼‰
+  | "OTHER";         // å…¶ä»–éžè´¢äº§Caso
 
 /**
- * 财产Caso分段累进（《诉讼Gastos交纳办法》第十三条）：
- *   ≤ 1 万                              50 pesos
- *   1 万 – 10 万         × 2.5%  - 200
- *   10 万 – 20 万        × 2%    + 300
- *   20 万 – 50 万        × 1.5%  + 1300
- *   50 万 – 100 万       × 1%    + 3800
- *   100 万 – 200 万      × 0.9%  + 4800
- *   200 万 – 500 万      × 0.8%  + 6800
- *   500 万 – 1000 万     × 0.7%  + 11800
- *   1000 万 – 2000 万    × 0.6%  + 21800
- *   > 2000 万            × 0.5%  + 41800
+ * è´¢äº§Casoåˆ†æ®µç´¯è¿›ï¼ˆã€Šè¯‰è®¼Gastosäº¤çº³åŠžæ³•ã€‹ç¬¬åä¸‰æ¡ï¼‰ï¼š
+ *   â‰¤ 1 ä¸‡                              50 pesos
+ *   1 ä¸‡ â€“ 10 ä¸‡         Ã— 2.5%  - 200
+ *   10 ä¸‡ â€“ 20 ä¸‡        Ã— 2%    + 300
+ *   20 ä¸‡ â€“ 50 ä¸‡        Ã— 1.5%  + 1300
+ *   50 ä¸‡ â€“ 100 ä¸‡       Ã— 1%    + 3800
+ *   100 ä¸‡ â€“ 200 ä¸‡      Ã— 0.9%  + 4800
+ *   200 ä¸‡ â€“ 500 ä¸‡      Ã— 0.8%  + 6800
+ *   500 ä¸‡ â€“ 1000 ä¸‡     Ã— 0.7%  + 11800
+ *   1000 ä¸‡ â€“ 2000 ä¸‡    Ã— 0.6%  + 21800
+ *   > 2000 ä¸‡            Ã— 0.5%  + 41800
  */
 function feePropertyTiers(amount: number): number {
   if (amount <= 10_000) return 50;
@@ -50,9 +50,9 @@ function feePropertyTiers(amount: number): number {
 
 export interface CourtFeeResult {
   caseType: CourtFeeCaseType;
-  amount: number; // 输入标的额
-  fee: number; // 普通程序
-  feeSimplified: number; // 简易程序（减半）
+  amount: number; // è¾“å…¥æ ‡çš„é¢
+  fee: number; // æ™®é€šç¨‹åº
+  feeSimplified: number; // ç®€æ˜“ç¨‹åºï¼ˆå‡åŠï¼‰
   note: string;
 }
 
@@ -67,11 +67,11 @@ export function calcCourtFee(input: { caseType: CourtFeeCaseType; amount?: numbe
         amount,
         fee,
         feeSimplified: Math.round(fee / 2),
-        note: "财产Caso按分段累进，简易程序减半收取"
+        note: "è´¢äº§CasoæŒ‰åˆ†æ®µç´¯è¿›ï¼Œç®€æ˜“ç¨‹åºå‡åŠæ”¶å–"
       };
     }
     case "DIVORCE": {
-      // 离婚：每件 50-300 pesos；涉y财产分割 > 20 万 部分 × 0.5%
+      // ç¦»å©šï¼šæ¯ä»¶ 50-300 pesosï¼›æ¶‰yè´¢äº§åˆ†å‰² > 20 ä¸‡ éƒ¨åˆ† Ã— 0.5%
       const base = 300;
       const extra = amount > 200_000 ? (amount - 200_000) * 0.005 : 0;
       const fee = Math.round(base + extra);
@@ -82,8 +82,8 @@ export function calcCourtFee(input: { caseType: CourtFeeCaseType; amount?: numbe
         feeSimplified: Math.round(fee / 2),
         note:
           amount > 200_000
-            ? "离婚 300 pesos + 财产分割超 20 万部分 × 0.5%（简易程序减半）"
-            : "离婚每件 300 pesos（简易程序减半）"
+            ? "ç¦»å©š 300 pesos + è´¢äº§åˆ†å‰²è¶… 20 ä¸‡éƒ¨åˆ† Ã— 0.5%ï¼ˆç®€æ˜“ç¨‹åºå‡åŠï¼‰"
+            : "ç¦»å©šæ¯ä»¶ 300 pesosï¼ˆç®€æ˜“ç¨‹åºå‡åŠï¼‰"
       };
     }
     case "LABOR":
@@ -92,16 +92,16 @@ export function calcCourtFee(input: { caseType: CourtFeeCaseType; amount?: numbe
         amount,
         fee: 10,
         feeSimplified: 5,
-        note: "劳动争议Caso每件 10 pesos（简易程序 5 pesos）"
+        note: "åŠ³åŠ¨äº‰è®®Casoæ¯ä»¶ 10 pesosï¼ˆç®€æ˜“ç¨‹åº 5 pesosï¼‰"
       };
     case "IP":
-      // 50 pesos ≤ X ≤ 100 pesos；Caso复杂 100-500 pesos；区间给中位
+      // 50 pesos â‰¤ X â‰¤ 100 pesosï¼›Casoå¤æ‚ 100-500 pesosï¼›åŒºé—´ç»™ä¸­ä½
       return {
         caseType: "IP",
         amount: 0,
         fee: 1000,
         feeSimplified: 500,
-        note: "知识产权（无争议Monto）500–1000 pesos，本结果取上限"
+        note: "çŸ¥è¯†äº§æƒï¼ˆæ— äº‰è®®Montoï¼‰500â€“1000 pesosï¼Œæœ¬ç»“æžœå–ä¸Šé™"
       };
     case "OTHER":
       return {
@@ -109,38 +109,38 @@ export function calcCourtFee(input: { caseType: CourtFeeCaseType; amount?: numbe
         amount: 0,
         fee: 100,
         feeSimplified: 50,
-        note: "其他非财产Caso每件 50–100 pesos，本结果取上限"
+        note: "å…¶ä»–éžè´¢äº§Casoæ¯ä»¶ 50â€“100 pesosï¼Œæœ¬ç»“æžœå–ä¸Šé™"
       };
   }
 }
 
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-// 2. 迟延履行金
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”
+// 2. è¿Ÿå»¶å±¥è¡Œé‡‘
+// â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”
 
 /**
- * 民诉法解释第 463 条 + 民诉法第 260 条：
- *   迟延履行期间债务利息 = 判决Monto × (LPR 1Y + 5%) × 迟延días数 / 365
+ * æ°‘è¯‰æ³•è§£é‡Šç¬¬ 463 æ¡ + æ°‘è¯‰æ³•ç¬¬ 260 æ¡ï¼š
+ *   è¿Ÿå»¶å±¥è¡ŒæœŸé—´å€ºåŠ¡åˆ©æ¯ = åˆ¤å†³Monto Ã— (LPR 1Y + 5%) Ã— è¿Ÿå»¶dÃ­asæ•° / 365
  *
- * 法律依据：被执行人未按判决履行金钱给付义务，应当加倍支付迟延履行期间债务利息。
- * 此为"加倍部分"。
+ * æ³•å¾‹ä¾æ®ï¼šè¢«æ‰§è¡ŒäººæœªæŒ‰åˆ¤å†³å±¥è¡Œé‡‘é’±ç»™ä»˜ä¹‰åŠ¡ï¼Œåº”å½“åŠ å€æ”¯ä»˜è¿Ÿå»¶å±¥è¡ŒæœŸé—´å€ºåŠ¡åˆ©æ¯ã€‚
+ * æ­¤ä¸º"åŠ å€éƒ¨åˆ†"ã€‚
  *
- * LPR 当前默认 3.45%（2024-2025 区间），用户可手动覆盖。
+ * LPR å½“å‰é»˜è®¤ 3.45%ï¼ˆ2024-2025 åŒºé—´ï¼‰ï¼Œç”¨æˆ·å¯æ‰‹åŠ¨è¦†ç›–ã€‚
  */
 export interface LateInterestResult {
   principal: number;
   daysLate: number;
   yearlyRate: number;       // LPR + 5%
-  interest: number;         // 加倍部分（推荐采用值）
-  totalToPay: number;       // 本金 + 加倍利息
+  interest: number;         // åŠ å€éƒ¨åˆ†ï¼ˆæŽ¨èé‡‡ç”¨å€¼ï¼‰
+  totalToPay: number;       // æœ¬é‡‘ + åŠ å€åˆ©æ¯
 }
 
 export function calcLateInterest(input: {
   principal: number;
   dueDate: Date;
   paidDate: Date;
-  lprPercent?: number; // LPR 1 年期，默认 3.45
-  extraPercent?: number; // 加成，默认 5
+  lprPercent?: number; // LPR 1 å¹´æœŸï¼Œé»˜è®¤ 3.45
+  extraPercent?: number; // åŠ æˆï¼Œé»˜è®¤ 5
 }): LateInterestResult {
   const lpr = input.lprPercent ?? 3.45;
   const extra = input.extraPercent ?? 5;
@@ -159,9 +159,9 @@ export function calcLateInterest(input: {
   };
 }
 
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-// 3. días数计算
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”
+// 3. dÃ­asæ•°è®¡ç®—
+// â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”
 
 export function daysBetween(a: Date, b: Date, excludeWeekend = false): number {
   const start = new Date(a);
@@ -171,7 +171,7 @@ export function daysBetween(a: Date, b: Date, excludeWeekend = false): number {
   if (!excludeWeekend) {
     return Math.round((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24));
   }
-  // 排除周末（工作日数）
+  // æŽ’é™¤å‘¨æœ«ï¼ˆå·¥ä½œæ—¥æ•°ï¼‰
   const sign = end >= start ? 1 : -1;
   let count = 0;
   const cur = new Date(start);
@@ -190,13 +190,13 @@ export function addDays(base: Date, days: number): Date {
   return d;
 }
 
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-// 4. 大写Monto（取自旧Sistema numToCn，整理后）
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”
+// 4. å¤§å†™Montoï¼ˆå–è‡ªæ—§Sistema numToCnï¼Œæ•´ç†åŽï¼‰
+// â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”
 
-const CN_DIGIT = "零壹贰叁肆伍陆柒捌玖";
-const CN_UNIT_LO = ["仟", "佰", "拾", ""];
-const CN_UNIT_HI = ["", "万", "亿", "万亿"];
+const CN_DIGIT = "é›¶å£¹è´°åè‚†ä¼é™†æŸ’æŒçŽ–";
+const CN_UNIT_LO = ["ä»Ÿ", "ä½°", "æ‹¾", ""];
+const CN_UNIT_HI = ["", "ä¸‡", "äº¿", "ä¸‡äº¿"];
 
 function chineseGroup4(s: string): string {
   const padded = s.padStart(4, "0");
@@ -208,7 +208,7 @@ function chineseGroup4(s: string): string {
       if (r) needZero = true;
     } else {
       if (needZero) {
-        r += "零";
+        r += "é›¶";
         needZero = false;
       }
       r += CN_DIGIT[d] + CN_UNIT_LO[i];
@@ -218,13 +218,13 @@ function chineseGroup4(s: string): string {
 }
 
 export function numberToChinese(n: number): string {
-  if (n === 0 || !isFinite(n)) return "零pesos整";
+  if (n === 0 || !isFinite(n)) return "é›¶pesosæ•´";
   const neg = n < 0;
   const abs = Math.round(Math.abs(n) * 100) / 100;
   const [intStr, decStrRaw = ""] = String(abs).split(".");
   const decStr = decStrRaw.padEnd(2, "0").slice(0, 2);
 
-  // 整数部分：按 4 位分段
+  // æ•´æ•°éƒ¨åˆ†ï¼šæŒ‰ 4 ä½åˆ†æ®µ
   const segs: string[] = [];
   let t = intStr;
   while (t.length > 0) {
@@ -238,24 +238,25 @@ export function numberToChinese(n: number): string {
     const s = chineseGroup4(segs[i]);
     const ui = segs.length - 1 - i;
     if (s) {
-      if (r && !lastHadValue) r += "零";
+      if (r && !lastHadValue) r += "é›¶";
       r += s + CN_UNIT_HI[ui];
       lastHadValue = true;
     } else {
       if (r) lastHadValue = false;
     }
   }
-  if (!r) r = "零";
+  if (!r) r = "é›¶";
   r += "pesos";
 
   const j = +decStr[0];
   const f = +decStr[1];
   if (j === 0 && f === 0) {
-    r += "整";
+    r += "æ•´";
   } else {
-    if (j > 0) r += CN_DIGIT[j] + "角";
-    else if (f > 0) r += "零";
-    if (f > 0) r += CN_DIGIT[f] + "分";
+    if (j > 0) r += CN_DIGIT[j] + "è§’";
+    else if (f > 0) r += "é›¶";
+    if (f > 0) r += CN_DIGIT[f] + "åˆ†";
   }
-  return (neg ? "负" : "") + r;
+  return (neg ? "è´Ÿ" : "") + r;
 }
+

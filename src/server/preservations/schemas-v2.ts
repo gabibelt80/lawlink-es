@@ -1,10 +1,10 @@
-import { z } from "zod";
+﻿import { z } from "zod";
 
 const presTypes = ["PRE_LITIGATION", "LITIGATION", "ENFORCEMENT"] as const;
 const propertyTypes = ["BANK_DEPOSIT", "REAL_ESTATE", "VEHICLE", "EQUITY", "IP", "OTHER"] as const;
 const guaranteeTypes = ["CASH_DEPOSIT", "GUARANTEE_LETTER", "PROPERTY", "NONE"] as const;
 
-// ── Case ──
+// â”€â”€ Case â”€â”€
 
 export const caseCreateSchema = z.object({
   matterId: z.string().cuid().optional().nullable(),
@@ -40,11 +40,11 @@ export const caseUpdateSchema = z.object({
   status: z.enum(["ACTIVE", "RENEWED", "EXPIRED", "LIFTED"]).optional(),
 });
 
-// ── Target ──
+// â”€â”€ Target â”€â”€
 
 export const targetCreateSchema = z.object({
   caseId: z.string().cuid(),
-  name: z.string().min(1, "被Preservación人Nombre必填").max(200),
+  name: z.string().min(1, "è¢«PreservaciÃ³näººNombreå¿…å¡«").max(200),
   note: z.string().max(300).optional().or(z.literal("")),
 });
 
@@ -54,7 +54,7 @@ export const targetUpdateSchema = z.object({
   note: z.string().max(300).optional().or(z.literal("")),
 });
 
-// ── Property ──
+// â”€â”€ Property â”€â”€
 
 export const propertyCreateSchema = z.object({
   targetId: z.string().cuid(),
@@ -84,7 +84,7 @@ export const propertyRenewSchema = z.object({
   note: z.string().max(300).optional().or(z.literal("")),
 });
 
-// ── List filter ──
+// â”€â”€ List filter â”€â”€
 
 export const caseListFilterSchema = z.object({
   status: z.enum(["ACTIVE", "RENEWED", "EXPIRED", "LIFTED", "ALL"]).default("ALL"),
@@ -92,7 +92,7 @@ export const caseListFilterSchema = z.object({
   search: z.string().max(80).optional().or(z.literal(""))
 });
 
-// ── Delete ──
+// â”€â”€ Delete â”€â”€
 
 export const deleteSchema = z.object({ id: z.string().cuid() });
 
@@ -101,3 +101,5 @@ export type CaseUpdateInput = z.infer<typeof caseUpdateSchema>;
 export type TargetCreateInput = z.infer<typeof targetCreateSchema>;
 export type PropertyCreateInput = z.infer<typeof propertyCreateSchema>;
 export type PropertyRenewInput = z.infer<typeof propertyRenewSchema>;
+
+

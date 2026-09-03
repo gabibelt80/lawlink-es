@@ -7,14 +7,14 @@ import { Scale, LayoutDashboard } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { primaryNav, secondaryNav, type NavItem } from "./nav-config";
 
-/** v0.42 ítems1: 侧栏品牌（可在Configuración → 律所信息配置） */
+/** v0.42 ítem 1: Marca de la barra lateral (configurable en Configuración → Información del estudio) */
 export type FirmBrand = {
   name: string;
   subtitle: string;
   logoDataUrl: string | null;
 };
 
-/** 桌面侧边栏（md 以上显示） */
+/** Barra lateral de escritorio (visible desde md) */
 export function Sidebar({ firm }: { firm: FirmBrand }) {
   return (
     <aside className="fixed left-0 top-0 z-30 hidden h-screen w-[208px] flex-col border-r border-border bg-sidebar md:flex">
@@ -23,7 +23,7 @@ export function Sidebar({ firm }: { firm: FirmBrand }) {
   );
 }
 
-/** 导航内容 — 桌面侧边栏和移动 Sheet 共用 */
+/** Contenido de navegación — compartido entre barra lateral de escritorio y Sheet móvil */
 export function NavContent({ firm }: { firm: FirmBrand }) {
   const pathname = usePathname();
   const { data: session } = useSession();

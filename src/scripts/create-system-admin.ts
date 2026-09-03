@@ -1,4 +1,4 @@
-import { prisma } from "@/lib/prisma";
+﻿import { prisma } from "@/lib/prisma";
 import bcrypt from "bcryptjs";
 
 async function main() {
@@ -17,7 +17,7 @@ async function main() {
 
   console.log("Admin del sistema creado");
   console.log(`Email: gabi@juridictas.ar`);
-  console.log(`Contraseña: admin123`);
+  console.log(`ContraseÃ±a: admin123`);
   console.log(`Firm ID: null (acceso total al panel)`);
 }
 

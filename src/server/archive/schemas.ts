@@ -1,4 +1,4 @@
-import { z } from "zod";
+﻿import { z } from "zod";
 
 export const archiveClosedReasonSchema = z.enum([
   "JUDGMENT",
@@ -15,9 +15,9 @@ export const archiveSubmitSchema = z.object({
   closedReason: archiveClosedReasonSchema,
   completedAt: z.coerce.date(),
   judgmentSummary: z.string().max(2000).optional().or(z.literal("")),
-  // checklist 勾选Estado：{ itemId: true/false }
+  // checklist å‹¾é€‰Estadoï¼š{ itemId: true/false }
   checklist: z.record(z.boolean()).default({}),
-  // AbogadoConfirmar强制归档（缺必填ítems时需 true 才能Enviar）
+  // AbogadoConfirmarå¼ºåˆ¶å½’æ¡£ï¼ˆç¼ºå¿…å¡«Ã­temsæ—¶éœ€ true æ‰èƒ½Enviarï¼‰
   forceWithMissing: z.boolean().default(false),
 });
 
@@ -27,10 +27,12 @@ export const CLOSED_REASON_CN: Record<
   z.infer<typeof archiveClosedReasonSchema>,
   string
 > = {
-  JUDGMENT: "判决",
-  MEDIATION: "调解",
-  WITHDRAWAL: "撤诉",
-  SETTLEMENT: "和解",
-  RULING: "裁定",
-  OTHER: "其他",
+  JUDGMENT: "åˆ¤å†³",
+  MEDIATION: "è°ƒè§£",
+  WITHDRAWAL: "æ’¤è¯‰",
+  SETTLEMENT: "å’Œè§£",
+  RULING: "è£å®š",
+  OTHER: "å…¶ä»–",
 };
+
+

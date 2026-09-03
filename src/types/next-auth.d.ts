@@ -1,4 +1,4 @@
-import { DefaultSession, DefaultUser } from "next-auth";
+﻿import { DefaultSession, DefaultUser } from "next-auth";
 import { DefaultJWT } from "next-auth/jwt";
 
 declare module "next-auth" {
@@ -23,3 +23,4 @@ declare module "next-auth/jwt" {
     avatar: string | null;
   }
 }
+

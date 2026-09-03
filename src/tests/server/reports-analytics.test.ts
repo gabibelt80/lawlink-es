@@ -1,8 +1,8 @@
-/**
- * v0.22: 报表 analytics 聚合算法测试（纯函数路径）
+﻿/**
+ * v0.22: æŠ¥è¡¨ analytics èšåˆç®—æ³•æµ‹è¯•ï¼ˆçº¯å‡½æ•°è·¯å¾„ï¼‰
  *
- * getCaseCycleAnalysis / getReviewIssueAnalysis 本身依赖 prisma，重写一个纯函数
- * 版本不现实；这里Aprobar mock prisma 测算法（中位数、空数据、JS 端聚合）。
+ * getCaseCycleAnalysis / getReviewIssueAnalysis æœ¬èº«ä¾èµ– prismaï¼Œé‡å†™ä¸€ä¸ªçº¯å‡½æ•°
+ * ç‰ˆæœ¬ä¸çŽ°å®žï¼›è¿™é‡ŒAprobar mock prisma æµ‹ç®—æ³•ï¼ˆä¸­ä½æ•°ã€ç©ºæ•°æ®ã€JS ç«¯èšåˆï¼‰ã€‚
  */
 import { describe, it, expect, beforeEach, vi } from "vitest";
 
@@ -35,13 +35,13 @@ beforeEach(() => {
 });
 
 describe("getCaseCycleAnalysis", () => {
-  it("空 → 空数组", async () => {
+  it("ç©º â†’ ç©ºæ•°ç»„", async () => {
     matterFindManyMock.mockResolvedValue([]);
     const r = await getCaseCycleAnalysis(period);
     expect(r).toEqual([]);
   });
 
-  it("民事 5 条计算 avg/median/min/max", async () => {
+  it("æ°‘äº‹ 5 æ¡è®¡ç®— avg/median/min/max", async () => {
     const d = (offset: number) => {
       const dt = new Date(2026, 0, 1);
       dt.setDate(dt.getDate() + offset);
@@ -58,12 +58,12 @@ describe("getCaseCycleAnalysis", () => {
     expect(r).toHaveLength(1);
     expect(r[0].count).toBe(5);
     expect(r[0].avgDays).toBe(40); // (10+20+30+40+100)/5
-    expect(r[0].medianDays).toBe(30); // 中间
+    expect(r[0].medianDays).toBe(30); // ä¸­é—´
     expect(r[0].minDays).toBe(10);
     expect(r[0].maxDays).toBe(100);
   });
 
-  it("偶数样本：中位数取两中间均值", async () => {
+  it("å¶æ•°æ ·æœ¬ï¼šä¸­ä½æ•°å–ä¸¤ä¸­é—´å‡å€¼", async () => {
     const d = (offset: number) => {
       const dt = new Date(2026, 0, 1);
       dt.setDate(dt.getDate() + offset);
@@ -79,7 +79,7 @@ describe("getCaseCycleAnalysis", () => {
     expect(r[0].medianDays).toBe(25); // (20+30)/2
   });
 
-  it("多 category 按 count 倒序", async () => {
+  it("å¤š category æŒ‰ count å€’åº", async () => {
     const d = (offset: number) => {
       const dt = new Date(2026, 0, 1);
       dt.setDate(dt.getDate() + offset);
@@ -95,14 +95,14 @@ describe("getCaseCycleAnalysis", () => {
     expect(r.map((x) => x.category)).toEqual(["CIVIL_COMMERCIAL", "ADMINISTRATIVE"]);
   });
 
-  it("closedAt < createdAt 的脏数据被丢弃", async () => {
+  it("closedAt < createdAt çš„è„æ•°æ®è¢«ä¸¢å¼ƒ", async () => {
     const d = (offset: number) => {
       const dt = new Date(2026, 0, 1);
       dt.setDate(dt.getDate() + offset);
       return dt;
     };
     matterFindManyMock.mockResolvedValue([
-      { category: "CIVIL_COMMERCIAL", createdAt: d(10), closedAt: d(5) }, // 脏：-5
+      { category: "CIVIL_COMMERCIAL", createdAt: d(10), closedAt: d(5) }, // è„ï¼š-5
       { category: "CIVIL_COMMERCIAL", createdAt: d(0), closedAt: d(10) }
     ]);
     const r = await getCaseCycleAnalysis(period);
@@ -112,7 +112,7 @@ describe("getCaseCycleAnalysis", () => {
 });
 
 describe("getReviewIssueAnalysis", () => {
-  it("空 → 0 计数", async () => {
+  it("ç©º â†’ 0 è®¡æ•°", async () => {
     reviewFindManyMock.mockResolvedValue([]);
     const r = await getReviewIssueAnalysis(period);
     expect(r.recordCount).toBe(0);
@@ -121,30 +121,30 @@ describe("getReviewIssueAnalysis", () => {
     expect(r.bySeverity).toEqual({ HIGH: 0, MEDIUM: 0, LOW: 0 });
   });
 
-  it("聚合 severity / type / topIssues", async () => {
+  it("èšåˆ severity / type / topIssues", async () => {
     reviewFindManyMock.mockResolvedValue([
       {
         id: "r1",
         documentId: "d1",
         itemsJson: [
-          { type: "RISK", severity: "HIGH", title: "违约责任缺失", detail: "x" },
-          { type: "MISSING", severity: "MEDIUM", title: "管辖约定模糊", detail: "x" }
+          { type: "RISK", severity: "HIGH", title: "è¿çº¦è´£ä»»ç¼ºå¤±", detail: "x" },
+          { type: "MISSING", severity: "MEDIUM", title: "ç®¡è¾–çº¦å®šæ¨¡ç³Š", detail: "x" }
         ]
       },
       {
         id: "r2",
         documentId: "d2",
         itemsJson: [
-          { type: "RISK", severity: "HIGH", title: "违约责任缺失", detail: "x" },
-          { type: "RISK", severity: "HIGH", title: "违约责任缺失", detail: "x" },
-          { type: "SUGGESTION", severity: "LOW", title: "措辞建议", detail: "x" }
+          { type: "RISK", severity: "HIGH", title: "è¿çº¦è´£ä»»ç¼ºå¤±", detail: "x" },
+          { type: "RISK", severity: "HIGH", title: "è¿çº¦è´£ä»»ç¼ºå¤±", detail: "x" },
+          { type: "SUGGESTION", severity: "LOW", title: "æŽªè¾žå»ºè®®", detail: "x" }
         ]
       },
       {
         id: "r3",
-        documentId: "d1", // 重复同一 doc
+        documentId: "d1", // é‡å¤åŒä¸€ doc
         itemsJson: [
-          { type: "RISK", severity: "MEDIUM", title: "违约责任缺失", detail: "x" }
+          { type: "RISK", severity: "MEDIUM", title: "è¿çº¦è´£ä»»ç¼ºå¤±", detail: "x" }
         ]
       }
     ]);
@@ -154,12 +154,12 @@ describe("getReviewIssueAnalysis", () => {
     expect(r.totalItems).toBe(6);
     expect(r.bySeverity).toEqual({ HIGH: 3, MEDIUM: 2, LOW: 1 });
     expect(r.byType).toEqual({ MISSING: 1, RISK: 4, ISSUE: 0, SUGGESTION: 1 });
-    expect(r.topIssues[0].title).toBe("违约责任缺失");
+    expect(r.topIssues[0].title).toBe("è¿çº¦è´£ä»»ç¼ºå¤±");
     expect(r.topIssues[0].occurrences).toBe(4);
     expect(r.topIssues[0].severityCounts).toEqual({ HIGH: 3, MEDIUM: 1, LOW: 0 });
   });
 
-  it("topIssues 限 10 条", async () => {
+  it("topIssues é™ 10 æ¡", async () => {
     reviewFindManyMock.mockResolvedValue([
       {
         id: "r1",
@@ -167,7 +167,7 @@ describe("getReviewIssueAnalysis", () => {
         itemsJson: Array.from({ length: 15 }, (_, i) => ({
           type: "ISSUE",
           severity: "LOW",
-          title: `问题${i}`,
+          title: `é—®é¢˜${i}`,
           detail: "x"
         }))
       }
@@ -176,20 +176,21 @@ describe("getReviewIssueAnalysis", () => {
     expect(r.topIssues).toHaveLength(10);
   });
 
-  it("空 title 不进 topIssues", async () => {
+  it("ç©º title ä¸è¿› topIssues", async () => {
     reviewFindManyMock.mockResolvedValue([
       {
         id: "r1",
         documentId: "d1",
         itemsJson: [
           { type: "RISK", severity: "HIGH", title: "  ", detail: "x" },
-          { type: "RISK", severity: "HIGH", title: "正常", detail: "x" }
+          { type: "RISK", severity: "HIGH", title: "æ­£å¸¸", detail: "x" }
         ]
       }
     ]);
     const r = await getReviewIssueAnalysis(period);
     expect(r.totalItems).toBe(2);
     expect(r.topIssues).toHaveLength(1);
-    expect(r.topIssues[0].title).toBe("正常");
+    expect(r.topIssues[0].title).toBe("æ­£å¸¸");
   });
 });
+

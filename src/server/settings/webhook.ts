@@ -1,11 +1,11 @@
-/**
- * v0.50: Configuración de webhook de recordatorios (bot de Telegram).
+﻿/**
+ * v0.50: ConfiguraciÃ³n de webhook de recordatorios (bot de Telegram).
  *
  * Una sola clave SystemSetting `notifyWebhook`.
  * La URL del webhook es la de la API de Telegram:
  * https://api.telegram.org/bot<TOKEN>/sendMessage
- * El cuerpo se envía como JSON: { chat_id: "<CHAT_ID>", text: "..." }
- * Se usa el mismo patrón de «clave única + lectura/escritura tipada» que firm-profile.
+ * El cuerpo se envÃ­a como JSON: { chat_id: "<CHAT_ID>", text: "..." }
+ * Se usa el mismo patrÃ³n de Â«clave Ãºnica + lectura/escritura tipadaÂ» que firm-profile.
  */
 import { prisma } from "@/lib/prisma";
 
@@ -41,8 +41,8 @@ export async function saveWebhookSettings(next: WebhookSettings): Promise<void> 
 const WEBHOOK_TIMEOUT_MS = 8000;
 
 /**
- * Envía un mensaje de texto al webhook configurado. Si no está habilitado o configurado, se omite silenciosamente (devuelve skipped).
- * No lanza excepciones: el error de envío de recordatorios no debe afectar el flujo principal, el motivo se devuelve para que el llamador lo registre.
+ * EnvÃ­a un mensaje de texto al webhook configurado. Si no estÃ¡ habilitado o configurado, se omite silenciosamente (devuelve skipped).
+ * No lanza excepciones: el error de envÃ­o de recordatorios no debe afectar el flujo principal, el motivo se devuelve para que el llamador lo registre.
  */
 export async function sendWebhookText(
   content: string
@@ -55,10 +55,10 @@ export async function sendWebhookText(
     url = new URL(settings.url);
     if (url.protocol !== "https:") throw new Error("Solo se admite HTTPS");
   } catch (err) {
-    return { ok: false, error: err instanceof Error ? err.message : "URL de webhook inválida" };
+    return { ok: false, error: err instanceof Error ? err.message : "URL de webhook invÃ¡lida" };
   }
 
-  // Extraer chat_id de la URL si está presente
+  // Extraer chat_id de la URL si estÃ¡ presente
   const chatId = url.searchParams.get("chat_id") ?? "";
 
   const controller = new AbortController();
@@ -76,7 +76,7 @@ export async function sendWebhookText(
     if (!response.ok) {
       return { ok: false, error: `HTTP ${response.status}` };
     }
-    // Telegram devuelve { ok: true, result: {...} } cuando tiene éxito
+    // Telegram devuelve { ok: true, result: {...} } cuando tiene Ã©xito
     const data = (await response.json().catch(() => null)) as { ok?: boolean; description?: string } | null;
     if (data && data.ok === false) {
       return { ok: false, error: data.description ?? "Error de Telegram" };
@@ -88,3 +88,4 @@ export async function sendWebhookText(
     clearTimeout(timer);
   }
 }
+

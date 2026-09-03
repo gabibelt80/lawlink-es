@@ -6,7 +6,7 @@ import {
   useFieldArray,
   FormProvider,
   useWatch,
-  type FieldErrors,
+  type FieldErrors
 } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
@@ -21,7 +21,7 @@ import {
   X,
   ScanLine,
   ChevronDown,
-  AlertCircle,
+  AlertCircle
 } from "lucide-react";
 import type {
   MatterCategory,
@@ -30,7 +30,7 @@ import type {
   FeeType,
   PartyRole,
   UserRole,
-  BarFilingType,
+  BarFilingType
 } from "@prisma/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -42,21 +42,17 @@ import {
   DialogHeader,
   DialogTitle,
   DialogDescription,
-  DialogFooter,
+  DialogFooter
 } from "@/components/ui/dialog";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
-  SelectValue,
+  SelectValue
 } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import {
   matterCategoryLabel,
   procedureTypeLabel,
@@ -69,37 +65,31 @@ import {
   matterCategoryKind,
   PROJECT_BUSINESS_TYPES,
   COUNSEL_TYPES,
-  type CategoryKind,
+  type CategoryKind
 } from "@/lib/enums";
 import {
   agencyOptionsForProcedure,
   isAgencyAllowedForProcedure,
-  isNationalAgency,
+  isNationalAgency
 } from "@/lib/china-regions";
 import {
   proceduresByCategory,
-  suggestHandlingAgency,
+  suggestHandlingAgency
 } from "@/lib/procedures-by-category";
-import {
-  intakeCreateSchema,
-  type IntakeCreateInput,
-} from "@/server/intakes/schemas";
+import { intakeCreateSchema, type IntakeCreateInput } from "@/server/intakes/schemas";
 import { createIntake } from "@/server/intakes/actions";
 import { uploadDocument } from "@/server/documents/actions";
 import { parsePleading } from "@/server/ai/parse-pleading";
 import {
   PartyCard,
   PARTY_GRID,
-  PARTY_GRID_NO_STANDING,
+  PARTY_GRID_NO_STANDING
 } from "@/app/(app)/matters/_components/party-card";
 import {
   recommendCause,
-  type CauseRecommendation,
+  type CauseRecommendation
 } from "@/server/ai/recommend-cause";
-import {
-  getEnterpriseDetail,
-  type EnterpriseSearchItem,
-} from "@/server/yuandian/enterprise";
+import { getEnterpriseDetail, type EnterpriseSearchItem } from "@/server/yuandian/enterprise";
 import { cn } from "@/lib/utils";
 import { CauseCombobox } from "@/app/(app)/matters/_components/cause-combobox";
 import { CauseAiManualDialog } from "@/app/(app)/matters/_components/cause-ai-manual-dialog";
@@ -117,12 +107,12 @@ const CATEGORIES: MatterCategory[] = [
   "ADMINISTRATIVE",
   "NON_LITIGATION",
   "LEGAL_COUNSEL",
-  "SPECIAL_PROJECT",
+  "SPECIAL_PROJECT"
 ];
 
 const FEE_TYPES: FeeType[] = ["FIXED", "CONTINGENCY", "TIMED"];
 
-// Cuando somos la parte pasiva, se puede subir la demanda/solicitud para que el OCR reconozca a la contraparte
+// 我方为被动方时，可上传起诉状/申请书 OCR 识别对方
 const RECEIVING_STANDINGS = new Set<LitigationStanding>([
   "DEFENDANT",
   "JOINT_DEFENDANT",
@@ -134,7 +124,7 @@ const RECEIVING_STANDINGS = new Set<LitigationStanding>([
   "ARBITRATION_RESPONDENT",
   "ADMIN_DEFENDANT",
   "ADMIN_RECONSIDERATION_RESPONDENT",
-  "CRIMINAL_DEFENDANT",
+  "CRIMINAL_DEFENDANT"
 ]);
 
 const defaults: IntakeCreateInput = {
@@ -178,7 +168,7 @@ const defaults: IntakeCreateInput = {
       address: "",
       legalRep: "",
       contactName: "",
-      notes: "",
+      notes: ""
     },
     {
       role: "OPPOSING_PARTY",
@@ -193,17 +183,16 @@ const defaults: IntakeCreateInput = {
       address: "",
       legalRep: "",
       contactName: "",
-      notes: "",
-    },
-  ],
+      notes: ""
+    }
+  ]
 };
 
 type Colleague = { id: string; name: string; role: UserRole };
 
 function firstFormErrorMessage(value: unknown): string | undefined {
   if (!value || typeof value !== "object") return undefined;
-  if ("message" in value && typeof value.message === "string")
-    return value.message;
+  if ("message" in value && typeof value.message === "string") return value.message;
 
   for (const child of Object.values(value)) {
     const message = firstFormErrorMessage(child);
@@ -216,7 +205,7 @@ export function IntakeSheet({
   open,
   onOpenChange,
   clientOptions,
-  colleagues,
+  colleagues
 }: {
   open: boolean;
   onOpenChange: (o: boolean) => void;
@@ -232,9 +221,7 @@ export function IntakeSheet({
   const [ocrPending, setOcrPending] = useState(false);
   const [aiRecOpen, setAiRecOpen] = useState(false);
   const [aiRecLoading, setAiRecLoading] = useState(false);
-  const [aiRecCandidates, setAiRecCandidates] = useState<CauseRecommendation[]>(
-    [],
-  );
+  const [aiRecCandidates, setAiRecCandidates] = useState<CauseRecommendation[]>([]);
   const [aiRecError, setAiRecError] = useState<string | null>(null);
   const [aiRecSituation, setAiRecSituation] = useState<{
     category: MatterCategory;
@@ -244,7 +231,7 @@ export function IntakeSheet({
 
   const methods = useForm<IntakeCreateInput>({
     resolver: zodResolver(intakeCreateSchema),
-    defaultValues: { ...defaults, ownerUserId: session?.user?.id ?? "" },
+    defaultValues: { ...defaults, ownerUserId: session?.user?.id ?? "" }
   });
   const {
     register,
@@ -253,48 +240,37 @@ export function IntakeSheet({
     getValues,
     setValue,
     reset,
-    formState: { errors },
+    formState: { errors }
   } = methods;
 
-  const {
-    fields: parties,
-    append: appendParty,
-    remove: removeParty,
-  } = useFieldArray({
+  const { fields: parties, append: appendParty, remove: removeParty } = useFieldArray({
     control,
-    name: "parties",
+    name: "parties"
   });
 
   const watchedValues = useWatch({ control });
-  const watch = <T = any,>(path: string) =>
-    readFormPath<T>(watchedValues, path);
+  const watch = <T = any,>(path: string) => readFormPath<T>(watchedValues, path);
 
   const category = watch<MatterCategory>("category") ?? "CIVIL_COMMERCIAL";
-  const firstProcedureType = watch<ProcedureType | undefined>(
-    "firstProcedureType",
-  );
+  const firstProcedureType = watch<ProcedureType | undefined>("firstProcedureType");
   const clientId = watch("clientId") ?? "";
   const feeType = watch("feeType");
   const ownerUserId = watch("ownerUserId");
   const coUserIds = watch<string[]>("coUserIds") ?? [];
   const receivedAt = watch("receivedAt");
   const jurisdiction = watch("jurisdiction") ?? "";
-  // Órgano de resolución de disputas según jurisdicción
+  // 争议解决机构按管辖地匹配
   const agencyOpts = useMemo(
     () => agencyOptionsForProcedure(jurisdiction, firstProcedureType),
-    [jurisdiction, firstProcedureType],
+    [jurisdiction, firstProcedureType]
   );
 
-  // v0.31: La categoría del caso determina la estructura del formulario (litigio/arbitraje vs no contencioso/proyectos vs consultoría)
+  // v0.31: Categoría del caso决定表单结构（诉讼/仲裁 vs 非诉/专项 vs 顾问）
   const kind: CategoryKind = matterCategoryKind(category);
   const nameLabel =
-    kind === "counsel"
-      ? "Nombre del asunto de consultoría"
-      : kind === "project"
-        ? "Nombre del proyecto"
-        : "Nombre del caso";
+    kind === "counsel" ? "Nombre del asunto de asesoría" : kind === "project" ? "Nombre del proyecto" : "Nombre del caso";
 
-  // Generación automática del título: después de completar partes + Causa, se genera según «Parte cliente y parte contraria Causa»; no se sobrescribe después de que el usuario lo modifique manualmente
+  // 标题自动生成：填完当事人 + 案由后按「委托方 与 对方 案由」生成，用户手改后不再覆盖
   const [titleTouched, setTitleTouched] = useState(false);
   const [causeName, setCauseName] = useState("");
   const watchedParties = watch("parties");
@@ -307,42 +283,31 @@ export function IntakeSheet({
     const oppNm = list.find((p) => p.role === "OPPOSING_PARTY")?.name?.trim();
     const causeNm = (causeName || watchedCauseFree || "").trim();
     if (!clientNm && !oppNm) return;
-    // El nombre del caso no contiene espacios (requisito del producto)
-    const suggested =
-      `${clientNm ?? ""}${oppNm ? `y${oppNm}` : ""}${causeNm}`.replace(
-        /\s+/g,
-        "",
-      );
+    // Nombre del caso不含空格（产品要求）
+    const suggested = `${clientNm ?? ""}${oppNm ? `y${oppNm}` : ""}${causeNm}`.replace(/\s+/g, "");
     if (suggested && suggested !== (watchedTitle ?? "")) {
       setValue("title", suggested, { shouldDirty: true });
     }
-  }, [
-    watchedParties,
-    causeName,
-    watchedCauseFree,
-    titleTouched,
-    watchedTitle,
-    setValue,
-  ]);
+  }, [watchedParties, causeName, watchedCauseFree, titleTouched, watchedTitle, setValue]);
 
-  // Procedimientos disponibles para la categoría actual
+  // 当前类别下可选程序
   const procedureOptions: ProcedureType[] = useMemo(
     () => proceduresByCategory[category] ?? [],
-    [category],
+    [category]
   );
 
-  // Posiciones procesales disponibles para el procedimiento actual
+  // 当前程序下可选诉讼地位
   const ourStandingOptions: LitigationStanding[] = useMemo(
     () => procedureToStandingOptions(firstProcedureType, "ours"),
-    [firstProcedureType],
+    [firstProcedureType]
   );
-  // La posición procesal de la parte contraria / tercero también se actualiza según el procedimiento actual
+  // 相对方 / 第三人 诉讼地位也随当前程序联动
   const oppositeStandingOptions: LitigationStanding[] = useMemo(
     () => procedureToStandingOptions(firstProcedureType, "opposite"),
-    [firstProcedureType],
+    [firstProcedureType]
   );
 
-  // Al cambiar de categoría, si el procedimiento actual no está en la nueva lista, se limpia
+  // 切类别时如果当前程序不在新类别列表里，清掉
   useEffect(() => {
     if (firstProcedureType && !procedureOptions.includes(firstProcedureType)) {
       setValue("firstProcedureType", undefined);
@@ -350,9 +315,9 @@ export function IntakeSheet({
     }
   }, [category, firstProcedureType, procedureOptions, setValue]);
 
-  // v0.31: Al cambiar de categoría, sincronizar filas de partes
-  // Consultoría / no contencioso / proyectos: por defecto solo queda la fila del cliente (la parte contraria se agrega según necesidad)
-  // Litigio/arbitraje: asegurar al menos una fila de parte contraria
+  // v0.31: 切类别时同步当事人行
+  // 顾问 / 非诉 / 专项：默认只留委托方一行（相对方按需添加）
+  // 诉讼/仲裁：确保至少有一个相对方行
   useEffect(() => {
     const cur = (watch("parties") ?? []) as { role?: string }[];
     if (kind === "counsel" || kind === "project") {
@@ -371,25 +336,25 @@ export function IntakeSheet({
         address: "",
         legalRep: "",
         contactName: "",
-        notes: "",
+        notes: ""
       });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [kind]);
 
-  // Establecer propietario por defecto
+  // 设默认 owner
   useEffect(() => {
     if (!ownerUserId && session?.user?.id) {
       setValue("ownerUserId", session.user.id);
     }
   }, [ownerUserId, session, setValue]);
 
-  // Al cambiar de procedimiento, autocompletar el organismo sugerido (solo si está vacío)
+  // 切程序时自动填充建议机构（仅在为空时）
   function handleProcedureChange(p: ProcedureType) {
     setValue("firstProcedureType", p, { shouldDirty: true });
     setValue("ourStanding", undefined);
-    // El organismo se puede ingresar manualmente (tribunales especializados, comisiones de arbitraje de otras jurisdicciones no están en la lista generada),
-    // solo se limpia si no es válido para el nuevo procedimiento (se seleccionó un tribunal en arbitraje comercial), no según si está en la lista
+    // 机构可自由手输（专门法院、异地仲裁委不在生成列表里），
+    // 只在新程序下不合法时清空（商事仲裁下选了法院），不按"是否在列表中"清
     let currentAgency = getValues("firstAgency");
     if (currentAgency && !isAgencyAllowedForProcedure(currentAgency, p)) {
       setValue("firstAgency", "", { shouldDirty: true });
@@ -397,11 +362,7 @@ export function IntakeSheet({
     }
     if (!currentAgency || currentAgency.length === 0) {
       const suggested = suggestHandlingAgency(p);
-      if (
-        agencyOptionsForProcedure(getValues("jurisdiction"), p).includes(
-          suggested,
-        )
-      ) {
+      if (agencyOptionsForProcedure(getValues("jurisdiction"), p).includes(suggested)) {
         setValue("firstAgency", suggested);
       }
     }
@@ -412,10 +373,7 @@ export function IntakeSheet({
     const cur = getValues("firstAgency");
     if (isNationalAgency(cur)) {
       setValue("firstAgency", "", { shouldDirty: true });
-    } else if (
-      cur &&
-      !agencyOptionsForProcedure(v, firstProcedureType).includes(cur)
-    ) {
+    } else if (cur && !agencyOptionsForProcedure(v, firstProcedureType).includes(cur)) {
       setValue("firstAgency", "", { shouldDirty: true });
     }
   }
@@ -443,8 +401,8 @@ export function IntakeSheet({
       }
       toast.success(
         contracts.length > 0
-          ? `Admisión enviada para aprobación; se subieron ${contracts.length} contratos`
-          : "Admisión enviada para aprobación",
+          ? `Admisión enviada a aprobación, se subieron ${contracts.length} contratos`
+          : "Admisión enviada a aprobación"
       );
       reset({ ...defaults, ownerUserId: session?.user?.id ?? "" });
       setTitleTouched(false);
@@ -454,20 +412,18 @@ export function IntakeSheet({
       if (res.id) router.push(`/intakes/${res.id}`);
     } catch (err) {
       toast.error("Error al crear", {
-        description: err instanceof Error ? err.message : "",
+        description: err instanceof Error ? err.message : ""
       });
     }
   }
 
   function onSubmit(values: IntakeCreateInput) {
-    // La parte cliente siempre es parties[0] (role=CLIENT_PARTY): se separan los campos client* al nivel superior, el resto va a parties.
-    // Nombre + número de documento obligatorios son validados por zodResolver(partyInputSchema) para cada fila.
+    // 委托方恒为 parties[0]（role=CLIENT_PARTY）：拆回顶层 client* 字段，其余进 parties。
+    // 名称 + 证件号必填由 zodResolver(partyInputSchema) 对每行统一校验。
     const all = values.parties ?? [];
     const client = all.find((p) => p.role === "CLIENT_PARTY");
     if (!client || !client.name?.trim()) {
-      toast.warning("Complete el cliente", {
-        description: "El nombre del cliente es obligatorio",
-      });
+      toast.warning("Completá el cliente", { description: "El nombre del cliente es obligatorio" });
       return;
     }
     const isOrg = client.partyType === "ORGANIZATION";
@@ -475,30 +431,26 @@ export function IntakeSheet({
       ...values,
       clientName: client.name.trim(),
       clientType: isOrg ? "COMPANY" : "INDIVIDUAL",
-      clientIdNumber:
-        (isOrg ? client.enterpriseSocialCode : client.idNumber) ?? "",
+      clientIdNumber: (isOrg ? client.enterpriseSocialCode : client.idNumber) ?? "",
       clientAddress: client.address ?? "",
       clientLegalRep: client.legalRep ?? "",
       contactName: client.contactName ?? "",
       contactPhone: client.phone ?? "",
-      parties: all.filter((p) => p.role !== "CLIENT_PARTY"),
+      parties: all.filter((p) => p.role !== "CLIENT_PARTY")
     };
     startTransition(() => performSubmit(payload));
   }
 
   function onInvalid(formErrors: FieldErrors<IntakeCreateInput>) {
-    toast.warning("Complete los datos obligatorios", {
-      description:
-        firstFormErrorMessage(formErrors) ??
-        "Revise las indicaciones en rojo del formulario",
+    toast.warning("Completá los campos obligatorios", {
+      description: firstFormErrorMessage(formErrors) ?? "Revisá las indicaciones en rojo del formulario"
     });
   }
 
   function handleFiles(list: FileList | null) {
     if (!list) return;
     const arr = Array.from(list).filter((f) => f.size <= 20 * 1024 * 1024);
-    if (arr.length < list.length)
-      toast.warning("Se omitieron archivos mayores a 20 MB");
+    if (arr.length < list.length) toast.warning("Se omitieron los archivos que superan los 20MB");
     setContracts((prev) => [...prev, ...arr]);
     if (fileRef.current) fileRef.current.value = "";
   }
@@ -511,60 +463,48 @@ export function IntakeSheet({
       const res = await parsePleading(fd);
       let added = 0;
       for (const p of res.plaintiffs) {
-        // En OCR, según la longitud del idNumber / si existe legalRep se adivina el tipo de sujeto: 18 dígitos con letras suele ser código de crédito social → empresa
+        // OCR 时按 idNumber 长度/legalRep 是否存在猜主体类型：18 位含字母通常是社会信用代码 → 公司
         const guessed: "NATURAL_PERSON" | "ORGANIZATION" =
-          (p.legalRep && p.legalRep.trim()) ||
-          (p.idNumber && p.idNumber.length === 18 && /[A-Z]/.test(p.idNumber))
+          (p.legalRep && p.legalRep.trim()) || (p.idNumber && p.idNumber.length === 18 && /[A-Z]/.test(p.idNumber))
             ? "ORGANIZATION"
             : "NATURAL_PERSON";
         appendParty({
           role: "OPPOSING_PARTY",
           standing: undefined,
-          ordinal:
-            parties.filter((x) => x.role === "OPPOSING_PARTY").length +
-            1 +
-            added,
+          ordinal: parties.filter((x) => x.role === "OPPOSING_PARTY").length + 1 + added,
           partyType: guessed,
           name: p.name ?? "",
-          idNumber: guessed === "NATURAL_PERSON" ? (p.idNumber ?? "") : "",
-          enterpriseSocialCode:
-            guessed === "ORGANIZATION" ? (p.idNumber ?? "") : "",
-          enterpriseName: guessed === "ORGANIZATION" ? (p.name ?? "") : "",
+          idNumber: guessed === "NATURAL_PERSON" ? p.idNumber ?? "" : "",
+          enterpriseSocialCode: guessed === "ORGANIZATION" ? p.idNumber ?? "" : "",
+          enterpriseName: guessed === "ORGANIZATION" ? p.name ?? "" : "",
           phone: p.phone ?? "",
           address: p.address ?? "",
           legalRep: p.legalRep ?? "",
           contactName: "",
-          notes: "",
+          notes: ""
         });
         added++;
       }
       let thirdAdded = 0;
       for (const tp of res.thirdParties) {
         const guessed: "NATURAL_PERSON" | "ORGANIZATION" =
-          (tp.legalRep && tp.legalRep.trim()) ||
-          (tp.idNumber &&
-            tp.idNumber.length === 18 &&
-            /[A-Z]/.test(tp.idNumber))
+          (tp.legalRep && tp.legalRep.trim()) || (tp.idNumber && tp.idNumber.length === 18 && /[A-Z]/.test(tp.idNumber))
             ? "ORGANIZATION"
             : "NATURAL_PERSON";
         appendParty({
           role: "THIRD_PARTY",
           standing: undefined,
-          ordinal:
-            parties.filter((x) => x.role === "THIRD_PARTY").length +
-            1 +
-            thirdAdded,
+          ordinal: parties.filter((x) => x.role === "THIRD_PARTY").length + 1 + thirdAdded,
           partyType: guessed,
           name: tp.name ?? "",
-          idNumber: guessed === "NATURAL_PERSON" ? (tp.idNumber ?? "") : "",
-          enterpriseSocialCode:
-            guessed === "ORGANIZATION" ? (tp.idNumber ?? "") : "",
-          enterpriseName: guessed === "ORGANIZATION" ? (tp.name ?? "") : "",
+          idNumber: guessed === "NATURAL_PERSON" ? tp.idNumber ?? "" : "",
+          enterpriseSocialCode: guessed === "ORGANIZATION" ? tp.idNumber ?? "" : "",
+          enterpriseName: guessed === "ORGANIZATION" ? tp.name ?? "" : "",
           phone: tp.phone ?? "",
           address: tp.address ?? "",
           legalRep: tp.legalRep ?? "",
           contactName: "",
-          notes: "",
+          notes: ""
         });
         thirdAdded++;
       }
@@ -575,38 +515,30 @@ export function IntakeSheet({
         setValue("claimAmount", res.claimAmount, { shouldDirty: true });
       }
       if (res.claimDescription && !watch("claimDescription")) {
-        setValue("claimDescription", res.claimDescription, {
-          shouldDirty: true,
-        });
+        setValue("claimDescription", res.claimDescription, { shouldDirty: true });
       }
       if (res.court && !watch("firstAgency")) {
         setValue("firstAgency", res.court, { shouldDirty: true });
       }
       toast.success(
-        `Se reconocieron ${res.plaintiffs.length} demandantes / ${res.thirdParties.length} terceros`,
-        { description: "Revise manualmente si los campos son correctos" },
+        `Se identificaron ${res.plaintiffs.length} demandantes / ${res.thirdParties.length} terceros`,
+        { description: "Por favor, verificá manualmente que los campos sean correctos" }
       );
 
-      // Después del OCR, activar recomendación de Causa por IA (solo se activa cuando el OCR extrae cause / claimDescription)
+      // OCR 后联动 AI 案由推荐（仅当 OCR 抽到 cause / claimDescription 时触发）
       const situationParts: string[] = [];
-      if (res.cause)
-        situationParts.push(`Causa reconocida por OCR: ${res.cause}`);
-      if (res.claimDescription)
-        situationParts.push(`Pretensión: ${res.claimDescription}`);
-      const oppPartyNames = res.plaintiffs
-        .map((p) => p.name)
-        .filter(Boolean)
-        .join(", ");
-      if (oppPartyNames)
-        situationParts.push(`Parte contraria: ${oppPartyNames}`);
+      if (res.cause) situationParts.push(`Causa reconocida por OCR:${res.cause}`);
+      if (res.claimDescription) situationParts.push(`Pretensión：${res.claimDescription}`);
+      const oppPartyNames = res.plaintiffs.map((p) => p.name).filter(Boolean).join(", ");
+      if (oppPartyNames) situationParts.push(`Parte contraria: ${oppPartyNames}`);
       if (res.court) situationParts.push(`Jurisdicción: ${res.court}`);
       const situationText = situationParts.join("\n");
       if (situationText && !watch("causeId")) {
         triggerCauseRecommendation(category, situationText, firstProcedureType);
       }
     } catch (err) {
-      toast.error("Error de reconocimiento", {
-        description: err instanceof Error ? err.message : "",
+      toast.error("Error al reconocer", {
+        description: err instanceof Error ? err.message : ""
       });
     } finally {
       setOcrPending(false);
@@ -617,7 +549,7 @@ export function IntakeSheet({
   async function triggerCauseRecommendation(
     cat: MatterCategory,
     situation: string,
-    procType?: ProcedureType | null,
+    procType?: ProcedureType | null
   ) {
     setAiRecSituation({ category: cat, text: situation });
     setAiRecOpen(true);
@@ -625,16 +557,10 @@ export function IntakeSheet({
     setAiRecError(null);
     setAiRecCandidates([]);
     try {
-      const list = await recommendCause({
-        category: cat,
-        procedureType: procType,
-        situation,
-      });
+      const list = await recommendCause({ category: cat, procedureType: procType, situation });
       setAiRecCandidates(list);
     } catch (err) {
-      setAiRecError(
-        err instanceof Error ? err.message : "La recomendación de IA falló",
-      );
+      setAiRecError(err instanceof Error ? err.message : "Error en la recomendación de IA");
     } finally {
       setAiRecLoading(false);
     }
@@ -644,18 +570,12 @@ export function IntakeSheet({
     setValue("causeId", causeId, { shouldDirty: true });
     setCauseName(causeNm);
     setAiRecOpen(false);
-    toast.success("Se usó la causa recomendada por IA", {
-      description: causeNm,
-    });
+    toast.success("Se utilizó la causa recomendada por IA", { description: causeNm });
   }
 
   function handleAiRecRetry() {
     if (aiRecSituation) {
-      triggerCauseRecommendation(
-        aiRecSituation.category,
-        aiRecSituation.text,
-        firstProcedureType,
-      );
+      triggerCauseRecommendation(aiRecSituation.category, aiRecSituation.text, firstProcedureType);
     }
   }
 
@@ -667,64 +587,49 @@ export function IntakeSheet({
   }
 
   async function handlePickYuandian(candidate: EnterpriseSearchItem) {
-    // La fila del cliente siempre es parties[0]
+    // 委托方行恒为 parties[0]
     setValue("clientId", "", { shouldDirty: true });
     setValue("parties.0.partyType", "ORGANIZATION", { shouldDirty: true });
     setValue("parties.0.name", candidate.name, { shouldDirty: true });
     setValue("parties.0.enterpriseName", candidate.name, { shouldDirty: true });
     setValue("parties.0.enterpriseSocialCode", candidate.creditCode, {
       shouldDirty: true,
-      shouldValidate: true,
+      shouldValidate: true
     });
 
-    const tid = toast.loading(
-      "Obteniendo información detallada de la empresa…",
-      { duration: 10_000 },
-    );
+    const tid = toast.loading("Obteniendo información detallada de la empresa…", { duration: 10_000 });
     try {
       const res = await getEnterpriseDetail(candidate.id);
       if (res.info) {
         setValue("parties.0.address", res.info.address, { shouldDirty: true });
-        setValue("parties.0.legalRep", res.info.legalRep, {
-          shouldDirty: true,
-        });
+        setValue("parties.0.legalRep", res.info.legalRep, { shouldDirty: true });
         if (res.info.legalRep && !watch("parties.0.contactName")) {
-          setValue("parties.0.contactName", res.info.legalRep, {
-            shouldDirty: true,
-          });
+          setValue("parties.0.contactName", res.info.legalRep, { shouldDirty: true });
         }
         toast.success(
           res.info.legalRep
-            ? `Se completó: representante legal ${res.info.legalRep}`
-            : "Se completó la información de la empresa",
-          { id: tid },
+            ? `Completado: representante legal ${res.info.legalRep}`
+            : "Información de la empresa completada",
+          { id: tid }
         );
       } else {
-        toast.info(
-          "No se encontró información detallada; se completó la información básica",
-          { id: tid },
-        );
+        toast.info("No se encontró información detallada, se completó la información básica", { id: tid });
       }
     } catch {
-      toast.error(
-        "No se pudo obtener el detalle de la empresa; complete manualmente",
-        { id: tid },
-      );
+      toast.error("Error al obtener los detalles de la empresa, completá manualmente", { id: tid });
     }
   }
 
-  // Campos de abogado principal / co-abogado / inscripción en colegio / reconvención (reutilizados en varios lugares)
+  // 主办 / 协办 / 律协备案 / 反诉 字段（多处复用）
   function leadField() {
     return (
-      <Field label="Abogado principal" required>
+      <Field label="Abogado a cargo" required>
         <Select
           value={ownerUserId ?? ""}
-          onValueChange={(v) =>
-            setValue("ownerUserId", v, { shouldDirty: true })
-          }
+          onValueChange={(v) => setValue("ownerUserId", v, { shouldDirty: true })}
         >
           <SelectTrigger className="h-[34px] bg-white text-[12.5px]">
-            <SelectValue placeholder="Seleccionar abogado principal" />
+            <SelectValue placeholder="Seleccionar abogado a cargo" />
           </SelectTrigger>
           <SelectContent>
             {colleagues.map((u) => (
@@ -740,7 +645,7 @@ export function IntakeSheet({
 
   function coLeadField() {
     return (
-      <Field label="Personal de coabogado (multiselección)">
+      <Field label="Colaboradores (selección múltiple)">
         <Popover>
           <PopoverTrigger asChild>
             <Button
@@ -750,14 +655,12 @@ export function IntakeSheet({
             >
               <span className="truncate">
                 {coUserIds.length === 0 ? (
-                  <span className="text-muted-foreground">
-                    Seleccionar personal de coabogado
-                  </span>
+                  <span className="text-muted-foreground">Seleccionar colaboradores</span>
                 ) : (
                   colleagues
                     .filter((u) => coUserIds.includes(u.id))
                     .map((u) => u.name)
-                    .join(", ")
+                    .join(",")
                 )}
               </span>
               <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
@@ -770,9 +673,7 @@ export function IntakeSheet({
           >
             <div className="max-h-56 space-y-0.5 overflow-y-auto">
               {colleagues.filter((u) => u.id !== ownerUserId).length === 0 ? (
-                <p className="py-4 text-center text-xs text-muted-foreground">
-                  No hay coabogados disponibles
-                </p>
+                <p className="py-4 text-center text-xs text-muted-foreground">No hay colaboradores disponibles</p>
               ) : (
                 colleagues
                   .filter((u) => u.id !== ownerUserId)
@@ -801,12 +702,10 @@ export function IntakeSheet({
 
   function barFilingField() {
     return (
-      <Field label="¿Requiere inscripción en el colegio de abogados?">
+      <Field label="¿Requiere registro ante el colegio de abogados?">
         <Select
           value={watch("barFiling") ?? ""}
-          onValueChange={(v) =>
-            setValue("barFiling", v as BarFilingType, { shouldDirty: true })
-          }
+          onValueChange={(v) => setValue("barFiling", v as BarFilingType, { shouldDirty: true })}
         >
           <SelectTrigger className="h-[34px] bg-white text-[12.5px]">
             <SelectValue placeholder="Seleccionar" />
@@ -825,12 +724,10 @@ export function IntakeSheet({
 
   function counterclaimField() {
     return (
-      <Field label="¿Es contrademanda?">
+      <Field label="¿Hay reconvención?">
         <Select
           value={watch("counterclaim") ? "yes" : "no"}
-          onValueChange={(v) =>
-            setValue("counterclaim", v === "yes", { shouldDirty: true })
-          }
+          onValueChange={(v) => setValue("counterclaim", v === "yes", { shouldDirty: true })}
         >
           <SelectTrigger className="h-[34px] bg-white text-[12.5px]">
             <SelectValue />
@@ -844,43 +741,33 @@ export function IntakeSheet({
     );
   }
 
-  // Tabla de ingreso de partes / partes relacionadas (reutilizada por categoría, litigio/arbitraje incluye columna de posición procesal)
+  // 当事人/相关方录入表格（按类别复用，诉讼/仲裁含诉讼地位列）
   function renderParties(mode: CategoryKind) {
     const showStanding = mode === "litigation";
     const grid = showStanding ? PARTY_GRID : PARTY_GRID_NO_STANDING;
     const clientLabel =
-      mode === "counsel"
-        ? "Entidad consultora"
-        : mode === "project"
-          ? "Cliente"
-          : "Cliente";
+      mode === "counsel" ? "Entidad asesorada" : mode === "project" ? "Comitente" : "Cliente";
     return (
       <div className="overflow-x-auto rounded-md border border-[#cbd5e2] bg-[#e9eef5] p-2 shadow-[var(--shadow-inset)]">
-        <div
-          className={cn(
-            "space-y-2",
-            showStanding ? "min-w-[880px]" : "min-w-[760px]",
-          )}
-        >
-          {/* Encabezado */}
+        <div className={cn("space-y-2", showStanding ? "min-w-[880px]" : "min-w-[760px]")}>
+          {/* 表头 */}
           <div
             className={cn(
               grid,
-              "rounded-sm bg-[#dbe3ee] px-2 py-1.5 text-center text-[11px] font-semibold text-muted-foreground [&>span]:text-center",
+              "rounded-sm bg-[#dbe3ee] px-2 py-1.5 text-center text-[11px] font-semibold text-muted-foreground [&>span]:text-center"
             )}
           >
             <span>Rol</span>
-            <span>Tipo de persona</span>
-            <span>Nombre</span>
-            <span>Documento / código de crédito</span>
+            <span>Tipo de sujeto</span>
+            <span>Nombre / Razón social</span>
+            <span>N.º de documento / Código de crédito</span>
             {showStanding && (
               <span>
-                Posición procesal
-                <span className="ml-0.5 text-destructive">*</span>
+                Posición procesal<span className="ml-0.5 text-destructive">*</span>
               </span>
             )}
             <span>Contacto</span>
-            <span>Teléfono</span>
+            <span>Teléfono de contacto</span>
             <span className="text-right">Acciones</span>
           </div>
 
@@ -888,7 +775,7 @@ export function IntakeSheet({
             const all = (watch("parties") ?? []) as { role?: string }[];
             const role = (all[idx]?.role as PartyRole) ?? "OPPOSING_PARTY";
             const isClient = role === "CLIENT_PARTY";
-            // En consultoría solo se muestra la parte cliente
+            // 顾问类只显示委托方
             if (mode === "counsel" && !isClient) return null;
             const ourStanding = watch("ourStanding");
             return (
@@ -909,9 +796,7 @@ export function IntakeSheet({
                     <Select
                       value={role}
                       onValueChange={(v) =>
-                        setValue(`parties.${idx}.role`, v as PartyRole, {
-                          shouldDirty: true,
-                        })
+                        setValue(`parties.${idx}.role`, v as PartyRole, { shouldDirty: true })
                       }
                     >
                       <SelectTrigger className="h-[34px] w-full bg-white px-2 text-center text-[12px] [&>span]:w-full [&>span]:text-center">
@@ -919,7 +804,7 @@ export function IntakeSheet({
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="OPPOSING_PARTY" className="text-xs">
-                          Parte contraria
+                          Contraparte
                         </SelectItem>
                         <SelectItem value="THIRD_PARTY" className="text-xs">
                           Tercero
@@ -939,7 +824,7 @@ export function IntakeSheet({
                         onValueChange={(v) =>
                           setValue("ourStanding", v as LitigationStanding, {
                             shouldDirty: true,
-                            shouldValidate: true,
+                            shouldValidate: true
                           })
                         }
                       >
@@ -949,9 +834,7 @@ export function IntakeSheet({
                         <SelectContent>
                           {(ourStandingOptions.length
                             ? ourStandingOptions
-                            : (Object.keys(
-                                litigationStandingLabel,
-                              ) as LitigationStanding[])
+                            : (Object.keys(litigationStandingLabel) as LitigationStanding[])
                           ).map((s) => (
                             <SelectItem key={s} value={s} className="text-xs">
                               {litigationStandingLabel[s]}
@@ -960,9 +843,7 @@ export function IntakeSheet({
                         </SelectContent>
                       </Select>
                       {errors.ourStanding?.message && (
-                        <p className="text-[11px] text-destructive">
-                          {errors.ourStanding.message}
-                        </p>
+                        <p className="text-[11px] text-destructive">{errors.ourStanding.message}</p>
                       )}
                     </div>
                   ) : (
@@ -970,14 +851,10 @@ export function IntakeSheet({
                       <Select
                         value={watch(`parties.${idx}.standing`) ?? ""}
                         onValueChange={(v) =>
-                          setValue(
-                            `parties.${idx}.standing`,
-                            v as LitigationStanding,
-                            {
-                              shouldDirty: true,
-                              shouldValidate: true,
-                            },
-                          )
+                          setValue(`parties.${idx}.standing`, v as LitigationStanding, {
+                            shouldDirty: true,
+                            shouldValidate: true
+                          })
                         }
                       >
                         <SelectTrigger className="h-[34px] w-full bg-white px-2 text-center text-[12px] [&>span]:w-full [&>span]:text-center">
@@ -1015,35 +892,25 @@ export function IntakeSheet({
                         setValue("clientId", id, { shouldDirty: true });
                         setValue("parties.0.name", name, {
                           shouldDirty: true,
-                          shouldValidate: true,
+                          shouldValidate: true
                         });
                       }}
                       onTypeNew={(name) => {
                         setValue("clientId", "", { shouldDirty: true });
                         setValue("parties.0.name", name, {
                           shouldDirty: true,
-                          shouldValidate: true,
+                          shouldValidate: true
                         });
                       }}
                       onPickYuandian={handlePickYuandian}
                       onClear={() => {
                         setValue("clientId", "", { shouldDirty: true });
                         setValue("parties.0.name", "", { shouldDirty: true });
-                        setValue("parties.0.idNumber", "", {
-                          shouldDirty: true,
-                        });
-                        setValue("parties.0.enterpriseSocialCode", "", {
-                          shouldDirty: true,
-                        });
-                        setValue("parties.0.enterpriseName", "", {
-                          shouldDirty: true,
-                        });
-                        setValue("parties.0.address", "", {
-                          shouldDirty: true,
-                        });
-                        setValue("parties.0.legalRep", "", {
-                          shouldDirty: true,
-                        });
+                        setValue("parties.0.idNumber", "", { shouldDirty: true });
+                        setValue("parties.0.enterpriseSocialCode", "", { shouldDirty: true });
+                        setValue("parties.0.enterpriseName", "", { shouldDirty: true });
+                        setValue("parties.0.address", "", { shouldDirty: true });
+                        setValue("parties.0.legalRep", "", { shouldDirty: true });
                       }}
                     />
                   ) : undefined
@@ -1076,7 +943,7 @@ export function IntakeSheet({
           address: "",
           legalRep: "",
           contactName: "",
-          notes: "",
+          notes: ""
         })
       }
     >
@@ -1096,7 +963,7 @@ export function IntakeSheet({
                   Nuevo registro de admisión
                 </DialogTitle>
                 <DialogDescription className="mt-0.5 text-[12px] leading-5 text-muted-foreground">
-                  Aquí comienza el ciclo de vida del caso
+                  El caso comienza aquí su ciclo de vida
                 </DialogDescription>
               </div>
               <span className="rounded-full border border-primary/20 bg-primary/10 px-2.5 py-0.5 text-[11px] font-medium text-primary">
@@ -1106,689 +973,585 @@ export function IntakeSheet({
           </div>
         </DialogHeader>
         <FormProvider {...methods}>
-          <form
-            onSubmit={handleSubmit(onSubmit, onInvalid)}
-            className="flex flex-1 flex-col overflow-hidden"
-          >
-            <div className="flex-1 overflow-y-auto bg-[#e6ebf2] px-4 py-4">
-              <div className="mx-auto max-w-[888px] space-y-3.5 [&_button[role=combobox]]:h-[34px] [&_button[role=combobox]]:min-h-0 [&_button[role=combobox]]:rounded-sm [&_button[role=combobox]]:border-[#c6d0dd] [&_button[role=combobox]]:bg-white [&_button[role=combobox]]:text-[12.5px] [&_button[role=combobox]]:shadow-[var(--shadow-inset-deep)] [&_input]:h-[34px] [&_input]:min-h-0 [&_input]:rounded-sm [&_input]:border-[#c6d0dd] [&_input]:bg-white [&_input]:text-[12.5px] [&_textarea]:rounded-sm [&_textarea]:border-[#c6d0dd] [&_textarea]:bg-white [&_textarea]:text-[12.5px]">
-                {Object.keys(errors).length > 0 && (
-                  <div
-                    role="alert"
-                    className="flex items-start gap-2 rounded-md border border-destructive/30 bg-destructive/5 px-3 py-2.5 text-destructive"
+        <form
+          onSubmit={handleSubmit(onSubmit, onInvalid)}
+          className="flex flex-1 flex-col overflow-hidden"
+        >
+          <div className="flex-1 overflow-y-auto bg-[#e6ebf2] px-4 py-4">
+            <div className="mx-auto max-w-[888px] space-y-3.5 [&_button[role=combobox]]:h-[34px] [&_button[role=combobox]]:min-h-0 [&_button[role=combobox]]:rounded-sm [&_button[role=combobox]]:border-[#c6d0dd] [&_button[role=combobox]]:bg-white [&_button[role=combobox]]:text-[12.5px] [&_button[role=combobox]]:shadow-[var(--shadow-inset-deep)] [&_input]:h-[34px] [&_input]:min-h-0 [&_input]:rounded-sm [&_input]:border-[#c6d0dd] [&_input]:bg-white [&_input]:text-[12.5px] [&_textarea]:rounded-sm [&_textarea]:border-[#c6d0dd] [&_textarea]:bg-white [&_textarea]:text-[12.5px]">
+            {Object.keys(errors).length > 0 && (
+              <div
+                role="alert"
+                className="flex items-start gap-2 rounded-md border border-destructive/30 bg-destructive/5 px-3 py-2.5 text-destructive"
+              >
+                <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
+                <div>
+                  <p className="text-[12.5px] font-medium">Aún faltan datos obligatorios</p>
+                  <p className="mt-0.5 text-[11.5px] leading-4">
+                    {firstFormErrorMessage(errors) ?? "Revisá las indicaciones en rojo del formulario"}
+                  </p>
+                </div>
+              </div>
+            )}
+            {/* ① Informacion basica（共用：类别 / 名称 / 收案 / 经办）*/}
+            <Section title="① Información básica" required>
+              {/* Categoría del caso | Fecha de admisión（与类别等宽）| Nombre del caso（剩余）*/}
+              <div className="grid grid-cols-1 gap-3 lg:grid-cols-[160px_160px_minmax(0,1fr)]">
+                <Field label="Categoría del caso" required>
+                  <Select
+                    value={category}
+                    onValueChange={(v) => setValue("category", v as MatterCategory)}
                   >
-                    <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
-                    <div>
-                      <p className="text-[12.5px] font-medium">
-                        Aún faltan datos obligatorios
-                      </p>
-                      <p className="mt-0.5 text-[11.5px] leading-4">
-                        {firstFormErrorMessage(errors) ??
-                          "Revise las indicaciones en rojo del formulario"}
+                    <SelectTrigger className="h-[34px] bg-white text-[12.5px]">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {CATEGORIES.map((c) => (
+                        <SelectItem key={c} value={c}>
+                          {matterCategoryLabel[c]}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </Field>
+                <Field label="Fecha de admisión">
+                  <Input
+                    type="date"
+                    className="h-[34px]"
+                    value={
+                      receivedAt ? new Date(receivedAt).toISOString().split("T")[0] : ""
+                    }
+                    onChange={(e) =>
+                      setValue("receivedAt", new Date(e.target.value), { shouldDirty: true })
+                    }
+                  />
+                </Field>
+                <Field label={nameLabel} error={errors.title?.message}>
+                  {(() => {
+                    const titleReg = register("title");
+                    return (
+                      <Input
+                        placeholder="Se genera automáticamente si queda vacío"
+                        className="h-[34px]"
+                        {...titleReg}
+                        onChange={(e) => {
+                          titleReg.onChange(e);
+                          setTitleTouched(true);
+                        }}
+                      />
+                    );
+                  })()}
+                </Field>
+              </div>
+
+              {/* 诉讼/仲裁：案情信息（并入基本信息）*/}
+              {kind === "litigation" && (
+                <>
+                {/* Trámite actual | Causa | 管辖地 | 争议解决机构 */}
+                <div className="grid grid-cols-1 gap-3 lg:grid-cols-4">
+                  <Field label="Trámite actual" required error={errors.firstProcedureType?.message}>
+                    <Select
+                      value={firstProcedureType ?? ""}
+                      onValueChange={(v) => handleProcedureChange(v as ProcedureType)}
+                    >
+                      <SelectTrigger className="h-[34px] bg-white text-[12.5px]">
+                        <SelectValue placeholder="Seleccionar trámite actual" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {procedureOptions.map((p) => (
+                          <SelectItem key={p} value={p}>
+                            {procedureTypeLabel[p]}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </Field>
+                  <Field
+                    label="Causa"
+                    required
+                    hint={!firstProcedureType ? "Primero seleccioná el trámite / instancia" : undefined}
+                  >
+                    <CauseCombobox
+                      category={category}
+                      procedureType={firstProcedureType}
+                      value={watch("causeId") || ""}
+                      disabled={!firstProcedureType}
+                      placeholder={firstProcedureType ? "Hacé clic para seleccionar" : "Primero seleccioná el trámite actual"}
+                      onChange={(id, name) => {
+                        setValue("causeId", id, { shouldDirty: true });
+                        setCauseName(name);
+                      }}
+                    />
+                  </Field>
+                  <Field label="Jurisdicción">
+                    <JurisdictionSelect
+                      value={jurisdiction}
+                      onChange={handleJurisdictionChange}
+                      triggerClassName="h-[34px]"
+                    />
+                  </Field>
+                  <Field label="Órgano de resolución de conflictos">
+                    <Select
+                      value={watch("firstAgency") || ""}
+                      onValueChange={handleFirstAgencyChange}
+                      disabled={agencyOpts.length === 0}
+                    >
+                      <SelectTrigger className="h-[34px] bg-white text-[12.5px]">
+                        <SelectValue placeholder="Seleccionar órgano" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {agencyOpts.map((a) => (
+                          <SelectItem key={a} value={a}>
+                            {a}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </Field>
+                </div>
+
+                {/* 标的额（1/4）| 标的描述（3/4）*/}
+                <div className="grid grid-cols-1 gap-3 lg:grid-cols-4">
+                  <Field label="Monto reclamado ($)" error={errors.claimAmount?.message}>
+                    <Input
+                      type="number"
+                      inputMode="decimal"
+                      step="0.01"
+                      placeholder="0.00"
+                      className="font-mono"
+                      {...register("claimAmount", {
+                        setValueAs: (value) => (value === "" ? undefined : Number(value))
+                      })}
+                    />
+                  </Field>
+                  <Field label="Descripción del reclamo (no monetario u otras pretensiones)" className="sm:col-span-3">
+                    <Input
+                      placeholder="Ej.: solicitar la validez del contrato / solicitar el cese de la infracción"
+                      {...register("claimDescription")}
+                    />
+                  </Field>
+                </div>
+
+                {/* 主办 | 协办 | 是否需向律协备案 | 是否反诉（各 1/4）*/}
+                <div className="grid grid-cols-1 gap-3 lg:grid-cols-4">
+                  {leadField()}
+                  {coLeadField()}
+                  {barFilingField()}
+                  {counterclaimField()}
+                </div>
+              </>
+            )}
+
+            {/* 非诉/专项：项目信息（并入基本信息）*/}
+            {kind === "project" && (
+              <>
+                <div className="grid grid-cols-1 gap-3 lg:grid-cols-4">
+                  <Field label="Tipo de negocio">
+                    <Select
+                      value={watch("businessType") || ""}
+                      onValueChange={(v) => setValue("businessType", v, { shouldDirty: true })}
+                    >
+                      <SelectTrigger className="h-[34px] bg-white text-[12.5px]">
+                        <SelectValue placeholder="Seleccionar tipo de negocio" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {PROJECT_BUSINESS_TYPES.map((t) => (
+                          <SelectItem key={t} value={t}>
+                            {t}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </Field>
+                  <Field label="Monto del proyecto ($)" error={errors.claimAmount?.message}>
+                    <Input
+                      type="number"
+                      inputMode="decimal"
+                      step="0.01"
+                      placeholder="0.00"
+                      className="font-mono"
+                      {...register("claimAmount", {
+                        setValueAs: (value) => (value === "" ? undefined : Number(value))
+                      })}
+                    />
+                  </Field>
+                  <Field label="Fecha de inicio">
+                    <Input
+                      type="date"
+                      value={
+                        watch("serviceStart")
+                          ? new Date(watch("serviceStart")!).toISOString().split("T")[0]
+                          : ""
+                      }
+                      onChange={(e) =>
+                        setValue(
+                          "serviceStart",
+                          e.target.value ? new Date(e.target.value) : undefined,
+                          { shouldDirty: true }
+                        )
+                      }
+                    />
+                  </Field>
+                  <Field label="Fecha de finalización">
+                    <Input
+                      type="date"
+                      value={
+                        watch("serviceEnd")
+                          ? new Date(watch("serviceEnd")!).toISOString().split("T")[0]
+                          : ""
+                      }
+                      onChange={(e) =>
+                        setValue(
+                          "serviceEnd",
+                          e.target.value ? new Date(e.target.value) : undefined,
+                          { shouldDirty: true }
+                        )
+                      }
+                    />
+                  </Field>
+                </div>
+                <div className="grid grid-cols-1 gap-3 lg:grid-cols-4">
+                  <Field label="Alcance del servicio / Contenido" className="sm:col-span-3">
+                    <Input
+                      placeholder="Ej.: alcance de la debida diligencia, checklist de revisión de contratos, diseño de la estructura de la transacción…"
+                      {...register("serviceScope")}
+                    />
+                  </Field>
+                  <Field label="Entregables">
+                    <Input placeholder="Ej.: dictamen legal / informe de debida diligencia" {...register("deliverables")} />
+                  </Field>
+                </div>
+                {/* 主办 | 协办（各 1/2）*/}
+                <div className="grid grid-cols-1 gap-3 lg:grid-cols-2">
+                  {leadField()}
+                  {coLeadField()}
+                </div>
+              </>
+            )}
+
+            {/* 顾问：顾问信息（并入基本信息）*/}
+            {kind === "counsel" && (
+              <>
+                <div className="grid grid-cols-1 gap-3 lg:grid-cols-4">
+                  <Field label="Tipo de asesoría">
+                    <Select
+                      value={watch("counselType") || ""}
+                      onValueChange={(v) => setValue("counselType", v, { shouldDirty: true })}
+                    >
+                      <SelectTrigger className="h-[34px] bg-white text-[12.5px]">
+                        <SelectValue placeholder="Seleccionar tipo de asesoría" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {COUNSEL_TYPES.map((t) => (
+                          <SelectItem key={t} value={t}>
+                            {t}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </Field>
+                  <Field label="Vigencia de la asesoría · Inicio">
+                    <Input
+                      type="date"
+                      value={
+                        watch("serviceStart")
+                          ? new Date(watch("serviceStart")!).toISOString().split("T")[0]
+                          : ""
+                      }
+                      onChange={(e) =>
+                        setValue(
+                          "serviceStart",
+                          e.target.value ? new Date(e.target.value) : undefined,
+                          { shouldDirty: true }
+                        )
+                      }
+                    />
+                  </Field>
+                  <Field label="Vigencia de la asesoría · Fin">
+                    <Input
+                      type="date"
+                      value={
+                        watch("serviceEnd")
+                          ? new Date(watch("serviceEnd")!).toISOString().split("T")[0]
+                          : ""
+                      }
+                      onChange={(e) =>
+                        setValue(
+                          "serviceEnd",
+                          e.target.value ? new Date(e.target.value) : undefined,
+                          { shouldDirty: true }
+                        )
+                      }
+                    />
+                  </Field>
+                  <Field label="Teléfono de contacto">
+                    <Input className="font-mono" placeholder="Teléfono del contacto" {...register("contactPhone")} />
+                  </Field>
+                </div>
+                <Field label="Alcance del servicio / Contenido">
+                  <Input
+                    placeholder="Ej.: asesoría legal diaria, revisión de contratos, dictámenes legales especiales…"
+                    {...register("serviceScope")}
+                  />
+                </Field>
+                {/* 主办 | 协办（各 1/2）*/}
+                <div className="grid grid-cols-1 gap-3 lg:grid-cols-2">
+                  {leadField()}
+                  {coLeadField()}
+                </div>
+              </>
+            )}
+            </Section>
+
+            {/* ③ 当事人 / 相关方（按类别）*/}
+            {kind === "litigation" && (
+            <Section
+              title="② Partes del caso"
+              required
+              headerAction={addPartyBtn("Agregar parte")}
+            >
+              {watch("ourStanding") && RECEIVING_STANDINGS.has(watch("ourStanding")!) && (
+                <div className="rounded-md border border-primary/20 bg-accent p-3">
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="text-xs text-muted-foreground">
+                      <div className="font-medium text-foreground">
+                        <ScanLine className="mr-1 inline h-3 w-3 text-primary" />
+                        Reconocer demanda / solicitud
+                      </div>
+                      <p className="mt-0.5">
+                        Cuando somos la parte pasiva, podés subir la demanda / solicitud de la contraparte (JPG / PNG / WebP / PDF, ≤ 20MB) para que la IA extraiga automáticamente los datos de la contraparte y sus pretensiones
                       </p>
                     </div>
-                  </div>
-                )}
-                {/* ① Información básica (compartida: categoría / nombre / admisión / gestión) */}
-                <Section title="① Información básica" required>
-                  {/* Categoría del caso | Fecha de admisión (ancho según categoría, etc.) | Nombre del caso (resto) */}
-                  <div className="grid grid-cols-1 gap-3 lg:grid-cols-[160px_160px_minmax(0,1fr)]">
-                    <Field label="Categoría del caso" required>
-                      <Select
-                        value={category}
-                        onValueChange={(v) =>
-                          setValue("category", v as MatterCategory)
-                        }
-                      >
-                        <SelectTrigger className="h-[34px] bg-white text-[12.5px]">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {CATEGORIES.map((c) => (
-                            <SelectItem key={c} value={c}>
-                              {matterCategoryLabel[c]}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </Field>
-                    <Field label="Fecha de admisión">
-                      <Input
-                        type="date"
-                        className="h-[34px]"
-                        value={
-                          receivedAt
-                            ? new Date(receivedAt).toISOString().split("T")[0]
-                            : ""
-                        }
-                        onChange={(e) =>
-                          setValue("receivedAt", new Date(e.target.value), {
-                            shouldDirty: true,
-                          })
-                        }
-                      />
-                    </Field>
-                    <Field label={nameLabel} error={errors.title?.message}>
-                      {(() => {
-                        const titleReg = register("title");
-                        return (
-                          <Input
-                            placeholder="Se genera automáticamente si queda vacío"
-                            className="h-[34px]"
-                            {...titleReg}
-                            onChange={(e) => {
-                              titleReg.onChange(e);
-                              setTitleTouched(true);
-                            }}
-                          />
-                        );
-                      })()}
-                    </Field>
-                  </div>
-
-                  {/* Litigio/arbitraje: información del caso (integrada en información básica) */}
-                  {kind === "litigation" && (
-                    <>
-                      {/* Procedimiento actual | Causa | Jurisdicción | Órgano de resolución de disputas */}
-                      <div className="grid grid-cols-1 gap-3 lg:grid-cols-4">
-                        <Field
-                          label="Trámite actual"
-                          required
-                          error={errors.firstProcedureType?.message}
-                        >
-                          <Select
-                            value={firstProcedureType ?? ""}
-                            onValueChange={(v) =>
-                              handleProcedureChange(v as ProcedureType)
-                            }
-                          >
-                            <SelectTrigger className="h-[34px] bg-white text-[12.5px]">
-                              <SelectValue placeholder="Seleccionar trámite actual" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {procedureOptions.map((p) => (
-                                <SelectItem key={p} value={p}>
-                                  {procedureTypeLabel[p]}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                        </Field>
-                        <Field
-                          label="Causa"
-                          required
-                          hint={
-                            !firstProcedureType
-                              ? "Primero seleccione el trámite / instancia"
-                              : undefined
-                          }
-                        >
-                          <CauseCombobox
-                            category={category}
-                            procedureType={firstProcedureType}
-                            value={watch("causeId") || ""}
-                            disabled={!firstProcedureType}
-                            placeholder={
-                              firstProcedureType
-                                ? "Haga clic para seleccionar"
-                                : "Primero seleccione el trámite"
-                            }
-                            onChange={(id, name) => {
-                              setValue("causeId", id, { shouldDirty: true });
-                              setCauseName(name);
-                            }}
-                          />
-                        </Field>
-                        <Field label="Jurisdicción">
-                          <JurisdictionSelect
-                            value={jurisdiction}
-                            onChange={handleJurisdictionChange}
-                            triggerClassName="h-[34px]"
-                          />
-                        </Field>
-                        <Field label="Órgano de resolución de disputas">
-                          <Select
-                            value={watch("firstAgency") || ""}
-                            onValueChange={handleFirstAgencyChange}
-                            disabled={agencyOpts.length === 0}
-                          >
-                            <SelectTrigger className="h-[34px] bg-white text-[12.5px]">
-                              <SelectValue placeholder="Seleccionar organismo" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {agencyOpts.map((a) => (
-                                <SelectItem key={a} value={a}>
-                                  {a}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                        </Field>
-                      </div>
-
-                      {/* Monto del objeto (1/4) | Descripción del objeto (3/4) */}
-                      <div className="grid grid-cols-1 gap-3 lg:grid-cols-4">
-                        <Field
-                          label="Monto del objeto (ARS)"
-                          error={errors.claimAmount?.message}
-                        >
-                          <Input
-                            type="number"
-                            inputMode="decimal"
-                            step="0.01"
-                            placeholder="0.00"
-                            className="font-mono"
-                            {...register("claimAmount", {
-                              setValueAs: (value) =>
-                                value === "" ? undefined : Number(value),
-                            })}
-                          />
-                        </Field>
-                        <Field
-                          label="Descripción del objeto (no monetario u otro reclamo)"
-                          className="sm:col-span-3"
-                        >
-                          <Input
-                            placeholder="Ej.: solicitar la validez del contrato / pedir cesar la infracción"
-                            {...register("claimDescription")}
-                          />
-                        </Field>
-                      </div>
-
-                      {/* Abogado principal | Co-abogado | Inscripción en colegio | Reconvención (cada uno 1/4) */}
-                      <div className="grid grid-cols-1 gap-3 lg:grid-cols-4">
-                        {leadField()}
-                        {coLeadField()}
-                        {barFilingField()}
-                        {counterclaimField()}
-                      </div>
-                    </>
-                  )}
-
-                  {/* No contencioso/proyectos: información del proyecto (integrada en información básica) */}
-                  {kind === "project" && (
-                    <>
-                      <div className="grid grid-cols-1 gap-3 lg:grid-cols-4">
-                        <Field label="Tipo de negocio">
-                          <Select
-                            value={watch("businessType") || ""}
-                            onValueChange={(v) =>
-                              setValue("businessType", v, { shouldDirty: true })
-                            }
-                          >
-                            <SelectTrigger className="h-[34px] bg-white text-[12.5px]">
-                              <SelectValue placeholder="Seleccionar tipo de negocio" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {PROJECT_BUSINESS_TYPES.map((t) => (
-                                <SelectItem key={t} value={t}>
-                                  {t}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                        </Field>
-                        <Field
-                          label="Monto del proyecto (ARS)"
-                          error={errors.claimAmount?.message}
-                        >
-                          <Input
-                            type="number"
-                            inputMode="decimal"
-                            step="0.01"
-                            placeholder="0.00"
-                            className="font-mono"
-                            {...register("claimAmount", {
-                              setValueAs: (value) =>
-                                value === "" ? undefined : Number(value),
-                            })}
-                          />
-                        </Field>
-                        <Field label="Fecha de inicio">
-                          <Input
-                            type="date"
-                            value={
-                              watch("serviceStart")
-                                ? new Date(watch("serviceStart")!)
-                                    .toISOString()
-                                    .split("T")[0]
-                                : ""
-                            }
-                            onChange={(e) =>
-                              setValue(
-                                "serviceStart",
-                                e.target.value
-                                  ? new Date(e.target.value)
-                                  : undefined,
-                                { shouldDirty: true },
-                              )
-                            }
-                          />
-                        </Field>
-                        <Field label="Fecha de finalización">
-                          <Input
-                            type="date"
-                            value={
-                              watch("serviceEnd")
-                                ? new Date(watch("serviceEnd")!)
-                                    .toISOString()
-                                    .split("T")[0]
-                                : ""
-                            }
-                            onChange={(e) =>
-                              setValue(
-                                "serviceEnd",
-                                e.target.value
-                                  ? new Date(e.target.value)
-                                  : undefined,
-                                { shouldDirty: true },
-                              )
-                            }
-                          />
-                        </Field>
-                      </div>
-                      <div className="grid grid-cols-1 gap-3 lg:grid-cols-4">
-                        <Field
-                          label="Alcance / contenido del servicio"
-                          className="sm:col-span-3"
-                        >
-                          <Input
-                            placeholder="Ej.: alcance de la debida diligencia, checklist de revisión contractual, diseño estructural de la transacción…"
-                            {...register("serviceScope")}
-                          />
-                        </Field>
-                        <Field label="Entregables">
-                          <Input
-                            placeholder="Ej.: dictamen legal / informe de diligencia"
-                            {...register("deliverables")}
-                          />
-                        </Field>
-                      </div>
-                      {/* Abogado principal | Co-abogado (cada uno 1/2) */}
-                      <div className="grid grid-cols-1 gap-3 lg:grid-cols-2">
-                        {leadField()}
-                        {coLeadField()}
-                      </div>
-                    </>
-                  )}
-
-                  {/* Consultoría: información de consultoría (integrada en información básica) */}
-                  {kind === "counsel" && (
-                    <>
-                      <div className="grid grid-cols-1 gap-3 lg:grid-cols-4">
-                        <Field label="Tipo de consultoría">
-                          <Select
-                            value={watch("counselType") || ""}
-                            onValueChange={(v) =>
-                              setValue("counselType", v, { shouldDirty: true })
-                            }
-                          >
-                            <SelectTrigger className="h-[34px] bg-white text-[12.5px]">
-                              <SelectValue placeholder="Seleccionar tipo de consultoría" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {COUNSEL_TYPES.map((t) => (
-                                <SelectItem key={t} value={t}>
-                                  {t}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                        </Field>
-                        <Field label="Plazo de consultoría · inicio">
-                          <Input
-                            type="date"
-                            value={
-                              watch("serviceStart")
-                                ? new Date(watch("serviceStart")!)
-                                    .toISOString()
-                                    .split("T")[0]
-                                : ""
-                            }
-                            onChange={(e) =>
-                              setValue(
-                                "serviceStart",
-                                e.target.value
-                                  ? new Date(e.target.value)
-                                  : undefined,
-                                { shouldDirty: true },
-                              )
-                            }
-                          />
-                        </Field>
-                        <Field label="Plazo de consultoría · fin">
-                          <Input
-                            type="date"
-                            value={
-                              watch("serviceEnd")
-                                ? new Date(watch("serviceEnd")!)
-                                    .toISOString()
-                                    .split("T")[0]
-                                : ""
-                            }
-                            onChange={(e) =>
-                              setValue(
-                                "serviceEnd",
-                                e.target.value
-                                  ? new Date(e.target.value)
-                                  : undefined,
-                                { shouldDirty: true },
-                              )
-                            }
-                          />
-                        </Field>
-                        <Field label="Teléfono de contacto">
-                          <Input
-                            className="font-mono"
-                            placeholder="Teléfono de la persona de contacto"
-                            {...register("contactPhone")}
-                          />
-                        </Field>
-                      </div>
-                      <Field label="Alcance / contenido del servicio">
-                        <Input
-                          placeholder="Ej.: asesoría jurídica diaria, revisión contractual, dictámenes legales específicos…"
-                          {...register("serviceScope")}
-                        />
-                      </Field>
-                      {/* Abogado principal | Co-abogado (cada uno 1/2) */}
-                      <div className="grid grid-cols-1 gap-3 lg:grid-cols-2">
-                        {leadField()}
-                        {coLeadField()}
-                      </div>
-                    </>
-                  )}
-                </Section>
-
-                {/* ② Partes del caso (según categoría) */}
-                {kind === "litigation" && (
-                  <Section
-                    title="② Partes del caso"
-                    required
-                    headerAction={addPartyBtn("Agregar parte")}
-                  >
-                    {watch("ourStanding") &&
-                      RECEIVING_STANDINGS.has(watch("ourStanding")!) && (
-                        <div className="rounded-md border border-primary/20 bg-accent p-3">
-                          <div className="flex items-start justify-between gap-3">
-                            <div className="text-xs text-muted-foreground">
-                              <div className="font-medium text-foreground">
-                                <ScanLine className="mr-1 inline h-3 w-3 text-primary" />
-                                Reconocer demanda / solicitud
-                              </div>
-                              <p className="mt-0.5">
-                                Si somos la parte pasiva, puede subir la demanda
-                                o solicitud de la parte contraria (JPG / PNG /
-                                WebP / PDF, ≤ 20 MB); la IA extrae
-                                automáticamente a la parte contraria y sus
-                                pretensiones
-                              </p>
-                            </div>
-                            <input
-                              ref={pleadingRef}
-                              type="file"
-                              accept="image/jpeg,image/png,image/webp,application/pdf"
-                              className="hidden"
-                              onChange={(e) => {
-                                const f = e.target.files?.[0];
-                                if (f) handlePleadingFile(f);
-                              }}
-                            />
-                            <Button
-                              type="button"
-                              variant="outline"
-                              size="sm"
-                              onClick={() => pleadingRef.current?.click()}
-                              disabled={ocrPending}
-                              className="h-7 shrink-0 gap-1"
-                            >
-                              {ocrPending ? (
-                                <Loader2 className="h-3 w-3 animate-spin" />
-                              ) : (
-                                <ScanLine className="h-3 w-3" />
-                              )}
-                              Subir y reconocer
-                            </Button>
-                          </div>
-                        </div>
+                    <input
+                      ref={pleadingRef}
+                      type="file"
+                      accept="image/jpeg,image/png,image/webp,application/pdf"
+                      className="hidden"
+                      onChange={(e) => {
+                        const f = e.target.files?.[0];
+                        if (f) handlePleadingFile(f);
+                      }}
+                    />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => pleadingRef.current?.click()}
+                      disabled={ocrPending}
+                      className="h-7 shrink-0 gap-1"
+                    >
+                      {ocrPending ? (
+                        <Loader2 className="h-3 w-3 animate-spin" />
+                      ) : (
+                        <ScanLine className="h-3 w-3" />
                       )}
+                      Subir y reconocer
+                    </Button>
+                  </div>
+                </div>
+              )}
 
-                    {renderParties("litigation")}
-                  </Section>
+              {renderParties("litigation")}
+            </Section>
+            )}
+
+            {/* ③ 非诉/专项：委托方与相对方（无诉讼地位）*/}
+            {kind === "project" && (
+              <Section title="② Comitente y contraparte" headerAction={addPartyBtn("Agregar contraparte")}>
+                {renderParties("project")}
+              </Section>
+            )}
+
+            {/* ③ 顾问：顾问单位 */}
+            {kind === "counsel" && (
+              <Section title="② Entidad asesorada" required>
+                {renderParties("counsel")}
+              </Section>
+            )}
+
+            {/* 3. 律师费 */}
+            <Section title={kind === "counsel" ? "③ Honorarios de asesoría" : "③ Honorarios de abogado"}>
+              <div
+                className={cn(
+                  "grid grid-cols-1 gap-3",
+                  feeType
+                    ? "lg:grid-cols-[minmax(13rem,0.95fr)_minmax(10rem,0.65fr)_minmax(15rem,1fr)_minmax(12rem,0.85fr)]"
+                    : "lg:grid-cols-[minmax(13rem,0.95fr)]"
                 )}
-
-                {/* ② Cliente y parte contraria (sin posición procesal) */}
-                {kind === "project" && (
-                  <Section
-                    title="② Cliente y parte contraria"
-                    headerAction={addPartyBtn("Agregar parte contraria")}
-                  >
-                    {renderParties("project")}
-                  </Section>
-                )}
-
-                {/* ② Entidad consultora */}
-                {kind === "counsel" && (
-                  <Section title="② Entidad consultora" required>
-                    {renderParties("counsel")}
-                  </Section>
-                )}
-
-                {/* ③ Honorarios */}
-                <Section
-                  title={
-                    kind === "counsel"
-                      ? "③ Honorarios de consultoría"
-                      : "③ Honorarios de abogados"
-                  }
-                >
+              >
+                <Field label="Modalidad de cobro">
                   <div
                     className={cn(
-                      "grid grid-cols-1 gap-3",
-                      feeType
-                        ? "lg:grid-cols-[minmax(13rem,0.95fr)_minmax(10rem,0.65fr)_minmax(15rem,1fr)_minmax(12rem,0.85fr)]"
-                        : "lg:grid-cols-[minmax(13rem,0.95fr)]",
+                      "grid gap-1.5",
+                      kind === "counsel" ? "grid-cols-2" : "grid-cols-3"
                     )}
                   >
-                    <Field label="Forma de cobro">
-                      <div
+                    {/* 顾问费不含风险代理 */}
+                    {FEE_TYPES.filter((t) => kind !== "counsel" || t !== "CONTINGENCY").map((t) => (
+                      <button
+                        key={t}
+                        type="button"
+                        onClick={() => setValue("feeType", t, { shouldDirty: true })}
                         className={cn(
-                          "grid gap-1.5",
-                          kind === "counsel" ? "grid-cols-2" : "grid-cols-3",
+                          "flex h-[34px] items-center justify-center whitespace-nowrap rounded-sm border px-2 text-[12px] font-medium transition-colors",
+                          feeType === t
+                            ? "border-primary bg-primary/15 text-primary"
+                            : "border-[#c6d0dd] bg-white text-muted-foreground shadow-[var(--shadow-inset-deep)] hover:border-input hover:bg-muted hover:text-foreground"
                         )}
                       >
-                        {/* Los honorarios de consultoría no incluyen representación de riesgo */}
-                        {FEE_TYPES.filter(
-                          (t) => kind !== "counsel" || t !== "CONTINGENCY",
-                        ).map((t) => (
-                          <button
-                            key={t}
-                            type="button"
-                            onClick={() =>
-                              setValue("feeType", t, { shouldDirty: true })
-                            }
-                            className={cn(
-                              "flex h-[34px] items-center justify-center whitespace-nowrap rounded-sm border px-2 text-[12px] font-medium transition-colors",
-                              feeType === t
-                                ? "border-primary bg-primary/15 text-primary"
-                                : "border-[#c6d0dd] bg-white text-muted-foreground shadow-[var(--shadow-inset-deep)] hover:border-input hover:bg-muted hover:text-foreground",
-                            )}
-                          >
-                            {feeTypeLabel[t]}
-                          </button>
-                        ))}
-                      </div>
-                    </Field>
-
-                    {feeType && (
-                      <Field
-                        label={
-                          feeType === "TIMED"
-                            ? "Tarifa por hora (ARS/hora)"
-                            : feeType === "CONTINGENCY"
-                              ? "Honorario base del caso (ARS)"
-                              : "Monto total (ARS)"
-                        }
-                        required
-                        error={errors.feeAmount?.message}
-                      >
-                        <Input
-                          type="number"
-                          inputMode="decimal"
-                          step="0.01"
-                          placeholder="0.00"
-                          className="font-mono"
-                          {...register("feeAmount", {
-                            setValueAs: (value) =>
-                              value === "" ? undefined : Number(value),
-                          })}
-                        />
-                      </Field>
-                    )}
-
-                    {feeType && (
-                      <Field
-                        label={
-                          feeType === "TIMED"
-                            ? "Detalle de facturación / período de liquidación"
-                            : "Etapas de pago / acuerdos de financiamiento"
-                        }
-                      >
-                        <Input
-                          placeholder={
-                            feeType === "TIMED"
-                              ? "Ej.: liquidación mensual, socio a 2000 ARS/hora"
-                              : feeType === "CONTINGENCY"
-                                ? "Ej.: honorario base pagado al firmar; honorario de riesgo pagado dentro de 7 días después del cobro"
-                                : "Ej.: 50% al firmar, 30% antes del juicio, 20% al cierre del caso"
-                          }
-                          {...register("feeSchedule")}
-                        />
-                      </Field>
-                    )}
-
-                    {feeType && feeType !== "CONTINGENCY" && (
-                      <Field label="Observaciones de costos (opcional)">
-                        <Input
-                          placeholder="Ej.: incluye viáticos / incluye adelantos de costas judiciales"
-                          {...register("feeNote")}
-                        />
-                      </Field>
-                    )}
+                        {feeTypeLabel[t]}
+                      </button>
+                    ))}
                   </div>
+                </Field>
 
-                  {feeType === "CONTINGENCY" && (
-                    <div className="grid grid-cols-1 gap-3 lg:grid-cols-[minmax(0,1fr)_minmax(12rem,0.55fr)]">
-                      <Field
-                        label="Modalidad de cobro por representación de riesgo"
-                        required
-                        hint="Ej.: 15% al cobro; o cálculo escalonado según el monto de la sentencia favorable"
-                      >
-                        <Textarea
-                          rows={2}
-                          placeholder="Detalle la modalidad de cobro / condiciones de activación / porcentaje aplicable"
-                          className="min-h-[68px]"
-                          {...register("contingencyTerms")}
-                        />
-                      </Field>
-                      <Field label="Observaciones de costos (opcional)">
-                        <Textarea
-                          rows={2}
-                          placeholder="Ej.: incluye viáticos / incluye adelantos de costas judiciales"
-                          className="min-h-[68px]"
-                          {...register("feeNote")}
-                        />
-                      </Field>
-                    </div>
-                  )}
-                </Section>
+                {feeType && (
+                  <Field
+                    label={
+                      feeType === "TIMED"
+                        ? "Tarifa por hora ($/hora)"
+                        : feeType === "CONTINGENCY"
+                          ? "Honorario base ($)"
+                          : "Monto total ($)"
+                    }
+                    required
+                    error={errors.feeAmount?.message}
+                  >
+                    <Input
+                      type="number"
+                      inputMode="decimal"
+                      step="0.01"
+                      placeholder="0.00"
+                      className="font-mono"
+                      {...register("feeAmount", {
+                        setValueAs: (value) => (value === "" ? undefined : Number(value))
+                      })}
+                    />
+                  </Field>
+                )}
 
-                {/* ④ Contrato de mandato / anexos relacionados */}
-                <Section
-                  title="④ Contrato de mandato / anexos relacionados"
-                  headerAction={
-                    <>
-                      <input
-                        ref={fileRef}
-                        type="file"
-                        multiple
-                        className="hidden"
-                        onChange={(e) => handleFiles(e.target.files)}
-                      />
+                {feeType && (
+                  <Field label={feeType === "TIMED" ? "Detalle de facturación / Ciclo de liquidación" : "Hitos de pago / Acuerdo de cuotas"}>
+                    <Input
+                      placeholder={
+                        feeType === "TIMED"
+                          ? "Ej.: liquidación mensual, socio $2000/hora"
+                          : feeType === "CONTINGENCY"
+                            ? "Ej.: honorario base se paga al firmar; el honorario de éxito se paga dentro de los 7 días de percibido"
+                            : "Ej.: 50% al firmar, 30% antes de la audiencia, 20% al cierre"
+                      }
+                      {...register("feeSchedule")}
+                    />
+                  </Field>
+                )}
+
+                {feeType && feeType !== "CONTINGENCY" && (
+                  <Field label="Observaciones sobre honorarios (opcional)">
+                    <Input placeholder="Ej.: incluye viáticos / incluye anticipo de costas" {...register("feeNote")} />
+                  </Field>
+                )}
+              </div>
+
+              {feeType === "CONTINGENCY" && (
+                <div className="grid grid-cols-1 gap-3 lg:grid-cols-[minmax(0,1fr)_minmax(12rem,0.55fr)]">
+                  <Field label="Modalidad de honorario de éxito" required hint="Ej.: 15% al percibir el cobro; o escalas según el monto obtenido">
+                    <Textarea
+                      rows={2}
+                      placeholder="Describí en detalle la modalidad del honorario de éxito / condiciones que lo activan / porcentaje aplicado"
+                      className="min-h-[68px]"
+                      {...register("contingencyTerms")}
+                    />
+                  </Field>
+                  <Field label="Observaciones sobre honorarios (opcional)">
+                    <Textarea
+                      rows={2}
+                      placeholder="Ej.: incluye viáticos / incluye anticipo de costas"
+                      className="min-h-[68px]"
+                      {...register("feeNote")}
+                    />
+                  </Field>
+                </div>
+              )}
+            </Section>
+
+            {/* 4. 合同 */}
+            <Section
+              title="④ Contrato de mandato / Anexos relacionados"
+              headerAction={
+                <>
+                  <input
+                    ref={fileRef}
+                    type="file"
+                    multiple
+                    className="hidden"
+                    onChange={(e) => handleFiles(e.target.files)}
+                  />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => fileRef.current?.click()}
+                    className="h-7 gap-1"
+                  >
+                    <Paperclip className="h-3 w-3" />
+                    Agregar
+                  </Button>
+                </>
+              }
+            >
+              {contracts.length === 0 ? (
+                <p className="rounded-md border border-dashed border-[#c6d0dd] bg-[#e9eef5] py-4 text-center text-xs text-muted-foreground">
+                  Subí el contrato de mandato, poder de representación, etc. (almacenamiento cifrado, cada archivo ≤ 20MB)
+                </p>
+              ) : (
+                <ul className="space-y-1.5">
+                  {contracts.map((f, i) => (
+                    <li
+                      key={i}
+                      className="flex items-center gap-2 rounded-md border border-[#c6d0dd] bg-white px-3 py-2 text-xs shadow-[var(--shadow-inset-deep)]"
+                    >
+                      <FileText className="h-3.5 w-3.5 text-primary" />
+                      <span className="flex-1 truncate">{f.name}</span>
+                      <span className="font-mono text-[10px] text-muted-foreground tabular">
+                        {(f.size / 1024).toFixed(0)} KB
+                      </span>
                       <Button
                         type="button"
-                        variant="outline"
+                        variant="ghost"
                         size="sm"
-                        onClick={() => fileRef.current?.click()}
-                        className="h-7 gap-1"
+                        onClick={() => setContracts((c) => c.filter((_, j) => j !== i))}
+                        className="h-5 w-5 p-0 text-destructive"
                       >
-                        <Paperclip className="h-3 w-3" />
-                        Agregar
+                        <X className="h-3 w-3" />
                       </Button>
-                    </>
-                  }
-                >
-                  {contracts.length === 0 ? (
-                    <p className="rounded-md border border-dashed border-[#c6d0dd] bg-[#e9eef5] py-4 text-center text-xs text-muted-foreground">
-                      Suba el contrato de representación, poder o documentos
-                      relacionados (almacenamiento cifrado; cada archivo ≤ 20
-                      MB)
-                    </p>
-                  ) : (
-                    <ul className="space-y-1.5">
-                      {contracts.map((f, i) => (
-                        <li
-                          key={i}
-                          className="flex items-center gap-2 rounded-md border border-[#c6d0dd] bg-white px-3 py-2 text-xs shadow-[var(--shadow-inset-deep)]"
-                        >
-                          <FileText className="h-3.5 w-3.5 text-primary" />
-                          <span className="flex-1 truncate">{f.name}</span>
-                          <span className="font-mono text-[10px] text-muted-foreground tabular">
-                            {(f.size / 1024).toFixed(0)} KB
-                          </span>
-                          <Button
-                            type="button"
-                            variant="ghost"
-                            size="sm"
-                            onClick={() =>
-                              setContracts((c) => c.filter((_, j) => j !== i))
-                            }
-                            className="h-5 w-5 p-0 text-destructive"
-                          >
-                            <X className="h-3 w-3" />
-                          </Button>
-                        </li>
-                      ))}
-                    </ul>
-                  )}
-                </Section>
-              </div>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </Section>
             </div>
+          </div>
 
-            <DialogFooter className="border-t border-border bg-card px-8 py-4">
-              <div className="mr-auto hidden text-[12px] text-muted-foreground sm:block">
-                Registro completo · al enviar, pasa a aprobación
-              </div>
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => onOpenChange(false)}
-                disabled={isPending}
-                className="h-8 rounded-full px-4 text-[12.5px]"
-              >
-                Cancelar
-              </Button>
-              <Button
-                type="submit"
-                disabled={isPending}
-                className="h-8 rounded-full gap-2 px-5 text-[12.5px]"
-              >
-                {isPending && <Loader2 className="h-4 w-4 animate-spin" />}
-                Enviar para aprobación
-                <ChevronRight className="h-4 w-4" strokeWidth={2} />
-              </Button>
-            </DialogFooter>
-          </form>
+          <DialogFooter className="border-t border-border bg-card px-8 py-4">
+            <div className="mr-auto hidden text-[12px] text-muted-foreground sm:block">
+              Registro completo · Se envía a aprobación al enviar
+            </div>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => onOpenChange(false)}
+              disabled={isPending}
+              className="h-8 rounded-full px-4 text-[12.5px]"
+            >
+              Cancelar
+            </Button>
+            <Button type="submit" disabled={isPending} className="h-8 rounded-full gap-2 px-5 text-[12.5px]">
+              {isPending && <Loader2 className="h-4 w-4 animate-spin" />}
+              Enviar a aprobación
+              <ChevronRight className="h-4 w-4" strokeWidth={2} />
+            </Button>
+          </DialogFooter>
+        </form>
         </FormProvider>
       </DialogContent>
       <CauseRecommendationDialog
@@ -1808,14 +1571,14 @@ export function IntakeSheet({
         contextHints={(() => {
           const lines: string[] = [];
           const cf = watch("causeFreeText");
-          if (cf) lines.push(`Causa reconocida por OCR: ${cf}`);
+          if (cf) lines.push(`OCR 识别案由：${cf}`);
           const cd = watch("claimDescription");
-          if (cd) lines.push(`Pretensión: ${cd}`);
+          if (cd) lines.push(`诉讼请求：${cd}`);
           const opp = parties
             .filter((p) => p.role === "OPPOSING_PARTY")
             .map((p) => p.name)
             .filter(Boolean);
-          if (opp.length) lines.push(`Parte contraria: ${opp.join(", ")}`);
+          if (opp.length) lines.push(`对方当事人：${opp.join(",")}`);
           return lines.join("\n");
         })()}
         onSelect={handleAiRecSelect}
@@ -1828,7 +1591,7 @@ function Section({
   title,
   required,
   headerAction,
-  children,
+  children
 }: {
   title: string;
   required?: boolean;
@@ -1860,7 +1623,7 @@ function Field({
   error,
   hint,
   className,
-  children,
+  children
 }: {
   label: string;
   required?: boolean;
@@ -1876,9 +1639,7 @@ function Field({
         {required && <span className="text-destructive">*</span>}
       </Label>
       {children}
-      {hint && !error && (
-        <p className="text-[11px] leading-4 text-muted-foreground">{hint}</p>
-      )}
+      {hint && !error && <p className="text-[11px] leading-4 text-muted-foreground">{hint}</p>}
       {error && <p className="text-xs text-destructive">{error}</p>}
     </div>
   );

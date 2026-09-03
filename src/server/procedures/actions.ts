@@ -1,4 +1,4 @@
-"use server";
+﻿"use server";
 
 import { prisma } from "@/lib/prisma";
 import { requireSession } from "@/lib/auth/session";
@@ -73,7 +73,7 @@ export async function addProcedure(input: ProcedureCreateInput) {
     data: {
       matterId: data.matterId,
       eventType: "PROCEDURE_ADDED",
-      title: `新增程序：${created.customLabel ?? created.type}`,
+      title: `æ–°å¢žç¨‹åºï¼š${created.customLabel ?? created.type}`,
       occurredAt: new Date(),
       refType: "MatterProcedure",
       refId: created.id
@@ -101,7 +101,7 @@ export async function updateProcedure(input: ProcedureUpdateInput) {
     where: { id },
     select: { matterId: true, type: true, jurisdiction: true, handlingAgency: true }
   });
-  if (!existing) throw new Error("程序不存在");
+  if (!existing) throw new Error("ç¨‹åºä¸å­˜åœ¨");
   await assertCanAccessMatter(session.user.id, session.user.role, existing.matterId);
   await assertMatterWritable(existing.matterId);
   assertAgencyAllowedForProcedure(rest.handlingAgency ?? existing.handlingAgency, rest.type ?? existing.type);
@@ -139,7 +139,7 @@ export async function deleteProcedure(id: string) {
 
   await assertCanAccessMatter(session.user.id, session.user.role, procedure.matterId);
   await assertMatterWritable(procedure.matterId);
-  await assertCanLeadMatter(session.user.id, procedure.matterId, "仅Caso主办/协办可以Eliminar程序");
+  await assertCanLeadMatter(session.user.id, procedure.matterId, "ä»…Casoä¸»åŠž/ååŠžå¯ä»¥Eliminarç¨‹åº");
 
   await prisma.matterProcedure.delete({ where: { id } });
   await audit({
@@ -167,7 +167,7 @@ async function materializeProcedureStage(
     where: { id: data.procedureId },
     select: { matterId: true, type: true }
   });
-  if (!procedure) throw new Error("程序不存在");
+  if (!procedure) throw new Error("ç¨‹åºä¸å­˜åœ¨");
 
   await assertCanAssociateMatter(session.user.id, procedure.matterId);
   await assertMatterWritable(procedure.matterId);
@@ -183,7 +183,7 @@ async function materializeProcedureStage(
     const existing = existingStages.find((stage) => normalizeProcedureStageName(stage.name) === normalizedTarget);
 
     if (existing) {
-      // v0.48: 隐藏的环节重新Agregar时恢复为 ACTIVE（数据未删，直接复用）
+      // v0.48: éšè—çš„çŽ¯èŠ‚é‡æ–°Agregaræ—¶æ¢å¤ä¸º ACTIVEï¼ˆæ•°æ®æœªåˆ ï¼Œç›´æŽ¥å¤ç”¨ï¼‰
       if (existing.status === "HIDDEN") {
         const revived = await tx.matterStage.update({
           where: { id: existing.id },
@@ -195,7 +195,7 @@ async function materializeProcedureStage(
       if (options.allowExisting) {
         return { stage: existing, created: false, revived: false, materializedCount: 0 };
       }
-      throw new Error("该环节已存在");
+      throw new Error("è¯¥çŽ¯èŠ‚å·²å­˜åœ¨");
     }
 
     if (existingStages.length === 0) {
@@ -223,7 +223,7 @@ async function materializeProcedureStage(
         }
       }
 
-      if (!targetStage) throw new Error("环节CrearError");
+      if (!targetStage) throw new Error("çŽ¯èŠ‚CrearError");
       return { stage: targetStage, created: true, revived: false, materializedCount: names.length };
     }
 
@@ -250,7 +250,7 @@ async function materializeProcedureStage(
       data: {
         matterId: procedure.matterId,
         eventType: "STAGE_ADDED",
-        title: result.revived ? `Restaurar etapa：${result.stage.name}` : `新增环节：${result.stage.name}`,
+        title: result.revived ? `Restaurar etapaï¼š${result.stage.name}` : `æ–°å¢žçŽ¯èŠ‚ï¼š${result.stage.name}`,
         occurredAt: new Date(),
         refType: "MatterStage",
         refId: result.stage.id
@@ -329,20 +329,20 @@ export async function removeProcedureStage(input: ProcedureStageRemoveInput) {
 
   const preset = stagePresetForName(stage.procedure.type, stage.name);
   if (preset?.kind === "required") {
-    throw new Error("必备环节不能移除");
+    throw new Error("å¿…å¤‡çŽ¯èŠ‚ä¸èƒ½ç§»é™¤");
   }
 
-  // v0.48: 关联材料按 stageId 外键统计（标签仅作展示），环节改名不再影响判定
+  // v0.48: å…³è”ææ–™æŒ‰ stageId å¤–é”®ç»Ÿè®¡ï¼ˆæ ‡ç­¾ä»…ä½œå±•ç¤ºï¼‰ï¼ŒçŽ¯èŠ‚æ”¹åä¸å†å½±å“åˆ¤å®š
   const linkedDocuments = await prisma.document.count({
     where: { stageId: stage.id, deletedAt: null }
   });
-  const preservationRecords = stage.name.includes("Preservación")
+  const preservationRecords = stage.name.includes("PreservaciÃ³n")
     ? await prisma.preservationCase.count({ where: { matterId: stage.procedure.matterId } })
     : 0;
   const hasContent = stage._count.tasks > 0 || linkedDocuments > 0 || preservationRecords > 0;
 
   if (hasContent) {
-    // 有Tarea/材料/专ítems记录：置 HIDDEN 保留数据，重新Agregar同名环节时可恢复
+    // æœ‰Tarea/ææ–™/ä¸“Ã­temsè®°å½•ï¼šç½® HIDDEN ä¿ç•™æ•°æ®ï¼Œé‡æ–°AgregaråŒåçŽ¯èŠ‚æ—¶å¯æ¢å¤
     await prisma.$transaction(async (tx) => {
       await tx.matterStage.update({
         where: { id: stage.id },
@@ -352,7 +352,7 @@ export async function removeProcedureStage(input: ProcedureStageRemoveInput) {
         data: {
           matterId: stage.procedure.matterId,
           eventType: "STAGE_REMOVED",
-          title: `隐藏环节：${stage.name}（数据保留）`,
+          title: `éšè—çŽ¯èŠ‚ï¼š${stage.name}ï¼ˆæ•°æ®ä¿ç•™ï¼‰`,
           occurredAt: new Date(),
           refType: "MatterStage",
           refId: stage.id
@@ -388,7 +388,7 @@ export async function removeProcedureStage(input: ProcedureStageRemoveInput) {
       data: {
         matterId: stage.procedure.matterId,
         eventType: "STAGE_REMOVED",
-        title: `移除环节：${stage.name}`,
+        title: `ç§»é™¤çŽ¯èŠ‚ï¼š${stage.name}`,
         occurredAt: new Date(),
         refType: "MatterStage",
         refId: stage.id
@@ -418,7 +418,7 @@ export async function addDeadline(input: DeadlineCreateInput) {
     where: { id: data.procedureId },
     select: { matterId: true }
   });
-  if (!procedureForGuard) throw new Error("程序不存在");
+  if (!procedureForGuard) throw new Error("ç¨‹åºä¸å­˜åœ¨");
   await assertCanAccessMatter(session.user.id, session.user.role, procedureForGuard.matterId);
   await assertMatterWritable(procedureForGuard.matterId);
 
@@ -446,12 +446,12 @@ export async function addDeadline(input: DeadlineCreateInput) {
       targetId: created.id,
       detail: { matterId: procedure.matterId, procedureId: data.procedureId }
     });
-    // v0.43 ítems4：写入Caso动态时间线
+    // v0.43 Ã­tems4ï¼šå†™å…¥CasoåŠ¨æ€æ—¶é—´çº¿
     await prisma.timelineEvent.create({
       data: {
         matterId: procedure.matterId,
         eventType: "DEADLINE_ADDED",
-        title: `新增Plazo：${data.title}`,
+        title: `æ–°å¢žPlazoï¼š${data.title}`,
         occurredAt: new Date(),
         refType: "Deadline",
         refId: created.id
@@ -524,7 +524,7 @@ export async function addHearing(input: HearingCreateInput) {
     where: { id: data.procedureId },
     select: { matterId: true }
   });
-  if (!procedureForGuard) throw new Error("程序不存在");
+  if (!procedureForGuard) throw new Error("ç¨‹åºä¸å­˜åœ¨");
   await assertCanAccessMatter(session.user.id, session.user.role, procedureForGuard.matterId);
   await assertMatterWritable(procedureForGuard.matterId);
 
@@ -552,7 +552,7 @@ export async function addHearing(input: HearingCreateInput) {
       data: {
         matterId: procedure.matterId,
         eventType: "HEARING_SCHEDULED",
-        title: `开庭：${data.title}`,
+        title: `å¼€åº­ï¼š${data.title}`,
         occurredAt: data.startsAt,
         refType: "Hearing",
         refId: created.id
@@ -593,7 +593,7 @@ export async function deleteHearing(id: string) {
   return { ok: true };
 }
 
-// ============ ProcedureMemo（v0.42 备忘录）============
+// ============ ProcedureMemoï¼ˆv0.42 å¤‡å¿˜å½•ï¼‰============
 
 export async function addProcedureMemo(input: {
   procedureId: string;
@@ -601,14 +601,14 @@ export async function addProcedureMemo(input: {
 }) {
   const session = await requireSession();
   const content = input.content.trim();
-  if (!content) throw new Error("备忘内容不能为空");
-  if (content.length > 1000) throw new Error("备忘内容过长（≤1000字）");
+  if (!content) throw new Error("å¤‡å¿˜å†…å®¹ä¸èƒ½ä¸ºç©º");
+  if (content.length > 1000) throw new Error("å¤‡å¿˜å†…å®¹è¿‡é•¿ï¼ˆâ‰¤1000å­—ï¼‰");
 
   const proc = await prisma.matterProcedure.findUnique({
     where: { id: input.procedureId },
     select: { matterId: true }
   });
-  if (!proc) throw new Error("程序不存在");
+  if (!proc) throw new Error("ç¨‹åºä¸å­˜åœ¨");
   await assertCanAccessMatter(session.user.id, session.user.role, proc.matterId);
   await assertMatterWritable(proc.matterId);
 
@@ -656,3 +656,5 @@ export async function deleteProcedureMemo(id: string) {
   await revalidateMatter(current.procedure.matterId);
   return { ok: true };
 }
+
+

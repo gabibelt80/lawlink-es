@@ -1,19 +1,19 @@
-/**
- * v0.49 Cálculo de plazos procesales (adaptado a Argentina)
+﻿/**
+ * v0.49 CÃ¡lculo de plazos procesales (adaptado a Argentina)
  *
- * Base legal: Código Procesal Civil y Comercial de la Nación (Ley 17.454)
- * - Los plazos se computan en días hábiles (no se cuentan los feriados ni sábados y domingos)
- * - El plazo comienza a correr al día siguiente de la notificación o del hecho que lo genera
- * - Los plazos que vencen en día inhábil se prorrogan al día hábil siguiente
- * - Los plazos se cuentan por días corridos o hábiles según lo disponga la ley
+ * Base legal: CÃ³digo Procesal Civil y Comercial de la NaciÃ³n (Ley 17.454)
+ * - Los plazos se computan en dÃ­as hÃ¡biles (no se cuentan los feriados ni sÃ¡bados y domingos)
+ * - El plazo comienza a correr al dÃ­a siguiente de la notificaciÃ³n o del hecho que lo genera
+ * - Los plazos que vencen en dÃ­a inhÃ¡bil se prorrogan al dÃ­a hÃ¡bil siguiente
+ * - Los plazos se cuentan por dÃ­as corridos o hÃ¡biles segÃºn lo disponga la ley
  *
- * Esta implementación calcula fechas de vencimiento de plazos procesales.
- * NOTA: Esta versión NO incluye feriados automáticos (se deben verificar manualmente).
+ * Esta implementaciÃ³n calcula fechas de vencimiento de plazos procesales.
+ * NOTA: Esta versiÃ³n NO incluye feriados automÃ¡ticos (se deben verificar manualmente).
  */
 import type { DeadlinePeriodUnit } from "@prisma/client";
 
 export const HOLIDAY_NOTE =
-  "Si el vencimiento cae en feriado o día inhábil, se prorroga al día hábil siguiente. Verificar con el calendario judicial correspondiente.";
+  "Si el vencimiento cae en feriado o dÃ­a inhÃ¡bil, se prorroga al dÃ­a hÃ¡bil siguiente. Verificar con el calendario judicial correspondiente.";
 
 /** Eliminar la hora y normalizar a las 00:00 de la fecha local */
 function startOfDay(date: Date): Date {
@@ -51,7 +51,7 @@ export function computeDeadlineDate(
   periodUnit: DeadlinePeriodUnit,
 ): Date {
   if (!Number.isInteger(periodValue) || periodValue <= 0) {
-    throw new Error("El valor del plazo debe ser un número entero positivo");
+    throw new Error("El valor del plazo debe ser un nÃºmero entero positivo");
   }
   switch (periodUnit) {
     case "DAYS":
@@ -68,7 +68,7 @@ export function periodLabel(
   periodUnit: DeadlinePeriodUnit,
 ): string {
   const unit =
-    periodUnit === "DAYS" ? "días" : periodUnit === "MONTHS" ? "meses" : "años";
+    periodUnit === "DAYS" ? "dÃ­as" : periodUnit === "MONTHS" ? "meses" : "aÃ±os";
   return `${periodValue} ${unit}`;
 }
 
@@ -80,7 +80,7 @@ export function formatLocalDate(date: Date): string {
   return `${y}-${m}-${d}`;
 }
 
-/** Generar texto de fundamento del plazo: fundamento legal + cálculo + advertencia de prórroga */
+/** Generar texto de fundamento del plazo: fundamento legal + cÃ¡lculo + advertencia de prÃ³rroga */
 export function buildDeadlineBasis(input: {
   legalBasis: string;
   triggerLabel: string;
@@ -92,5 +92,5 @@ export function buildDeadlineBasis(input: {
     input.legalBasis,
     `Desde ${input.triggerLabel} (${formatLocalDate(input.triggerDate)}) plazo de ${periodLabel(input.periodValue, input.periodUnit)}`,
     HOLIDAY_NOTE,
-  ].join("；");
+  ].join("ï¼›");
 }

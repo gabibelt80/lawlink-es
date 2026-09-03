@@ -1,10 +1,10 @@
-import { describe, it, expect } from "vitest";
+﻿import { describe, it, expect } from "vitest";
 import { partyInputSchema } from "@/server/matters/schemas";
 
 const baseInputs = {
   role: "OPPOSING_PARTY" as const,
   ordinal: 1,
-  name: "张三",
+  name: "å¼ ä¸‰",
   phone: "",
   address: "",
   legalRep: "",
@@ -14,7 +14,7 @@ const baseInputs = {
 };
 
 describe("partyInputSchema (v0.27)", () => {
-  it("自然人必须填 idNumber", () => {
+  it("è‡ªç„¶äººå¿…é¡»å¡« idNumber", () => {
     const r = partyInputSchema.safeParse({
       ...baseInputs,
       partyType: "NATURAL_PERSON",
@@ -28,7 +28,7 @@ describe("partyInputSchema (v0.27)", () => {
     }
   });
 
-  it("自然人填了 idNumber Aprobar", () => {
+  it("è‡ªç„¶äººå¡«äº† idNumber Aprobar", () => {
     const r = partyInputSchema.safeParse({
       ...baseInputs,
       partyType: "NATURAL_PERSON",
@@ -38,10 +38,10 @@ describe("partyInputSchema (v0.27)", () => {
     expect(r.success).toBe(true);
   });
 
-  it("公司必须填 enterpriseSocialCode", () => {
+  it("å…¬å¸å¿…é¡»å¡« enterpriseSocialCode", () => {
     const r = partyInputSchema.safeParse({
       ...baseInputs,
-      name: "上海某某有限公司",
+      name: "ä¸Šæµ·æŸæŸæœ‰é™å…¬å¸",
       partyType: "ORGANIZATION",
       idNumber: "",
       enterpriseSocialCode: ""
@@ -53,10 +53,10 @@ describe("partyInputSchema (v0.27)", () => {
     }
   });
 
-  it("公司填了 enterpriseSocialCode 即使没 idNumber 也Aprobar", () => {
+  it("å…¬å¸å¡«äº† enterpriseSocialCode å³ä½¿æ²¡ idNumber ä¹ŸAprobar", () => {
     const r = partyInputSchema.safeParse({
       ...baseInputs,
-      name: "上海某某有限公司",
+      name: "ä¸Šæµ·æŸæŸæœ‰é™å…¬å¸",
       partyType: "ORGANIZATION",
       idNumber: "",
       enterpriseSocialCode: "91310000XXXXXXXXXX"
@@ -64,7 +64,7 @@ describe("partyInputSchema (v0.27)", () => {
     expect(r.success).toBe(true);
   });
 
-  it("默认 partyType 为 NATURAL_PERSON（不传时）", () => {
+  it("é»˜è®¤ partyType ä¸º NATURAL_PERSONï¼ˆä¸ä¼ æ—¶ï¼‰", () => {
     const r = partyInputSchema.safeParse({
       ...baseInputs,
       idNumber: "310101199001011234",
@@ -76,3 +76,4 @@ describe("partyInputSchema (v0.27)", () => {
     }
   });
 });
+

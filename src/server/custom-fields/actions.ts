@@ -1,9 +1,9 @@
-"use server";
+﻿"use server";
 
 /**
- * v0.28: 自定义字段（JSON 列方案）
- * - 字段定义存 CustomFieldDef 表，Administrar限 ADMIN
- * - 字段值存于实体的 customValues JSON（本期落地 MATTER）
+ * v0.28: è‡ªå®šä¹‰å­—æ®µï¼ˆJSON åˆ—æ–¹æ¡ˆï¼‰
+ * - å­—æ®µå®šä¹‰å­˜ CustomFieldDef è¡¨ï¼ŒAdministraré™ ADMIN
+ * - å­—æ®µå€¼å­˜äºŽå®žä½“çš„ customValues JSONï¼ˆæœ¬æœŸè½åœ° MATTERï¼‰
  */
 import { randomUUID } from "crypto";
 import { revalidatePath } from "next/cache";
@@ -41,7 +41,7 @@ async function requireAdmin() {
   return session;
 }
 
-/** 列出某实体的字段定义（admin 视图含Deshabilitarítems；onlyEnabled=true 用于表单渲染） */
+/** åˆ—å‡ºæŸå®žä½“çš„å­—æ®µå®šä¹‰ï¼ˆadmin è§†å›¾å«DeshabilitarÃ­temsï¼›onlyEnabled=true ç”¨äºŽè¡¨å•æ¸²æŸ“ï¼‰ */
 export async function listCustomFieldDefs(
   entityType: CustomFieldEntity,
   onlyEnabled = false,
@@ -59,7 +59,7 @@ export async function createCustomFieldDef(
   const session = await requireAdmin();
   const data = defCreateSchema.parse(input);
   if (data.fieldType === "SELECT" && data.options.length === 0) {
-    throw new Error("下拉类型至少需要一个选ítems值");
+    throw new Error("ä¸‹æ‹‰ç±»åž‹è‡³å°‘éœ€è¦ä¸€ä¸ªé€‰Ã­temså€¼");
   }
   const max = await prisma.customFieldDef.aggregate({
     where: { entityType: data.entityType },
@@ -97,7 +97,7 @@ export async function updateCustomFieldDef(
     rest.options &&
     rest.options.length === 0
   ) {
-    throw new Error("下拉类型至少需要一个选ítems值");
+    throw new Error("ä¸‹æ‹‰ç±»åž‹è‡³å°‘éœ€è¦ä¸€ä¸ªé€‰Ã­temså€¼");
   }
   await prisma.customFieldDef.update({
     where: { id },
@@ -136,7 +136,7 @@ export async function deleteCustomFieldDef(id: string) {
   return { ok: true as const };
 }
 
-/** GuardarCaso的自定义字段值 */
+/** GuardarCasoçš„è‡ªå®šä¹‰å­—æ®µå€¼ */
 export async function saveMatterCustomValues(
   matterId: string,
   values: Record<string, string>,
@@ -146,10 +146,10 @@ export async function saveMatterCustomValues(
   await assertCanLeadMatter(
     session.user.id,
     matterId,
-    "仅Caso主办/协办可Editar",
+    "ä»…Casoä¸»åŠž/ååŠžå¯Editar",
   );
 
-  // 仅保留当前已启用字段定义的键，避免脏数据
+  // ä»…ä¿ç•™å½“å‰å·²å¯ç”¨å­—æ®µå®šä¹‰çš„é”®ï¼Œé¿å…è„æ•°æ®
   const defs = await prisma.customFieldDef.findMany({
     where: { entityType: "MATTER", enabled: true },
     select: { key: true, label: true, required: true },
@@ -159,7 +159,7 @@ export async function saveMatterCustomValues(
     const v = values[d.key];
     if (typeof v === "string" && v.trim() !== "") clean[d.key] = v.trim();
     if (d.required && !clean[d.key]) {
-      throw new Error(`「${d.label}」为必填ítems`);
+      throw new Error(`ã€Œ${d.label}ã€ä¸ºå¿…å¡«Ã­tems`);
     }
   }
 
@@ -176,3 +176,5 @@ export async function saveMatterCustomValues(
   await revalidateMatter(matterId);
   return { ok: true as const };
 }
+
+

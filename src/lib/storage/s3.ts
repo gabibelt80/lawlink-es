@@ -1,13 +1,13 @@
-/**
- * S3-compatible storage provider (v0.17 完整实现).
+﻿/**
+ * S3-compatible storage provider (v0.17 å®Œæ•´å®žçŽ°).
  *
- * 启用方式：在 .env Configuración STORAGE_PROVIDER=s3，并提供：
- *   - AWS_REGION（必填，例 ap-northeast-1）
- *   - S3_BUCKET（必填）
- *   - AWS_ACCESS_KEY_ID / AWS_SECRET_ACCESS_KEY（IAM key 必填；或用其他 AWS 凭证机制）
- *   - S3_ENDPOINT（可选，自建 S3 兼容存储如 MinIO/R2）
- *   - S3_FORCE_PATH_STYLE（可选，true 用 path-style；MinIO 必须 true）
- *   - S3_KEY_PREFIX（可选，所有对象 key 前加此前缀，便于多环境共用同 bucket）
+ * å¯ç”¨æ–¹å¼ï¼šåœ¨ .env ConfiguraciÃ³n STORAGE_PROVIDER=s3ï¼Œå¹¶æä¾›ï¼š
+ *   - AWS_REGIONï¼ˆå¿…å¡«ï¼Œä¾‹ ap-northeast-1ï¼‰
+ *   - S3_BUCKETï¼ˆå¿…å¡«ï¼‰
+ *   - AWS_ACCESS_KEY_ID / AWS_SECRET_ACCESS_KEYï¼ˆIAM key å¿…å¡«ï¼›æˆ–ç”¨å…¶ä»– AWS å‡­è¯æœºåˆ¶ï¼‰
+ *   - S3_ENDPOINTï¼ˆå¯é€‰ï¼Œè‡ªå»º S3 å…¼å®¹å­˜å‚¨å¦‚ MinIO/R2ï¼‰
+ *   - S3_FORCE_PATH_STYLEï¼ˆå¯é€‰ï¼Œtrue ç”¨ path-styleï¼›MinIO å¿…é¡» trueï¼‰
+ *   - S3_KEY_PREFIXï¼ˆå¯é€‰ï¼Œæ‰€æœ‰å¯¹è±¡ key å‰åŠ æ­¤å‰ç¼€ï¼Œä¾¿äºŽå¤šçŽ¯å¢ƒå…±ç”¨åŒ bucketï¼‰
  */
 import { randomUUID } from "node:crypto";
 import {
@@ -21,13 +21,13 @@ import type { StorageProvider } from "./provider";
 
 function readBucket(): string {
   const bucket = process.env.S3_BUCKET;
-  if (!bucket) throw new Error("S3_BUCKET 未配置");
+  if (!bucket) throw new Error("S3_BUCKET æœªé…ç½®");
   return bucket;
 }
 
 function readRegion(): string {
   const region = process.env.AWS_REGION;
-  if (!region) throw new Error("AWS_REGION 未配置");
+  if (!region) throw new Error("AWS_REGION æœªé…ç½®");
   return region;
 }
 
@@ -57,7 +57,7 @@ function buildClient(): S3Client {
 }
 
 /**
- * AWS SDK 把对象 body 当成 ReadableStream / SDK stream-like 对象Volver；统一吸成 Buffer。
+ * AWS SDK æŠŠå¯¹è±¡ body å½“æˆ ReadableStream / SDK stream-like å¯¹è±¡Volverï¼›ç»Ÿä¸€å¸æˆ Bufferã€‚
  */
 async function streamToBuffer(stream: unknown): Promise<Buffer> {
   if (!stream) return Buffer.alloc(0);
@@ -94,9 +94,9 @@ export class S3StorageProvider implements StorageProvider {
   }
 
   /**
-   * 对象 key 结构：<prefix>/<scope>/<yyyymm>/<uuid>.bin
-   * y LocalStorageProvider 保持同样的 layout，便于 local ↔ s3 迁移。
-   * 数据库里仅存 relPath（不含 prefix），切换 prefix 时无需回填。
+   * å¯¹è±¡ key ç»“æž„ï¼š<prefix>/<scope>/<yyyymm>/<uuid>.bin
+   * y LocalStorageProvider ä¿æŒåŒæ ·çš„ layoutï¼Œä¾¿äºŽ local â†” s3 è¿ç§»ã€‚
+   * æ•°æ®åº“é‡Œä»…å­˜ relPathï¼ˆä¸å« prefixï¼‰ï¼Œåˆ‡æ¢ prefix æ—¶æ— éœ€å›žå¡«ã€‚
    */
   async writeFile(scope: string, data: Buffer): Promise<string> {
     const now = new Date();
@@ -139,3 +139,4 @@ export class S3StorageProvider implements StorageProvider {
     }
   }
 }
+

@@ -1,4 +1,4 @@
-import { prisma } from "@/lib/prisma";
+﻿import { prisma } from "@/lib/prisma";
 import { getPlan } from "@/lib/plans";
 
 /**
@@ -17,7 +17,7 @@ export async function canCreateUser(firmId: string): Promise<boolean> {
 }
 
 /**
- * Verifica si el estudio está activo y no expiró.
+ * Verifica si el estudio estÃ¡ activo y no expirÃ³.
  */
 export async function isFirmActive(firmId: string): Promise<boolean> {
   const firm = await prisma.firm.findUnique({

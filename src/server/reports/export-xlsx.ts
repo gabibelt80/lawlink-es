@@ -1,7 +1,7 @@
-/**
- * v0.20: 律所报表 xlsx 导出
+﻿/**
+ * v0.20: å¾‹æ‰€æŠ¥è¡¨ xlsx å¯¼å‡º
  *
- * 3 个 sheet：Caso清单（本期新收）/ 收款明细（本期 RECEIVED）/ Abogado产出（本期聚合）
+ * 3 ä¸ª sheetï¼šCasoæ¸…å•ï¼ˆæœ¬æœŸæ–°æ”¶ï¼‰/ æ”¶æ¬¾æ˜Žç»†ï¼ˆæœ¬æœŸ RECEIVEDï¼‰/ Abogadoäº§å‡ºï¼ˆæœ¬æœŸèšåˆï¼‰
  */
 import ExcelJS from "exceljs";
 import { prisma } from "@/lib/prisma";
@@ -14,7 +14,7 @@ export async function buildReportWorkbook(period: ReportPeriod): Promise<Buffer>
   wb.creator = "LawLink";
   wb.created = new Date();
 
-  // Sheet 1: Caso清单（本期新收）
+  // Sheet 1: Casoæ¸…å•ï¼ˆæœ¬æœŸæ–°æ”¶ï¼‰
   const matters = await prisma.matter.findMany({
     where: {
       createdAt: { gte: period.start, lt: period.end },
@@ -35,18 +35,18 @@ export async function buildReportWorkbook(period: ReportPeriod): Promise<Buffer>
     orderBy: { createdAt: "asc" }
   });
 
-  const sheetMatters = wb.addWorksheet("Caso清单");
+  const sheetMatters = wb.addWorksheet("Casoæ¸…å•");
   sheetMatters.columns = [
-    { header: "Caso编号", key: "code", width: 14 },
-    { header: "标题", key: "title", width: 36 },
-    { header: "类别", key: "category", width: 8 },
+    { header: "Casoç¼–å·", key: "code", width: 14 },
+    { header: "æ ‡é¢˜", key: "title", width: 36 },
+    { header: "ç±»åˆ«", key: "category", width: 8 },
     { header: "Causa", key: "cause", width: 18 },
     { header: "Cliente", key: "client", width: 18 },
-    { header: "主办Abogado", key: "owner", width: 10 },
+    { header: "ä¸»åŠžAbogado", key: "owner", width: 10 },
     { header: "Estado", key: "status", width: 10 },
-    { header: "收案Fecha", key: "createdAt", width: 12 },
+    { header: "æ”¶æ¡ˆFecha", key: "createdAt", width: 12 },
     { header: "Cerrar casoFecha", key: "closedAt", width: 12 },
-    { header: "归档Fecha", key: "archivedAt", width: 12 }
+    { header: "å½’æ¡£Fecha", key: "archivedAt", width: 12 }
   ];
   for (const m of matters) {
     sheetMatters.addRow({
@@ -64,7 +64,7 @@ export async function buildReportWorkbook(period: ReportPeriod): Promise<Buffer>
   }
   sheetMatters.getRow(1).font = { bold: true };
 
-  // Sheet 2: 收款明细
+  // Sheet 2: æ”¶æ¬¾æ˜Žç»†
   const receivedFees = await prisma.feeEntry.findMany({
     where: {
       type: "RECEIVED",
@@ -87,17 +87,17 @@ export async function buildReportWorkbook(period: ReportPeriod): Promise<Buffer>
     },
     orderBy: { occurredAt: "asc" }
   });
-  const sheetFees = wb.addWorksheet("收款明细");
+  const sheetFees = wb.addWorksheet("æ”¶æ¬¾æ˜Žç»†");
   sheetFees.columns = [
-    { header: "收款Fecha", key: "occurredAt", width: 12 },
+    { header: "æ”¶æ¬¾Fecha", key: "occurredAt", width: 12 },
     { header: "Monto", key: "amount", width: 14 },
     { header: "Cliente", key: "client", width: 18 },
-    { header: "Caso编号", key: "matterCode", width: 14 },
-    { header: "Caso标题", key: "matterTitle", width: 36 },
-    { header: "主办Abogado", key: "owner", width: 10 },
-    { header: "付款方", key: "payer", width: 18 },
-    { header: "Factura号", key: "invoiceNo", width: 18 },
-    { header: "收款方式", key: "method", width: 12 }
+    { header: "Casoç¼–å·", key: "matterCode", width: 14 },
+    { header: "Casoæ ‡é¢˜", key: "matterTitle", width: 36 },
+    { header: "ä¸»åŠžAbogado", key: "owner", width: 10 },
+    { header: "ä»˜æ¬¾æ–¹", key: "payer", width: 18 },
+    { header: "Facturaå·", key: "invoiceNo", width: 18 },
+    { header: "æ”¶æ¬¾æ–¹å¼", key: "method", width: 12 }
   ];
   for (const f of receivedFees) {
     sheetFees.addRow({
@@ -115,14 +115,14 @@ export async function buildReportWorkbook(period: ReportPeriod): Promise<Buffer>
   sheetFees.getRow(1).font = { bold: true };
   sheetFees.getColumn("amount").numFmt = "#,##0.00";
 
-  // Sheet 3: Abogado产出（来自 getReportData 已聚合的数据，避免重算）
+  // Sheet 3: Abogadoäº§å‡ºï¼ˆæ¥è‡ª getReportData å·²èšåˆçš„æ•°æ®ï¼Œé¿å…é‡ç®—ï¼‰
   const data = await getReportData(period);
-  const sheetLawyer = wb.addWorksheet("Abogado产出");
+  const sheetLawyer = wb.addWorksheet("Abogadoäº§å‡º");
   sheetLawyer.columns = [
     { header: "Abogado", key: "name", width: 12 },
-    { header: "本期新收", key: "owned", width: 12 },
-    { header: "本期已结", key: "closed", width: 12 },
-    { header: "本期收款Monto", key: "received", width: 18 }
+    { header: "æœ¬æœŸæ–°æ”¶", key: "owned", width: 12 },
+    { header: "æœ¬æœŸå·²ç»“", key: "closed", width: 12 },
+    { header: "æœ¬æœŸæ”¶æ¬¾Monto", key: "received", width: 18 }
   ];
   for (const row of data.byLawyer) {
     sheetLawyer.addRow({
@@ -135,13 +135,13 @@ export async function buildReportWorkbook(period: ReportPeriod): Promise<Buffer>
   sheetLawyer.getRow(1).font = { bold: true };
   sheetLawyer.getColumn("received").numFmt = "#,##0.00";
 
-  // Sheet 4: Cliente应收（顺手补一份，Abogado常用）
-  const sheetClient = wb.addWorksheet("Cliente应收");
+  // Sheet 4: Clienteåº”æ”¶ï¼ˆé¡ºæ‰‹è¡¥ä¸€ä»½ï¼ŒAbogadoå¸¸ç”¨ï¼‰
+  const sheetClient = wb.addWorksheet("Clienteåº”æ”¶");
   sheetClient.columns = [
     { header: "Cliente", key: "name", width: 24 },
-    { header: "应收Monto", key: "receivable", width: 14 },
-    { header: "已收Monto", key: "received", width: 14 },
-    { header: "应收余额", key: "balance", width: 14 }
+    { header: "åº”æ”¶Monto", key: "receivable", width: 14 },
+    { header: "å·²æ”¶Monto", key: "received", width: 14 },
+    { header: "åº”æ”¶ä½™é¢", key: "balance", width: 14 }
   ];
   for (const row of data.byClientReceivable) {
     sheetClient.addRow({
@@ -159,3 +159,5 @@ export async function buildReportWorkbook(period: ReportPeriod): Promise<Buffer>
   const buf = await wb.xlsx.writeBuffer();
   return Buffer.from(buf);
 }
+
+

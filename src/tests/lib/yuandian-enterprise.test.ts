@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, vi } from "vitest";
+﻿import { describe, it, expect, beforeEach, vi } from "vitest";
 import { getEnterpriseSummary } from "@/lib/yuandian/enterprise";
 import { YuandianNotConfiguredError, YuandianApiError } from "@/lib/yuandian/client";
 import type { ResolvedYuandianSettings } from "@/lib/yuandian/settings";
@@ -30,22 +30,22 @@ function jsonRes(body: unknown, ok = true, status = 200) {
   } as unknown as Response;
 }
 
-// 完整聚合 mock 数据生成器
+// å®Œæ•´èšåˆ mock æ•°æ®ç”Ÿæˆå™¨
 function aggData(
   overrides: Partial<{
-    失信被执行人: number;
-    被执行人: number;
-    股权冻结: number;
-    严重违法: number;
-    经营异常: number;
+    å¤±ä¿¡è¢«æ‰§è¡Œäºº: number;
+    è¢«æ‰§è¡Œäºº: number;
+    è‚¡æƒå†»ç»“: number;
+    ä¸¥é‡è¿æ³•: number;
+    ç»è¥å¼‚å¸¸: number;
   }> = {}
 ) {
   const v = {
-    失信被执行人: 0,
-    被执行人: 0,
-    股权冻结: 0,
-    严重违法: 0,
-    经营异常: 0,
+    å¤±ä¿¡è¢«æ‰§è¡Œäºº: 0,
+    è¢«æ‰§è¡Œäºº: 0,
+    è‚¡æƒå†»ç»“: 0,
+    ä¸¥é‡è¿æ³•: 0,
+    ç»è¥å¼‚å¸¸: 0,
     ...overrides
   };
   return {
@@ -53,50 +53,50 @@ function aggData(
     code: 200,
     data: {
       id: "eid-1",
-      name: "测试公司",
-      失信被执行人统计: { Total数: v.失信被执行人, 省份: [] },
-      被执行人统计: { Total数: v.被执行人, 立案年份: [] },
-      股权冻结统计: { Total数: v.股权冻结 },
-      严重违法统计: { Total数: v.严重违法, 类别: [{ key: "重大", count: v.严重违法 }] },
-      经营异常统计: { Total数: v.经营异常, 列入经营异常名录Motivo: [] },
-      法院Anuncio统计: {
-        Total数: 5,
-        起诉方: 1,
-        应诉方: 4,
-        法院: [
-          { key: "北京海淀法院", count: 3 },
-          { key: "上海浦东法院", count: 2 }
+      name: "æµ‹è¯•å…¬å¸",
+      å¤±ä¿¡è¢«æ‰§è¡Œäººç»Ÿè®¡: { Totalæ•°: v.å¤±ä¿¡è¢«æ‰§è¡Œäºº, çœä»½: [] },
+      è¢«æ‰§è¡Œäººç»Ÿè®¡: { Totalæ•°: v.è¢«æ‰§è¡Œäºº, ç«‹æ¡ˆå¹´ä»½: [] },
+      è‚¡æƒå†»ç»“ç»Ÿè®¡: { Totalæ•°: v.è‚¡æƒå†»ç»“ },
+      ä¸¥é‡è¿æ³•ç»Ÿè®¡: { Totalæ•°: v.ä¸¥é‡è¿æ³•, ç±»åˆ«: [{ key: "é‡å¤§", count: v.ä¸¥é‡è¿æ³• }] },
+      ç»è¥å¼‚å¸¸ç»Ÿè®¡: { Totalæ•°: v.ç»è¥å¼‚å¸¸, åˆ—å…¥ç»è¥å¼‚å¸¸åå½•Motivo: [] },
+      æ³•é™¢Anuncioç»Ÿè®¡: {
+        Totalæ•°: 5,
+        èµ·è¯‰æ–¹: 1,
+        åº”è¯‰æ–¹: 4,
+        æ³•é™¢: [
+          { key: "åŒ—äº¬æµ·æ·€æ³•é™¢", count: 3 },
+          { key: "ä¸Šæµ·æµ¦ä¸œæ³•é™¢", count: 2 }
         ]
       },
-      开庭Anuncio统计: { Total数: 10, 起诉方: 2, 应诉方: 8 },
-      Administrativo处罚统计: { Total数: 0 },
-      欠税Anuncio统计: { Total数: 0 },
-      变更记录统计: { Total数: 3 },
-      对外担保统计: { Total数: 0 },
-      股权出质统计: { Total数: 1 },
-      对外投资统计: { Total数: 8 },
-      商标统计: { Total数: 50 },
-      专利统计: { Total数: 12 },
-      软件著作权统计: { Total数: 0 },
-      作品著作权统计: { Total数: 0 },
-      网站备案统计: { Total数: 2 }
+      å¼€åº­Anuncioç»Ÿè®¡: { Totalæ•°: 10, èµ·è¯‰æ–¹: 2, åº”è¯‰æ–¹: 8 },
+      Administrativoå¤„ç½šç»Ÿè®¡: { Totalæ•°: 0 },
+      æ¬ ç¨ŽAnuncioç»Ÿè®¡: { Totalæ•°: 0 },
+      å˜æ›´è®°å½•ç»Ÿè®¡: { Totalæ•°: 3 },
+      å¯¹å¤–æ‹…ä¿ç»Ÿè®¡: { Totalæ•°: 0 },
+      è‚¡æƒå‡ºè´¨ç»Ÿè®¡: { Totalæ•°: 1 },
+      å¯¹å¤–æŠ•èµ„ç»Ÿè®¡: { Totalæ•°: 8 },
+      å•†æ ‡ç»Ÿè®¡: { Totalæ•°: 50 },
+      ä¸“åˆ©ç»Ÿè®¡: { Totalæ•°: 12 },
+      è½¯ä»¶è‘—ä½œæƒç»Ÿè®¡: { Totalæ•°: 0 },
+      ä½œå“è‘—ä½œæƒç»Ÿè®¡: { Totalæ•°: 0 },
+      ç½‘ç«™å¤‡æ¡ˆç»Ÿè®¡: { Totalæ•°: 2 }
     }
   };
 }
 
 describe("getEnterpriseSummary", () => {
-  it("未配置 → throw NotConfigured", async () => {
+  it("æœªé…ç½® â†’ throw NotConfigured", async () => {
     await expect(
       getEnterpriseSummary({ id: "x" }, unconfigured)
     ).rejects.toBeInstanceOf(YuandianNotConfiguredError);
   });
 
-  it("id 和 socialCode 同时为空 → throw", async () => {
-    await expect(getEnterpriseSummary({}, configured)).rejects.toThrow(/至少传一个/);
+  it("id å’Œ socialCode åŒæ—¶ä¸ºç©º â†’ throw", async () => {
+    await expect(getEnterpriseSummary({}, configured)).rejects.toThrow(/è‡³å°‘ä¼ ä¸€ä¸ª/);
     expect(fetchMock).not.toHaveBeenCalled();
   });
 
-  it("正常请求：URL 参数 + 字段映射 + Top 提取", async () => {
+  it("æ­£å¸¸è¯·æ±‚ï¼šURL å‚æ•° + å­—æ®µæ˜ å°„ + Top æå–", async () => {
     fetchMock.mockResolvedValue(jsonRes(aggData()));
     const r = await getEnterpriseSummary({ id: "eid-1" }, configured);
 
@@ -108,47 +108,47 @@ describe("getEnterpriseSummary", () => {
 
     expect(r).not.toBeNull();
     expect(r!.id).toBe("eid-1");
-    expect(r!.name).toBe("测试公司");
+    expect(r!.name).toBe("æµ‹è¯•å…¬å¸");
     expect(r!.coreRisks).toHaveLength(5);
     expect(r!.coreRisks.map((c) => c.category)).toEqual([
-      "失信被执行人",
-      "被执行人",
-      "股权冻结",
-      "严重违法",
-      "经营异常"
+      "å¤±ä¿¡è¢«æ‰§è¡Œäºº",
+      "è¢«æ‰§è¡Œäºº",
+      "è‚¡æƒå†»ç»“",
+      "ä¸¥é‡è¿æ³•",
+      "ç»è¥å¼‚å¸¸"
     ]);
-    // 法院Anuncio top 提取
-    const court = r!.litigation.find((s) => s.category === "法院Anuncio")!;
+    // æ³•é™¢Anuncio top æå–
+    const court = r!.litigation.find((s) => s.category === "æ³•é™¢Anuncio")!;
     expect(court.total).toBe(5);
     expect(court.asPlaintiff).toBe(1);
     expect(court.asDefendant).toBe(4);
     expect(court.top).toEqual([
-      { key: "北京海淀法院", count: 3 },
-      { key: "上海浦东法院", count: 2 }
+      { key: "åŒ—äº¬æµ·æ·€æ³•é™¢", count: 3 },
+      { key: "ä¸Šæµ·æµ¦ä¸œæ³•é™¢", count: 2 }
     ]);
   });
 
-  it("data === null → Volver null", async () => {
+  it("data === null â†’ Volver null", async () => {
     fetchMock.mockResolvedValue(jsonRes({ status: "success", code: 200, data: null }));
     const r = await getEnterpriseSummary({ socialCode: "abc" }, configured);
     expect(r).toBeNull();
   });
 
-  it("status=failed → 抛 ApiError", async () => {
+  it("status=failed â†’ æŠ› ApiError", async () => {
     fetchMock.mockResolvedValue(jsonRes({ status: "failed", code: 500, message: "boom" }));
     await expect(
       getEnterpriseSummary({ id: "x" }, configured)
     ).rejects.toBeInstanceOf(YuandianApiError);
   });
 
-  it("HTTP 401 → 抛 ApiError", async () => {
+  it("HTTP 401 â†’ æŠ› ApiError", async () => {
     fetchMock.mockResolvedValue(jsonRes({}, false, 401));
     await expect(
       getEnterpriseSummary({ id: "x" }, configured)
     ).rejects.toBeInstanceOf(YuandianApiError);
   });
 
-  it("socialCode 优先走 tyshxydm 参数", async () => {
+  it("socialCode ä¼˜å…ˆèµ° tyshxydm å‚æ•°", async () => {
     fetchMock.mockResolvedValue(jsonRes(aggData()));
     await getEnterpriseSummary({ socialCode: "91110000XXXX" }, configured);
     const [url] = fetchMock.mock.calls[0];
@@ -157,48 +157,49 @@ describe("getEnterpriseSummary", () => {
   });
 });
 
-describe("computeRiskLevel（Aprobar聚合响应间接验证）", () => {
-  it("失信被执行人 > 0 → HIGH", async () => {
-    fetchMock.mockResolvedValue(jsonRes(aggData({ 失信被执行人: 2 })));
+describe("computeRiskLevelï¼ˆAprobarèšåˆå“åº”é—´æŽ¥éªŒè¯ï¼‰", () => {
+  it("å¤±ä¿¡è¢«æ‰§è¡Œäºº > 0 â†’ HIGH", async () => {
+    fetchMock.mockResolvedValue(jsonRes(aggData({ å¤±ä¿¡è¢«æ‰§è¡Œäºº: 2 })));
     const r = await getEnterpriseSummary({ id: "x" }, configured);
     expect(r!.level).toBe("HIGH");
   });
 
-  it("被执行人 > 0（无失信）→ MEDIUM", async () => {
-    fetchMock.mockResolvedValue(jsonRes(aggData({ 被执行人: 1 })));
+  it("è¢«æ‰§è¡Œäºº > 0ï¼ˆæ— å¤±ä¿¡ï¼‰â†’ MEDIUM", async () => {
+    fetchMock.mockResolvedValue(jsonRes(aggData({ è¢«æ‰§è¡Œäºº: 1 })));
     const r = await getEnterpriseSummary({ id: "x" }, configured);
     expect(r!.level).toBe("MEDIUM");
   });
 
-  it("股权冻结 > 0 → MEDIUM", async () => {
-    fetchMock.mockResolvedValue(jsonRes(aggData({ 股权冻结: 3 })));
+  it("è‚¡æƒå†»ç»“ > 0 â†’ MEDIUM", async () => {
+    fetchMock.mockResolvedValue(jsonRes(aggData({ è‚¡æƒå†»ç»“: 3 })));
     const r = await getEnterpriseSummary({ id: "x" }, configured);
     expect(r!.level).toBe("MEDIUM");
   });
 
-  it("严重违法 > 0（无被执行/股权冻结）→ MEDIUM", async () => {
-    fetchMock.mockResolvedValue(jsonRes(aggData({ 严重违法: 1 })));
+  it("ä¸¥é‡è¿æ³• > 0ï¼ˆæ— è¢«æ‰§è¡Œ/è‚¡æƒå†»ç»“ï¼‰â†’ MEDIUM", async () => {
+    fetchMock.mockResolvedValue(jsonRes(aggData({ ä¸¥é‡è¿æ³•: 1 })));
     const r = await getEnterpriseSummary({ id: "x" }, configured);
     expect(r!.level).toBe("MEDIUM");
   });
 
-  it("仅经营异常 > 0 → LOW", async () => {
-    fetchMock.mockResolvedValue(jsonRes(aggData({ 经营异常: 1 })));
+  it("ä»…ç»è¥å¼‚å¸¸ > 0 â†’ LOW", async () => {
+    fetchMock.mockResolvedValue(jsonRes(aggData({ ç»è¥å¼‚å¸¸: 1 })));
     const r = await getEnterpriseSummary({ id: "x" }, configured);
     expect(r!.level).toBe("LOW");
   });
 
-  it("所有核心风险 = 0 → NONE", async () => {
+  it("æ‰€æœ‰æ ¸å¿ƒé£Žé™© = 0 â†’ NONE", async () => {
     fetchMock.mockResolvedValue(jsonRes(aggData()));
     const r = await getEnterpriseSummary({ id: "x" }, configured);
     expect(r!.level).toBe("NONE");
   });
 
-  it("失信 + 经营异常 同时 > 0 → 仍 HIGH（最严重者优先）", async () => {
+  it("å¤±ä¿¡ + ç»è¥å¼‚å¸¸ åŒæ—¶ > 0 â†’ ä» HIGHï¼ˆæœ€ä¸¥é‡è€…ä¼˜å…ˆï¼‰", async () => {
     fetchMock.mockResolvedValue(
-      jsonRes(aggData({ 失信被执行人: 1, 经营异常: 5 }))
+      jsonRes(aggData({ å¤±ä¿¡è¢«æ‰§è¡Œäºº: 1, ç»è¥å¼‚å¸¸: 5 }))
     );
     const r = await getEnterpriseSummary({ id: "x" }, configured);
     expect(r!.level).toBe("HIGH");
   });
 });
+

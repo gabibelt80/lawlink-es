@@ -1,4 +1,4 @@
-"use server";
+﻿"use server";
 
 import { revalidatePath } from "next/cache";
 import { Prisma } from "@prisma/client";
@@ -87,11 +87,11 @@ export async function deleteBilling(id: string) {
   return { ok: true };
 }
 
-// ============ FeeEntry + comisión automática ============
+// ============ FeeEntry + comisiÃ³n automÃ¡tica ============
 
 /**
  * Crea un registro de cobro/pago.
- * - Al crear RECEIVED se deriva automáticamente un subregistro COMMISSION por cada beneficiario según CommissionPlan
+ * - Al crear RECEIVED se deriva automÃ¡ticamente un subregistro COMMISSION por cada beneficiario segÃºn CommissionPlan
  * - parent / children se vinculan por parentFeeEntryId
  */
 export async function createFeeEntry(input: FeeEntryCreateInput) {
@@ -116,7 +116,7 @@ export async function createFeeEntry(input: FeeEntryCreateInput) {
       }
     });
 
-    // Comisión automática
+    // ComisiÃ³n automÃ¡tica
     if (data.type === "RECEIVED" && data.amount > 0) {
       const plans = await tx.commissionPlan.findMany({
         where: { matterId: data.matterId, active: true }
@@ -133,7 +133,7 @@ export async function createFeeEntry(input: FeeEntryCreateInput) {
             occurredAt: data.occurredAt,
             parentFeeEntryId: entry.id,
             beneficiaryUserId: plan.userId,
-            note: plan.label ? `Según plan [${plan.label}] comisión automática ${plan.percent}%` : `Comisión automática ${plan.percent}%`,
+            note: plan.label ? `SegÃºn plan [${plan.label}] comisiÃ³n automÃ¡tica ${plan.percent}%` : `ComisiÃ³n automÃ¡tica ${plan.percent}%`,
             recordedById: session.user.id
           }
         });
@@ -182,7 +182,7 @@ export async function deleteFeeEntry(id: string) {
   if (!entry) return { ok: false };
   await assertMatterWritable(entry.matterId, { allowFinanceRole: true });
 
-  // Al eliminar el registro padre también se eliminan las comisiones derivadas
+  // Al eliminar el registro padre tambiÃ©n se eliminan las comisiones derivadas
   await prisma.$transaction(async (tx) => {
     if (entry.commissionChildren.length > 0) {
       await tx.feeEntry.deleteMany({
@@ -211,7 +211,7 @@ export async function deleteFeeEntry(id: string) {
 
 /**
  * Reemplaza por completo el plan de comisiones del caso.
- * Estrategia simple: elimina todos los planes existentes y crea nuevos según los items.
+ * Estrategia simple: elimina todos los planes existentes y crea nuevos segÃºn los items.
  */
 export async function setCommissionPlan(input: CommissionPlanSetInput) {
   const session = await requireSession();
@@ -245,7 +245,7 @@ export async function setCommissionPlan(input: CommissionPlanSetInput) {
   return { ok: true };
 }
 
-// ============ Estadísticas financieras globales ============
+// ============ EstadÃ­sticas financieras globales ============
 
 export async function getMatterFinance(matterId: string) {
   const session = await requireSession();
@@ -294,7 +294,7 @@ export async function getMatterFinance(matterId: string) {
 }
 
 /**
- * v0.11: Lista las solicitudes de facturación del caso
+ * v0.11: Lista las solicitudes de facturaciÃ³n del caso
  */
 export async function listMatterInvoiceRequests(matterId: string) {
   const session = await requireSession();
@@ -324,7 +324,7 @@ export async function listMatterInvoiceRequests(matterId: string) {
 }
 
 /**
- * v0.12: Obtiene la información por defecto del caso para facturar (titular del cliente + id de admisión asociada)
+ * v0.12: Obtiene la informaciÃ³n por defecto del caso para facturar (titular del cliente + id de admisiÃ³n asociada)
  */
 export async function getMatterInvoiceContext(matterId: string) {
   const session = await requireSession();
@@ -405,7 +405,7 @@ export async function getMatterInvoiceContext(matterId: string) {
 }
 
 /**
- * v0.12: Crear solicitud de facturación (con tipo/concepto/titular/respaldo)
+ * v0.12: Crear solicitud de facturaciÃ³n (con tipo/concepto/titular/respaldo)
  */
 export async function createInvoiceRequest(input: {
   matterId: string | null;
@@ -428,7 +428,7 @@ export async function createInvoiceRequest(input: {
     await assertCanAssociateMatter(session.user.id, input.matterId);
   } else {
     if (!isManager(session.user.role) && session.user.role !== "FINANCE") {
-      throw new Error("La facturación sin caso asociado solo puede iniciarla Finanzas / Administrador / Abogado principal");
+      throw new Error("La facturaciÃ³n sin caso asociado solo puede iniciarla Finanzas / Administrador / Abogado principal");
     }
     if (!input.noMatterReason?.trim()) {
       throw new Error("Cuando no hay caso asociado se debe completar el motivo");
@@ -437,18 +437,18 @@ export async function createInvoiceRequest(input: {
 
   if (input.amount <= 0) throw new Error("El monto debe ser mayor a 0");
   if (input.invoiceType !== "PLAIN" && input.invoiceType !== "SPECIAL") {
-    throw new Error("Seleccioná el tipo de factura");
+    throw new Error("SeleccionÃ¡ el tipo de factura");
   }
-  if (!input.buyerName.trim()) throw new Error("Completá el titular de la factura");
+  if (!input.buyerName.trim()) throw new Error("CompletÃ¡ el titular de la factura");
   if (input.invoiceType === "SPECIAL") {
-    if (!input.buyerTaxNo?.trim()) throw new Error("La factura especial debe incluir el número de identificación fiscal");
-    if (!input.buyerAddress?.trim()) throw new Error("La factura especial debe incluir la dirección del comprador");
-    if (!input.buyerPhone?.trim()) throw new Error("La factura especial debe incluir el teléfono del comprador");
+    if (!input.buyerTaxNo?.trim()) throw new Error("La factura especial debe incluir el nÃºmero de identificaciÃ³n fiscal");
+    if (!input.buyerAddress?.trim()) throw new Error("La factura especial debe incluir la direcciÃ³n del comprador");
+    if (!input.buyerPhone?.trim()) throw new Error("La factura especial debe incluir el telÃ©fono del comprador");
     if (!input.buyerBank?.trim()) throw new Error("La factura especial debe incluir el banco");
     if (!input.buyerBankAccount?.trim()) throw new Error("La factura especial debe incluir la cuenta bancaria");
   }
   if (input.matterId && input.evidenceDocIds.length === 0) {
-    throw new Error("Subí al menos un respaldo de facturación (contrato de mandato escaneado, etc.)");
+    throw new Error("SubÃ­ al menos un respaldo de facturaciÃ³n (contrato de mandato escaneado, etc.)");
   }
 
   const isSpecial = input.invoiceType === "SPECIAL";
@@ -483,10 +483,10 @@ export async function createInvoiceRequest(input: {
   await notifyRoleApprovers({
     roles: ["ADMIN", "PRINCIPAL_LAWYER", "FINANCE"],
     excludeUserId: session.user.id,
-    title: "Nueva aprobación de factura pendiente",
-    content: `${session.user.name ?? "Usuario"} envió una solicitud de facturación: ${
+    title: "Nueva aprobaciÃ³n de factura pendiente",
+    content: `${session.user.name ?? "Usuario"} enviÃ³ una solicitud de facturaciÃ³n: ${
       matter ? `${matter.internalCode} ${matter.title}` : input.noMatterReason?.trim() || "Sin caso asociado"
-    }，Monto ${input.amount.toLocaleString("es-AR")} ARS`,
+    }ï¼ŒMonto ${input.amount.toLocaleString("es-AR")} ARS`,
     href: "/finance",
     refType: "InvoiceRequest",
     refId: created.id,
@@ -573,7 +573,7 @@ export async function getPersonalRevenue(userId: string) {
   const session = await requireSession();
   const prisma = await getTenantPrisma();
   if (!isManager(session.user.role) && session.user.id !== userId) {
-    throw new Error("Solo podés ver tus propios datos de ingresos");
+    throw new Error("Solo podÃ©s ver tus propios datos de ingresos");
   }
   const monthStart = new Date();
   monthStart.setDate(1);
@@ -605,3 +605,4 @@ export async function getPersonalRevenue(userId: string) {
     yearlyCommission: Number(yearly._sum.amount ?? 0)
   };
 }
+

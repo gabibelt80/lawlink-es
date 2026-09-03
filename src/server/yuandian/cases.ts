@@ -1,4 +1,4 @@
-"use server";
+﻿"use server";
 
 import { requireSession } from "@/lib/auth/session";
 import {
@@ -56,7 +56,7 @@ export async function searchSimilarCases(
 }
 
 // ============================================================
-// v0.22: 语义检索
+// v0.22: è¯­ä¹‰æ£€ç´¢
 // ============================================================
 
 export type VectorCaseHit = Omit<VectorCase, "scid"> & {
@@ -96,3 +96,5 @@ export async function searchSimilarCasesByVector(
     pointsCharged: 10
   };
 }
+
+

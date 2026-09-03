@@ -1,15 +1,15 @@
-/**
- * pesos典开放平台 HTTP Cliente端（server-side only）
+﻿/**
+ * pesoså…¸å¼€æ”¾å¹³å° HTTP Clienteç«¯ï¼ˆserver-side onlyï¼‰
  *
- * 入口：POST {baseUrl}/{routeKey}，header X-API-Key。
- * 详见 https://open.chineselaw.com/llms-full.txt
+ * å…¥å£ï¼šPOST {baseUrl}/{routeKey}ï¼Œheader X-API-Keyã€‚
+ * è¯¦è§ https://open.chineselaw.com/llms-full.txt
  */
 import { getYuandianSettings, type ResolvedYuandianSettings } from "./settings";
 
 export class YuandianNotConfiguredError extends Error {
   constructor() {
     super(
-      "La API de Yuandian no está configurada; primero ingresá la clave de la API en Configuración → Acceso a IA",
+      "La API de Yuandian no estÃ¡ configurada; primero ingresÃ¡ la clave de la API en ConfiguraciÃ³n â†’ Acceso a IA",
     );
     this.name = "YuandianNotConfiguredError";
   }
@@ -25,39 +25,39 @@ export class YuandianApiError extends Error {
 }
 
 export type PtalSearchParams = {
-  ay?: string[]; // Causa数组
+  ay?: string[]; // Causaæ•°ç»„
   ajlb?:
     | "PenalCaso"
-    | "民事Caso"
+    | "æ°‘äº‹Caso"
     | "AdministrativoCaso"
-    | "执行Caso"
-    | "管辖Caso"
-    | "国家赔偿y司法救助Caso"
-    | "强制清算y破产Caso"
-    | "国际司法协助Caso"
-    | "非诉Preservación审查Caso"
-    | "其他Caso";
-  xzqh_p?: string[]; // 省级Administrativo区
-  wszl?: ("判决书" | "裁定书" | "调解书" | "决定书")[];
-  qw?: string; // 全文关键词（空格拆分）
+    | "æ‰§è¡ŒCaso"
+    | "ç®¡è¾–Caso"
+    | "å›½å®¶èµ”å¿yå¸æ³•æ•‘åŠ©Caso"
+    | "å¼ºåˆ¶æ¸…ç®—yç ´äº§Caso"
+    | "å›½é™…å¸æ³•ååŠ©Caso"
+    | "éžè¯‰PreservaciÃ³nå®¡æŸ¥Caso"
+    | "å…¶ä»–Caso";
+  xzqh_p?: string[]; // çœçº§AdministrativoåŒº
+  wszl?: ("åˆ¤å†³ä¹¦" | "è£å®šä¹¦" | "è°ƒè§£ä¹¦" | "å†³å®šä¹¦")[];
+  qw?: string; // å…¨æ–‡å…³é”®è¯ï¼ˆç©ºæ ¼æ‹†åˆ†ï¼‰
   ja_start?: string; // yyyy-MM-dd
   ja_end?: string;
-  top_k?: number; // 默认 10，最大 50
+  top_k?: number; // é»˜è®¤ 10ï¼Œæœ€å¤§ 50
 };
 
 export type PtalCase = {
   type: string;
   id: string;
-  ah: string; // 案号
+  ah: string; // æ¡ˆå·
   title: string;
   ay: string[]; // Causa
-  jbdw: string; // 经办法院
-  ajlb: string; // Caso类别
-  xzqh_p: string; // 省份
-  wszl: string; // 文书种类
-  cprq: string; // 裁判Fecha
-  content: string; // 内容片段
-  url: string; // 详情相对路径
+  jbdw: string; // ç»åŠžæ³•é™¢
+  ajlb: string; // Casoç±»åˆ«
+  xzqh_p: string; // çœä»½
+  wszl: string; // æ–‡ä¹¦ç§ç±»
+  cprq: string; // è£åˆ¤Fecha
+  content: string; // å†…å®¹ç‰‡æ®µ
+  url: string; // è¯¦æƒ…ç›¸å¯¹è·¯å¾„
   score: number;
 };
 
@@ -67,9 +67,9 @@ export type PtalSearchResult = {
 };
 
 /**
- * 普通案例关键词检索（rh_ptal_search，计费 10 POINT/次）
+ * æ™®é€šæ¡ˆä¾‹å…³é”®è¯æ£€ç´¢ï¼ˆrh_ptal_searchï¼Œè®¡è´¹ 10 POINT/æ¬¡ï¼‰
  *
- * 请求体不能完全为空，调用方至少传一个过滤条件（ay/qw/jbdw etc.）。
+ * è¯·æ±‚ä½“ä¸èƒ½å®Œå…¨ä¸ºç©ºï¼Œè°ƒç”¨æ–¹è‡³å°‘ä¼ ä¸€ä¸ªè¿‡æ»¤æ¡ä»¶ï¼ˆay/qw/jbdw etc.ï¼‰ã€‚
  */
 export async function searchPtalCases(
   params: PtalSearchParams,
@@ -78,7 +78,7 @@ export async function searchPtalCases(
   const s = resolved ?? (await getYuandianSettings());
   if (!s.configured) throw new YuandianNotConfiguredError();
 
-  // pesos典要求 body 非空；调用方至少要传一个过滤条件
+  // pesoså…¸è¦æ±‚ body éžç©ºï¼›è°ƒç”¨æ–¹è‡³å°‘è¦ä¼ ä¸€ä¸ªè¿‡æ»¤æ¡ä»¶
   const hasAny =
     (params.ay?.length ?? 0) > 0 ||
     !!params.qw?.trim() ||
@@ -89,7 +89,7 @@ export async function searchPtalCases(
     !!params.ja_end;
   if (!hasAny)
     throw new Error(
-      "至少填写一个检索条件（Causa / 关键词 / 法院 / 地区 / Fecha）",
+      "è‡³å°‘å¡«å†™ä¸€ä¸ªæ£€ç´¢æ¡ä»¶ï¼ˆCausa / å…³é”®è¯ / æ³•é™¢ / åœ°åŒº / Fechaï¼‰",
     );
 
   const body: Record<string, unknown> = {};
@@ -135,11 +135,11 @@ export async function searchPtalCases(
 
   if (json.status !== "success") {
     throw new YuandianApiError(
-      json.message ?? "pesos典VolverError",
+      json.message ?? "pesoså…¸VolverError",
       json.code ?? 500,
     );
   }
-  // 未命中：data === null
+  // æœªå‘½ä¸­ï¼šdata === null
   if (!json.data) return { total: 0, items: [] };
   return {
     total: json.data.total ?? 0,
@@ -148,8 +148,8 @@ export async function searchPtalCases(
 }
 
 /**
- * 拼出pesos典前端的案例详情完整 URL（用于"Ver全文"外跳）。
- * caseDetailHost 默认 https://www.chineselaw.com，可在Configuración里改。
+ * æ‹¼å‡ºpesoså…¸å‰ç«¯çš„æ¡ˆä¾‹è¯¦æƒ…å®Œæ•´ URLï¼ˆç”¨äºŽ"Verå…¨æ–‡"å¤–è·³ï¼‰ã€‚
+ * caseDetailHost é»˜è®¤ https://www.chineselaw.comï¼Œå¯åœ¨ConfiguraciÃ³né‡Œæ”¹ã€‚
  */
 export function buildCaseDetailUrl(host: string, relPath: string): string {
   const h = host.replace(/\/$/, "");
@@ -158,33 +158,33 @@ export function buildCaseDetailUrl(host: string, relPath: string): string {
 }
 
 // ============================================================
-// v0.22: 语义检索 case_vector_search（10 POINT/次）
+// v0.22: è¯­ä¹‰æ£€ç´¢ case_vector_searchï¼ˆ10 POINT/æ¬¡ï¼‰
 // ============================================================
 
 const WSZL_NAME_TO_CODE: Record<string, string> = {
-  判决书: "1",
-  裁定书: "2",
-  调解书: "3",
-  决定书: "4",
+  åˆ¤å†³ä¹¦: "1",
+  è£å®šä¹¦: "2",
+  è°ƒè§£ä¹¦: "3",
+  å†³å®šä¹¦: "4",
 };
 
 export type VectorSearchParams = {
-  query: string; // 必填，自然语言
-  ay?: string[]; // Causa名（vector 接受名字，不是 code）
-  ajlb?: PtalSearchParams["ajlb"]; // 同 ptal 的中文枚举
-  xzqh_p?: string; // ⚠ vector 这里是 string 单值，不是数组
-  wszl?: ("判决书" | "裁定书" | "调解书" | "决定书")[]; // 我们对外仍传名字，内部转 code
+  query: string; // å¿…å¡«ï¼Œè‡ªç„¶è¯­è¨€
+  ay?: string[]; // Causaåï¼ˆvector æŽ¥å—åå­—ï¼Œä¸æ˜¯ codeï¼‰
+  ajlb?: PtalSearchParams["ajlb"]; // åŒ ptal çš„ä¸­æ–‡æžšä¸¾
+  xzqh_p?: string; // âš  vector è¿™é‡Œæ˜¯ string å•å€¼ï¼Œä¸æ˜¯æ•°ç»„
+  wszl?: ("åˆ¤å†³ä¹¦" | "è£å®šä¹¦" | "è°ƒè§£ä¹¦" | "å†³å®šä¹¦")[]; // æˆ‘ä»¬å¯¹å¤–ä»ä¼ åå­—ï¼Œå†…éƒ¨è½¬ code
   ja_start?: string;
   ja_end?: string;
-  return_num?: number; // 默认 10，上限 50（我们自己加保护）
+  return_num?: number; // é»˜è®¤ 10ï¼Œä¸Šé™ 50ï¼ˆæˆ‘ä»¬è‡ªå·±åŠ ä¿æŠ¤ï¼‰
 };
 
 export type VectorCase = {
   scid: string;
   title: string;
   ah: string;
-  ay: string[]; // ⚠ Volver的是 code 数组，不是名字
-  anyou?: string[]; // Causa名（如果Volver字段有的话，做兜底）
+  ay: string[]; // âš  Volverçš„æ˜¯ code æ•°ç»„ï¼Œä¸æ˜¯åå­—
+  anyou?: string[]; // Causaåï¼ˆå¦‚æžœVolverå­—æ®µæœ‰çš„è¯ï¼Œåšå…œåº•ï¼‰
   jbdw: string | null;
   ajlb: string;
   wszl: string;
@@ -208,7 +208,7 @@ export async function searchCasesByVector(
   const s = resolved ?? (await getYuandianSettings());
   if (!s.configured) throw new YuandianNotConfiguredError();
   const query = params.query.trim();
-  if (!query) throw new Error("语义检索 query 不能为空");
+  if (!query) throw new Error("è¯­ä¹‰æ£€ç´¢ query ä¸èƒ½ä¸ºç©º");
 
   const filter: Record<string, unknown> = {};
   if (params.ay?.length) filter.ay = params.ay;
@@ -226,7 +226,7 @@ export async function searchCasesByVector(
   const body: Record<string, unknown> = { query };
   if (Object.keys(filter).length) body.wenshu_filter = filter;
   body.return_num = Math.min(Math.max(params.return_num ?? 10, 1), 50);
-  body.rewrite_flag = false; // 走原 query；改写经常给奇怪结果
+  body.rewrite_flag = false; // èµ°åŽŸ queryï¼›æ”¹å†™ç»å¸¸ç»™å¥‡æ€ªç»“æžœ
 
   const url = `${s.baseUrl.replace(/\/$/, "")}/case_vector_search`;
   const ctrl = new AbortController();
@@ -253,15 +253,16 @@ export async function searchCasesByVector(
     clearTimeout(timer);
   }
 
-  // 语义接口成功 code 是 201（按文档示例）；保险接受 200-299
+  // è¯­ä¹‰æŽ¥å£æˆåŠŸ code æ˜¯ 201ï¼ˆæŒ‰æ–‡æ¡£ç¤ºä¾‹ï¼‰ï¼›ä¿é™©æŽ¥å— 200-299
   const code = json.code ?? 0;
   if (code < 200 || code >= 300) {
-    throw new YuandianApiError(json.msg ?? "pesos典语义检索Error", code);
+    throw new YuandianApiError(json.msg ?? "pesoså…¸è¯­ä¹‰æ£€ç´¢Error", code);
   }
   return { items: json.extra?.wenshu ?? [] };
 }
 
-/** 语义检索详情 URL：scid → /ydzk/caseDetail/case/<scid> */
+/** è¯­ä¹‰æ£€ç´¢è¯¦æƒ… URLï¼šscid â†’ /ydzk/caseDetail/case/<scid> */
 export function buildVectorCaseDetailUrl(host: string, scid: string): string {
   return buildCaseDetailUrl(host, `/ydzk/caseDetail/case/${scid}`);
 }
+

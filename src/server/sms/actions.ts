@@ -1,4 +1,4 @@
-"use server";
+﻿"use server";
 
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
@@ -23,9 +23,9 @@ import {
 } from "./schemas";
 import { revalidateMatter } from "@/server/matters/route";
 
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-// 解析并Guardar（支持批量）
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”
+// è§£æžå¹¶Guardarï¼ˆæ”¯æŒæ‰¹é‡ï¼‰
+// â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”
 
 async function findMatchingMatter(caseNumbers: string[]): Promise<string | null> {
   if (caseNumbers.length === 0) return null;
@@ -81,7 +81,7 @@ function normalizeStoredParsed(rawText: string, parsedJson: Prisma.JsonValue): P
   };
 }
 
-// v0.48: 待人工Estado冗余到 SmsMessage.needsManualAction 供 SQL 过滤
+// v0.48: å¾…äººå·¥Estadoå†—ä½™åˆ° SmsMessage.needsManualAction ä¾› SQL è¿‡æ»¤
 function needsManualFromResults(results: ParsedSms["attachmentResults"]) {
   return results.some((r) => r.status === "LOGIN_REQUIRED" || r.status === "SKIPPED_NO_MATTER");
 }
@@ -98,7 +98,7 @@ function skippedNoMatterResults(parsed: ParsedSms): ParsedSms["attachmentResults
   return parsed.urls.map((url) => ({
     url,
     status: "SKIPPED_NO_MATTER",
-    message: "请先关联Caso，再提取送达Adjunto",
+    message: "è¯·å…ˆå…³è”Casoï¼Œå†æå–é€è¾¾Adjunto",
     checkedAt: new Date().toISOString()
   }));
 }
@@ -123,7 +123,7 @@ async function tryExtractAttachments({
     return parsed.urls.map((url) => ({
       url,
       status: "FAILED" as const,
-      message: err instanceof Error ? err.message : "Adjunto提取Error",
+      message: err instanceof Error ? err.message : "Adjuntoæå–Error",
       checkedAt: new Date().toISOString()
     }));
   }
@@ -134,7 +134,7 @@ export async function parseAndSaveSms(input: z.infer<typeof smsParseAndSaveSchem
   const data = smsParseAndSaveSchema.parse(input);
 
   const messages = data.batch ? splitSmsBatch(data.rawText) : [data.rawText.trim()];
-  if (messages.length === 0) throw new Error("没有可解析的内容");
+  if (messages.length === 0) throw new Error("æ²¡æœ‰å¯è§£æžçš„å†…å®¹");
 
   const createdIds: string[] = [];
 
@@ -182,7 +182,7 @@ export async function parseAndSaveSms(input: z.infer<typeof smsParseAndSaveSchem
       }
     }
 
-    // Notificaciones关联Caso的负责人
+    // Notificacioneså…³è”Casoçš„è´Ÿè´£äºº
     if (matchedMatterId) {
       const matter = await prisma.matter.findUnique({
         where: { id: matchedMatterId },
@@ -192,8 +192,8 @@ export async function parseAndSaveSms(input: z.infer<typeof smsParseAndSaveSchem
         await createNotification({
           userId: matter.ownerId,
           type: "SMS_ARRIVAL",
-          title: "收到新法院SMS",
-          content: `Caso收到新的法院SMS，类型：${parsed.smsType ?? "Desconocido"}`,
+          title: "æ”¶åˆ°æ–°æ³•é™¢SMS",
+          content: `Casoæ”¶åˆ°æ–°çš„æ³•é™¢SMSï¼Œç±»åž‹ï¼š${parsed.smsType ?? "Desconocido"}`,
           href: "/inbox",
           refType: "SmsMessage",
           refId: created.id
@@ -228,9 +228,9 @@ export async function extractSmsAttachments(input: z.infer<typeof smsIdSchema>) 
       matchedMatterId: true
     }
   });
-  if (!sms) throw new Error("SMS不存在");
+  if (!sms) throw new Error("SMSä¸å­˜åœ¨");
   if (sms.receivedById !== session.user.id && !sms.matchedMatterId) {
-    throw new Error("无权处理这条SMS");
+    throw new Error("æ— æƒå¤„ç†è¿™æ¡SMS");
   }
   if (!sms.matchedMatterId) {
     const parsed = normalizeStoredParsed(sms.rawText, sms.parsedJson);
@@ -252,7 +252,7 @@ export async function extractSmsAttachments(input: z.infer<typeof smsIdSchema>) 
 
   await assertCanAccessMatter(session.user.id, session.user.role, sms.matchedMatterId);
   const parsed = normalizeStoredParsed(sms.rawText, sms.parsedJson);
-  if (parsed.urls.length === 0) throw new Error("SMS中没有可提取的Enlace");
+  if (parsed.urls.length === 0) throw new Error("SMSä¸­æ²¡æœ‰å¯æå–çš„Enlace");
 
   const attachmentResults = await tryExtractAttachments({
     smsId: sms.id,
@@ -286,9 +286,9 @@ export async function extractSmsAttachments(input: z.infer<typeof smsIdSchema>) 
   return { ok: true, count: attachmentResults.length, attachmentResults };
 }
 
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-// 列表
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”
+// åˆ—è¡¨
+// â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”
 
 export async function listSmsMessages(input?: z.input<typeof smsListFilterSchema>) {
   const session = await requireSession();
@@ -344,9 +344,9 @@ export async function getSmsMessage(id: string) {
   });
 }
 
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-// 手动指派 Matter
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”
+// æ‰‹åŠ¨æŒ‡æ´¾ Matter
+// â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”
 
 export async function matchSmsToMatter(input: z.infer<typeof smsMatchToMatterSchema>) {
   const session = await requireSession();
@@ -376,9 +376,9 @@ export async function matchSmsToMatter(input: z.infer<typeof smsMatchToMatterSch
   return { ok: true };
 }
 
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-// 一键生成 Hearing
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”
+// ä¸€é”®ç”Ÿæˆ Hearing
+// â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”
 
 export async function generateHearingFromSms(input: z.infer<typeof smsGenerateHearingSchema>) {
   const session = await requireSession();
@@ -388,7 +388,7 @@ export async function generateHearingFromSms(input: z.infer<typeof smsGenerateHe
     where: { id: data.procedureId },
     select: { id: true, matterId: true }
   });
-  if (!proc) throw new Error("程序不存在");
+  if (!proc) throw new Error("ç¨‹åºä¸å­˜åœ¨");
   await assertCanAccessMatter(session.user.id, session.user.role, proc.matterId);
   await assertMatterWritable(proc.matterId);
 
@@ -425,9 +425,9 @@ export async function generateHearingFromSms(input: z.infer<typeof smsGenerateHe
   return { ok: true, hearingId: hearing.id };
 }
 
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-// 一键生成 Deadline
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”
+// ä¸€é”®ç”Ÿæˆ Deadline
+// â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”
 
 export async function generateDeadlineFromSms(input: z.infer<typeof smsGenerateDeadlineSchema>) {
   const session = await requireSession();
@@ -437,7 +437,7 @@ export async function generateDeadlineFromSms(input: z.infer<typeof smsGenerateD
     where: { id: data.procedureId },
     select: { id: true, matterId: true }
   });
-  if (!proc) throw new Error("程序不存在");
+  if (!proc) throw new Error("ç¨‹åºä¸å­˜åœ¨");
   await assertCanAccessMatter(session.user.id, session.user.role, proc.matterId);
   await assertMatterWritable(proc.matterId);
 
@@ -474,9 +474,9 @@ export async function generateDeadlineFromSms(input: z.infer<typeof smsGenerateD
   return { ok: true, deadlineId: deadline.id };
 }
 
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-// 标记已处理
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”
+// æ ‡è®°å·²å¤„ç†
+// â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”
 
 export async function markSmsProcessed(input: z.infer<typeof smsIdSchema>) {
   const session = await requireSession();
@@ -506,9 +506,9 @@ export async function deleteSms(input: z.infer<typeof smsIdSchema>) {
     where: { id: data.id },
     select: { receivedById: true }
   });
-  if (!sms) throw new Error("SMS不存在");
+  if (!sms) throw new Error("SMSä¸å­˜åœ¨");
   if (sms.receivedById !== session.user.id && session.user.role !== "ADMIN") {
-    throw new Error("仅Recibido人或Administrar员可Eliminar");
+    throw new Error("ä»…Recibidoäººæˆ–Administrarå‘˜å¯Eliminar");
   }
 
   await prisma.smsMessage.delete({ where: { id: data.id } });
@@ -524,7 +524,7 @@ export async function deleteSms(input: z.infer<typeof smsIdSchema>) {
   return { ok: true };
 }
 
-// 把解析出的字符串Fecha尽量转 JS Date（UI 预填用）
+// æŠŠè§£æžå‡ºçš„å­—ç¬¦ä¸²Fechaå°½é‡è½¬ JS Dateï¼ˆUI é¢„å¡«ç”¨ï¼‰
 export async function parseDateString(s: string) {
   await requireSession();
   const d = toDate(s);
@@ -532,9 +532,9 @@ export async function parseDateString(s: string) {
 }
 
 /**
- * v0.51: 立案/受理SMS解析出的案号回填到程序（Recibido箱闭环）。
- * 只允许回填SMS里真实解析出的案号；只填空案号的程序，已有案号不覆盖
- * （更正走程序信息Editar，留痕清晰）。
+ * v0.51: ç«‹æ¡ˆ/å—ç†SMSè§£æžå‡ºçš„æ¡ˆå·å›žå¡«åˆ°ç¨‹åºï¼ˆRecibidoç®±é—­çŽ¯ï¼‰ã€‚
+ * åªå…è®¸å›žå¡«SMSé‡ŒçœŸå®žè§£æžå‡ºçš„æ¡ˆå·ï¼›åªå¡«ç©ºæ¡ˆå·çš„ç¨‹åºï¼Œå·²æœ‰æ¡ˆå·ä¸è¦†ç›–
+ * ï¼ˆæ›´æ­£èµ°ç¨‹åºä¿¡æ¯Editarï¼Œç•™ç—•æ¸…æ™°ï¼‰ã€‚
  */
 export async function backfillCaseNumberFromSms(
   input: z.infer<typeof smsBackfillCaseNumberSchema>
@@ -546,14 +546,14 @@ export async function backfillCaseNumberFromSms(
     where: { id: data.smsId },
     select: { id: true, rawText: true, parsedJson: true, matchedMatterId: true }
   });
-  if (!sms) throw new Error("SMS不存在");
-  if (!sms.matchedMatterId) throw new Error("请先关联Caso");
+  if (!sms) throw new Error("SMSä¸å­˜åœ¨");
+  if (!sms.matchedMatterId) throw new Error("è¯·å…ˆå…³è”Caso");
   await assertCanAssociateMatter(session.user.id, sms.matchedMatterId);
   await assertMatterWritable(sms.matchedMatterId);
 
   const parsed = normalizeStoredParsed(sms.rawText, sms.parsedJson);
   if (!parsed.caseNumbers.includes(data.caseNumber)) {
-    throw new Error("只能回填本条SMS解析出的案号");
+    throw new Error("åªèƒ½å›žå¡«æœ¬æ¡SMSè§£æžå‡ºçš„æ¡ˆå·");
   }
 
   const procedure = await prisma.matterProcedure.findUnique({
@@ -561,13 +561,13 @@ export async function backfillCaseNumberFromSms(
     select: { id: true, matterId: true, caseNumber: true, type: true, customLabel: true }
   });
   if (!procedure || procedure.matterId !== sms.matchedMatterId) {
-    throw new Error("程序ySMS关联的Caso不Coincidencia");
+    throw new Error("ç¨‹åºySMSå…³è”çš„Casoä¸Coincidencia");
   }
   if (procedure.caseNumber === data.caseNumber) {
     return { ok: true, unchanged: true };
   }
   if (procedure.caseNumber) {
-    throw new Error(`该程序已有案号 ${procedure.caseNumber}，如需更正请在程序信息中修改`);
+    throw new Error(`è¯¥ç¨‹åºå·²æœ‰æ¡ˆå· ${procedure.caseNumber}ï¼Œå¦‚éœ€æ›´æ­£è¯·åœ¨ç¨‹åºä¿¡æ¯ä¸­ä¿®æ”¹`);
   }
 
   await prisma.matterProcedure.update({
@@ -579,7 +579,7 @@ export async function backfillCaseNumberFromSms(
     data: {
       matterId: sms.matchedMatterId,
       eventType: "PROCEDURE_UPDATED",
-      title: `案号回填：${data.caseNumber}（来自法院SMS）`,
+      title: `æ¡ˆå·å›žå¡«ï¼š${data.caseNumber}ï¼ˆæ¥è‡ªæ³•é™¢SMSï¼‰`,
       occurredAt: new Date(),
       refType: "MatterProcedure",
       refId: procedure.id
@@ -598,3 +598,5 @@ export async function backfillCaseNumberFromSms(
   await revalidateMatter(sms.matchedMatterId);
   return { ok: true, unchanged: false };
 }
+
+

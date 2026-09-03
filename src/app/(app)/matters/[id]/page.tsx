@@ -77,8 +77,8 @@ export default async function MatterDetailPage({ params }: PageProps) {
       where: {
         enabled: true,
         OR: [
-          { applicableCategories: { isEmpty: true } },
-          { applicableCategories: { has: matter.category } }
+          { applicableCategories: { equals: [] } },
+          { applicableCategories: { array_contains: matter.category } }
         ]
       },
       orderBy: [{ category: "asc" }, { name: "asc" }],
@@ -190,7 +190,7 @@ export default async function MatterDetailPage({ params }: PageProps) {
         className="inline-flex items-center gap-1 text-sm text-muted-foreground transition-colors hover:text-foreground"
       >
         <ArrowLeft className="h-3.5 w-3.5" />
-        VolverCaso列表
+        Volver a la lista de casos
       </Link>
 
       <ReviewSummaryCard summary={reviewSummary} matterId={matter.id} />

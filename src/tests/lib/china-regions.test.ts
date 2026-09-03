@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+﻿import { describe, expect, it } from "vitest";
 import {
   agencyOptions,
   agencyOptionsForProcedure,
@@ -8,44 +8,45 @@ import {
 } from "@/lib/china-regions";
 
 describe("agencyOptions", () => {
-  it("未选管辖地时仍提供最高人民法院", () => {
-    expect(agencyOptions()).toEqual(["最高人民法院"]);
+  it("æœªé€‰ç®¡è¾–åœ°æ—¶ä»æä¾›æœ€é«˜äººæ°‘æ³•é™¢", () => {
+    expect(agencyOptions()).toEqual(["æœ€é«˜äººæ°‘æ³•é™¢"]);
   });
 
-  it("选到区县时包含最高人民法院且保留地方机构", () => {
-    const options = agencyOptions("浙江省/杭州市/西湖区");
+  it("é€‰åˆ°åŒºåŽ¿æ—¶åŒ…å«æœ€é«˜äººæ°‘æ³•é™¢ä¸”ä¿ç•™åœ°æ–¹æœºæž„", () => {
+    const options = agencyOptions("æµ™æ±Ÿçœ/æ­å·žå¸‚/è¥¿æ¹–åŒº");
 
-    expect(options).toContain("西湖区人民法院");
-    expect(options).toContain("杭州市中级人民法院");
-    expect(options).toContain("浙江省高级人民法院");
-    expect(options).toContain("最高人民法院");
-    expect(options).toContain("杭州仲裁委员会");
+    expect(options).toContain("è¥¿æ¹–åŒºäººæ°‘æ³•é™¢");
+    expect(options).toContain("æ­å·žå¸‚ä¸­çº§äººæ°‘æ³•é™¢");
+    expect(options).toContain("æµ™æ±Ÿçœé«˜çº§äººæ°‘æ³•é™¢");
+    expect(options).toContain("æœ€é«˜äººæ°‘æ³•é™¢");
+    expect(options).toContain("æ­å·žä»²è£å§”å‘˜ä¼š");
   });
 
-  it("商事仲裁程序只提供仲裁机构，后续执行程序仍可选择法院", () => {
+  it("å•†äº‹ä»²è£ç¨‹åºåªæä¾›ä»²è£æœºæž„ï¼ŒåŽç»­æ‰§è¡Œç¨‹åºä»å¯é€‰æ‹©æ³•é™¢", () => {
     const arbitrationOptions = agencyOptionsForProcedure(
-      "浙江省/杭州市/西湖区",
+      "æµ™æ±Ÿçœ/æ­å·žå¸‚/è¥¿æ¹–åŒº",
       "COMMERCIAL_ARBITRATION"
     );
-    expect(arbitrationOptions).toEqual(["杭州仲裁委员会"]);
-    expect(isAgencyAllowedForProcedure("西湖区人民法院", "COMMERCIAL_ARBITRATION")).toBe(false);
-    expect(isAgencyAllowedForProcedure("杭州仲裁委员会", "COMMERCIAL_ARBITRATION")).toBe(true);
+    expect(arbitrationOptions).toEqual(["æ­å·žä»²è£å§”å‘˜ä¼š"]);
+    expect(isAgencyAllowedForProcedure("è¥¿æ¹–åŒºäººæ°‘æ³•é™¢", "COMMERCIAL_ARBITRATION")).toBe(false);
+    expect(isAgencyAllowedForProcedure("æ­å·žä»²è£å§”å‘˜ä¼š", "COMMERCIAL_ARBITRATION")).toBe(true);
 
-    const enforcementOptions = agencyOptionsForProcedure("浙江省/杭州市/西湖区", "ENFORCEMENT");
-    expect(enforcementOptions).toContain("西湖区人民法院");
-    expect(enforcementOptions).toContain("杭州仲裁委员会");
+    const enforcementOptions = agencyOptionsForProcedure("æµ™æ±Ÿçœ/æ­å·žå¸‚/è¥¿æ¹–åŒº", "ENFORCEMENT");
+    expect(enforcementOptions).toContain("è¥¿æ¹–åŒºäººæ°‘æ³•é™¢");
+    expect(enforcementOptions).toContain("æ­å·žä»²è£å§”å‘˜ä¼š");
   });
 });
 
 describe("national agency helpers", () => {
-  it("识别最高人民法院", () => {
-    expect(isNationalAgency("最高人民法院")).toBe(true);
-    expect(isNationalAgency(" 最高人民法院 ")).toBe(true);
-    expect(isNationalAgency("浙江省高级人民法院")).toBe(false);
+  it("è¯†åˆ«æœ€é«˜äººæ°‘æ³•é™¢", () => {
+    expect(isNationalAgency("æœ€é«˜äººæ°‘æ³•é™¢")).toBe(true);
+    expect(isNationalAgency(" æœ€é«˜äººæ°‘æ³•é™¢ ")).toBe(true);
+    expect(isNationalAgency("æµ™æ±Ÿçœé«˜çº§äººæ°‘æ³•é™¢")).toBe(false);
   });
 
-  it("最高人民法院不保留地方管辖地", () => {
-    expect(normalizeJurisdictionForAgency("最高人民法院", "浙江省/杭州市/西湖区")).toBeNull();
-    expect(normalizeJurisdictionForAgency("浙江省高级人民法院", "浙江省/杭州市")).toBe("浙江省/杭州市");
+  it("æœ€é«˜äººæ°‘æ³•é™¢ä¸ä¿ç•™åœ°æ–¹ç®¡è¾–åœ°", () => {
+    expect(normalizeJurisdictionForAgency("æœ€é«˜äººæ°‘æ³•é™¢", "æµ™æ±Ÿçœ/æ­å·žå¸‚/è¥¿æ¹–åŒº")).toBeNull();
+    expect(normalizeJurisdictionForAgency("æµ™æ±Ÿçœé«˜çº§äººæ°‘æ³•é™¢", "æµ™æ±Ÿçœ/æ­å·žå¸‚")).toBe("æµ™æ±Ÿçœ/æ­å·žå¸‚");
   });
 });
+

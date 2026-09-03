@@ -1,4 +1,4 @@
-"use server";
+﻿"use server";
 
 import { prisma } from "@/lib/prisma";
 import { requireSession } from "@/lib/auth/session";
@@ -29,7 +29,7 @@ export async function markNotificationRead(id: string) {
   const notif = await prisma.notification.findFirst({
     where: { id, userId: session.user.id },
   });
-  if (!notif) throw new Error("Notificaciones不存在");
+  if (!notif) throw new Error("Notificacionesä¸å­˜åœ¨");
 
   return prisma.notification.update({
     where: { id },
@@ -45,3 +45,5 @@ export async function markAllNotificationsRead() {
   });
   return { ok: true };
 }
+
+

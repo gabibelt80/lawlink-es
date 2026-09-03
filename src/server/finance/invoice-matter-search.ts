@@ -1,4 +1,4 @@
-import { Prisma } from "@prisma/client";
+﻿import { Prisma } from "@prisma/client";
 import { matterAssociationFilter } from "@/lib/permissions";
 
 export function invoiceMatterSearchWhere(
@@ -9,9 +9,9 @@ export function invoiceMatterSearchWhere(
   const associationWhere = matterAssociationFilter(userId);
   const searchWhere: Prisma.MatterWhereInput = {
     OR: [
-      { title: { contains: query, mode: "insensitive" } },
-      { internalCode: { contains: query, mode: "insensitive" } },
-      { firmCaseNo: { contains: query, mode: "insensitive" } }
+      { title: { contains: query } },
+      { internalCode: { contains: query } },
+      { firmCaseNo: { contains: query } }
     ]
   };
 
@@ -24,3 +24,5 @@ export function invoiceMatterSearchWhere(
 export function invoiceMatterSearchLimit(q?: string) {
   return (q ?? "").trim() ? 10 : 12;
 }
+
+

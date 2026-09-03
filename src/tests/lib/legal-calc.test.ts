@@ -1,27 +1,27 @@
-import { describe, it, expect } from "vitest";
+﻿import { describe, it, expect } from "vitest";
 import { calcCourtFee, calcLateInterest, daysBetween, numberToChinese } from "@/lib/legal-calc";
 
-describe("calcCourtFee — 财产Caso分段累进", () => {
-  it("≤1万：固定50pesos", () => {
+describe("calcCourtFee â€” è´¢äº§Casoåˆ†æ®µç´¯è¿›", () => {
+  it("â‰¤1ä¸‡ï¼šå›ºå®š50pesos", () => {
     expect(calcCourtFee({ caseType: "PROPERTY", amount: 5000 }).fee).toBe(50);
   });
 
-  it("10万：×2.5%-200 = 2300", () => {
+  it("10ä¸‡ï¼šÃ—2.5%-200 = 2300", () => {
     expect(calcCourtFee({ caseType: "PROPERTY", amount: 100_000 }).fee).toBe(2300);
   });
 
-  it("100万：×1%+3800 = 13800", () => {
+  it("100ä¸‡ï¼šÃ—1%+3800 = 13800", () => {
     expect(calcCourtFee({ caseType: "PROPERTY", amount: 1_000_000 }).fee).toBe(13800);
   });
 
-  it("简易程序减半", () => {
+  it("ç®€æ˜“ç¨‹åºå‡åŠ", () => {
     const r = calcCourtFee({ caseType: "PROPERTY", amount: 100_000 });
     expect(r.feeSimplified).toBe(Math.round(r.fee / 2));
   });
 });
 
-describe("calcCourtFee — 其他Caso类型", () => {
-  it("劳动争议固定10pesos", () => {
+describe("calcCourtFee â€” å…¶ä»–Casoç±»åž‹", () => {
+  it("åŠ³åŠ¨äº‰è®®å›ºå®š10pesos", () => {
     const r = calcCourtFee({ caseType: "LABOR" });
     expect(r.fee).toBe(10);
     expect(r.feeSimplified).toBe(5);
@@ -29,7 +29,7 @@ describe("calcCourtFee — 其他Caso类型", () => {
 });
 
 describe("calcLateInterest", () => {
-  it("Vencido30días计算", () => {
+  it("Vencido30dÃ­asè®¡ç®—", () => {
     const r = calcLateInterest({
       principal: 100_000,
       dueDate: new Date("2025-01-01"),
@@ -40,7 +40,7 @@ describe("calcLateInterest", () => {
     expect(r.totalToPay).toBe(100_000 + r.interest);
   });
 
-  it("未Vencido：0días、0利息", () => {
+  it("æœªVencidoï¼š0dÃ­asã€0åˆ©æ¯", () => {
     const r = calcLateInterest({
       principal: 100_000,
       dueDate: new Date("2025-01-31"),
@@ -52,28 +52,29 @@ describe("calcLateInterest", () => {
 });
 
 describe("daysBetween", () => {
-  it("基本días数差", () => {
+  it("åŸºæœ¬dÃ­asæ•°å·®", () => {
     expect(daysBetween(new Date("2025-01-01"), new Date("2025-01-11"))).toBe(10);
   });
 
-  it("排除周末", () => {
-    // 2025-01-06 (Mon) → 2025-01-10 (Fri) = 4 工作日
+  it("æŽ’é™¤å‘¨æœ«", () => {
+    // 2025-01-06 (Mon) â†’ 2025-01-10 (Fri) = 4 å·¥ä½œæ—¥
     expect(daysBetween(new Date("2025-01-06"), new Date("2025-01-10"), true)).toBe(4);
   });
 });
 
 describe("numberToChinese", () => {
-  it("整数", () => {
-    expect(numberToChinese(10000)).toBe("壹万pesos整");
+  it("æ•´æ•°", () => {
+    expect(numberToChinese(10000)).toBe("å£¹ä¸‡pesosæ•´");
   });
 
-  it("带角分", () => {
+  it("å¸¦è§’åˆ†", () => {
     const result = numberToChinese(123.45);
-    expect(result).toContain("壹佰贰拾叁pesos");
-    expect(result).toContain("肆角伍分");
+    expect(result).toContain("å£¹ä½°è´°æ‹¾åpesos");
+    expect(result).toContain("è‚†è§’ä¼åˆ†");
   });
 
-  it("零pesos", () => {
-    expect(numberToChinese(0)).toBe("零pesos整");
+  it("é›¶pesos", () => {
+    expect(numberToChinese(0)).toBe("é›¶pesosæ•´");
   });
 });
+

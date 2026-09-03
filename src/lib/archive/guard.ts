@@ -1,14 +1,14 @@
-/**
- * v0.9.4 归档只读门禁
+﻿/**
+ * v0.9.4 å½’æ¡£åªè¯»é—¨ç¦
  *
- * 策略（用户选择"中"）：
- *   - Caso status === "ARCHIVED" 后：业务写Acciones全禁
- *   - 例外：补传材料到 ARCHIVE 卷宗（Cerrar caso/归档）允许
+ * ç­–ç•¥ï¼ˆç”¨æˆ·é€‰æ‹©"ä¸­"ï¼‰ï¼š
+ *   - Caso status === "ARCHIVED" åŽï¼šä¸šåŠ¡å†™Accioneså…¨ç¦
+ *   - ä¾‹å¤–ï¼šè¡¥ä¼ ææ–™åˆ° ARCHIVE å·å®—ï¼ˆCerrar caso/å½’æ¡£ï¼‰å…è®¸
  *
- * 调用方式（每个写Acciones server action 入口）：
+ * è°ƒç”¨æ–¹å¼ï¼ˆæ¯ä¸ªå†™Acciones server action å…¥å£ï¼‰ï¼š
  *   await assertMatterWritable(matterId);
  *
- * 文档上传 / Eliminar 需要 isArchiveFolder() 配合放行 ARCHIVE 卷宗。
+ * æ–‡æ¡£ä¸Šä¼  / Eliminar éœ€è¦ isArchiveFolder() é…åˆæ”¾è¡Œ ARCHIVE å·å®—ã€‚
  */
 import { requireSession } from "@/lib/auth/session";
 import { matterAssociationFilter } from "@/lib/permissions";
@@ -36,7 +36,7 @@ async function findWritableMatter(
 }
 
 /**
- * 已归档Caso视为只读。抛错（中文）由 UI catch 显示 toast。
+ * å·²å½’æ¡£Casoè§†ä¸ºåªè¯»ã€‚æŠ›é”™ï¼ˆä¸­æ–‡ï¼‰ç”± UI catch æ˜¾ç¤º toastã€‚
  */
 export async function assertMatterWritable(
   matterId: string | null | undefined,
@@ -44,20 +44,20 @@ export async function assertMatterWritable(
 ): Promise<void> {
   if (!matterId) return;
   const matter = await findWritableMatter(matterId, opts);
-  if (!matter) throw new Error("Caso不存在或无权处理");
+  if (!matter) throw new Error("Casoä¸å­˜åœ¨æˆ–æ— æƒå¤„ç†");
   if (matter.status === "ARCHIVED") {
     const detail = opts?.allowedIfArchivedReason
-      ? `（${opts.allowedIfArchivedReason}除外）`
+      ? `ï¼ˆ${opts.allowedIfArchivedReason}é™¤å¤–ï¼‰`
       : "";
-    throw new Error(`Caso已归档，禁止修改${detail}`);
+    throw new Error(`Casoå·²å½’æ¡£ï¼Œç¦æ­¢ä¿®æ”¹${detail}`);
   }
 }
 
 /**
- * 判定 folder 是否为 ARCHIVE 卷宗（Cerrar caso / 归档），用于上传材料门禁放行。
- * 命中条件：name 命中 ["Cerrar caso", "归档"] 之一（y default-folders.ts 一致）。
+ * åˆ¤å®š folder æ˜¯å¦ä¸º ARCHIVE å·å®—ï¼ˆCerrar caso / å½’æ¡£ï¼‰ï¼Œç”¨äºŽä¸Šä¼ ææ–™é—¨ç¦æ”¾è¡Œã€‚
+ * å‘½ä¸­æ¡ä»¶ï¼šname å‘½ä¸­ ["Cerrar caso", "å½’æ¡£"] ä¹‹ä¸€ï¼ˆy default-folders.ts ä¸€è‡´ï¼‰ã€‚
  */
-const ARCHIVE_FOLDER_NAMES = new Set(["Cerrar caso", "归档"]);
+const ARCHIVE_FOLDER_NAMES = new Set(["Cerrar caso", "å½’æ¡£"]);
 
 export function isArchiveFolderName(name: string | null | undefined): boolean {
   if (!name) return false;
@@ -65,7 +65,7 @@ export function isArchiveFolderName(name: string | null | undefined): boolean {
 }
 
 /**
- * 文档Acciones门禁：归档后只允许上传到 ARCHIVE 卷宗。Eliminar/重命名/移动一律禁止。
+ * æ–‡æ¡£Accionesé—¨ç¦ï¼šå½’æ¡£åŽåªå…è®¸ä¸Šä¼ åˆ° ARCHIVE å·å®—ã€‚Eliminar/é‡å‘½å/ç§»åŠ¨ä¸€å¾‹ç¦æ­¢ã€‚
  */
 export async function assertDocumentWritable(
   matterId: string | null | undefined,
@@ -73,13 +73,14 @@ export async function assertDocumentWritable(
 ): Promise<void> {
   if (!matterId) return;
   const matter = await findWritableMatter(matterId, opts);
-  if (!matter) throw new Error("Caso不存在或无权处理");
+  if (!matter) throw new Error("Casoä¸å­˜åœ¨æˆ–æ— æƒå¤„ç†");
   if (matter.status !== "ARCHIVED") return;
 
   if (opts.kind === "modify") {
-    throw new Error("Caso已归档，材料不可修改或Eliminar");
+    throw new Error("Casoå·²å½’æ¡£ï¼Œææ–™ä¸å¯ä¿®æ”¹æˆ–Eliminar");
   }
   if (opts.kind === "upload" && !isArchiveFolderName(opts.folderName)) {
-    throw new Error("Caso已归档，仅允许补传材料到「Cerrar caso」或「归档」卷宗");
+    throw new Error("Casoå·²å½’æ¡£ï¼Œä»…å…è®¸è¡¥ä¼ ææ–™åˆ°ã€ŒCerrar casoã€æˆ–ã€Œå½’æ¡£ã€å·å®—");
   }
 }
+

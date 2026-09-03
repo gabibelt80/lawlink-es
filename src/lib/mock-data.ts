@@ -1,5 +1,5 @@
-/**
- * Panel de trabajo mock 数据。Stage 1 用来打磨 UI，Stage 2 替换为 Prisma 查询。
+﻿/**
+ * Panel de trabajo mock æ•°æ®ã€‚Stage 1 ç”¨æ¥æ‰“ç£¨ UIï¼ŒStage 2 æ›¿æ¢ä¸º Prisma æŸ¥è¯¢ã€‚
  */
 
 export type TrendDirection = "up" | "down" | "warn";
@@ -16,28 +16,28 @@ export type KpiItem = {
 export const dashboardKpis: KpiItem[] = [
   {
     key: "in_progress",
-    label: "办理中Caso",
+    label: "åŠžç†ä¸­Caso",
     value: 18,
-    trend: { direction: "up", text: "+3 本周" },
+    trend: { direction: "up", text: "+3 æœ¬å‘¨" },
     sparkline: [12, 14, 13, 15, 16, 16, 17, 17, 18, 18, 17, 18, 18, 18]
   },
   {
     key: "pending",
-    label: "待Confirmar收案",
+    label: "å¾…Confirmaræ”¶æ¡ˆ",
     value: 5,
-    trend: { direction: "warn", text: "2 待处理" },
+    trend: { direction: "warn", text: "2 å¾…å¤„ç†" },
     sparkline: [2, 3, 3, 4, 4, 3, 5, 5, 4, 5, 5, 5, 5, 5]
   },
   {
     key: "deadline",
-    label: "近 7 díasPlazo",
+    label: "è¿‘ 7 dÃ­asPlazo",
     value: 7,
-    trend: { direction: "warn", text: "2 临近" },
+    trend: { direction: "warn", text: "2 ä¸´è¿‘" },
     sparkline: [4, 5, 5, 6, 5, 6, 6, 7, 7, 8, 7, 7, 7, 7]
   },
   {
     key: "received",
-    label: "本月实收",
+    label: "æœ¬æœˆå®žæ”¶",
     value: 286000,
     valueFormat: "currency",
     trend: { direction: "up", text: "+12%" },
@@ -46,8 +46,8 @@ export const dashboardKpis: KpiItem[] = [
 ];
 
 export const todayFocus = {
-  title: "举证截止",
-  matter: "青石建设诉华东置业",
+  title: "ä¸¾è¯æˆªæ­¢",
+  matter: "é’çŸ³å»ºè®¾è¯‰åŽä¸œç½®ä¸š",
   internalCode: "LL-2026-CC-0015",
   daysLeft: 3,
   href: "/matters/m-0015"
@@ -67,40 +67,40 @@ export type ScheduleItem = {
 export const scheduleItems: ScheduleItem[] = [
   {
     id: "s1",
-    date: "5月 25",
-    weekday: "周一",
+    date: "5æœˆ 25",
+    weekday: "å‘¨ä¸€",
     time: "14:00",
     type: "deadline",
-    title: "举证截止",
-    matter: "青石建设诉华东置业",
-    procedure: "一审"
+    title: "ä¸¾è¯æˆªæ­¢",
+    matter: "é’çŸ³å»ºè®¾è¯‰åŽä¸œç½®ä¸š",
+    procedure: "ä¸€å®¡"
   },
   {
     id: "s2",
-    date: "5月 28",
-    weekday: "周四",
+    date: "5æœˆ 28",
+    weekday: "å‘¨å››",
     time: "09:30",
     type: "hearing",
-    title: "开庭 · 第一次",
-    matter: "劳动争议仲裁后一审"
+    title: "å¼€åº­ Â· ç¬¬ä¸€æ¬¡",
+    matter: "åŠ³åŠ¨äº‰è®®ä»²è£åŽä¸€å®¡"
   },
   {
     id: "s3",
-    date: "5月 28",
-    weekday: "周四",
+    date: "5æœˆ 28",
+    weekday: "å‘¨å››",
     time: "18:00",
     type: "deadline",
-    title: "归档材料截止",
-    matter: "林某劳动争议"
+    title: "å½’æ¡£ææ–™æˆªæ­¢",
+    matter: "æž—æŸåŠ³åŠ¨äº‰è®®"
   },
   {
     id: "s4",
-    date: "5月 30",
-    weekday: "周六",
+    date: "5æœˆ 30",
+    weekday: "å‘¨å…­",
     time: "23:59",
     type: "deadline",
-    title: "上诉Plazo",
-    matter: "明远科技股权转让"
+    title: "ä¸Šè¯‰Plazo",
+    matter: "æ˜Žè¿œç§‘æŠ€è‚¡æƒè½¬è®©"
   }
 ];
 
@@ -116,47 +116,48 @@ export const todoItems: TodoItem[] = [
   {
     id: "t1",
     severity: "blocking",
-    title: "冲突命中 BLOCKING，待结论",
+    title: "å†²çªå‘½ä¸­ BLOCKINGï¼Œå¾…ç»“è®º",
     detail: "Intake I-2026-001",
     href: "/intakes/I-2026-001"
   },
   {
     id: "t2",
     severity: "urgent",
-    title: "拟答辩状（已Vencido 1 días）",
+    title: "æ‹Ÿç­”è¾©çŠ¶ï¼ˆå·²Vencido 1 dÃ­asï¼‰",
     detail: "LL-2026-CC-0015",
     href: "/matters/m-0015"
   },
   {
     id: "t3",
     severity: "normal",
-    title: "审阅交易文件第二稿",
+    title: "å®¡é˜…äº¤æ˜“æ–‡ä»¶ç¬¬äºŒç¨¿",
     detail: "LL-2026-NL-0011",
     href: "/matters/m-0011"
   },
   {
     id: "t4",
     severity: "normal",
-    title: "电话回访Cliente",
+    title: "ç”µè¯å›žè®¿Cliente",
     detail: "LL-2026-CC-0006",
     href: "/matters/m-0006"
   }
 ];
 
 export const revenueTrend = [
-  { month: "12月", received: 180, receivable: 220 },
-  { month: "1月", received: 220, receivable: 260 },
-  { month: "2月", received: 240, receivable: 280 },
-  { month: "3月", received: 200, receivable: 240 },
-  { month: "4月", received: 260, receivable: 300 },
-  { month: "5月", received: 286, receivable: 320 }
+  { month: "12æœˆ", received: 180, receivable: 220 },
+  { month: "1æœˆ", received: 220, receivable: 260 },
+  { month: "2æœˆ", received: 240, receivable: 280 },
+  { month: "3æœˆ", received: 200, receivable: 240 },
+  { month: "4æœˆ", received: 260, receivable: 300 },
+  { month: "5æœˆ", received: 286, receivable: 320 }
 ];
 
 export const categoryDistribution = [
   { name: "Civil/Comercial", value: 18, code: "CC", color: "#5B8DEF" },
-  { name: "非诉", value: 12, code: "NL", color: "#4FD1C5" },
-  { name: "顾问", value: 8, code: "GC", color: "#9B7BF7" },
+  { name: "éžè¯‰", value: 12, code: "NL", color: "#4FD1C5" },
+  { name: "é¡¾é—®", value: 8, code: "GC", color: "#9B7BF7" },
   { name: "Penal", value: 2, code: "CR", color: "#FB923C" },
   { name: "Administrativo", value: 1, code: "AD", color: "#FBBF24" },
-  { name: "专ítems", value: 1, code: "SP", color: "#60A5FA" }
+  { name: "ä¸“Ã­tems", value: 1, code: "SP", color: "#60A5FA" }
 ];
+

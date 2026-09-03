@@ -1,4 +1,4 @@
-"use server";
+﻿"use server";
 
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
@@ -22,7 +22,7 @@ import {
 } from "./schemas-v2";
 import { revalidateMatter } from "@/server/matters/route";
 
-// ━━━━ Read ━━━━
+// â”â”â”â” Read â”â”â”â”
 
 export async function listPreservationCases(input?: z.input<typeof caseListFilterSchema>) {
   const session = await requireSession();
@@ -42,10 +42,10 @@ export async function listPreservationCases(input?: z.input<typeof caseListFilte
       accessWhere,
       {
         OR: [
-          { court: { contains: filter.search, mode: "insensitive" } },
-          { rulingNumber: { contains: filter.search, mode: "insensitive" } },
-          { matter: { title: { contains: filter.search, mode: "insensitive" } } },
-          { targets: { some: { name: { contains: filter.search, mode: "insensitive" } } } },
+          { court: { contains: filter.search } },
+          { rulingNumber: { contains: filter.search } },
+          { matter: { title: { contains: filter.search } } },
+          { targets: { some: { name: { contains: filter.search } } } },
         ]
       }
     ];
@@ -87,7 +87,7 @@ async function assertCanAccessPreservationCaseRecord(
     await assertCanAssociateMatter(userId, record.matterId);
     return;
   }
-  if (record.ownerId !== userId) throw new Error("无权Acciones此Preservación记录");
+  if (record.ownerId !== userId) throw new Error("æ— æƒAccionesæ­¤PreservaciÃ³nè®°å½•");
 }
 
 async function assertCanAccessPreservationCase(userId: string, id: string) {
@@ -95,12 +95,12 @@ async function assertCanAccessPreservationCase(userId: string, id: string) {
     where: { id },
     select: { id: true, matterId: true, ownerId: true }
   });
-  if (!record) throw new Error("PreservaciónCaso不存在");
+  if (!record) throw new Error("PreservaciÃ³nCasoä¸å­˜åœ¨");
   await assertCanAccessPreservationCaseRecord(userId, record);
   return record;
 }
 
-// ━━━━ Case CRUD ━━━━
+// â”â”â”â” Case CRUD â”â”â”â”
 
 export async function createPreservationCase(input: z.infer<typeof caseCreateSchema>) {
   const session = await requireSession();
@@ -108,7 +108,7 @@ export async function createPreservationCase(input: z.infer<typeof caseCreateSch
 
   if (data.matterId) {
     const m = await prisma.matter.findUnique({ where: { id: data.matterId } });
-    if (!m) throw new Error("关联Caso不存在");
+    if (!m) throw new Error("å…³è”Casoä¸å­˜åœ¨");
     await assertCanAssociateMatter(session.user.id, data.matterId);
     await assertMatterWritable(data.matterId);
   }
@@ -197,7 +197,7 @@ export async function deletePreservationCase(input: z.infer<typeof deleteSchema>
   const session = await requireSession();
   const data = deleteSchema.parse(input);
   if (session.user.role !== "ADMIN" && session.user.role !== "PRINCIPAL_LAWYER") {
-    throw new Error("仅Administrar员或主任Abogado可EliminarPreservación记录");
+    throw new Error("ä»…Administrarå‘˜æˆ–ä¸»ä»»Abogadoå¯EliminarPreservaciÃ³nè®°å½•");
   }
 
   const cs = await assertCanAccessPreservationCase(session.user.id, data.id);
@@ -217,7 +217,7 @@ export async function deletePreservationCase(input: z.infer<typeof deleteSchema>
   return { ok: true };
 }
 
-// ━━━━ Target CRUD ━━━━
+// â”â”â”â” Target CRUD â”â”â”â”
 
 export async function addTarget(input: z.infer<typeof targetCreateSchema>) {
   const session = await requireSession();
@@ -242,7 +242,7 @@ export async function updateTarget(input: z.infer<typeof targetUpdateSchema>) {
     where: { id: data.id },
     include: { case: { select: { id: true, matterId: true, ownerId: true } } }
   });
-  if (!target) throw new Error("被Preservación人不存在");
+  if (!target) throw new Error("è¢«PreservaciÃ³näººä¸å­˜åœ¨");
   await assertCanAccessPreservationCaseRecord(session.user.id, target.case);
   if (target.case.matterId) await assertMatterWritable(target.case.matterId);
 
@@ -260,7 +260,7 @@ export async function deleteTarget(id: string) {
     where: { id },
     include: { case: { select: { id: true, matterId: true, ownerId: true } } }
   });
-  if (!target) throw new Error("被Preservación人不存在");
+  if (!target) throw new Error("è¢«PreservaciÃ³näººä¸å­˜åœ¨");
   await assertCanAccessPreservationCaseRecord(session.user.id, target.case);
   if (target.case.matterId) await assertMatterWritable(target.case.matterId);
 
@@ -269,18 +269,18 @@ export async function deleteTarget(id: string) {
   return { ok: true };
 }
 
-// ━━━━ Property CRUD ━━━━
+// â”â”â”â” Property CRUD â”â”â”â”
 
 export async function addProperty(input: z.infer<typeof propertyCreateSchema>) {
   const session = await requireSession();
   const data = propertyCreateSchema.parse(input);
-  if (data.expiryDate <= data.startDate) throw new Error("到期Fecha必须晚于生效Fecha");
+  if (data.expiryDate <= data.startDate) throw new Error("åˆ°æœŸFechaå¿…é¡»æ™šäºŽç”Ÿæ•ˆFecha");
 
   const target = await prisma.preservationTarget.findUnique({
     where: { id: data.targetId },
     include: { case: { select: { id: true, matterId: true, ownerId: true } } }
   });
-  if (!target) throw new Error("被Preservación人不存在");
+  if (!target) throw new Error("è¢«PreservaciÃ³näººä¸å­˜åœ¨");
   await assertCanAccessPreservationCaseRecord(session.user.id, target.case);
   if (target.case.matterId) await assertMatterWritable(target.case.matterId);
 
@@ -318,7 +318,7 @@ export async function updateProperty(input: z.infer<typeof propertyUpdateSchema>
     where: { id },
     include: { target: { include: { case: { select: { id: true, matterId: true, ownerId: true } } } } }
   });
-  if (!property) throw new Error("Preservación财产不存在");
+  if (!property) throw new Error("PreservaciÃ³nè´¢äº§ä¸å­˜åœ¨");
   await assertCanAccessPreservationCaseRecord(session.user.id, property.target.case);
   if (property.target.case.matterId) await assertMatterWritable(property.target.case.matterId);
 
@@ -340,12 +340,12 @@ export async function renewProperty(input: z.infer<typeof propertyRenewSchema>) 
     where: { id: data.propertyId },
     include: { target: { include: { case: { select: { id: true, matterId: true, ownerId: true } } } } }
   });
-  if (!prop) throw new Error("Preservación财产不存在");
+  if (!prop) throw new Error("PreservaciÃ³nè´¢äº§ä¸å­˜åœ¨");
   await assertCanAccessPreservationCaseRecord(session.user.id, prop.target.case);
-  if (prop.status === "LIFTED") throw new Error("已解除的Preservación不可续保");
+  if (prop.status === "LIFTED") throw new Error("å·²è§£é™¤çš„PreservaciÃ³nä¸å¯ç»­ä¿");
   if (prop.target.case.matterId) await assertMatterWritable(prop.target.case.matterId);
   if (data.newExpiryDate <= prop.expiryDate) {
-    throw new Error("新Fecha de vencimiento必须晚于原Fecha de vencimiento");
+    throw new Error("æ–°Fecha de vencimientoå¿…é¡»æ™šäºŽåŽŸFecha de vencimiento");
   }
 
   await prisma.$transaction([
@@ -377,7 +377,7 @@ export async function liftProperty(propertyId: string) {
     where: { id: propertyId },
     include: { target: { include: { case: { select: { id: true, matterId: true, ownerId: true } } } } }
   });
-  if (!prop) throw new Error("Preservación财产不存在");
+  if (!prop) throw new Error("PreservaciÃ³nè´¢äº§ä¸å­˜åœ¨");
   await assertCanAccessPreservationCaseRecord(session.user.id, prop.target.case);
   if (prop.target.case.matterId) await assertMatterWritable(prop.target.case.matterId);
 
@@ -399,7 +399,7 @@ export async function deleteProperty(id: string) {
     where: { id },
     include: { target: { include: { case: { select: { id: true, matterId: true, ownerId: true } } } } }
   });
-  if (!property) throw new Error("Preservación财产不存在");
+  if (!property) throw new Error("PreservaciÃ³nè´¢äº§ä¸å­˜åœ¨");
   await assertCanAccessPreservationCaseRecord(session.user.id, property.target.case);
   if (property.target.case.matterId) await assertMatterWritable(property.target.case.matterId);
 
@@ -440,3 +440,5 @@ export async function listExpiringProperties(daysAhead = 60) {
   });
   return serializeDecimals(rows);
 }
+
+

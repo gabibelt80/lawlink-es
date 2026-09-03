@@ -1,8 +1,8 @@
-import type { MatterCategory, ProcedureType, LitigationStanding } from "@prisma/client";
+﻿import type { MatterCategory, ProcedureType, LitigationStanding } from "@prisma/client";
 
 /**
- * Tipos de procedimiento disponibles para cada categoría de caso.
- * En la UI, «Nuevo caso» y «Agregar procedimiento» filtran los ítems disponibles según esta tabla.
+ * Tipos de procedimiento disponibles para cada categorÃ­a de caso.
+ * En la UI, Â«Nuevo casoÂ» y Â«Agregar procedimientoÂ» filtran los Ã­tems disponibles segÃºn esta tabla.
  */
 export const proceduresByCategory: Record<MatterCategory, ProcedureType[]> = {
   CIVIL_COMMERCIAL: [
@@ -44,7 +44,7 @@ export const proceduresByCategory: Record<MatterCategory, ProcedureType[]> = {
     "PROSECUTORIAL_SUPERVISION",
     "CUSTOM"
   ],
-  // El arbitraje laboral es previo; si no se acepta el laudo, se puede continuar con primera/segunda instancia/nuevo juicio/ejecución
+  // El arbitraje laboral es previo; si no se acepta el laudo, se puede continuar con primera/segunda instancia/nuevo juicio/ejecuciÃ³n
   LABOR_ARBITRATION: [
     "LABOR_ARBITRATION",
     "FIRST_INSTANCE",
@@ -54,7 +54,7 @@ export const proceduresByCategory: Record<MatterCategory, ProcedureType[]> = {
     "ENFORCEMENT",
     "CUSTOM"
   ],
-  // El arbitraje comercial es definitivo, pero después del laudo aún se puede entrar a anulación, revisión de no ejecución, ejecución, etc.
+  // El arbitraje comercial es definitivo, pero despuÃ©s del laudo aÃºn se puede entrar a anulaciÃ³n, revisiÃ³n de no ejecuciÃ³n, ejecuciÃ³n, etc.
   COMMERCIAL_ARBITRATION: [
     "COMMERCIAL_ARBITRATION",
     "ARBITRATION_SET_ASIDE",
@@ -69,7 +69,7 @@ export const proceduresByCategory: Record<MatterCategory, ProcedureType[]> = {
 };
 
 /**
- * Posiciones procesales disponibles para cada categoría de caso (nuestro rol).
+ * Posiciones procesales disponibles para cada categorÃ­a de caso (nuestro rol).
  */
 export const standingsByCategory: Record<MatterCategory, LitigationStanding[]> = {
   CIVIL_COMMERCIAL: [
@@ -100,20 +100,20 @@ export const standingsByCategory: Record<MatterCategory, LitigationStanding[]> =
 };
 
 /**
- * Texto de sugerencia del «órgano de gestión» según el tipo de procedimiento.
+ * Texto de sugerencia del Â«Ã³rgano de gestiÃ³nÂ» segÃºn el tipo de procedimiento.
  */
 export function suggestHandlingAgency(type: ProcedureType): string {
-  if (type === "INVESTIGATION") return "Policía / Comisión de Supervisión / Seguridad Nacional";
-  if (type === "PROSECUTION_REVIEW") return "Fiscalía (departamento de revisión de acusación)";
-  if (type === "PROSECUTORIAL_SUPERVISION") return "Fiscalía";
-  if (type === "CRIMINAL_ENFORCEMENT") return "Prisión / Centro de detención / Institución de corrección comunitaria";
-  if (type === "COMMUTATION_PAROLE_REVIEW") return "Tribunal (sala de ejecución)";
-  if (type === "ADMIN_RECONSIDERATION") return "Órgano de reconsideración";
-  if (type === "COMMERCIAL_ARBITRATION") return "Comisión de arbitraje";
-  if (type === "LABOR_ARBITRATION") return "Comisión de arbitraje laboral";
+  if (type === "INVESTIGATION") return "PolicÃ­a / ComisiÃ³n de SupervisiÃ³n / Seguridad Nacional";
+  if (type === "PROSECUTION_REVIEW") return "FiscalÃ­a (departamento de revisiÃ³n de acusaciÃ³n)";
+  if (type === "PROSECUTORIAL_SUPERVISION") return "FiscalÃ­a";
+  if (type === "CRIMINAL_ENFORCEMENT") return "PrisiÃ³n / Centro de detenciÃ³n / InstituciÃ³n de correcciÃ³n comunitaria";
+  if (type === "COMMUTATION_PAROLE_REVIEW") return "Tribunal (sala de ejecuciÃ³n)";
+  if (type === "ADMIN_RECONSIDERATION") return "Ã“rgano de reconsideraciÃ³n";
+  if (type === "COMMERCIAL_ARBITRATION") return "ComisiÃ³n de arbitraje";
+  if (type === "LABOR_ARBITRATION") return "ComisiÃ³n de arbitraje laboral";
   if (type === "ARBITRATION_SET_ASIDE" || type === "ARBITRATION_ENFORCEMENT_REVIEW")
     return "Tribunal intermedio";
-  if (type === "ENFORCEMENT" || type === "ENFORCEMENT_OBJECTION") return "Tribunal (oficina de ejecución)";
+  if (type === "ENFORCEMENT" || type === "ENFORCEMENT_OBJECTION") return "Tribunal (oficina de ejecuciÃ³n)";
   if (type === "ADMIN_NON_LITIGATION_ENFORCEMENT") return "Tribunal";
   // Primera instancia / segunda instancia / nuevo juicio, etc., tipo judicial
   return "Tribunal";

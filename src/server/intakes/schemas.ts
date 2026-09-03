@@ -1,4 +1,4 @@
-import { z } from "zod";
+﻿import { z } from "zod";
 import { matterCategorySchema, partyInputSchema, procedureTypeSchema } from "@/server/matters/schemas";
 
 export const intakeStatusSchema = z.enum([
@@ -48,15 +48,15 @@ const litigationIntakeCategories = new Set([
   "ADMINISTRATIVE"
 ]);
 
-// Cuando el input HTML number queda vacío, valueAsNumber de react-hook-form produce NaN.
-// Los montos opcionales deben tratarse como "sin completar", si no el resolver bloquearía el envío en campos que el usuario no ve.
+// Cuando el input HTML number queda vacÃ­o, valueAsNumber de react-hook-form produce NaN.
+// Los montos opcionales deben tratarse como "sin completar", si no el resolver bloquearÃ­a el envÃ­o en campos que el usuario no ve.
 const optionalNonnegativeNumberSchema = z.preprocess(
   (value) => (typeof value === "number" && Number.isNaN(value) ? undefined : value),
   z.coerce.number().nonnegative("El monto no puede ser negativo").optional()
 );
 
 const intakeCreateBaseSchema = z.object({
-  // Básico
+  // BÃ¡sico
   // El nombre del caso elimina todos los espacios en blanco (requisito del producto, para evitar espacios en listas/detalles)
   title: z.preprocess(
     (v) => (typeof v === "string" ? v.replace(/\s+/g, "") : v),
@@ -68,7 +68,7 @@ const intakeCreateBaseSchema = z.object({
   description: z.string().max(2000).optional().or(z.literal("")),
   receivedAt: z.coerce.date().optional(),
 
-  // Procedimiento + posición procesal + organismo + objeto
+  // Procedimiento + posiciÃ³n procesal + organismo + objeto
   firstProcedureType: procedureTypeSchema.optional(),
   firstAgency: z.string().max(120).optional().or(z.literal("")),
   jurisdiction: z.string().max(120).optional().or(z.literal("")),
@@ -76,11 +76,11 @@ const intakeCreateBaseSchema = z.object({
   claimAmount: optionalNonnegativeNumberSchema,
   claimDescription: z.string().max(500).optional().or(z.literal("")),
 
-  // v0.30: Inscripción en colegio + reconvención
+  // v0.30: InscripciÃ³n en colegio + reconvenciÃ³n
   barFiling: z.enum(["NONE", "COLLECTIVE", "SENSITIVE", "MAJOR", "OTHER"]).optional(),
   counterclaim: z.boolean().default(false),
 
-  // v0.31: No contencioso / consultoría / proyecto especial
+  // v0.31: No contencioso / consultorÃ­a / proyecto especial
   businessType: z.string().max(60).optional().or(z.literal("")),
   serviceScope: z.string().max(1000).optional().or(z.literal("")),
   deliverables: z.string().max(500).optional().or(z.literal("")),
@@ -125,19 +125,20 @@ function requireLitigationStandings(
     ctx.addIssue({
       path: ["ourStanding"],
       code: z.ZodIssueCode.custom,
-      message: "Seleccioná la posición procesal del cliente"
+      message: "SeleccionÃ¡ la posiciÃ³n procesal del cliente"
     });
   }
 
-  data.parties.forEach((party, index) => {
-    if (!party.standing) {
-      ctx.addIssue({
-        path: ["parties", index, "standing"],
-        code: z.ZodIssueCode.custom,
-        message: "Seleccioná la posición procesal"
-      });
-    }
-  });
+    data.parties.forEach((party, index) => {
+      if (party.role === "CLIENT_PARTY") return;
+      if (!party.standing) {
+        ctx.addIssue({
+          path: ["parties", index, "standing"],
+          code: z.ZodIssueCode.custom,
+          message: "SeleccionÃ¡ la posiciÃ³n procesal"
+        });
+      }
+    });
 }
 
 export const intakeCreateSchema = intakeCreateBaseSchema.superRefine(requireLitigationStandings);
@@ -161,9 +162,10 @@ export const intakeListQuerySchema = z.object({
 
 export const declineIntakeSchema = z.object({
   id: z.string().cuid(),
-  reason: z.string().min(1, "Completá el motivo de rechazo").max(500)
+  reason: z.string().min(1, "CompletÃ¡ el motivo de rechazo").max(500)
 });
 
 export type IntakeCreateInput = z.infer<typeof intakeCreateSchema>;
 export type IntakeListQuery = z.infer<typeof intakeListQuerySchema>;
 export type DeclineIntakeInput = z.infer<typeof declineIntakeSchema>;
+

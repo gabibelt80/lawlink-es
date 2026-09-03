@@ -1,4 +1,4 @@
-import type { ProcedureType } from "@prisma/client";
+﻿import type { ProcedureType } from "@prisma/client";
 
 export type StagePresetKind = "required" | "optional";
 
@@ -9,70 +9,70 @@ export type ProcedureStagePreset = {
 };
 
 const CIVIL_TRIAL_PRESETS: ProcedureStagePreset[] = [
-  { name: "代理授权", kind: "required", description: "委托手续、授权文件、律所函、风险告知和材料交接。" },
-  { name: "案情研判", kind: "required", description: "事实梳理、证据缺口、法律检索和诉讼方案。" },
-  { name: "起诉立案", kind: "required", description: "起诉/应诉材料、主体身份、管辖材料、缴费和诉调衔接。" },
-  { name: "财产Preservación", kind: "optional", description: "Preservación申请、担保、裁定、续保和解除。" },
-  { name: "管辖权异议", kind: "optional", description: "管辖异议申请或答辩、裁定签收和上诉衔接。" },
-  { name: "举证质证", kind: "required", description: "举证Plazo、证据交换、补充证据和质证意见。" },
-  { name: "司法鉴定", kind: "optional", description: "鉴定事ítems、样本材料、鉴定机构和鉴定意见质证。" },
-  { name: "庭前会议", kind: "optional", description: "庭前会议Notificaciones、争点Confirmar、证据交换和程序安排。" },
-  { name: "模拟法庭", kind: "optional", description: "争点清单、发问提纲、攻防演练和Cliente庭前沟通。" },
-  { name: "开庭审理", kind: "required", description: "传票、庭审提纲、发问提纲、证据原件和庭审记录。" },
-  { name: "庭后补充", kind: "optional", description: "庭后代理意见、补充证据、庭审Informe和法官沟通。" },
-  { name: "裁判签收", kind: "required", description: "裁判文书签收、上诉期、履行期和裁判结果Informe。" },
-  { name: "上诉/二审衔接", kind: "optional", description: "是否上诉、二审委托、上诉材料和二审策略。" },
-  { name: "Caso归档", kind: "required", description: "Cerrar casoInforme、材料完整性、原件退还和归档申请。" }
+  { name: "ä»£ç†æŽˆæƒ", kind: "required", description: "å§”æ‰˜æ‰‹ç»­ã€æŽˆæƒæ–‡ä»¶ã€å¾‹æ‰€å‡½ã€é£Žé™©å‘ŠçŸ¥å’Œææ–™äº¤æŽ¥ã€‚" },
+  { name: "æ¡ˆæƒ…ç ”åˆ¤", kind: "required", description: "äº‹å®žæ¢³ç†ã€è¯æ®ç¼ºå£ã€æ³•å¾‹æ£€ç´¢å’Œè¯‰è®¼æ–¹æ¡ˆã€‚" },
+  { name: "èµ·è¯‰ç«‹æ¡ˆ", kind: "required", description: "èµ·è¯‰/åº”è¯‰ææ–™ã€ä¸»ä½“èº«ä»½ã€ç®¡è¾–ææ–™ã€ç¼´è´¹å’Œè¯‰è°ƒè¡”æŽ¥ã€‚" },
+  { name: "è´¢äº§PreservaciÃ³n", kind: "optional", description: "PreservaciÃ³nç”³è¯·ã€æ‹…ä¿ã€è£å®šã€ç»­ä¿å’Œè§£é™¤ã€‚" },
+  { name: "ç®¡è¾–æƒå¼‚è®®", kind: "optional", description: "ç®¡è¾–å¼‚è®®ç”³è¯·æˆ–ç­”è¾©ã€è£å®šç­¾æ”¶å’Œä¸Šè¯‰è¡”æŽ¥ã€‚" },
+  { name: "ä¸¾è¯è´¨è¯", kind: "required", description: "ä¸¾è¯Plazoã€è¯æ®äº¤æ¢ã€è¡¥å……è¯æ®å’Œè´¨è¯æ„è§ã€‚" },
+  { name: "å¸æ³•é‰´å®š", kind: "optional", description: "é‰´å®šäº‹Ã­temsã€æ ·æœ¬ææ–™ã€é‰´å®šæœºæž„å’Œé‰´å®šæ„è§è´¨è¯ã€‚" },
+  { name: "åº­å‰ä¼šè®®", kind: "optional", description: "åº­å‰ä¼šè®®Notificacionesã€äº‰ç‚¹Confirmarã€è¯æ®äº¤æ¢å’Œç¨‹åºå®‰æŽ’ã€‚" },
+  { name: "æ¨¡æ‹Ÿæ³•åº­", kind: "optional", description: "äº‰ç‚¹æ¸…å•ã€å‘é—®æçº²ã€æ”»é˜²æ¼”ç»ƒå’ŒClienteåº­å‰æ²Ÿé€šã€‚" },
+  { name: "å¼€åº­å®¡ç†", kind: "required", description: "ä¼ ç¥¨ã€åº­å®¡æçº²ã€å‘é—®æçº²ã€è¯æ®åŽŸä»¶å’Œåº­å®¡è®°å½•ã€‚" },
+  { name: "åº­åŽè¡¥å……", kind: "optional", description: "åº­åŽä»£ç†æ„è§ã€è¡¥å……è¯æ®ã€åº­å®¡Informeå’Œæ³•å®˜æ²Ÿé€šã€‚" },
+  { name: "è£åˆ¤ç­¾æ”¶", kind: "required", description: "è£åˆ¤æ–‡ä¹¦ç­¾æ”¶ã€ä¸Šè¯‰æœŸã€å±¥è¡ŒæœŸå’Œè£åˆ¤ç»“æžœInformeã€‚" },
+  { name: "ä¸Šè¯‰/äºŒå®¡è¡”æŽ¥", kind: "optional", description: "æ˜¯å¦ä¸Šè¯‰ã€äºŒå®¡å§”æ‰˜ã€ä¸Šè¯‰ææ–™å’ŒäºŒå®¡ç­–ç•¥ã€‚" },
+  { name: "Casoå½’æ¡£", kind: "required", description: "Cerrar casoInformeã€ææ–™å®Œæ•´æ€§ã€åŽŸä»¶é€€è¿˜å’Œå½’æ¡£ç”³è¯·ã€‚" }
 ];
 
 const SECOND_INSTANCE_PRESETS: ProcedureStagePreset[] = [
-  { name: "代理授权", kind: "required", description: "二审委托手续、授权文件和材料接收。" },
-  { name: "上诉/应诉", kind: "required", description: "上诉状、答辩状、二审证据和上诉费。" },
-  { name: "二审阅卷研判", kind: "required", description: "一审卷宗、裁判争点、二审代理思路和证据补强。" },
-  { name: "财产Preservación", kind: "optional", description: "二审阶段Preservación、续保或解除衔接。" },
-  { name: "管辖权异议", kind: "optional", description: "二审程序中的管辖或移送争议处理。" },
-  { name: "举证质证", kind: "required", description: "二审新证据、补充证据和质证意见。" },
-  { name: "司法鉴定", kind: "optional", description: "二审鉴定申请、补充鉴定或鉴定意见质证。" },
-  { name: "模拟法庭", kind: "optional", description: "二审争点攻防、发问提纲和Cliente庭前演练。" },
-  { name: "开庭/询问", kind: "required", description: "开庭、询问或书面审理准备y记录。" },
-  { name: "庭后补充", kind: "optional", description: "庭后补充意见、补交材料和法官沟通。" },
-  { name: "二审裁判", kind: "required", description: "二审裁判签收、生效、履行和后续程序提示。" },
-  { name: "Caso归档", kind: "required", description: "二审Cerrar casoInforme、材料归档和原件退还。" }
+  { name: "ä»£ç†æŽˆæƒ", kind: "required", description: "äºŒå®¡å§”æ‰˜æ‰‹ç»­ã€æŽˆæƒæ–‡ä»¶å’Œææ–™æŽ¥æ”¶ã€‚" },
+  { name: "ä¸Šè¯‰/åº”è¯‰", kind: "required", description: "ä¸Šè¯‰çŠ¶ã€ç­”è¾©çŠ¶ã€äºŒå®¡è¯æ®å’Œä¸Šè¯‰è´¹ã€‚" },
+  { name: "äºŒå®¡é˜…å·ç ”åˆ¤", kind: "required", description: "ä¸€å®¡å·å®—ã€è£åˆ¤äº‰ç‚¹ã€äºŒå®¡ä»£ç†æ€è·¯å’Œè¯æ®è¡¥å¼ºã€‚" },
+  { name: "è´¢äº§PreservaciÃ³n", kind: "optional", description: "äºŒå®¡é˜¶æ®µPreservaciÃ³nã€ç»­ä¿æˆ–è§£é™¤è¡”æŽ¥ã€‚" },
+  { name: "ç®¡è¾–æƒå¼‚è®®", kind: "optional", description: "äºŒå®¡ç¨‹åºä¸­çš„ç®¡è¾–æˆ–ç§»é€äº‰è®®å¤„ç†ã€‚" },
+  { name: "ä¸¾è¯è´¨è¯", kind: "required", description: "äºŒå®¡æ–°è¯æ®ã€è¡¥å……è¯æ®å’Œè´¨è¯æ„è§ã€‚" },
+  { name: "å¸æ³•é‰´å®š", kind: "optional", description: "äºŒå®¡é‰´å®šç”³è¯·ã€è¡¥å……é‰´å®šæˆ–é‰´å®šæ„è§è´¨è¯ã€‚" },
+  { name: "æ¨¡æ‹Ÿæ³•åº­", kind: "optional", description: "äºŒå®¡äº‰ç‚¹æ”»é˜²ã€å‘é—®æçº²å’ŒClienteåº­å‰æ¼”ç»ƒã€‚" },
+  { name: "å¼€åº­/è¯¢é—®", kind: "required", description: "å¼€åº­ã€è¯¢é—®æˆ–ä¹¦é¢å®¡ç†å‡†å¤‡yè®°å½•ã€‚" },
+  { name: "åº­åŽè¡¥å……", kind: "optional", description: "åº­åŽè¡¥å……æ„è§ã€è¡¥äº¤ææ–™å’Œæ³•å®˜æ²Ÿé€šã€‚" },
+  { name: "äºŒå®¡è£åˆ¤", kind: "required", description: "äºŒå®¡è£åˆ¤ç­¾æ”¶ã€ç”Ÿæ•ˆã€å±¥è¡Œå’ŒåŽç»­ç¨‹åºæç¤ºã€‚" },
+  { name: "Casoå½’æ¡£", kind: "required", description: "äºŒå®¡Cerrar casoInformeã€ææ–™å½’æ¡£å’ŒåŽŸä»¶é€€è¿˜ã€‚" }
 ];
 
 const ENFORCEMENT_PRESETS: ProcedureStagePreset[] = [
-  { name: "代理授权", kind: "required", description: "执行阶段委托手续和材料交接。" },
-  { name: "执行立案", kind: "required", description: "强制执行申请、生效证明、账户信息和立案材料。" },
-  { name: "财产Preservación", kind: "optional", description: "已Preservación财产续保、解除或后续处置。" },
-  { name: "财产查控", kind: "required", description: "财产线索、网络查控、查封冻结和处置跟进。" },
-  { name: "异议/复议", kind: "optional", description: "执行异议、复议、不予执行和听证准备。" },
-  { name: "执行和解", kind: "optional", description: "和解方案、协议签署、履行监督和恢复执行预案。" },
-  { name: "执行Cerrar caso", kind: "required", description: "执行回款、终本/终结、Cerrar caso文书和后续安排。" },
-  { name: "Caso归档", kind: "required", description: "执行Cerrar casoInforme、材料归档和原件退还。" }
+  { name: "ä»£ç†æŽˆæƒ", kind: "required", description: "æ‰§è¡Œé˜¶æ®µå§”æ‰˜æ‰‹ç»­å’Œææ–™äº¤æŽ¥ã€‚" },
+  { name: "æ‰§è¡Œç«‹æ¡ˆ", kind: "required", description: "å¼ºåˆ¶æ‰§è¡Œç”³è¯·ã€ç”Ÿæ•ˆè¯æ˜Žã€è´¦æˆ·ä¿¡æ¯å’Œç«‹æ¡ˆææ–™ã€‚" },
+  { name: "è´¢äº§PreservaciÃ³n", kind: "optional", description: "å·²PreservaciÃ³nè´¢äº§ç»­ä¿ã€è§£é™¤æˆ–åŽç»­å¤„ç½®ã€‚" },
+  { name: "è´¢äº§æŸ¥æŽ§", kind: "required", description: "è´¢äº§çº¿ç´¢ã€ç½‘ç»œæŸ¥æŽ§ã€æŸ¥å°å†»ç»“å’Œå¤„ç½®è·Ÿè¿›ã€‚" },
+  { name: "å¼‚è®®/å¤è®®", kind: "optional", description: "æ‰§è¡Œå¼‚è®®ã€å¤è®®ã€ä¸äºˆæ‰§è¡Œå’Œå¬è¯å‡†å¤‡ã€‚" },
+  { name: "æ‰§è¡Œå’Œè§£", kind: "optional", description: "å’Œè§£æ–¹æ¡ˆã€åè®®ç­¾ç½²ã€å±¥è¡Œç›‘ç£å’Œæ¢å¤æ‰§è¡Œé¢„æ¡ˆã€‚" },
+  { name: "æ‰§è¡ŒCerrar caso", kind: "required", description: "æ‰§è¡Œå›žæ¬¾ã€ç»ˆæœ¬/ç»ˆç»“ã€Cerrar casoæ–‡ä¹¦å’ŒåŽç»­å®‰æŽ’ã€‚" },
+  { name: "Casoå½’æ¡£", kind: "required", description: "æ‰§è¡ŒCerrar casoInformeã€ææ–™å½’æ¡£å’ŒåŽŸä»¶é€€è¿˜ã€‚" }
 ];
 
 const ARBITRATION_PRESETS: ProcedureStagePreset[] = [
-  { name: "代理授权", kind: "required", description: "仲裁委托手续、授权文件和材料交接。" },
-  { name: "案情研判", kind: "required", description: "事实梳理、证据缺口、法律检索和仲裁方案。" },
-  { name: "仲裁立案", kind: "required", description: "仲裁申请、主体材料、证据目录和仲裁费缴纳。" },
-  { name: "财产Preservación", kind: "optional", description: "仲裁Preservación、担保、法院协助执行和续保。" },
-  { name: "管辖权异议", kind: "optional", description: "仲裁管辖异议、仲裁协议效力和程序抗辩。" },
-  { name: "举证质证", kind: "required", description: "证据交换、补充证据和质证意见。" },
-  { name: "司法鉴定", kind: "optional", description: "鉴定申请、样本材料、鉴定机构和鉴定意见质证。" },
-  { name: "模拟法庭", kind: "optional", description: "仲裁庭审攻防、发问提纲和Cliente庭前演练。" },
-  { name: "开庭审理", kind: "required", description: "开庭Notificaciones、庭审提纲、发问提纲和原件核对。" },
-  { name: "庭后补充", kind: "optional", description: "庭后补充意见、补交材料和仲裁庭沟通。" },
-  { name: "仲裁裁决", kind: "required", description: "裁决签收、履行、撤裁评估和后续程序提示。" },
-  { name: "Caso归档", kind: "required", description: "仲裁Cerrar casoInforme、材料归档和原件退还。" }
+  { name: "ä»£ç†æŽˆæƒ", kind: "required", description: "ä»²è£å§”æ‰˜æ‰‹ç»­ã€æŽˆæƒæ–‡ä»¶å’Œææ–™äº¤æŽ¥ã€‚" },
+  { name: "æ¡ˆæƒ…ç ”åˆ¤", kind: "required", description: "äº‹å®žæ¢³ç†ã€è¯æ®ç¼ºå£ã€æ³•å¾‹æ£€ç´¢å’Œä»²è£æ–¹æ¡ˆã€‚" },
+  { name: "ä»²è£ç«‹æ¡ˆ", kind: "required", description: "ä»²è£ç”³è¯·ã€ä¸»ä½“ææ–™ã€è¯æ®ç›®å½•å’Œä»²è£è´¹ç¼´çº³ã€‚" },
+  { name: "è´¢äº§PreservaciÃ³n", kind: "optional", description: "ä»²è£PreservaciÃ³nã€æ‹…ä¿ã€æ³•é™¢ååŠ©æ‰§è¡Œå’Œç»­ä¿ã€‚" },
+  { name: "ç®¡è¾–æƒå¼‚è®®", kind: "optional", description: "ä»²è£ç®¡è¾–å¼‚è®®ã€ä»²è£åè®®æ•ˆåŠ›å’Œç¨‹åºæŠ—è¾©ã€‚" },
+  { name: "ä¸¾è¯è´¨è¯", kind: "required", description: "è¯æ®äº¤æ¢ã€è¡¥å……è¯æ®å’Œè´¨è¯æ„è§ã€‚" },
+  { name: "å¸æ³•é‰´å®š", kind: "optional", description: "é‰´å®šç”³è¯·ã€æ ·æœ¬ææ–™ã€é‰´å®šæœºæž„å’Œé‰´å®šæ„è§è´¨è¯ã€‚" },
+  { name: "æ¨¡æ‹Ÿæ³•åº­", kind: "optional", description: "ä»²è£åº­å®¡æ”»é˜²ã€å‘é—®æçº²å’ŒClienteåº­å‰æ¼”ç»ƒã€‚" },
+  { name: "å¼€åº­å®¡ç†", kind: "required", description: "å¼€åº­Notificacionesã€åº­å®¡æçº²ã€å‘é—®æçº²å’ŒåŽŸä»¶æ ¸å¯¹ã€‚" },
+  { name: "åº­åŽè¡¥å……", kind: "optional", description: "åº­åŽè¡¥å……æ„è§ã€è¡¥äº¤ææ–™å’Œä»²è£åº­æ²Ÿé€šã€‚" },
+  { name: "ä»²è£è£å†³", kind: "required", description: "è£å†³ç­¾æ”¶ã€å±¥è¡Œã€æ’¤è£è¯„ä¼°å’ŒåŽç»­ç¨‹åºæç¤ºã€‚" },
+  { name: "Casoå½’æ¡£", kind: "required", description: "ä»²è£Cerrar casoInformeã€ææ–™å½’æ¡£å’ŒåŽŸä»¶é€€è¿˜ã€‚" }
 ];
 
 const CRIMINAL_INVESTIGATION_PRESETS: ProcedureStagePreset[] = [
-  { name: "代理授权", kind: "required", description: "Penal委托手续、授权材料和会见手续。" },
-  { name: "会见", kind: "required", description: "会见预约、会见笔录、家属沟通和风险提示。" },
-  { name: "取保候审", kind: "optional", description: "取保评估、申请材料、保证方式和办案机关沟通。" },
-  { name: "阅卷线索", kind: "required", description: "事实线索、证据风险、补充材料和调查方向。" },
-  { name: "辩护意见", kind: "required", description: "侦查阶段法律意见、羁押必要性意见和沟通留痕。" },
-  { name: "Caso归档", kind: "required", description: "阶段性Informe、材料归档和后续程序衔接。" }
+  { name: "ä»£ç†æŽˆæƒ", kind: "required", description: "Penalå§”æ‰˜æ‰‹ç»­ã€æŽˆæƒææ–™å’Œä¼šè§æ‰‹ç»­ã€‚" },
+  { name: "ä¼šè§", kind: "required", description: "ä¼šè§é¢„çº¦ã€ä¼šè§ç¬”å½•ã€å®¶å±žæ²Ÿé€šå’Œé£Žé™©æç¤ºã€‚" },
+  { name: "å–ä¿å€™å®¡", kind: "optional", description: "å–ä¿è¯„ä¼°ã€ç”³è¯·ææ–™ã€ä¿è¯æ–¹å¼å’ŒåŠžæ¡ˆæœºå…³æ²Ÿé€šã€‚" },
+  { name: "é˜…å·çº¿ç´¢", kind: "required", description: "äº‹å®žçº¿ç´¢ã€è¯æ®é£Žé™©ã€è¡¥å……ææ–™å’Œè°ƒæŸ¥æ–¹å‘ã€‚" },
+  { name: "è¾©æŠ¤æ„è§", kind: "required", description: "ä¾¦æŸ¥é˜¶æ®µæ³•å¾‹æ„è§ã€ç¾æŠ¼å¿…è¦æ€§æ„è§å’Œæ²Ÿé€šç•™ç—•ã€‚" },
+  { name: "Casoå½’æ¡£", kind: "required", description: "é˜¶æ®µæ€§Informeã€ææ–™å½’æ¡£å’ŒåŽç»­ç¨‹åºè¡”æŽ¥ã€‚" }
 ];
 
 export function procedureStagePresetsForProcedure(type: ProcedureType): ProcedureStagePreset[] {
@@ -103,3 +103,4 @@ export function stagePresetForName(type: ProcedureType, name: string) {
     (preset) => normalizeProcedureStageName(preset.name) === normalizedName
   );
 }
+

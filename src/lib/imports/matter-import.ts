@@ -1,7 +1,7 @@
-/**
- * v0.42 批F（ítems6）Caso批量导入 —— 纯逻辑（无 DB / 无 exceljs 依赖，便于单测）。
- * 列定义、文本→枚举映射、标题生成、首程序推断、单行结构校验都在这里；
- * AbogadoEmail / Causa的 DB 查找放在 server/imports/actions.ts。
+﻿/**
+ * v0.42 æ‰¹Fï¼ˆÃ­tems6ï¼‰Casoæ‰¹é‡å¯¼å…¥ â€”â€” çº¯é€»è¾‘ï¼ˆæ—  DB / æ—  exceljs ä¾èµ–ï¼Œä¾¿äºŽå•æµ‹ï¼‰ã€‚
+ * åˆ—å®šä¹‰ã€æ–‡æœ¬â†’æžšä¸¾æ˜ å°„ã€æ ‡é¢˜ç”Ÿæˆã€é¦–ç¨‹åºæŽ¨æ–­ã€å•è¡Œç»“æž„æ ¡éªŒéƒ½åœ¨è¿™é‡Œï¼›
+ * AbogadoEmail / Causaçš„ DB æŸ¥æ‰¾æ”¾åœ¨ server/imports/actions.tsã€‚
  */
 import type {
   MatterCategory,
@@ -13,7 +13,7 @@ import type {
 
 import { matterCategoryLabel, matterStatusLabel } from "@/lib/enums";
 
-/** 导入列定义（key = 内部字段，header = Excel 表头） */
+/** å¯¼å…¥åˆ—å®šä¹‰ï¼ˆkey = å†…éƒ¨å­—æ®µï¼Œheader = Excel è¡¨å¤´ï¼‰ */
 export interface ImportColumn {
   key: string;
   header: string;
@@ -27,7 +27,7 @@ export const IMPORT_COLUMNS: ImportColumn[] = [
     key: "clientIdNumber",
     header: "Documento del Cliente",
     required: true,
-    hint: "Documento de identidad / Código de identificación tributaria",
+    hint: "Documento de identidad / CÃ³digo de identificaciÃ³n tributaria",
   },
   {
     key: "clientType",
@@ -57,17 +57,17 @@ export const IMPORT_COLUMNS: ImportColumn[] = [
     key: "status",
     header: "Estado del caso",
     required: true,
-    hint: "En trámite / Cerrado / Archivado",
+    hint: "En trÃ¡mite / Cerrado / Archivado",
   },
   {
     key: "ownerEmail",
     header: "Email del Abogado Principal",
     required: false,
-    hint: "Coincidir exactamente por email; si se deja vacío, se asigna al importador actual",
+    hint: "Coincidir exactamente por email; si se deja vacÃ­o, se asigna al importador actual",
   },
   {
     key: "intakeDate",
-    header: "Fecha de admisión",
+    header: "Fecha de admisiÃ³n",
     required: false,
     hint: "YYYY-MM-DD",
   },
@@ -75,16 +75,16 @@ export const IMPORT_COLUMNS: ImportColumn[] = [
     key: "cause",
     header: "Causa",
     required: false,
-    hint: "Coincidir con el catálogo de causas; si no hay coincidencia, se usa como texto libre",
+    hint: "Coincidir con el catÃ¡logo de causas; si no hay coincidencia, se usa como texto libre",
   },
   {
     key: "claimAmount",
     header: "Monto",
     required: false,
-    hint: "Número, en yuanes",
+    hint: "NÃºmero, en yuanes",
   },
-  { key: "clientPhone", header: "Teléfono de contacto", required: false },
-  { key: "jurisdiction", header: "Jurisdicción", required: false },
+  { key: "clientPhone", header: "TelÃ©fono de contacto", required: false },
+  { key: "jurisdiction", header: "JurisdicciÃ³n", required: false },
 ];
 
 export type RawRow = Record<string, string>;
@@ -107,7 +107,7 @@ export interface NormalizedRow {
   jurisdiction: string | null;
 }
 
-/** 文本反查Caso类型（按 matterCategoryLabel） */
+/** æ–‡æœ¬åæŸ¥Casoç±»åž‹ï¼ˆæŒ‰ matterCategoryLabelï¼‰ */
 export function parseCategoryLabel(text: string): MatterCategory | null {
   const t = text.trim();
   for (const [key, label] of Object.entries(matterCategoryLabel)) {
@@ -116,7 +116,7 @@ export function parseCategoryLabel(text: string): MatterCategory | null {
   return null;
 }
 
-/** 文本反查CasoEstado（兼容「Cerrar caso」=「已Cerrar caso」） */
+/** æ–‡æœ¬åæŸ¥CasoEstadoï¼ˆå…¼å®¹ã€ŒCerrar casoã€=ã€Œå·²Cerrar casoã€ï¼‰ */
 export function parseStatusLabel(text: string): MatterStatus | null {
   const t = text.trim();
   if (t === "Cerrar caso") return "CLOSED";
@@ -126,21 +126,21 @@ export function parseStatusLabel(text: string): MatterStatus | null {
   return null;
 }
 
-/** 个人 / 企业 → ClientType（默认个人） */
+/** ä¸ªäºº / ä¼ä¸š â†’ ClientTypeï¼ˆé»˜è®¤ä¸ªäººï¼‰ */
 export function parseClientType(text: string | undefined): ClientType {
   const t = (text ?? "").trim();
-  if (t === "企业" || t === "公司" || t === "单位") return "COMPANY";
+  if (t === "ä¼ä¸š" || t === "å…¬å¸" || t === "å•ä½") return "COMPANY";
   return "INDIVIDUAL";
 }
 
-/** 个人 / 企业 → PartyType（默认自然人） */
+/** ä¸ªäºº / ä¼ä¸š â†’ PartyTypeï¼ˆé»˜è®¤è‡ªç„¶äººï¼‰ */
 export function parsePartyType(text: string | undefined): PartyType {
   const t = (text ?? "").trim();
-  if (t === "企业" || t === "公司" || t === "单位") return "COMPANY";
+  if (t === "ä¼ä¸š" || t === "å…¬å¸" || t === "å•ä½") return "COMPANY";
   return "NATURAL_PERSON";
 }
 
-/** 收案Fecha解析：接受 YYYY-MM-DD / YYYY/MM/DD（已由调用方把 Excel Fecha格式化为字符串） */
+/** æ”¶æ¡ˆFechaè§£æžï¼šæŽ¥å— YYYY-MM-DD / YYYY/MM/DDï¼ˆå·²ç”±è°ƒç”¨æ–¹æŠŠ Excel Fechaæ ¼å¼åŒ–ä¸ºå­—ç¬¦ä¸²ï¼‰ */
 export function parseImportDate(text: string | undefined): Date | null {
   const t = (text ?? "").trim();
   if (!t) return null;
@@ -152,15 +152,15 @@ export function parseImportDate(text: string | undefined): Date | null {
   return date;
 }
 
-/** 标的额解析：去掉逗号/￥/pesos，转数字 */
+/** æ ‡çš„é¢è§£æžï¼šåŽ»æŽ‰é€—å·/ï¿¥/pesosï¼Œè½¬æ•°å­— */
 export function parseAmount(text: string | undefined): number | null {
-  const t = (text ?? "").trim().replace(/[,$￥\spesos]/g, "");
+  const t = (text ?? "").trim().replace(/[,$ï¿¥\spesos]/g, "");
   if (!t) return null;
   const n = Number(t);
   return Number.isFinite(n) && n >= 0 ? n : null;
 }
 
-/** Caso标题：`Cliente y 相对方 Causa`（无重复空格） */
+/** Casoæ ‡é¢˜ï¼š`Cliente y ç›¸å¯¹æ–¹ Causa`ï¼ˆæ— é‡å¤ç©ºæ ¼ï¼‰ */
 export function buildMatterTitle(
   clientName: string,
   opposingName: string,
@@ -171,7 +171,7 @@ export function buildMatterTitle(
   return c ? `${base} ${c}` : base;
 }
 
-/** 首程序类型：y收案转化（convertIntakeToMatter）一致的推断 */
+/** é¦–ç¨‹åºç±»åž‹ï¼šyæ”¶æ¡ˆè½¬åŒ–ï¼ˆconvertIntakeToMatterï¼‰ä¸€è‡´çš„æŽ¨æ–­ */
 export function firstProcedureTypeFor(category: MatterCategory): ProcedureType {
   return category === "CIVIL_COMMERCIAL" ||
     category === "CRIMINAL" ||
@@ -185,7 +185,7 @@ export interface RowValidation {
   normalized: NormalizedRow | null;
 }
 
-/** 单行结构校验 + 枚举/数值/Fecha归一化（不含 DB 查找） */
+/** å•è¡Œç»“æž„æ ¡éªŒ + æžšä¸¾/æ•°å€¼/Fechaå½’ä¸€åŒ–ï¼ˆä¸å« DB æŸ¥æ‰¾ï¼‰ */
 export function validateRow(raw: RawRow): RowValidation {
   const errors: string[] = [];
   const get = (k: string) => (raw[k] ?? "").trim();
@@ -194,28 +194,28 @@ export function validateRow(raw: RawRow): RowValidation {
   const clientIdNumber = get("clientIdNumber");
   const opposingName = get("opposingName");
   const opposingIdNumber = get("opposingIdNumber");
-  if (!clientName) errors.push("缺少ClienteNombre");
-  if (!clientIdNumber) errors.push("缺少Cliente证件号");
-  if (!opposingName) errors.push("缺少相对方Nombre");
-  if (!opposingIdNumber) errors.push("缺少相对方证件号");
+  if (!clientName) errors.push("ç¼ºå°‘ClienteNombre");
+  if (!clientIdNumber) errors.push("ç¼ºå°‘Clienteè¯ä»¶å·");
+  if (!opposingName) errors.push("ç¼ºå°‘ç›¸å¯¹æ–¹Nombre");
+  if (!opposingIdNumber) errors.push("ç¼ºå°‘ç›¸å¯¹æ–¹è¯ä»¶å·");
 
   const categoryText = get("category");
   const category = parseCategoryLabel(categoryText);
-  if (!categoryText) errors.push("缺少Caso类型");
-  else if (!category) errors.push(`Caso类型「${categoryText}」无法识别`);
+  if (!categoryText) errors.push("ç¼ºå°‘Casoç±»åž‹");
+  else if (!category) errors.push(`Casoç±»åž‹ã€Œ${categoryText}ã€æ— æ³•è¯†åˆ«`);
 
   const statusText = get("status");
   const status = parseStatusLabel(statusText);
-  if (!statusText) errors.push("缺少CasoEstado");
+  if (!statusText) errors.push("ç¼ºå°‘CasoEstado");
   else if (!status)
-    errors.push(`CasoEstado「${statusText}」无法识别（办理中/已Cerrar caso/已归档）`);
+    errors.push(`CasoEstadoã€Œ${statusText}ã€æ— æ³•è¯†åˆ«ï¼ˆåŠžç†ä¸­/å·²Cerrar caso/å·²å½’æ¡£ï¼‰`);
 
   const intakeText = get("intakeDate");
   let intakeDate: Date | null = null;
   if (intakeText) {
     intakeDate = parseImportDate(intakeText);
     if (!intakeDate)
-      errors.push(`收案Fecha「${intakeText}」格式应为 YYYY-MM-DD`);
+      errors.push(`æ”¶æ¡ˆFechaã€Œ${intakeText}ã€æ ¼å¼åº”ä¸º YYYY-MM-DD`);
   }
 
   const amountText = get("claimAmount");
@@ -223,7 +223,7 @@ export function validateRow(raw: RawRow): RowValidation {
   if (amountText) {
     claimAmount = parseAmount(amountText);
     if (claimAmount === null)
-      errors.push(`标的额「${amountText}」不是有效数字`);
+      errors.push(`æ ‡çš„é¢ã€Œ${amountText}ã€ä¸æ˜¯æœ‰æ•ˆæ•°å­—`);
   }
 
   if (errors.length > 0 || !category || !status) {
@@ -256,3 +256,4 @@ export function validateRow(raw: RawRow): RowValidation {
     },
   };
 }
+

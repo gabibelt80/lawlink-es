@@ -1,13 +1,13 @@
-/**
- * v0.21: Abogado周报数据聚合（per-user 视角）
+﻿/**
+ * v0.21: Abogadoå‘¨æŠ¥æ•°æ®èšåˆï¼ˆper-user è§†è§’ï¼‰
  *
- * 周定义：周一 00:00:00 → 下周一 00:00:00（半开区间）
+ * å‘¨å®šä¹‰ï¼šå‘¨ä¸€ 00:00:00 â†’ ä¸‹å‘¨ä¸€ 00:00:00ï¼ˆåŠå¼€åŒºé—´ï¼‰
  */
 import { prisma } from "@/lib/prisma";
 import type { ReportPeriod } from "./queries";
 
 export function weekPeriod(now = new Date()): ReportPeriod {
-  // 周一 = 0
+  // å‘¨ä¸€ = 0
   const dow = (now.getDay() + 6) % 7;
   const monday = new Date(now.getFullYear(), now.getMonth(), now.getDate() - dow);
   const nextMonday = new Date(monday);
@@ -32,7 +32,7 @@ export type LawyerWeeklyDigest = {
 };
 
 /**
- * 单个Abogado本周摘要。复用单条查询，调用方循环。
+ * å•ä¸ªAbogadoæœ¬å‘¨æ‘˜è¦ã€‚å¤ç”¨å•æ¡æŸ¥è¯¢ï¼Œè°ƒç”¨æ–¹å¾ªçŽ¯ã€‚
  */
 export async function getLawyerWeeklyDigest(input: {
   userId: string;
@@ -86,10 +86,12 @@ export async function getLawyerWeeklyDigest(input: {
 
 export function formatWeeklyDigestContent(d: LawyerWeeklyDigest): string {
   const parts = [
-    `新收 ${d.newIntake} 件`,
-    `已结 ${d.closed} 件`,
-    `已归档 ${d.archived} 件`,
-    `收款 ${d.receivedAmount.toLocaleString("zh-CN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} pesos`
+    `æ–°æ”¶ ${d.newIntake} ä»¶`,
+    `å·²ç»“ ${d.closed} ä»¶`,
+    `å·²å½’æ¡£ ${d.archived} ä»¶`,
+    `æ”¶æ¬¾ ${d.receivedAmount.toLocaleString("zh-CN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} pesos`
   ];
-  return parts.join(" · ");
+  return parts.join(" Â· ");
 }
+
+

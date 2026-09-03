@@ -1,24 +1,24 @@
-/**
- * v0.22: 进程内 cron 调度（node-cron）
+﻿/**
+ * v0.22: è¿›ç¨‹å†… cron è°ƒåº¦ï¼ˆnode-cronï¼‰
  *
- * 在 next start 进程启动时Aprobar instrumentation.ts → register() 调用。
+ * åœ¨ next start è¿›ç¨‹å¯åŠ¨æ—¶Aprobar instrumentation.ts â†’ register() è°ƒç”¨ã€‚
  *
- * 限制：
- * - **仅在 next start（生产）下生效**。dev 模式不跑（避免开发时误推Notificaciones）。
- * - 不支持 serverless（Vercel Edge / Lambda）。LawLink 自部署场景默认是
- *   长驻 Node 进程，OK。
- * - 进程重启会重新Registrarse定时作业；如果在触发时间点重启，可能错过本次。
+ * é™åˆ¶ï¼š
+ * - **ä»…åœ¨ next startï¼ˆç”Ÿäº§ï¼‰ä¸‹ç”Ÿæ•ˆ**ã€‚dev æ¨¡å¼ä¸è·‘ï¼ˆé¿å…å¼€å‘æ—¶è¯¯æŽ¨Notificacionesï¼‰ã€‚
+ * - ä¸æ”¯æŒ serverlessï¼ˆVercel Edge / Lambdaï¼‰ã€‚LawLink è‡ªéƒ¨ç½²åœºæ™¯é»˜è®¤æ˜¯
+ *   é•¿é©» Node è¿›ç¨‹ï¼ŒOKã€‚
+ * - è¿›ç¨‹é‡å¯ä¼šé‡æ–°Registrarseå®šæ—¶ä½œä¸šï¼›å¦‚æžœåœ¨è§¦å‘æ—¶é—´ç‚¹é‡å¯ï¼Œå¯èƒ½é”™è¿‡æœ¬æ¬¡ã€‚
  *
- * 当前定时作业：
- * - 每周一 09:00 推送本周Informe
- * - 每días 09:00 扫描归档Vencido 30 días的Caso
- * - 每días 03:00 清理超过 N días的 AuditLog
+ * å½“å‰å®šæ—¶ä½œä¸šï¼š
+ * - æ¯å‘¨ä¸€ 09:00 æŽ¨é€æœ¬å‘¨Informe
+ * - æ¯dÃ­as 09:00 æ‰«æå½’æ¡£Vencido 30 dÃ­asçš„Caso
+ * - æ¯dÃ­as 03:00 æ¸…ç†è¶…è¿‡ N dÃ­asçš„ AuditLog
  *
- * 时区：所有 cron 用 Asia/Shanghai（避免容器 UTC 跑出来 8 小时偏差）。
+ * æ—¶åŒºï¼šæ‰€æœ‰ cron ç”¨ Asia/Shanghaiï¼ˆé¿å…å®¹å™¨ UTC è·‘å‡ºæ¥ 8 å°æ—¶åå·®ï¼‰ã€‚
  *
- * v0.26 cron 可观测性：
- * - 成功路径由各 job 内部自己写 *_CRON audit（已有）
- * - Error路径在此处统一捕获 + 写 *_FAILED_CRON audit，避免 cron 静默Error
+ * v0.26 cron å¯è§‚æµ‹æ€§ï¼š
+ * - æˆåŠŸè·¯å¾„ç”±å„ job å†…éƒ¨è‡ªå·±å†™ *_CRON auditï¼ˆå·²æœ‰ï¼‰
+ * - Errorè·¯å¾„åœ¨æ­¤å¤„ç»Ÿä¸€æ•èŽ· + å†™ *_FAILED_CRON auditï¼Œé¿å… cron é™é»˜Error
  */
 import cron from "node-cron";
 import { runWeeklyReportPush } from "@/server/reports/push-weekly";
@@ -39,11 +39,11 @@ async function runWithFailureAudit(
 ) {
   const startedAt = Date.now();
   const triggeredAt = new Date().toISOString();
-  console.log(`[cron] ${triggeredAt} 触发：${jobName}`);
+  console.log(`[cron] ${triggeredAt} è§¦å‘ï¼š${jobName}`);
   try {
     const result = await fn();
     const durationMs = Date.now() - startedAt;
-    console.log(`[cron] ${jobName} 完成（${durationMs}ms）`, result);
+    console.log(`[cron] ${jobName} å®Œæˆï¼ˆ${durationMs}msï¼‰`, result);
   } catch (err) {
     const durationMs = Date.now() - startedAt;
     const message = err instanceof Error ? err.message : String(err);
@@ -51,7 +51,7 @@ async function runWithFailureAudit(
       err instanceof Error
         ? err.stack?.split("\n").slice(0, 5).join("\n")
         : undefined;
-    console.error(`[cron] ${jobName} 异常（${durationMs}ms）：`, err);
+    console.error(`[cron] ${jobName} å¼‚å¸¸ï¼ˆ${durationMs}msï¼‰ï¼š`, err);
     await audit({
       userId: null,
       action: failureAction,
@@ -64,78 +64,78 @@ async function runWithFailureAudit(
 
 export function registerCronJobs() {
   if (started) {
-    console.warn("[cron] registerCronJobs 重复调用，跳过");
+    console.warn("[cron] registerCronJobs é‡å¤è°ƒç”¨ï¼Œè·³è¿‡");
     return;
   }
   started = true;
 
-  // 每周一 09:00 推周报
+  // æ¯å‘¨ä¸€ 09:00 æŽ¨å‘¨æŠ¥
   cron.schedule(
     "0 9 * * 1",
     () =>
       runWithFailureAudit(
-        "周报推送",
+        "å‘¨æŠ¥æŽ¨é€",
         "WEEKLY_REPORT_PUSH_FAILED_CRON",
         () => runWeeklyReportPush(null)
       ),
     { timezone: TIMEZONE }
   );
 
-  // 每días 09:00 扫归档Vencido
+  // æ¯dÃ­as 09:00 æ‰«å½’æ¡£Vencido
   cron.schedule(
     "0 9 * * *",
     () =>
       runWithFailureAudit(
-        "归档Vencido扫描",
+        "å½’æ¡£Vencidoæ‰«æ",
         "ARCHIVE_OVERDUE_SCAN_FAILED_CRON",
         () => scanArchiveOverdue()
       ),
     { timezone: TIMEZONE }
   );
 
-  // 每días 03:00 清理超过 N días的 AuditLog（默认 365 días，AUDIT_RETENTION_DAYS 可覆盖）
+  // æ¯dÃ­as 03:00 æ¸…ç†è¶…è¿‡ N dÃ­asçš„ AuditLogï¼ˆé»˜è®¤ 365 dÃ­asï¼ŒAUDIT_RETENTION_DAYS å¯è¦†ç›–ï¼‰
   cron.schedule(
     "0 3 * * *",
     () =>
       runWithFailureAudit(
-        "AuditLog 清理",
+        "AuditLog æ¸…ç†",
         "AUDIT_CLEANUP_FAILED_CRON",
         () => runAuditCleanup()
       ),
     { timezone: TIMEZONE }
   );
 
-  // v0.27: 每días 09:00 扫到期Plazo（T-3/T-1/T/T+1 四档），发 DEADLINE_REMINDER
+  // v0.27: æ¯dÃ­as 09:00 æ‰«åˆ°æœŸPlazoï¼ˆT-3/T-1/T/T+1 å››æ¡£ï¼‰ï¼Œå‘ DEADLINE_REMINDER
   cron.schedule(
     "0 9 * * *",
     () =>
       runWithFailureAudit(
-        "到期Recordatorios扫描",
+        "åˆ°æœŸRecordatoriosæ‰«æ",
         "DUE_REMINDER_SCAN_FAILED_CRON",
         () => scanDueReminders()
       ),
     { timezone: TIMEZONE }
   );
 
-  // 每días 09:10 扫描已Aprobación但未回填盖章件的Solicitud de sello；同一申请 3 días内不重复Recordatorios
+  // æ¯dÃ­as 09:10 æ‰«æå·²AprobaciÃ³nä½†æœªå›žå¡«ç›–ç« ä»¶çš„Solicitud de selloï¼›åŒä¸€ç”³è¯· 3 dÃ­aså†…ä¸é‡å¤Recordatorios
   cron.schedule(
     "10 9 * * *",
     () =>
       runWithFailureAudit(
-        "用章盖章件回填Recordatorios扫描",
+        "ç”¨ç« ç›–ç« ä»¶å›žå¡«Recordatoriosæ‰«æ",
         "SEAL_BACKFILL_REMINDER_SCAN_FAILED_CRON",
         () => scanSealBackfillReminders()
       ),
     { timezone: TIMEZONE }
   );
 
-  // v0.50: 每días 02:30 数据库+文件存储备份（BACKUP_CRON_ENABLED=false 可关）
+  // v0.50: æ¯dÃ­as 02:30 æ•°æ®åº“+æ–‡ä»¶å­˜å‚¨å¤‡ä»½ï¼ˆBACKUP_CRON_ENABLED=false å¯å…³ï¼‰
   if (backupCronEnabled()) {
     cron.schedule(
       "30 2 * * *",
       () =>
         runWithFailureAudit(
-          "数据库备份",
+          "æ•°æ®åº“å¤‡ä»½",
           "DATABASE_BACKUP_FAILED_CRON",
           () => runDatabaseBackup()
         ),
@@ -144,6 +144,8 @@ export function registerCronJobs() {
   }
 
   console.log(
-    `[cron] 已Registrarse ${backupCronEnabled() ? 6 : 5} 个定时作业（周报推送 / 归档Vencido扫描 / AuditLog 清理 / 到期Recordatorios扫描 / 用章回填Recordatorios扫描${backupCronEnabled() ? " / 数据库备份" : ""}），时区 Asia/Shanghai`
+    `[cron] å·²Registrarse ${backupCronEnabled() ? 6 : 5} ä¸ªå®šæ—¶ä½œä¸šï¼ˆå‘¨æŠ¥æŽ¨é€ / å½’æ¡£Vencidoæ‰«æ / AuditLog æ¸…ç† / åˆ°æœŸRecordatoriosæ‰«æ / ç”¨ç« å›žå¡«Recordatoriosæ‰«æ${backupCronEnabled() ? " / æ•°æ®åº“å¤‡ä»½" : ""}ï¼‰ï¼Œæ—¶åŒº Asia/Shanghai`
   );
 }
+
+

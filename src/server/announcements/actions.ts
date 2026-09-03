@@ -1,11 +1,11 @@
-"use server";
+﻿"use server";
 
 /**
- * v0.27: 服务中心 - 律所Anuncio
+ * v0.27: æœåŠ¡ä¸­å¿ƒ - å¾‹æ‰€Anuncio
  *
- * - ADMIN / 主任Abogado 可Publicar、Editar、置顶、归档
- * - 所有Iniciar sesión用户可读
- * - pinned + 未过期 + 未归档的Anuncio显示为顶部 banner
+ * - ADMIN / ä¸»ä»»Abogado å¯Publicarã€Editarã€ç½®é¡¶ã€å½’æ¡£
+ * - æ‰€æœ‰Iniciar sesiÃ³nç”¨æˆ·å¯è¯»
+ * - pinned + æœªè¿‡æœŸ + æœªå½’æ¡£çš„Anuncioæ˜¾ç¤ºä¸ºé¡¶éƒ¨ banner
  */
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
@@ -22,7 +22,7 @@ function assertCanManage(role: string) {
 }
 
 const announcementCreateSchema = z.object({
-  title: z.string().min(1, "El título es obligatorio").max(120),
+  title: z.string().min(1, "El tÃ­tulo es obligatorio").max(120),
   content: z.string().min(1, "El contenido es obligatorio").max(20000),
   pinned: z.boolean().default(false),
   expiresAt: z.coerce.date().optional().nullable(),
@@ -46,7 +46,7 @@ export async function listAnnouncements({
 }
 
 /**
- * 顶部 banner：pinned + 未归档 + 未过期
+ * é¡¶éƒ¨ bannerï¼špinned + æœªå½’æ¡£ + æœªè¿‡æœŸ
  */
 export async function listActiveBanners() {
   await requireSession();
@@ -88,7 +88,7 @@ export async function createAnnouncement(
   });
 
   revalidatePath("/announcements");
-  revalidatePath("/", "layout"); // banner 在全站布局
+  revalidatePath("/", "layout"); // banner åœ¨å…¨ç«™å¸ƒå±€
   return created;
 }
 
@@ -141,3 +141,5 @@ export async function archiveAnnouncement(id: string) {
   revalidatePath("/announcements");
   revalidatePath("/", "layout");
 }
+
+

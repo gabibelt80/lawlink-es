@@ -1,4 +1,4 @@
-import { z } from "zod";
+﻿import { z } from "zod";
 
 export const matterCategorySchema = z.enum([
   "CIVIL_COMMERCIAL",
@@ -81,7 +81,7 @@ export const partyRoleSchema = z.enum([
   "OTHER"
 ]);
 
-// v0.27 / v0.30: Tipo de sujeto de la parte (persona física completa DNI, los demás completan código de crédito social unificado)
+// v0.27 / v0.30: Tipo de sujeto de la parte (persona fÃ­sica completa DNI, los demÃ¡s completan cÃ³digo de crÃ©dito social unificado)
 export const partyTypeSchema = z.enum([
   "NATURAL_PERSON",
   "ORGANIZATION", // Compatibilidad con datos antiguos
@@ -97,13 +97,13 @@ export const partyTypeSchema = z.enum([
 export const partyInputSchema = z
   .object({
     role: partyRoleSchema,
-    // v0.5: Posición procesal específica (según el procedimiento)
+    // v0.5: PosiciÃ³n procesal especÃ­fica (segÃºn el procedimiento)
     standing: litigationStandingSchema.optional(),
     ordinal: z.number().int().min(1).default(1),
     // v0.27: El tipo de sujeto determina los campos obligatorios
     partyType: partyTypeSchema.default("NATURAL_PERSON"),
-    name: z.string().min(1, "El nombre y apellido / razón social es obligatorio").max(120),
-    // Persona física obligatorio: DNI; Empresa obligatorio: enterpriseSocialCode (validado en superRefine)
+    name: z.string().min(1, "El nombre y apellido / razÃ³n social es obligatorio").max(120),
+    // Persona fÃ­sica obligatorio: DNI; Empresa obligatorio: enterpriseSocialCode (validado en superRefine)
     idNumber: z.string().max(50).optional().or(z.literal("")),
     enterpriseSocialCode: z.string().max(50).optional().or(z.literal("")),
     enterpriseName: z.string().max(120).optional().or(z.literal("")),
@@ -119,7 +119,7 @@ export const partyInputSchema = z
         ctx.addIssue({
           path: ["idNumber"],
           code: z.ZodIssueCode.custom,
-          message: "La persona física debe completar el DNI (para búsqueda de conflictos)"
+          message: "La persona fÃ­sica debe completar el DNI (para bÃºsqueda de conflictos)"
         });
       }
     } else {
@@ -127,7 +127,7 @@ export const partyInputSchema = z
         ctx.addIssue({
           path: ["enterpriseSocialCode"],
           code: z.ZodIssueCode.custom,
-          message: "La empresa/organización debe completar el código de crédito social unificado"
+          message: "La empresa/organizaciÃ³n debe completar el cÃ³digo de crÃ©dito social unificado"
         });
       }
     }
@@ -154,7 +154,7 @@ export const matterCreateSchema = z.object({
   intakeDate: z.coerce.date().optional(),
 
   // Cliente: al menos uno, el primero es primary por defecto
-  clientIds: z.array(z.string().cuid()).min(1, "Seleccioná al menos un cliente"),
+  clientIds: z.array(z.string().cuid()).min(1, "SeleccionÃ¡ al menos un cliente"),
 
   // Lista de partes (cliente, contraparte, tercero)
   parties: z.array(partyInputSchema).default([]),
@@ -172,7 +172,7 @@ export const matterCreateSchema = z.object({
 export type MatterCreateInput = z.infer<typeof matterCreateSchema>;
 export type PartyInput = z.infer<typeof partyInputSchema>;
 
-// v0.27: Edición de información básica del caso (N° de sistema / fecha de admisión son solo lectura, no están aquí)
+// v0.27: EdiciÃ³n de informaciÃ³n bÃ¡sica del caso (NÂ° de sistema / fecha de admisiÃ³n son solo lectura, no estÃ¡n aquÃ­)
 export const matterUpdateBasicSchema = z.object({
   id: z.string().cuid(),
   title: z.preprocess(
@@ -204,3 +204,4 @@ export const matterListQuerySchema = z.object({
 });
 
 export type MatterListQuery = z.infer<typeof matterListQuerySchema>;
+

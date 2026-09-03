@@ -1,4 +1,4 @@
-"use server";
+﻿"use server";
 
 import bcrypt from "bcryptjs";
 import { prisma, createTenantSchema, migrateTenantSchema } from "@/lib/tenant";
@@ -54,3 +54,4 @@ export async function registerFirm(input: {
 
   return { firmId: firm.id, slug };
 }
+

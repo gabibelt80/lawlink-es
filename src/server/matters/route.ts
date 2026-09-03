@@ -1,15 +1,15 @@
-import { revalidatePath } from "next/cache";
+﻿import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { matterHref, normalizeMatterParam } from "@/lib/matters/route";
 
 /**
- * 把详情页路由参数解析成Caso主键。
+ * æŠŠè¯¦æƒ…é¡µè·¯ç”±å‚æ•°è§£æžæˆCasoä¸»é”®ã€‚
  *
- * 不去猜参数形状（cuid 还是编号），直接让数据库同时Coincidencia两者：
- * `internalCode` 有唯一索引，cuid 不含 `-`、编号必含，两者不可能撞，
- * 一次查询即可，也不用为 cuid 的具体格式（v1/v2）写正则。
+ * ä¸åŽ»çŒœå‚æ•°å½¢çŠ¶ï¼ˆcuid è¿˜æ˜¯ç¼–å·ï¼‰ï¼Œç›´æŽ¥è®©æ•°æ®åº“åŒæ—¶Coincidenciaä¸¤è€…ï¼š
+ * `internalCode` æœ‰å”¯ä¸€ç´¢å¼•ï¼Œcuid ä¸å« `-`ã€ç¼–å·å¿…å«ï¼Œä¸¤è€…ä¸å¯èƒ½æ’žï¼Œ
+ * ä¸€æ¬¡æŸ¥è¯¢å³å¯ï¼Œä¹Ÿä¸ç”¨ä¸º cuid çš„å…·ä½“æ ¼å¼ï¼ˆv1/v2ï¼‰å†™æ­£åˆ™ã€‚
  *
- * Volver `internalCode` 供调用方判断是否需要重定向到规范地址。
+ * Volver `internalCode` ä¾›è°ƒç”¨æ–¹åˆ¤æ–­æ˜¯å¦éœ€è¦é‡å®šå‘åˆ°è§„èŒƒåœ°å€ã€‚
  */
 export async function resolveMatterRoute(
   param: string
@@ -28,7 +28,7 @@ export async function resolveMatterRoute(
 }
 
 /**
- * 只拿得到 matterId 时的详情页地址（Notificaciones href 会落库，必须用稳定的编号）。
+ * åªæ‹¿å¾—åˆ° matterId æ—¶çš„è¯¦æƒ…é¡µåœ°å€ï¼ˆNotificaciones href ä¼šè½åº“ï¼Œå¿…é¡»ç”¨ç¨³å®šçš„ç¼–å·ï¼‰ã€‚
  */
 export async function matterHrefById(matterId: string): Promise<string> {
   const matter = await prisma.matter.findUnique({
@@ -39,12 +39,12 @@ export async function matterHrefById(matterId: string): Promise<string> {
 }
 
 /**
- * 让Caso详情页的缓存失效。
+ * è®©Casoè¯¦æƒ…é¡µçš„ç¼“å­˜å¤±æ•ˆã€‚
  *
- * 详情页路由键是 `internalCode`，而各 server action 手里只有 matterId，
- * 直接 `revalidatePath(`/matters/${matterId}`)` 会打到一个不存在的路径、
- * 静默失效（表现为改完数据后回退仍看到旧内容，不报错）。
- * 统一走这里换算，避免每个 action 各自拼路径。
+ * è¯¦æƒ…é¡µè·¯ç”±é”®æ˜¯ `internalCode`ï¼Œè€Œå„ server action æ‰‹é‡Œåªæœ‰ matterIdï¼Œ
+ * ç›´æŽ¥ `revalidatePath(`/matters/${matterId}`)` ä¼šæ‰“åˆ°ä¸€ä¸ªä¸å­˜åœ¨çš„è·¯å¾„ã€
+ * é™é»˜å¤±æ•ˆï¼ˆè¡¨çŽ°ä¸ºæ”¹å®Œæ•°æ®åŽå›žé€€ä»çœ‹åˆ°æ—§å†…å®¹ï¼Œä¸æŠ¥é”™ï¼‰ã€‚
+ * ç»Ÿä¸€èµ°è¿™é‡Œæ¢ç®—ï¼Œé¿å…æ¯ä¸ª action å„è‡ªæ‹¼è·¯å¾„ã€‚
  */
 export async function revalidateMatter(matterId: string | null | undefined): Promise<void> {
   if (!matterId) return;
@@ -57,3 +57,5 @@ export async function revalidateMatter(matterId: string | null | undefined): Pro
 
   revalidatePath(`/matters/${encodeURIComponent(matter.internalCode)}`);
 }
+
+

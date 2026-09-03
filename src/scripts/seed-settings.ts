@@ -1,4 +1,4 @@
-import { getTenantPrisma } from "@/lib/tenant";
+﻿import { getTenantPrisma } from "@/lib/tenant";
 
 async function main() {
   const prisma = getTenantPrisma("juridictas");
@@ -8,11 +8,11 @@ async function main() {
       key: "firmProfile",
       value: {
         firmName: "Juridictas",
-        firmSubtitle: "Panel de trabajo jurídico",
+        firmSubtitle: "Panel de trabajo jurÃ­dico",
         logoDataUrl: null,
         matterCodePrefix: "LL",
         firmShortName: "",
-        caseNoTemplate: "{año}-{est}{palabraCat}-{sec3}",
+        caseNoTemplate: "{aÃ±o}-{est}{palabraCat}-{sec3}",
         categoryWords: {
           CIVIL_COMMERCIAL: "Civil",
           LABOR_ARBITRATION: "Laboral",
@@ -20,7 +20,7 @@ async function main() {
           CRIMINAL: "Penal",
           ADMINISTRATIVE: "Admin",
           NON_LITIGATION: "NoCont",
-          LEGAL_COUNSEL: "Asesoría",
+          LEGAL_COUNSEL: "AsesorÃ­a",
           SPECIAL_PROJECT: "Proyecto",
         },
       },

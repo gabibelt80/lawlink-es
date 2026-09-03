@@ -1,10 +1,10 @@
-"use server";
+﻿"use server";
 
 /**
  * v0.22: Escaneo con un clic de todos los documentos no revisados del caso
  *
- * - Obtiene documentos del caso con mime soportado (PDF / DOCX / text) que no hayan sido revisados en los últimos 7 días
- * - Límite máximo de 5 documentos por lote (para evitar agotar tokens)
+ * - Obtiene documentos del caso con mime soportado (PDF / DOCX / text) que no hayan sido revisados en los Ãºltimos 7 dÃ­as
+ * - LÃ­mite mÃ¡ximo de 5 documentos por lote (para evitar agotar tokens)
  * - Llama a reviewDocument en bucle; un error individual no detiene el proceso
  * - Devuelve { reviewed, skipped, errors[] }
  */
@@ -55,7 +55,7 @@ export async function batchReviewMatterDocuments(input: {
   });
   const reviewable = docs.filter((d) => isReviewable(d.mimeType));
 
-  // Obtener el conjunto de documentId ya revisados en los últimos 7 días
+  // Obtener el conjunto de documentId ya revisados en los Ãºltimos 7 dÃ­as
   const cutoff = new Date(Date.now() - RECENT_HOURS * 3600_000);
   const recent = await prisma.reviewRecord.findMany({
     where: {
@@ -82,7 +82,7 @@ export async function batchReviewMatterDocuments(input: {
       skipped.push({
         documentId: d.id,
         documentName: d.name,
-        reason: "Revisado en los últimos 7 días",
+        reason: "Revisado en los Ãºltimos 7 dÃ­as",
       });
       continue;
     }
@@ -96,7 +96,7 @@ export async function batchReviewMatterDocuments(input: {
       skipped.push({
         documentId: d.id,
         documentName: d.name,
-        reason: `Se omitió esta vez (máximo ${MAX_DOCS_PER_BATCH} por lote, podés volver a escanear)`,
+        reason: `Se omitiÃ³ esta vez (mÃ¡ximo ${MAX_DOCS_PER_BATCH} por lote, podÃ©s volver a escanear)`,
       });
     }
   }
@@ -143,3 +143,4 @@ export async function batchReviewMatterDocuments(input: {
     errors,
   };
 }
+

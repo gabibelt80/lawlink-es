@@ -1,4 +1,4 @@
-"use server";
+﻿"use server";
 
 import { requireSession } from "@/lib/auth/session";
 import { getYuandianSettings } from "@/lib/yuandian/settings";
@@ -24,7 +24,7 @@ export type EnterpriseSearchItem = {
 };
 
 /**
- * 企业NombreBuscar（1 POINT/次），未配置时静默Volver configured: false
+ * ä¼ä¸šNombreBuscarï¼ˆ1 POINT/æ¬¡ï¼‰ï¼Œæœªé…ç½®æ—¶é™é»˜Volver configured: false
  */
 export async function searchEnterpriseCandidates(
   name: string
@@ -47,8 +47,8 @@ export async function searchEnterpriseCandidates(
     return {
       items: candidates.map((c) => ({
         id: c.id,
-        name: c["企业Nombre"],
-        creditCode: c["统一社会信用代码"]
+        name: c["ä¼ä¸šNombre"],
+        creditCode: c["ç»Ÿä¸€ç¤¾ä¼šä¿¡ç”¨ä»£ç "]
       })),
       configured: true
     };
@@ -58,7 +58,7 @@ export async function searchEnterpriseCandidates(
 }
 
 /**
- * 企业详情（10 POINT/次），未配置时Volver configured: false
+ * ä¼ä¸šè¯¦æƒ…ï¼ˆ10 POINT/æ¬¡ï¼‰ï¼Œæœªé…ç½®æ—¶Volver configured: false
  */
 export async function getEnterpriseDetail(
   id: string
@@ -81,7 +81,7 @@ export async function getEnterpriseDetail(
 }
 
 // ============================================================
-// v0.26: 对方公司风险查询（聚合Total览 + Party 绑定）
+// v0.26: å¯¹æ–¹å…¬å¸é£Žé™©æŸ¥è¯¢ï¼ˆèšåˆTotalè§ˆ + Party ç»‘å®šï¼‰
 // ============================================================
 
 async function loadPartyWithMatter(partyId: string) {
@@ -98,15 +98,15 @@ async function loadPartyWithMatter(partyId: string) {
       enterpriseBoundAt: true
     }
   });
-  if (!party) throw new Error("当事人不存在");
-  if (!party.matterId) throw new Error("当事人未关联Caso");
+  if (!party) throw new Error("å½“äº‹äººä¸å­˜åœ¨");
+  if (!party.matterId) throw new Error("å½“äº‹äººæœªå…³è”Caso");
   return party;
 }
 
 /**
- * 把某个对方 Party 绑定到pesos典企业（写入企业 ID、统一社会信用代码、企业名）
+ * æŠŠæŸä¸ªå¯¹æ–¹ Party ç»‘å®šåˆ°pesoså…¸ä¼ä¸šï¼ˆå†™å…¥ä¼ä¸š IDã€ç»Ÿä¸€ç¤¾ä¼šä¿¡ç”¨ä»£ç ã€ä¼ä¸šåï¼‰
  *
- * 权限：当前用户对该 Matter 有修改权限（owner 或 manager）
+ * æƒé™ï¼šå½“å‰ç”¨æˆ·å¯¹è¯¥ Matter æœ‰ä¿®æ”¹æƒé™ï¼ˆowner æˆ– managerï¼‰
  */
 export async function bindPartyToEnterprise(input: {
   partyId: string;
@@ -151,9 +151,9 @@ export async function bindPartyToEnterprise(input: {
 }
 
 /**
- * 解绑 Party ypesos典企业。
+ * è§£ç»‘ Party ypesoså…¸ä¼ä¸šã€‚
  *
- * 权限：当前用户对该 Matter 有修改权限。
+ * æƒé™ï¼šå½“å‰ç”¨æˆ·å¯¹è¯¥ Matter æœ‰ä¿®æ”¹æƒé™ã€‚
  */
 export async function unbindPartyEnterprise(
   partyId: string
@@ -189,9 +189,9 @@ export async function unbindPartyEnterprise(
 }
 
 /**
- * 拉取某个已绑定 Party 的企业聚合Total览（10 POINT/次）
+ * æ‹‰å–æŸä¸ªå·²ç»‘å®š Party çš„ä¼ä¸šèšåˆTotalè§ˆï¼ˆ10 POINT/æ¬¡ï¼‰
  *
- * 权限：当前用户对该 Matter 有访问权限。
+ * æƒé™ï¼šå½“å‰ç”¨æˆ·å¯¹è¯¥ Matter æœ‰è®¿é—®æƒé™ã€‚
  */
 export async function getEnterpriseSummaryByParty(
   partyId: string
@@ -205,7 +205,7 @@ export async function getEnterpriseSummaryByParty(
   );
 
   if (!party.enterpriseId && !party.enterpriseSocialCode) {
-    throw new Error("此当事人尚未绑定pesos典企业");
+    throw new Error("æ­¤å½“äº‹äººå°šæœªç»‘å®špesoså…¸ä¼ä¸š");
   }
 
   const settings = await getYuandianSettings();
@@ -238,3 +238,5 @@ export async function getEnterpriseSummaryByParty(
 
   return { summary, configured: true };
 }
+
+

@@ -1,4 +1,4 @@
-import { describe, it, expect } from "vitest";
+﻿import { describe, it, expect } from "vitest";
 import {
   selectReviewPrompt,
   reviewPromptLabel,
@@ -9,50 +9,50 @@ import {
   GENERIC_PROMPT
 } from "@/lib/ai/review-prompts";
 
-describe("selectReviewPrompt — 按 DocumentCategory 分流", () => {
-  it("CONTRACT → 合同 prompt", () => {
+describe("selectReviewPrompt â€” æŒ‰ DocumentCategory åˆ†æµ", () => {
+  it("CONTRACT â†’ åˆåŒ prompt", () => {
     expect(selectReviewPrompt("CONTRACT")).toBe(CONTRACT_PROMPT);
   });
-  it("PLEADING → 诉状/申请书 prompt", () => {
+  it("PLEADING â†’ è¯‰çŠ¶/ç”³è¯·ä¹¦ prompt", () => {
     expect(selectReviewPrompt("PLEADING")).toBe(PLEADING_PROMPT);
   });
-  it("EVIDENCE → 证据 prompt", () => {
+  it("EVIDENCE â†’ è¯æ® prompt", () => {
     expect(selectReviewPrompt("EVIDENCE")).toBe(EVIDENCE_PROMPT);
   });
-  it("JUDGMENT → 裁判文书 prompt", () => {
+  it("JUDGMENT â†’ è£åˆ¤æ–‡ä¹¦ prompt", () => {
     expect(selectReviewPrompt("JUDGMENT")).toBe(JUDGMENT_PROMPT);
   });
-  it("PROCEDURE → 通用兜底", () => {
+  it("PROCEDURE â†’ é€šç”¨å…œåº•", () => {
     expect(selectReviewPrompt("PROCEDURE")).toBe(GENERIC_PROMPT);
   });
-  it("OTHER → 通用兜底", () => {
+  it("OTHER â†’ é€šç”¨å…œåº•", () => {
     expect(selectReviewPrompt("OTHER")).toBe(GENERIC_PROMPT);
   });
-  it("null → 通用兜底", () => {
+  it("null â†’ é€šç”¨å…œåº•", () => {
     expect(selectReviewPrompt(null)).toBe(GENERIC_PROMPT);
   });
-  it("undefined → 通用兜底", () => {
+  it("undefined â†’ é€šç”¨å…œåº•", () => {
     expect(selectReviewPrompt(undefined)).toBe(GENERIC_PROMPT);
   });
 });
 
-describe("reviewPromptLabel — 中文标签", () => {
-  it("各 category Volver对应中文", () => {
-    expect(reviewPromptLabel("CONTRACT")).toBe("合同审查");
-    expect(reviewPromptLabel("PLEADING")).toBe("诉状/申请书审查");
-    expect(reviewPromptLabel("EVIDENCE")).toBe("证据审查");
-    expect(reviewPromptLabel("JUDGMENT")).toBe("裁判文书分析");
+describe("reviewPromptLabel â€” ä¸­æ–‡æ ‡ç­¾", () => {
+  it("å„ category Volverå¯¹åº”ä¸­æ–‡", () => {
+    expect(reviewPromptLabel("CONTRACT")).toBe("åˆåŒå®¡æŸ¥");
+    expect(reviewPromptLabel("PLEADING")).toBe("è¯‰çŠ¶/ç”³è¯·ä¹¦å®¡æŸ¥");
+    expect(reviewPromptLabel("EVIDENCE")).toBe("è¯æ®å®¡æŸ¥");
+    expect(reviewPromptLabel("JUDGMENT")).toBe("è£åˆ¤æ–‡ä¹¦åˆ†æž");
   });
-  it("兜底类目 / null / undefined → 通用文书审查", () => {
-    expect(reviewPromptLabel("PROCEDURE")).toBe("通用文书审查");
-    expect(reviewPromptLabel("OTHER")).toBe("通用文书审查");
-    expect(reviewPromptLabel(null)).toBe("通用文书审查");
-    expect(reviewPromptLabel(undefined)).toBe("通用文书审查");
+  it("å…œåº•ç±»ç›® / null / undefined â†’ é€šç”¨æ–‡ä¹¦å®¡æŸ¥", () => {
+    expect(reviewPromptLabel("PROCEDURE")).toBe("é€šç”¨æ–‡ä¹¦å®¡æŸ¥");
+    expect(reviewPromptLabel("OTHER")).toBe("é€šç”¨æ–‡ä¹¦å®¡æŸ¥");
+    expect(reviewPromptLabel(null)).toBe("é€šç”¨æ–‡ä¹¦å®¡æŸ¥");
+    expect(reviewPromptLabel(undefined)).toBe("é€šç”¨æ–‡ä¹¦å®¡æŸ¥");
   });
 });
 
-describe("prompt 内容契约", () => {
-  it("所有 prompt 都包含输出格式 JSON 数组规范", () => {
+describe("prompt å†…å®¹å¥‘çº¦", () => {
+  it("æ‰€æœ‰ prompt éƒ½åŒ…å«è¾“å‡ºæ ¼å¼ JSON æ•°ç»„è§„èŒƒ", () => {
     for (const p of [
       CONTRACT_PROMPT,
       PLEADING_PROMPT,
@@ -70,7 +70,7 @@ describe("prompt 内容契约", () => {
       expect(p).toContain("JSON");
     }
   });
-  it("所有 prompt 都要求空数组兜底", () => {
+  it("æ‰€æœ‰ prompt éƒ½è¦æ±‚ç©ºæ•°ç»„å…œåº•", () => {
     for (const p of [
       CONTRACT_PROMPT,
       PLEADING_PROMPT,
@@ -78,28 +78,29 @@ describe("prompt 内容契约", () => {
       JUDGMENT_PROMPT,
       GENERIC_PROMPT
     ]) {
-      expect(p).toMatch(/空数组|\[\s*\]/);
+      expect(p).toMatch(/ç©ºæ•°ç»„|\[\s*\]/);
     }
   });
-  it("CONTRACT prompt 关注合同特征要素", () => {
-    expect(CONTRACT_PROMPT).toContain("违约责任");
-    expect(CONTRACT_PROMPT).toContain("争议解决");
-    expect(CONTRACT_PROMPT).toContain("不可抗力");
+  it("CONTRACT prompt å…³æ³¨åˆåŒç‰¹å¾è¦ç´ ", () => {
+    expect(CONTRACT_PROMPT).toContain("è¿çº¦è´£ä»»");
+    expect(CONTRACT_PROMPT).toContain("äº‰è®®è§£å†³");
+    expect(CONTRACT_PROMPT).toContain("ä¸å¯æŠ—åŠ›");
   });
-  it("PLEADING prompt 关注诉讼程序y诉请", () => {
-    expect(PLEADING_PROMPT).toContain("诉讼请求");
-    expect(PLEADING_PROMPT).toContain("管辖");
-    expect(PLEADING_PROMPT).toContain("诉讼时效");
+  it("PLEADING prompt å…³æ³¨è¯‰è®¼ç¨‹åºyè¯‰è¯·", () => {
+    expect(PLEADING_PROMPT).toContain("è¯‰è®¼è¯·æ±‚");
+    expect(PLEADING_PROMPT).toContain("ç®¡è¾–");
+    expect(PLEADING_PROMPT).toContain("è¯‰è®¼æ—¶æ•ˆ");
   });
-  it("EVIDENCE prompt 关注三性y证据链", () => {
-    expect(EVIDENCE_PROMPT).toContain("真实性");
-    expect(EVIDENCE_PROMPT).toContain("合法性");
-    expect(EVIDENCE_PROMPT).toContain("关联性");
-    expect(EVIDENCE_PROMPT).toContain("证据链");
+  it("EVIDENCE prompt å…³æ³¨ä¸‰æ€§yè¯æ®é“¾", () => {
+    expect(EVIDENCE_PROMPT).toContain("çœŸå®žæ€§");
+    expect(EVIDENCE_PROMPT).toContain("åˆæ³•æ€§");
+    expect(EVIDENCE_PROMPT).toContain("å…³è”æ€§");
+    expect(EVIDENCE_PROMPT).toContain("è¯æ®é“¾");
   });
-  it("JUDGMENT prompt 关注裁判分析y应对策略", () => {
-    expect(JUDGMENT_PROMPT).toContain("二审");
-    expect(JUDGMENT_PROMPT).toContain("再审");
-    expect(JUDGMENT_PROMPT).toMatch(/应对|策略|不利/);
+  it("JUDGMENT prompt å…³æ³¨è£åˆ¤åˆ†æžyåº”å¯¹ç­–ç•¥", () => {
+    expect(JUDGMENT_PROMPT).toContain("äºŒå®¡");
+    expect(JUDGMENT_PROMPT).toContain("å†å®¡");
+    expect(JUDGMENT_PROMPT).toMatch(/åº”å¯¹|ç­–ç•¥|ä¸åˆ©/);
   });
 });
+

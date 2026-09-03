@@ -6,11 +6,13 @@ import { getFirmProfile } from "@/server/settings/firm-profile";
 import { prisma } from "@/lib/prisma";
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
-  // v0.27: 顶部Anuncio banner —— 仅Iniciar sesión后获取，未Iniciar sesión走 (auth) 段不走此 layout
+  // v0.27: Banner de anuncios superior — solo se obtiene después de iniciar sesión;
+  // sin sesión se usa el layout (auth) y no este layout
   const session = await getSession();
   const banners = session?.user ? await listActiveBanners() : [];
 
-  // v0.42 ítems1：侧栏品牌（律所名 / 副标题 / Logo）可在Configuración页配置
+  // v0.42 ítem 1: Marca de la barra lateral (nombre del estudio / subtítulo / Logo)
+  // configurable en la página de Configuración
   const profile = await getFirmProfile();
   const firm = {
     name: profile.firmName,
@@ -18,7 +20,8 @@ export default async function AppLayout({ children }: { children: React.ReactNod
     logoDataUrl: profile.logoDataUrl
   };
 
-  // v0.43：当前用户头像（从 DB 读最新，避免 JWT 缓存），供顶栏即时刷新
+  // v0.43: Avatar del usuario actual (se lee de la base para evitar caché JWT),
+  // permite refrescar la barra superior al instante
   const me = session?.user
     ? await prisma.user.findUnique({
         where: { id: session.user.id },

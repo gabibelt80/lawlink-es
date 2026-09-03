@@ -397,7 +397,7 @@ export function MattersView({
             <Input
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              placeholder="BuscarCasoNombre / Cliente"
+              placeholder="Buscar nombre del caso / Cliente"
               className="h-[34px] rounded-md border-input bg-background pl-9 text-[13px] shadow-[var(--shadow-inset-deep)]"
             />
           </div>

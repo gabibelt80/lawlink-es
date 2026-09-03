@@ -1,4 +1,4 @@
-"use server";
+﻿"use server";
 
 import { prisma } from "@/lib/prisma";
 import { requireSession } from "@/lib/auth/session";
@@ -102,7 +102,7 @@ export async function getDashboardKpis(): Promise<KpiItem[]> {
   return [
     {
       key: "in_progress",
-      label: "Caso en trámite",
+      label: "Caso en tramite",
       value: inProgress,
       trend: { direction: "up", text: `${inProgress} casos` },
       sparkline: spark(inProgress),
@@ -116,7 +116,7 @@ export async function getDashboardKpis(): Promise<KpiItem[]> {
     },
     {
       key: "deadline",
-      label: "Vencimientos próximos 7 días",
+      label: "Vencimientos proximos 7 dias",
       value: deadlines,
       trend: { direction: "warn", text: `${deadlines} vencimientos` },
       sparkline: spark(deadlines),
@@ -268,7 +268,7 @@ export async function getDashboardSchedule(): Promise<ScheduleItem[]> {
   ]);
 
   const itemsWithSort: { item: ScheduleItem; ts: number }[] = [];
-  const weekdays = ["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"];
+  const weekdays = ["Dom", "Lun", "Mar", "Mie", "Jue", "Vie", "Sab"];
   const DAY = 1000 * 60 * 60 * 24;
   const daysFrom = (d: Date) => Math.ceil((d.getTime() - now.getTime()) / DAY);
   const fmt = (d: Date) => ({
@@ -422,3 +422,4 @@ export async function getDashboardHeroData(): Promise<HeroData> {
     focus,
   };
 }
+

@@ -1,4 +1,4 @@
-"use server";
+﻿"use server";
 
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
@@ -16,9 +16,9 @@ const userRoleSchema = z.enum([
 ]);
 
 const userCreateSchema = z.object({
-  name: z.string().min(1, "Nombre y apellido必填").max(40),
-  email: z.string().email("Email格式不正确"),
-  password: z.string().min(8, "Contraseña至少 8 位").max(128),
+  name: z.string().min(1, "Nombre y apellidoå¿…å¡«").max(40),
+  email: z.string().email("Emailæ ¼å¼ä¸æ­£ç¡®"),
+  password: z.string().min(8, "ContraseÃ±aè‡³å°‘ 8 ä½").max(128),
   role: userRoleSchema,
   phone: z.string().max(30).optional().or(z.literal(""))
 });
@@ -46,7 +46,7 @@ export type ChangeMyPasswordInput = z.infer<typeof changeMyPasswordSchema>;
 async function requireAdmin() {
   const session = await requireSession();
   if (session.user.role !== "ADMIN") {
-    throw new Error("仅Administrar员可执行");
+    throw new Error("ä»…Administrarå‘˜å¯æ‰§è¡Œ");
   }
   return session;
 }
@@ -70,8 +70,8 @@ export async function listUsers() {
 }
 
 /**
- * 任意Iniciar sesión用户都可调：拿活跃同事列表，用于收案/Caso团队选择。
- * 默认排除 FINANCE/ADMIN SistemaRol（仍可选，做"Ver todos"切换时再开放）。
+ * ä»»æ„Iniciar sesiÃ³nç”¨æˆ·éƒ½å¯è°ƒï¼šæ‹¿æ´»è·ƒåŒäº‹åˆ—è¡¨ï¼Œç”¨äºŽæ”¶æ¡ˆ/Casoå›¢é˜Ÿé€‰æ‹©ã€‚
+ * é»˜è®¤æŽ’é™¤ FINANCE/ADMIN SistemaRolï¼ˆä»å¯é€‰ï¼Œåš"Ver todos"åˆ‡æ¢æ—¶å†å¼€æ”¾ï¼‰ã€‚
  */
 export async function listActiveColleagues() {
   await requireSession();
@@ -87,7 +87,7 @@ export async function createUser(input: UserCreateInput) {
   const data = userCreateSchema.parse(input);
 
   const existing = await prisma.user.findUnique({ where: { email: data.email } });
-  if (existing) throw new Error("Email已被使用");
+  if (existing) throw new Error("Emailå·²è¢«ä½¿ç”¨");
 
   const passwordHash = await bcrypt.hash(data.password, 12);
   const created = await prisma.user.create({
@@ -117,7 +117,7 @@ export async function updateUserRole(input: UserUpdateRoleInput) {
   const session = await requireAdmin();
   const data = userUpdateRoleSchema.parse(input);
   if (data.id === session.user.id) {
-    throw new Error("不能修改自己的Rol");
+    throw new Error("ä¸èƒ½ä¿®æ”¹è‡ªå·±çš„Rol");
   }
 
   await prisma.user.update({
@@ -140,10 +140,10 @@ export async function updateUserRole(input: UserUpdateRoleInput) {
 export async function toggleUserActive(id: string) {
   const session = await requireAdmin();
   if (id === session.user.id) {
-    throw new Error("不能Deshabilitar自己");
+    throw new Error("ä¸èƒ½Deshabilitarè‡ªå·±");
   }
   const current = await prisma.user.findUnique({ where: { id }, select: { active: true } });
-  if (!current) throw new Error("用户不存在");
+  if (!current) throw new Error("ç”¨æˆ·ä¸å­˜åœ¨");
 
   await prisma.user.update({
     where: { id },
@@ -182,7 +182,7 @@ export async function resetUserPassword(input: ResetPasswordInput) {
 }
 
 /**
- * 当前用户改自己的Contraseña（任何Rol可用）。
+ * å½“å‰ç”¨æˆ·æ”¹è‡ªå·±çš„ContraseÃ±aï¼ˆä»»ä½•Rolå¯ç”¨ï¼‰ã€‚
  */
 export async function changeMyPassword(input: ChangeMyPasswordInput) {
   const session = await requireSession();
@@ -192,10 +192,10 @@ export async function changeMyPassword(input: ChangeMyPasswordInput) {
     where: { id: session.user.id },
     select: { passwordHash: true }
   });
-  if (!me) throw new Error("用户不存在");
+  if (!me) throw new Error("ç”¨æˆ·ä¸å­˜åœ¨");
 
   const matches = await bcrypt.compare(data.currentPassword, me.passwordHash);
-  if (!matches) throw new Error("当前Contraseña不正确");
+  if (!matches) throw new Error("å½“å‰ContraseÃ±aä¸æ­£ç¡®");
 
   const passwordHash = await bcrypt.hash(data.newPassword, 12);
   await prisma.user.update({
@@ -213,17 +213,17 @@ export async function changeMyPassword(input: ChangeMyPasswordInput) {
   return { ok: true };
 }
 
-/** v0.43：Guardar / 清除个人头像（base64 data URL 内联存 User.avatar，约 256KB 上限） */
+/** v0.43ï¼šGuardar / æ¸…é™¤ä¸ªäººå¤´åƒï¼ˆbase64 data URL å†…è”å­˜ User.avatarï¼Œçº¦ 256KB ä¸Šé™ï¼‰ */
 const AVATAR_MAX_CHARS = 256 * 1024;
 export async function saveMyAvatar(input: { avatar: string | null }) {
   const session = await requireSession();
   let avatar = input.avatar;
   if (typeof avatar === "string" && avatar.length > 0) {
     if (!/^data:image\/(png|jpeg|jpg|webp|svg\+xml);base64,/.test(avatar)) {
-      throw new Error("头像必须是 PNG / JPG / WebP / SVG 图片");
+      throw new Error("å¤´åƒå¿…é¡»æ˜¯ PNG / JPG / WebP / SVG å›¾ç‰‡");
     }
     if (avatar.length > AVATAR_MAX_CHARS) {
-      throw new Error("头像体积过大，请控制在约 180KB 以内");
+      throw new Error("å¤´åƒä½“ç§¯è¿‡å¤§ï¼Œè¯·æŽ§åˆ¶åœ¨çº¦ 180KB ä»¥å†…");
     }
   } else {
     avatar = null;
@@ -244,3 +244,5 @@ export async function saveMyAvatar(input: { avatar: string | null }) {
   revalidatePath("/", "layout");
   return { ok: true };
 }
+
+

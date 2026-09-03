@@ -15,15 +15,14 @@ type Filter = "all" | "pending" | "done";
 
 const FILTERS: { value: Filter; label: string }[] = [
   { value: "all", label: "Ver todos" },
-  { value: "pending", label: "En aprobación" },
+  { value: "pending", label: "En aprobacion" },
   { value: "done", label: "Aprobados" },
 ];
 
 /**
- * v0.13: Caso详情"Aprobación"板块（不再独立 tab，嵌入基本信息内）
- * - 仅显示用印Aprobación（开票申请入口已收口到Finanzas区，此处不重复）
- * - 顶部三分类切换：Ver todos / Aprobación中 / 已Aprobación
- * - v0.23: 顶部"发起Aprobación"改为弹窗，自动锁定当前Caso + 支持"+ 法定代表人章"
+ * v0.13: Panel de aprobaciones del caso (integrado en informacion basica)
+ * - Solo muestra aprobaciones de sello
+ * - Tres filtros: Ver todos / En aprobacion / Aprobados
  */
 export function ApprovalsPanel({
   matterId,
@@ -73,7 +72,7 @@ export function ApprovalsPanel({
         <div className="flex items-center gap-3">
           <span className="flex items-center gap-1.5 text-[13px] font-medium">
             <Stamp className="h-3.5 w-3.5 text-primary" />
-            Aprobación de sello
+            Aprobacion de sello
             <span className="ml-1 font-mono text-[11px] text-muted-foreground tabular">
               {sealContracts.length}
             </span>
@@ -118,7 +117,7 @@ export function ApprovalsPanel({
             ) : (
               <Plus className="h-2.5 w-2.5" />
             )}
-            发起Aprobación
+            Nueva solicitud
           </Button>
         )}
       </header>
@@ -126,10 +125,10 @@ export function ApprovalsPanel({
       {filtered.length === 0 ? (
         <p className="py-4 text-center text-xs text-muted-foreground">
           {filter === "all"
-            ? "暂无Aprobación"
+            ? "Sin solicitudes de sello"
             : filter === "pending"
-              ? "无Aprobación中"
-              : "无已Aprobación"}
+              ? "Sin solicitudes en aprobacion"
+              : "Sin solicitudes aprobadas"}
         </p>
       ) : (
         <ul className="divide-y divide-border">
@@ -147,7 +146,7 @@ export function ApprovalsPanel({
                 href={`/approvals/seals?id=${s.id}`}
                 className="text-[11px] text-primary hover:text-primary/80"
               >
-                详情
+                Detalle
               </Link>
             </li>
           ))}
@@ -168,11 +167,11 @@ export function ApprovalsPanel({
 }
 
 const SEAL_STATUS_LABEL: Record<string, string> = {
-  PENDING: "待Aprobación",
-  APPROVED: "已批准",
-  STAMPED: "已盖章",
-  REJECTED: "Rechazar",
-  CANCELLED: "撤销",
+  PENDING: "Pendiente de aprobacion",
+  APPROVED: "Aprobado",
+  STAMPED: "Sellado",
+  REJECTED: "Rechazado",
+  CANCELLED: "Cancelado",
 };
 
 function SealStatusBadge({ status }: { status: string }) {

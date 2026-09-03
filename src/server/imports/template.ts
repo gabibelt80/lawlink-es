@@ -1,28 +1,28 @@
-/**
- * v0.42 Lote F: Generación de plantilla xlsx para importación masiva de casos.
+﻿/**
+ * v0.42 Lote F: GeneraciÃ³n de plantilla xlsx para importaciÃ³n masiva de casos.
  * Fila 1 encabezados (obligatorios con *), fila 2 ejemplo, otra hoja con instrucciones.
  */
 import ExcelJS from "exceljs";
 
 import { IMPORT_COLUMNS } from "@/lib/imports/matter-import";
 
-export const IMPORT_SHEET_NAME = "Importación de casos";
+export const IMPORT_SHEET_NAME = "ImportaciÃ³n de casos";
 
 const EXAMPLE: Record<string, string> = {
-  clientName: "Juan Pérez",
+  clientName: "Juan PÃ©rez",
   clientIdNumber: "20123456789",
-  clientType: "Persona física",
-  opposingName: "Tecnología Ejemplo S.A.",
+  clientType: "Persona fÃ­sica",
+  opposingName: "TecnologÃ­a Ejemplo S.A.",
   opposingIdNumber: "30-71234567-8",
   opposingType: "Empresa",
   category: "Litigio civil y comercial",
-  status: "En trámite",
+  status: "En trÃ¡mite",
   ownerEmail: "abogado@ejemplo.com",
   intakeDate: "2026-05-30",
   cause: "Conflicto de compraventa",
   claimAmount: "120000",
   clientPhone: "1151234567",
-  jurisdiction: "Ciudad Autónoma de Buenos Aires"
+  jurisdiction: "Ciudad AutÃ³noma de Buenos Aires"
 };
 
 export async function buildMatterImportTemplate(): Promise<Buffer> {
@@ -61,17 +61,18 @@ export async function buildMatterImportTemplate(): Promise<Buffer> {
   const notes = wb.addWorksheet("Instrucciones");
   notes.columns = [
     { header: "Columna", key: "h", width: 16 },
-    { header: "Descripción", key: "d", width: 60 }
+    { header: "DescripciÃ³n", key: "d", width: 60 }
   ];
   notes.getRow(1).font = { bold: true };
   notes.addRow({ h: "Columnas obligatorias", d: "Las que tienen * en el encabezado son obligatorias: nombre/documento del cliente, nombre/documento de la contraparte, tipo de caso, estado del caso" });
   for (const c of IMPORT_COLUMNS) {
     if (c.hint) notes.addRow({ h: c.header, d: c.hint });
   }
-  notes.addRow({ h: "Primer procedimiento", d: "Los casos «En trámite» generan automáticamente el primer procedimiento según el tipo (litigio → primera instancia; otros → etapa no contenciosa/arbitraje); los cerrados/archivados no crean procedimiento" });
-  notes.addRow({ h: "Conflicto de intereses", d: "El nombre y documento del cliente y la contraparte se guardan en la base de partes, y después de importar ya pueden ser detectados por la búsqueda de conflictos" });
-  notes.addRow({ h: "Fila de ejemplo", d: "La fila 2 es un ejemplo; eliminála o sobrescribila antes de la importación real" });
+  notes.addRow({ h: "Primer procedimiento", d: "Los casos Â«En trÃ¡miteÂ» generan automÃ¡ticamente el primer procedimiento segÃºn el tipo (litigio â†’ primera instancia; otros â†’ etapa no contenciosa/arbitraje); los cerrados/archivados no crean procedimiento" });
+  notes.addRow({ h: "Conflicto de intereses", d: "El nombre y documento del cliente y la contraparte se guardan en la base de partes, y despuÃ©s de importar ya pueden ser detectados por la bÃºsqueda de conflictos" });
+  notes.addRow({ h: "Fila de ejemplo", d: "La fila 2 es un ejemplo; eliminÃ¡la o sobrescribila antes de la importaciÃ³n real" });
 
   const out = await wb.xlsx.writeBuffer();
   return Buffer.from(out);
 }
+

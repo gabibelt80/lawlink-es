@@ -1,4 +1,4 @@
-import type { UserRole } from "@prisma/client";
+﻿import type { UserRole } from "@prisma/client";
 
 export function matterVisibilityFilter(userId: string, role: UserRole) {
   if (role === "ADMIN" || role === "PRINCIPAL_LAWYER") return {};
@@ -54,7 +54,7 @@ export async function assertCanAccessMatter(
   if (role === "ADMIN" || role === "PRINCIPAL_LAWYER") return;
   if (matter.ownerId === userId) return;
   if (matter.members.some((m) => m.userId === userId)) return;
-  throw new Error("No tenés acceso a este caso");
+  throw new Error("No tenÃ©s acceso a este caso");
 }
 
 export async function assertCanAssociateMatter(
@@ -69,7 +69,7 @@ export async function assertCanAssociateMatter(
   if (!matter) throw new Error("Caso no encontrado");
   if (matter.ownerId === userId) return;
   if (matter.members.some((m) => m.userId === userId)) return;
-  throw new Error("No tenés acceso a este caso");
+  throw new Error("No tenÃ©s acceso a este caso");
 }
 
 export async function assertCanLeadMatter(
@@ -89,7 +89,7 @@ export async function assertCanLeadMatter(
   if (matter.ownerId === userId) return;
   const member = matter.members.find((m) => m.userId === userId);
   if (member && (member.role === "LEAD" || member.role === "CO_LEAD")) return;
-  throw new Error(message ?? "No tenés permisos para liderar este caso");
+  throw new Error(message ?? "No tenÃ©s permisos para liderar este caso");
 }
 
 export async function assertCanOwnMatter(
@@ -123,5 +123,5 @@ export async function assertCanModifyMatter(
   if (role === "FINANCE") return;
   if (matter.ownerId === userId) return;
   if (matter.members.some((m) => m.userId === userId)) return;
-  throw new Error("No tenés permisos para modificar este caso");
+  throw new Error("No tenÃ©s permisos para modificar este caso");
 }

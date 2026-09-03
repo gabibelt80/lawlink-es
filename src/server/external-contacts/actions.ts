@@ -1,12 +1,12 @@
-"use server";
+﻿"use server";
 
 /**
- * v0.27: 服务中心 - 外部联系人通讯录
+ * v0.27: æœåŠ¡ä¸­å¿ƒ - å¤–éƒ¨è”ç³»äººé€šè®¯å½•
  *
- * 范围：法院 / 检察院 / 公证 / 仲裁 / 他所Abogado / 鉴定专家 / 其他外部联系
- * 同事用 User 表，不在此（前端可一并展示）。
+ * èŒƒå›´ï¼šæ³•é™¢ / æ£€å¯Ÿé™¢ / å…¬è¯ / ä»²è£ / ä»–æ‰€Abogado / é‰´å®šä¸“å®¶ / å…¶ä»–å¤–éƒ¨è”ç³»
+ * åŒäº‹ç”¨ User è¡¨ï¼Œä¸åœ¨æ­¤ï¼ˆå‰ç«¯å¯ä¸€å¹¶å±•ç¤ºï¼‰ã€‚
  *
- * 权限：所有Iniciar sesión用户可看已Aprobar联系人，可新建；普通成员新建后需Administrar层审核。
+ * æƒé™ï¼šæ‰€æœ‰Iniciar sesiÃ³nç”¨æˆ·å¯çœ‹å·²Aprobarè”ç³»äººï¼Œå¯æ–°å»ºï¼›æ™®é€šæˆå‘˜æ–°å»ºåŽéœ€Administrarå±‚å®¡æ ¸ã€‚
  */
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
@@ -31,7 +31,7 @@ const categories = [
 ] as const;
 
 const externalContactSchema = z.object({
-  name: z.string().min(1, "Nombre y apellido必填").max(60),
+  name: z.string().min(1, "Nombre y apellidoå¿…å¡«").max(60),
   category: z.enum(categories),
   organization: z.string().max(120).optional().or(z.literal("")),
   title: z.string().max(60).optional().or(z.literal("")),
@@ -71,8 +71,8 @@ export async function listExternalContacts(
   if (filter.search && filter.search.trim()) {
     const q = filter.search.trim();
     where.OR = [
-      { name: { contains: q, mode: "insensitive" } },
-      { organization: { contains: q, mode: "insensitive" } },
+      { name: { contains: q } },
+      { organization: { contains: q } },
       { phone: { contains: q } }
     ];
   }
@@ -108,16 +108,16 @@ async function assertCanModify(id: string, sessionUserId: string, role: string) 
     where: { id },
     select: { createdById: true }
   });
-  if (!c) throw new Error("联系人不存在");
+  if (!c) throw new Error("è”ç³»äººä¸å­˜åœ¨");
   const allowed =
     role === "ADMIN" || role === "PRINCIPAL_LAWYER" || c.createdById === sessionUserId;
-  if (!allowed) throw new Error("无权修改此联系人");
+  if (!allowed) throw new Error("æ— æƒä¿®æ”¹æ­¤è”ç³»äºº");
 }
 
 export async function createExternalContact(input: z.infer<typeof externalContactSchema>) {
   const session = await requireSession();
   const data = externalContactSchema.parse(input);
-  // v1.0: 审核流默认Cerrar（小所信任环境，新增直接Aprobar）；可在Configuración里打开
+  // v1.0: å®¡æ ¸æµé»˜è®¤Cerrarï¼ˆå°æ‰€ä¿¡ä»»çŽ¯å¢ƒï¼Œæ–°å¢žç›´æŽ¥Aprobarï¼‰ï¼›å¯åœ¨ConfiguraciÃ³né‡Œæ‰“å¼€
   const { externalContactReview } = await getWorkflowToggles();
   const status =
     !externalContactReview || isManager(session.user.role) ? "APPROVED" : "PENDING_REVIEW";
@@ -148,8 +148,8 @@ export async function createExternalContact(input: z.infer<typeof externalContac
     await notifyRoleApprovers({
       roles: ["ADMIN", "PRINCIPAL_LAWYER"],
       excludeUserId: session.user.id,
-      title: "新的通讯录联系人待审核",
-      content: `${session.user.name ?? "同事"} 新增了外部联系人「${created.name}」`,
+      title: "æ–°çš„é€šè®¯å½•è”ç³»äººå¾…å®¡æ ¸",
+      content: `${session.user.name ?? "åŒäº‹"} æ–°å¢žäº†å¤–éƒ¨è”ç³»äººã€Œ${created.name}ã€`,
       href: "/contacts",
       refType: "ExternalContact",
       refId: created.id,
@@ -192,14 +192,14 @@ export async function updateExternalContact(input: z.infer<typeof externalContac
 
 export async function approveExternalContact(input: z.infer<typeof externalContactReviewSchema>) {
   const session = await requireSession();
-  if (!isManager(session.user.role)) throw new Error("仅Administrar员可审核联系人");
+  if (!isManager(session.user.role)) throw new Error("ä»…Administrarå‘˜å¯å®¡æ ¸è”ç³»äºº");
   const data = externalContactReviewSchema.parse(input);
   const current = await prisma.externalContact.findUnique({
     where: { id: data.id },
     select: { id: true, name: true, status: true, createdById: true }
   });
-  if (!current) throw new Error("联系人不存在");
-  if (current.status !== "PENDING_REVIEW") throw new Error("该联系人当前不在待审核Estado");
+  if (!current) throw new Error("è”ç³»äººä¸å­˜åœ¨");
+  if (current.status !== "PENDING_REVIEW") throw new Error("è¯¥è”ç³»äººå½“å‰ä¸åœ¨å¾…å®¡æ ¸Estado");
 
   const approved = await prisma.externalContact.update({
     where: { id: data.id },
@@ -220,8 +220,8 @@ export async function approveExternalContact(input: z.infer<typeof externalConta
   });
   if (current.createdById !== session.user.id) {
     await notifyRequester(current.createdById, {
-      title: "通讯录联系人已Aprobar",
-      content: `外部联系人「${approved.name}」已Aprobar审核并展示`,
+      title: "é€šè®¯å½•è”ç³»äººå·²Aprobar",
+      content: `å¤–éƒ¨è”ç³»äººã€Œ${approved.name}ã€å·²Aprobarå®¡æ ¸å¹¶å±•ç¤º`,
       refId: approved.id
     });
   }
@@ -231,14 +231,14 @@ export async function approveExternalContact(input: z.infer<typeof externalConta
 
 export async function rejectExternalContact(input: z.infer<typeof externalContactReviewSchema>) {
   const session = await requireSession();
-  if (!isManager(session.user.role)) throw new Error("仅Administrar员可审核联系人");
+  if (!isManager(session.user.role)) throw new Error("ä»…Administrarå‘˜å¯å®¡æ ¸è”ç³»äºº");
   const data = externalContactReviewSchema.parse(input);
   const current = await prisma.externalContact.findUnique({
     where: { id: data.id },
     select: { id: true, name: true, status: true, createdById: true }
   });
-  if (!current) throw new Error("联系人不存在");
-  if (current.status !== "PENDING_REVIEW") throw new Error("该联系人当前不在待审核Estado");
+  if (!current) throw new Error("è”ç³»äººä¸å­˜åœ¨");
+  if (current.status !== "PENDING_REVIEW") throw new Error("è¯¥è”ç³»äººå½“å‰ä¸åœ¨å¾…å®¡æ ¸Estado");
 
   const rejected = await prisma.externalContact.update({
     where: { id: data.id },
@@ -259,8 +259,8 @@ export async function rejectExternalContact(input: z.infer<typeof externalContac
   });
   if (current.createdById !== session.user.id) {
     await notifyRequester(current.createdById, {
-      title: "通讯录联系人未Aprobar",
-      content: `外部联系人「${rejected.name}」未Aprobar审核${data.note ? `：${data.note}` : ""}`,
+      title: "é€šè®¯å½•è”ç³»äººæœªAprobar",
+      content: `å¤–éƒ¨è”ç³»äººã€Œ${rejected.name}ã€æœªAprobarå®¡æ ¸${data.note ? `ï¼š${data.note}` : ""}`,
       refId: rejected.id
     });
   }
@@ -283,3 +283,5 @@ export async function archiveExternalContact(id: string) {
   });
   revalidatePath("/contacts");
 }
+
+

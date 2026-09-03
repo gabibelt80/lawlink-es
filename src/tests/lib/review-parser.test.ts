@@ -1,13 +1,13 @@
-import { describe, it, expect } from "vitest";
+﻿import { describe, it, expect } from "vitest";
 import { parseReviewItems } from "@/lib/ai/review-parser";
 
 describe("parseReviewItems", () => {
-  it("正常路径：4 条不同 type / severity 解析 + 按严重度排序", () => {
+  it("æ­£å¸¸è·¯å¾„ï¼š4 æ¡ä¸åŒ type / severity è§£æž + æŒ‰ä¸¥é‡åº¦æŽ’åº", () => {
     const json = JSON.stringify([
-      { type: "SUGGESTION", severity: "LOW", title: "措辞建议", detail: "可改用更规范术语" },
-      { type: "MISSING", severity: "HIGH", title: "违约责任缺失", detail: "未约定违约金计算方式" },
-      { type: "RISK", severity: "MEDIUM", title: "管辖约定模糊", detail: "未指定具体法院" },
-      { type: "ISSUE", severity: "HIGH", title: "Monto前后不符", detail: "正文 5 万但Adjunto 5.5 万" }
+      { type: "SUGGESTION", severity: "LOW", title: "æŽªè¾žå»ºè®®", detail: "å¯æ”¹ç”¨æ›´è§„èŒƒæœ¯è¯­" },
+      { type: "MISSING", severity: "HIGH", title: "è¿çº¦è´£ä»»ç¼ºå¤±", detail: "æœªçº¦å®šè¿çº¦é‡‘è®¡ç®—æ–¹å¼" },
+      { type: "RISK", severity: "MEDIUM", title: "ç®¡è¾–çº¦å®šæ¨¡ç³Š", detail: "æœªæŒ‡å®šå…·ä½“æ³•é™¢" },
+      { type: "ISSUE", severity: "HIGH", title: "Montoå‰åŽä¸ç¬¦", detail: "æ­£æ–‡ 5 ä¸‡ä½†Adjunto 5.5 ä¸‡" }
     ]);
     const items = parseReviewItems(json);
     expect(items).toHaveLength(4);
@@ -17,22 +17,22 @@ describe("parseReviewItems", () => {
     expect(items[3].severity).toBe("LOW");
   });
 
-  it("空数组合法", () => {
+  it("ç©ºæ•°ç»„åˆæ³•", () => {
     expect(parseReviewItems("[]")).toEqual([]);
   });
 
-  it("title/detail 缺失的条目丢弃", () => {
+  it("title/detail ç¼ºå¤±çš„æ¡ç›®ä¸¢å¼ƒ", () => {
     const json = JSON.stringify([
       { type: "RISK", severity: "HIGH", title: "", detail: "x" },
-      { type: "RISK", severity: "HIGH", title: "有效", detail: "" },
-      { type: "RISK", severity: "HIGH", title: "保留", detail: "完整" }
+      { type: "RISK", severity: "HIGH", title: "æœ‰æ•ˆ", detail: "" },
+      { type: "RISK", severity: "HIGH", title: "ä¿ç•™", detail: "å®Œæ•´" }
     ]);
     const items = parseReviewItems(json);
     expect(items).toHaveLength(1);
-    expect(items[0].title).toBe("保留");
+    expect(items[0].title).toBe("ä¿ç•™");
   });
 
-  it("非法 type/severity 回退默认值", () => {
+  it("éžæ³• type/severity å›žé€€é»˜è®¤å€¼", () => {
     const json = JSON.stringify([
       { type: "UNKNOWN_TYPE", severity: "CRIT", title: "T", detail: "D" }
     ]);
@@ -41,7 +41,7 @@ describe("parseReviewItems", () => {
     expect(items[0].severity).toBe("MEDIUM");
   });
 
-  it("大小写不规范也能识别", () => {
+  it("å¤§å°å†™ä¸è§„èŒƒä¹Ÿèƒ½è¯†åˆ«", () => {
     const json = JSON.stringify([
       { type: "missing", severity: "high", title: "T", detail: "D" }
     ]);
@@ -50,18 +50,19 @@ describe("parseReviewItems", () => {
     expect(items[0].severity).toBe("HIGH");
   });
 
-  it("JSON 被 markdown ``` 包裹也能抽取", () => {
-    const wrapped = "好的，分析如下：\n```json\n[{\"type\":\"RISK\",\"severity\":\"HIGH\",\"title\":\"X\",\"detail\":\"Y\"}]\n```";
+  it("JSON è¢« markdown ``` åŒ…è£¹ä¹Ÿèƒ½æŠ½å–", () => {
+    const wrapped = "å¥½çš„ï¼Œåˆ†æžå¦‚ä¸‹ï¼š\n```json\n[{\"type\":\"RISK\",\"severity\":\"HIGH\",\"title\":\"X\",\"detail\":\"Y\"}]\n```";
     const items = parseReviewItems(wrapped);
     expect(items).toHaveLength(1);
     expect(items[0].title).toBe("X");
   });
 
-  it("非数组（对象）抛错", () => {
-    expect(() => parseReviewItems('{"items": []}')).toThrow(/无法解析/);
+  it("éžæ•°ç»„ï¼ˆå¯¹è±¡ï¼‰æŠ›é”™", () => {
+    expect(() => parseReviewItems('{"items": []}')).toThrow(/æ— æ³•è§£æž/);
   });
 
-  it("无 JSON 抛错", () => {
-    expect(() => parseReviewItems("抱歉，无法处理")).toThrow(/无法解析/);
+  it("æ—  JSON æŠ›é”™", () => {
+    expect(() => parseReviewItems("æŠ±æ­‰ï¼Œæ— æ³•å¤„ç†")).toThrow(/æ— æ³•è§£æž/);
   });
 });
+

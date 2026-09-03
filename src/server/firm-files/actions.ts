@@ -1,12 +1,12 @@
-"use server";
+﻿"use server";
 
 /**
- * v0.22: 律所Material库（FirmFile）
+ * v0.22: å¾‹æ‰€Materialåº“ï¼ˆFirmFileï¼‰
  *
- * 全所共享：所有 active 用户可读；admin / PRINCIPAL_LAWYER 可上传 / 替代 / Eliminar。
- * 4 分类：制度 / 指引 / 参考模板 / 其他文件。
- * 版本：supersededById Enlace旧→新；列表默认只显示"最新"。
- * Buscar：ILIKE name + description + tags 多字段模糊Coincidencia（不用 tsvector）。
+ * å…¨æ‰€å…±äº«ï¼šæ‰€æœ‰ active ç”¨æˆ·å¯è¯»ï¼›admin / PRINCIPAL_LAWYER å¯ä¸Šä¼  / æ›¿ä»£ / Eliminarã€‚
+ * 4 åˆ†ç±»ï¼šåˆ¶åº¦ / æŒ‡å¼• / å‚è€ƒæ¨¡æ¿ / å…¶ä»–æ–‡ä»¶ã€‚
+ * ç‰ˆæœ¬ï¼šsupersededById Enlaceæ—§â†’æ–°ï¼›åˆ—è¡¨é»˜è®¤åªæ˜¾ç¤º"æœ€æ–°"ã€‚
+ * Buscarï¼šILIKE name + description + tags å¤šå­—æ®µæ¨¡ç³ŠCoincidenciaï¼ˆä¸ç”¨ tsvectorï¼‰ã€‚
  */
 import { prisma } from "@/lib/prisma";
 import { requireSession } from "@/lib/auth/session";
@@ -36,7 +36,7 @@ export type FirmFileEntry = {
 async function requireUploader() {
   const session = await requireSession();
   if (session.user.role !== "ADMIN" && session.user.role !== "PRINCIPAL_LAWYER") {
-    throw new Error("仅Administrar员 / 主任Abogado可Administrar律所Material");
+    throw new Error("ä»…Administrarå‘˜ / ä¸»ä»»Abogadoå¯Administrarå¾‹æ‰€Material");
   }
   return session;
 }
@@ -44,15 +44,15 @@ async function requireUploader() {
 const CATEGORY_VALUES: FirmFileCategory[] = ["POLICY", "GUIDE", "TEMPLATE", "REFERENCE"];
 
 function parseCategory(raw: unknown): FirmFileCategory {
-  if (typeof raw !== "string") throw new Error("分类必填");
+  if (typeof raw !== "string") throw new Error("åˆ†ç±»å¿…å¡«");
   if ((CATEGORY_VALUES as string[]).includes(raw)) return raw as FirmFileCategory;
-  throw new Error(`无效分类：${raw}`);
+  throw new Error(`æ— æ•ˆåˆ†ç±»ï¼š${raw}`);
 }
 
 function parseTags(raw: unknown): string[] {
   if (typeof raw !== "string" || !raw.trim()) return [];
   return raw
-    .split(/[,，、\s]+/)
+    .split(/[,ï¼Œã€\s]+/)
     .map((s) => s.trim())
     .filter(Boolean)
     .slice(0, 20);
@@ -74,9 +74,9 @@ export async function listFirmFiles(input: {
   if (input.search?.trim()) {
     const q = input.search.trim();
     where.OR = [
-      { name: { contains: q, mode: "insensitive" } },
-      { description: { contains: q, mode: "insensitive" } },
-      { tags: { has: q } }
+      { name: { contains: q } },
+      { description: { contains: q } },
+      { tags: { array_contains: q } }
     ];
   }
 
@@ -115,7 +115,7 @@ export async function listFirmFiles(input: {
 
 export async function getFirmFileVersionHistory(input: { id: string }) {
   await requireSession();
-  // 沿着 supersedes 链向旧版深挖（理论是树，业务上单链）
+  // æ²¿ç€ supersedes é“¾å‘æ—§ç‰ˆæ·±æŒ–ï¼ˆç†è®ºæ˜¯æ ‘ï¼Œä¸šåŠ¡ä¸Šå•é“¾ï¼‰
   type Node = {
     id: string;
     name: string;
@@ -166,32 +166,32 @@ export async function uploadFirmFile(formData: FormData): Promise<{
   const tags = parseTags(formData.get("tags"));
   const supersedesRaw = formData.get("supersedesId");
 
-  if (!(file instanceof File)) throw new Error("缺少文件");
-  if (file.size === 0) throw new Error("空文件");
+  if (!(file instanceof File)) throw new Error("ç¼ºå°‘æ–‡ä»¶");
+  if (file.size === 0) throw new Error("ç©ºæ–‡ä»¶");
   if (file.size > FIRM_FILE_MAX_BYTES)
-    throw new Error(`文件超过 ${Math.round(FIRM_FILE_MAX_BYTES / 1024 / 1024)}MB`);
-  if (typeof name !== "string" || !name.trim()) throw new Error("Nombre必填");
+    throw new Error(`æ–‡ä»¶è¶…è¿‡ ${Math.round(FIRM_FILE_MAX_BYTES / 1024 / 1024)}MB`);
+  if (typeof name !== "string" || !name.trim()) throw new Error("Nombreå¿…å¡«");
 
   const supersedesId =
     typeof supersedesRaw === "string" && supersedesRaw ? supersedesRaw : null;
 
-  // 替代旧版的合法性
+  // æ›¿ä»£æ—§ç‰ˆçš„åˆæ³•æ€§
   if (supersedesId) {
     const old = await prisma.firmFile.findUnique({
       where: { id: supersedesId },
       select: { id: true, supersededById: true, archivedAt: true }
     });
-    if (!old) throw new Error("被替代的旧版不存在");
-    if (old.supersededById) throw new Error("该旧版已被其他新版替代");
-    if (old.archivedAt) throw new Error("该旧版已Eliminar，无法被替代");
+    if (!old) throw new Error("è¢«æ›¿ä»£çš„æ—§ç‰ˆä¸å­˜åœ¨");
+    if (old.supersededById) throw new Error("è¯¥æ—§ç‰ˆå·²è¢«å…¶ä»–æ–°ç‰ˆæ›¿ä»£");
+    if (old.archivedAt) throw new Error("è¯¥æ—§ç‰ˆå·²Eliminarï¼Œæ— æ³•è¢«æ›¿ä»£");
   }
 
   const buf = Buffer.from(await file.arrayBuffer());
   const path = await storage.writeFile("firm-files", buf);
   const hash = sha256(buf);
 
-  // 用户填的 name 可能不含扩展名（如"员工手册 v2.4"），下载时浏览器要靠扩展名识别程序，
-  // 这里优先取原始文件名的扩展名兜底，其次用 mimeType 推断
+  // ç”¨æˆ·å¡«çš„ name å¯èƒ½ä¸å«æ‰©å±•åï¼ˆå¦‚"å‘˜å·¥æ‰‹å†Œ v2.4"ï¼‰ï¼Œä¸‹è½½æ—¶æµè§ˆå™¨è¦é æ‰©å±•åè¯†åˆ«ç¨‹åºï¼Œ
+  // è¿™é‡Œä¼˜å…ˆå–åŽŸå§‹æ–‡ä»¶åçš„æ‰©å±•åå…œåº•ï¼Œå…¶æ¬¡ç”¨ mimeType æŽ¨æ–­
   const trimmedName = name.trim().slice(0, 200);
   const userHasExt = /\.[A-Za-z0-9]{1,5}$/.test(trimmedName);
   let nameWithFileExt = trimmedName;
@@ -251,8 +251,8 @@ export async function updateFirmFile(input: {
     where: { id: input.id },
     select: { id: true, archivedAt: true }
   });
-  if (!existing) throw new Error("Material不存在");
-  if (existing.archivedAt) throw new Error("已Eliminar的Material不可Editar");
+  if (!existing) throw new Error("Materialä¸å­˜åœ¨");
+  if (existing.archivedAt) throw new Error("å·²Eliminarçš„Materialä¸å¯Editar");
 
   const data: Prisma.FirmFileUpdateInput = {};
   if (input.name !== undefined) data.name = input.name.trim().slice(0, 200);
@@ -290,3 +290,5 @@ export async function deleteFirmFile(input: { id: string }) {
   revalidatePath("/firm-resources");
   return { ok: true };
 }
+
+

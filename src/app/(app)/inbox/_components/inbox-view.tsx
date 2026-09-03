@@ -70,7 +70,6 @@ export function InboxView({
 }: {
   unprocessed: SmsRow[];
   processed: SmsRow[];
-  /** v0.48: 电子送达待人工处理（需Iniciar sesión/验证码/未关联Caso） */
   needsManual: SmsRow[];
   matters: MatterOption[];
 }) {
@@ -104,7 +103,7 @@ export function InboxView({
         <div>
           <h1 className="text-2xl">Bandeja de entrada</h1>
           <p className="mt-0.5 text-[11px] text-muted-foreground">
-            Pega mensajes de 12368 / tribunales → análisis automático → genera
+            Pegá mensajes de tribunales → análisis automático → genera
             audiencias / plazos con un clic
           </p>
         </div>
@@ -114,7 +113,7 @@ export function InboxView({
         </Button>
       </div>
 
-      {/* Tab */}
+      {/* Tabs */}
       <div className="border-b border-border">
         <div className="flex gap-5">
           <TabBtn
@@ -272,25 +271,25 @@ function SmsCard({
     startTransition(async () => {
       try {
         await markSmsProcessed({ id: sms.id });
-        toast.success("已标记处理");
+        toast.success("Marcado como procesado");
       } catch (e) {
         toast.error(e instanceof Error ? e.message : "Error");
       }
     });
 
   const onDelete = () => {
-    if (!confirm("ConfirmarEliminar这条SMS记录？")) return;
+    if (!confirm("¿Confirmás eliminar este SMS?")) return;
     startTransition(async () => {
       try {
         await deleteSms({ id: sms.id });
-        toast.success("已Eliminar");
+        toast.success("Eliminado");
       } catch (e) {
         toast.error(e instanceof Error ? e.message : "Error");
       }
     });
   };
 
-  // v0.51: 解析出新案号 + Caso里有缺案号的程序 → 可回填
+  // v0.51: Si se detectó un número de caso nuevo y hay procedimientos sin número, se puede completar
   const usedCaseNumbers = new Set(
     (sms.matchedMatter?.procedures ?? [])
       .map((p) => p.caseNumber)
@@ -314,19 +313,19 @@ function SmsCard({
         ).length;
         toast.success(
           downloaded > 0
-            ? `Ya descargado ${downloaded} 个Adjunto`
+            ? `Se descargaron ${downloaded} adjuntos`
             : needsManual > 0
-              ? "送达入口需要人工处理"
-              : "Adjunto提取Completado",
+              ? "El portal de notificaciones requiere intervención manual"
+              : "Extracción de adjuntos completada",
         );
       } catch (e) {
-        toast.error(e instanceof Error ? e.message : "提取Error");
+        toast.error(e instanceof Error ? e.message : "Error al extraer");
       }
     });
 
   return (
     <div className="ll-surface rounded-lg border border-border p-4">
-      {/* 头：类型徽 + 法院 + 案号 + 时间 + 来源标 */}
+      {/* Encabezado: tipo + tribunal + número de caso + hora */}
       <div className="flex flex-wrap items-center gap-2 text-[11px]">
         <span
           className="rounded-full px-2 py-0.5 text-[10px] font-medium"
@@ -339,24 +338,24 @@ function SmsCard({
         )}
         {parsed.caseNumbers.length > 0 && (
           <span className="font-mono text-[10px] text-muted-foreground">
-            {parsed.caseNumbers.join("、")}
+            {parsed.caseNumbers.join(", ")}
           </span>
         )}
         <span className="ml-auto font-mono text-[10px] text-muted-foreground">
-          {new Date(sms.receivedAt).toLocaleString("zh-CN")}
+          {new Date(sms.receivedAt).toLocaleString("es-AR")}
         </span>
       </div>
 
-      {/* 摘要 + AI 增强字段 */}
+      {/* Resumen + campos mejorados por IA */}
       <div className="mt-2 space-y-1">
         <div className="flex items-start gap-2">
           {parsed.aiEnriched && (
             <span
               className="mt-0.5 inline-flex shrink-0 items-center gap-1 rounded bg-primary/10 px-1.5 py-0.5 text-[10px] text-primary"
-              title="AI 增强解析"
+              title="Análisis mejorado por IA"
             >
               <Sparkles className="h-3 w-3" />
-              AI
+              IA
             </span>
           )}
           <p className="line-clamp-2 text-[13px] text-foreground/85">
@@ -366,23 +365,23 @@ function SmsCard({
         {parsed.action && (
           <div className="flex items-baseline gap-1.5 text-[12px]">
             <ArrowRight className="h-3 w-3 shrink-0 text-primary/70" />
-            <span className="text-muted-foreground">应对：</span>
+            <span className="text-muted-foreground">Acción sugerida:</span>
             <span className="text-foreground/90">{parsed.action}</span>
             {parsed.urgency && <UrgencyBadge level={parsed.urgency} />}
           </div>
         )}
       </div>
 
-      {/* 字段栏 */}
+      {/* Campos */}
       <div className="mt-2 flex flex-wrap gap-x-3 gap-y-1 text-[11px] text-muted-foreground">
         {parsed.hearingDate && (
           <Field icon={<Gavel className="h-3 w-3" />}>
-            开庭：{parsed.hearingDate}
+            Audiencia: {parsed.hearingDate}
           </Field>
         )}
         {parsed.courtRoom && <Field>{parsed.courtRoom}</Field>}
-        {parsed.judge && <Field>法官：{parsed.judge}</Field>}
-        {parsed.clerk && <Field>书记员：{parsed.clerk}</Field>}
+        {parsed.judge && <Field>Juez: {parsed.judge}</Field>}
+        {parsed.clerk && <Field>Secretario: {parsed.clerk}</Field>}
         {parsed.phones.map((p) => (
           <Field key={p} icon={<Phone className="h-3 w-3" />}>
             <a href={`tel:${p}`} className="hover:text-foreground">
@@ -391,9 +390,9 @@ function SmsCard({
           </Field>
         ))}
         {parsed.appealDeadline && (
-          <Field>上诉期：{parsed.appealDeadline}</Field>
+          <Field>Plazo de apelación: {parsed.appealDeadline}</Field>
         )}
-        {parsed.judgmentDate && <Field>判决日：{parsed.judgmentDate}</Field>}
+        {parsed.judgmentDate && <Field>Fecha de sentencia: {parsed.judgmentDate}</Field>}
         {parsed.urls.length > 0 &&
           parsed.urls.map((u, i) => (
             <Field key={u} icon={<ExternalLink className="h-3 w-3" />}>
@@ -448,7 +447,7 @@ function SmsCard({
             <div className="space-y-1.5">
               <div className="flex items-center gap-1.5 text-[11px] font-medium text-foreground/80">
                 <FileDown className="h-3.5 w-3.5 text-primary" />
-                电子送达
+                Notificación electrónica
               </div>
               {parsed.documentLinks.map((link, i) => (
                 <div
@@ -462,11 +461,11 @@ function SmsCard({
                     className="inline-flex items-center gap-1 text-primary hover:underline"
                   >
                     <ExternalLink className="h-3 w-3" />
-                    {link.platform ?? `送达Enlace ${i + 1}`}
+                    {link.platform ?? `Enlace de notificación ${i + 1}`}
                   </a>
                   {link.requiresLogin && (
                     <span className="rounded bg-amber-500/10 px-1.5 py-0.5 text-[10px] text-amber-700">
-                      需Iniciar sesión/校验
+                      Requiere inicio de sesión / verificación
                     </span>
                   )}
                 </div>
@@ -478,14 +477,14 @@ function SmsCard({
             <div className="flex flex-wrap gap-1.5 text-[11px] text-muted-foreground">
               <span className="inline-flex items-center gap-1 text-foreground/75">
                 <KeyRound className="h-3 w-3 text-primary" />
-                已识别凭证
+                Credenciales detectadas
               </span>
               {parsed.credentials.map((cred, i) => (
                 <span
                   key={`${cred.kind}-${cred.valuePreview}-${i}`}
                   className="rounded bg-muted/50 px-1.5 py-0.5 text-[10px]"
                 >
-                  {cred.label}：{cred.valuePreview}
+                  {cred.label}: {cred.valuePreview}
                 </span>
               ))}
             </div>
@@ -504,7 +503,7 @@ function SmsCard({
         </div>
       )}
 
-      {/* 关联Caso + Acciones行 */}
+      {/* Caso vinculado + acciones */}
       <div className="mt-3 flex flex-wrap items-center gap-2 border-t border-border pt-3">
         {sms.matchedMatter ? (
           <Link
@@ -520,7 +519,7 @@ function SmsCard({
             </span>
             {sms.matchedBy === "AUTO_CASE_NUMBER" && (
               <span className="ml-0.5 rounded bg-muted/60 px-1 text-[9px] text-muted-foreground">
-                自动
+                Automático
               </span>
             )}
           </Link>
@@ -533,7 +532,7 @@ function SmsCard({
           onClick={() => setShowRaw((v) => !v)}
           className="text-[11px] text-muted-foreground hover:text-foreground"
         >
-          {showRaw ? "Ocultar texto original" : "Ver原文"}
+          {showRaw ? "Ocultar texto original" : "Ver texto original"}
         </button>
 
         <div className="ml-auto flex items-center gap-2">
@@ -547,7 +546,7 @@ function SmsCard({
                   className="h-7 gap-1 text-[11px]"
                 >
                   <Gavel className="h-3 w-3" />
-                  生成开庭
+                  Generar audiencia
                 </Button>
               )}
               <Button
@@ -557,7 +556,7 @@ function SmsCard({
                 className="h-7 gap-1 text-[11px]"
               >
                 <Clock className="h-3 w-3" />
-                生成Plazo
+                Generar plazo
               </Button>
               {canBackfillCaseNumber && (
                 <Button
@@ -565,10 +564,10 @@ function SmsCard({
                   variant="outline"
                   onClick={onBackfillCaseNumber}
                   className="h-7 gap-1 text-[11px]"
-                  title="把SMS解析出的案号回填到缺案号的程序"
+                  title="Completar número de caso en el procedimiento"
                 >
                   <FileDigit className="h-3 w-3" />
-                  回填案号
+                  Completar número
                 </Button>
               )}
             </>
@@ -582,8 +581,8 @@ function SmsCard({
               className="h-7 gap-1 text-[11px]"
               title={
                 sms.matchedMatter
-                  ? "提取SMS中的送达Adjunto"
-                  : "先关联Caso后再提取Adjunto"
+                  ? "Extraer adjuntos del SMS"
+                  : "Primero vinculá un caso para extraer adjuntos"
               }
             >
               {pending ? (
@@ -591,7 +590,7 @@ function SmsCard({
               ) : (
                 <FileDown className="h-3 w-3" />
               )}
-              提取Adjunto
+              Extraer adjuntos
             </Button>
           )}
           {!sms.processed && (
@@ -603,7 +602,7 @@ function SmsCard({
               className="h-7 gap-1 text-[11px]"
             >
               <CheckCircle2 className="h-3 w-3" />
-              标为已处理
+              Marcar procesado
             </Button>
           )}
           <button
@@ -680,32 +679,32 @@ function AttachmentResultRow({
 }) {
   const meta = {
     DOWNLOADED: {
-      label: "已Guardar",
+      label: "Guardado",
       color: "text-emerald-700",
       bg: "bg-emerald-500/10",
     },
     ALREADY_DOWNLOADED: {
-      label: "已存在",
+      label: "Ya existe",
       color: "text-emerald-700",
       bg: "bg-emerald-500/10",
     },
     LOGIN_REQUIRED: {
-      label: "待人工",
+      label: "Requiere acción",
       color: "text-amber-700",
       bg: "bg-amber-500/10",
     },
     SKIPPED_NO_MATTER: {
-      label: "未关联",
+      label: "Sin caso",
       color: "text-amber-700",
       bg: "bg-amber-500/10",
     },
     NO_FILE_FOUND: {
-      label: "未发现",
+      label: "No encontrado",
       color: "text-muted-foreground",
       bg: "bg-muted/50",
     },
     UNSUPPORTED_TYPE: {
-      label: "不支持",
+      label: "No compatible",
       color: "text-muted-foreground",
       bg: "bg-muted/50",
     },
@@ -715,11 +714,10 @@ function AttachmentResultRow({
       bg: "bg-destructive/10",
     },
     PENDING: {
-      label: "待提取",
+      label: "Pendiente",
       color: "text-muted-foreground",
       bg: "bg-muted/50",
     },
-    // parsedJson 来自 DB JSON，status 可能是历史版本写入的Desconocido值，需兜底
   }[result.status] ?? {
     label: "Desconocido",
     color: "text-muted-foreground",
@@ -739,7 +737,7 @@ function AttachmentResultRow({
           className="inline-flex items-center gap-1 text-primary hover:underline"
         >
           <FileCheck2 className="h-3 w-3" />
-          {result.documentName ?? "已GuardarAdjunto"}
+          {result.documentName ?? "Adjunto guardado"}
         </a>
       ) : (
         <span className="line-clamp-1">{result.message}</span>
@@ -754,8 +752,8 @@ function AttachmentResultRow({
 function UrgencyBadge({ level }: { level: "HIGH" | "MEDIUM" | "LOW" }) {
   const meta = {
     HIGH: { label: "Urgente", color: "#DC2626", bg: "rgb(248 113 113 / 0.12)" },
-    MEDIUM: { label: "本周", color: "#D97706", bg: "rgb(252 211 77 / 0.15)" },
-    LOW: { label: "知悉", color: "#737373", bg: "rgb(229 229 229 / 0.5)" },
+    MEDIUM: { label: "Esta semana", color: "#D97706", bg: "rgb(252 211 77 / 0.15)" },
+    LOW: { label: "Aviso", color: "#737373", bg: "rgb(229 229 229 / 0.5)" },
   }[level];
   return (
     <span
@@ -768,7 +766,7 @@ function UrgencyBadge({ level }: { level: "HIGH" | "MEDIUM" | "LOW" }) {
   );
 }
 
-// 行内小 Combobox：手动指派 Matter
+// Combobox en línea: asignar caso manualmente
 function MatterPicker({
   sms,
   matters,
@@ -783,7 +781,7 @@ function MatterPicker({
     startTransition(async () => {
       try {
         await matchSmsToMatter({ smsId: sms.id, matterId });
-        toast.success("已关联Caso");
+        toast.success("Caso vinculado");
         setOpen(false);
       } catch (e) {
         toast.error(e instanceof Error ? e.message : "Error");
@@ -804,14 +802,14 @@ function MatterPicker({
           ) : (
             <LinkIcon className="h-3 w-3" />
           )}
-          指派Caso
+          Asignar caso
         </button>
       </PopoverTrigger>
       <PopoverContent className="w-80 p-0" align="start">
         <Command>
-          <CommandInput placeholder="Buscar编号或Caso名..." />
+          <CommandInput placeholder="Buscar número o nombre del caso..." />
           <CommandList>
-            <CommandEmpty>未找到</CommandEmpty>
+            <CommandEmpty>No encontrado</CommandEmpty>
             <CommandGroup>
               {matters.map((m) => (
                 <CommandItem

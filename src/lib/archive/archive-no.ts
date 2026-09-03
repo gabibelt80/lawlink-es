@@ -1,31 +1,31 @@
-/**
- * v0.9.4 归档编号生成
+﻿/**
+ * v0.9.4 å½’æ¡£ç¼–å·ç”Ÿæˆ
  *
- * 格式：YYYY-类别-NNNN
- *   - YYYY = 归档年份（archivedAt 当年）
- *   - 类别简称 = 1 个汉字
- *   - NNNN = 年内同类别归档序号（零填 4 位，从 0001 起）
+ * æ ¼å¼ï¼šYYYY-ç±»åˆ«-NNNN
+ *   - YYYY = å½’æ¡£å¹´ä»½ï¼ˆarchivedAt å½“å¹´ï¼‰
+ *   - ç±»åˆ«ç®€ç§° = 1 ä¸ªæ±‰å­—
+ *   - NNNN = å¹´å†…åŒç±»åˆ«å½’æ¡£åºå·ï¼ˆé›¶å¡« 4 ä½ï¼Œä»Ž 0001 èµ·ï¼‰
  *
- * 示例：2026-民-0017
+ * ç¤ºä¾‹ï¼š2026-æ°‘-0017
  *
- * 并发：依赖 @@unique(archiveNo)。重复时回到查 max 再 +1（最多重试 3 次）。
+ * å¹¶å‘ï¼šä¾èµ– @@unique(archiveNo)ã€‚é‡å¤æ—¶å›žåˆ°æŸ¥ max å† +1ï¼ˆæœ€å¤šé‡è¯• 3 æ¬¡ï¼‰ã€‚
  */
 import type { MatterCategory } from "@prisma/client";
 import type { PrismaClient } from "@prisma/client";
 
 const CATEGORY_SHORT: Record<MatterCategory, string> = {
-  CIVIL_COMMERCIAL: "民",
-  LABOR_ARBITRATION: "劳",
-  COMMERCIAL_ARBITRATION: "商",
-  CRIMINAL: "刑",
-  ADMINISTRATIVE: "行",
-  NON_LITIGATION: "非",
-  LEGAL_COUNSEL: "顾",
-  SPECIAL_PROJECT: "专"
+  CIVIL_COMMERCIAL: "æ°‘",
+  LABOR_ARBITRATION: "åŠ³",
+  COMMERCIAL_ARBITRATION: "å•†",
+  CRIMINAL: "åˆ‘",
+  ADMINISTRATIVE: "è¡Œ",
+  NON_LITIGATION: "éž",
+  LEGAL_COUNSEL: "é¡¾",
+  SPECIAL_PROJECT: "ä¸“"
 };
 
 export function categoryShort(category: MatterCategory): string {
-  return CATEGORY_SHORT[category] ?? "案";
+  return CATEGORY_SHORT[category] ?? "æ¡ˆ";
 }
 
 export async function nextArchiveNo(
@@ -37,7 +37,7 @@ export async function nextArchiveNo(
   const short = categoryShort(category);
   const prefix = `${year}-${short}-`;
 
-  // 取年内同前缀的最大 archiveNo
+  // å–å¹´å†…åŒå‰ç¼€çš„æœ€å¤§ archiveNo
   const existing = await tx.archiveRecord.findMany({
     where: { archiveNo: { startsWith: prefix } },
     select: { archiveNo: true },
@@ -53,3 +53,4 @@ export async function nextArchiveNo(
 
   return `${prefix}${String(next).padStart(4, "0")}`;
 }
+

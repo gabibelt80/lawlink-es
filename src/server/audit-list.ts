@@ -1,7 +1,7 @@
-"use server";
+﻿"use server";
 
 /**
- * v0.22: AuditLog 查询（admin-only 审计回放）
+ * v0.22: AuditLog æŸ¥è¯¢ï¼ˆadmin-only å®¡è®¡å›žæ”¾ï¼‰
  */
 import { prisma } from "@/lib/prisma";
 import { requireSession } from "@/lib/auth/session";
@@ -13,7 +13,7 @@ export type AuditFilter = {
   startStr?: string; // yyyy-MM-dd
   endStr?: string;
   limit?: number;
-  cursor?: string; // 上一页最后一条 id
+  cursor?: string; // ä¸Šä¸€é¡µæœ€åŽä¸€æ¡ id
 };
 
 export type AuditEntry = {
@@ -35,7 +35,7 @@ export type AuditListResult = {
 async function requireAdmin() {
   const session = await requireSession();
   if (session.user.role !== "ADMIN" && session.user.role !== "PRINCIPAL_LAWYER") {
-    throw new Error("仅Administrar员 / 主任Abogado可访问审计日志");
+    throw new Error("ä»…Administrarå‘˜ / ä¸»ä»»Abogadoå¯è®¿é—®å®¡è®¡æ—¥å¿—");
   }
   return session;
 }
@@ -95,8 +95,8 @@ export async function listAuditLogs(filter: AuditFilter): Promise<AuditListResul
 }
 
 /**
- * 拉所有出现过的 action / targetType / user，用于前端筛选下拉。
- * 直接 distinct 查询，结果数有限（业务里 action 类型有限）。
+ * æ‹‰æ‰€æœ‰å‡ºçŽ°è¿‡çš„ action / targetType / userï¼Œç”¨äºŽå‰ç«¯ç­›é€‰ä¸‹æ‹‰ã€‚
+ * ç›´æŽ¥ distinct æŸ¥è¯¢ï¼Œç»“æžœæ•°æœ‰é™ï¼ˆä¸šåŠ¡é‡Œ action ç±»åž‹æœ‰é™ï¼‰ã€‚
  */
 export async function getAuditFilterOptions(): Promise<{
   actions: string[];
@@ -128,3 +128,5 @@ export async function getAuditFilterOptions(): Promise<{
     users
   };
 }
+
+

@@ -1,4 +1,4 @@
-"use server";
+﻿"use server";
 
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
@@ -24,7 +24,7 @@ export type TemplateUpdateInput = z.infer<typeof templateUpdateSchema>;
 
 async function requireAdmin() {
   const session = await requireSession();
-  if (session.user.role !== "ADMIN") throw new Error("Solo el administrador puede ejecutar esta acción");
+  if (session.user.role !== "ADMIN") throw new Error("Solo el administrador puede ejecutar esta acciÃ³n");
   return session;
 }
 
@@ -83,7 +83,7 @@ export async function listAuditLogs(input: Partial<AuditQuery> = {}) {
 
   const where: Prisma.AuditLogWhereInput = {
     createdAt: { gte: since },
-    ...(query.action ? { action: { contains: query.action, mode: "insensitive" } } : {}),
+    ...(query.action ? { action: { contains: query.action } } : {}),
     ...(query.userId ? { userId: query.userId } : {})
   };
 
@@ -105,3 +105,4 @@ export async function listAuditLogs(input: Partial<AuditQuery> = {}) {
 
   return { items, distinctActions: distinctActions.map((a) => a.action) };
 }
+

@@ -49,19 +49,15 @@ type MatterOption = { id: string; internalCode: string; title: string };
 type DirectionFilter = ExpressDirection | "ALL";
 
 const STATE_TONE: Record<string, "danger" | "ok" | "warn" | "muted"> = {
-  已签收: "ok",
-  在途: "muted",
-  在途中: "muted",
-  已揽件: "muted",
-  揽收: "muted",
-  到达派件城市: "muted",
-  派件中: "muted",
-  疑难件: "danger",
-  疑难: "danger",
-  退签: "danger",
-  退回: "danger",
-  暂无信息: "warn",
-  Desconocido: "warn",
+  "Entregado": "ok",
+  "En tránsito": "muted",
+  "Recibido": "muted",
+  "Despachado": "muted",
+  "En reparto": "muted",
+  "Con problemas": "danger",
+  "Devuelto": "danger",
+  "Sin información": "warn",
+  "Desconocido": "warn",
 };
 
 export function ExpressView({
@@ -128,7 +124,7 @@ export function ExpressView({
               href="/settings/express"
               className="ml-1 font-medium underline"
             >
-              Ir a configurar Kuaidi Bird / Kuaidi100 →
+              Ir a configurar la integración de paquetería →
             </Link>
           </div>
         </div>
@@ -451,8 +447,7 @@ function NewExpressDialog({
         <DialogHeader>
           <DialogTitle>Nuevo seguimiento de paquete</DialogTitle>
           <DialogDescription className="text-xs">
-            Compatible con reconocimiento automático de SF / Zhongtong / YTO /
-            Yunda / STO / EMS / JD / Jitu, etc.
+            Compatible con reconocimiento automático de Andreani, Correo Argentino, OCA, etc.
           </DialogDescription>
         </DialogHeader>
 
@@ -507,7 +502,7 @@ function NewExpressDialog({
               onChange={(e) => setPurpose(e.target.value)}
               placeholder={
                 direction === "OUTBOUND"
-                  ? "Ej.: demanda enviada a la Sala de Presentación del Tribunal del distrito Chaoyang"
+                  ? "Ej.: demanda enviada al juzgado correspondiente"
                   : "Ej.: notificación judicial de la sentencia"
               }
               className="mt-1"

@@ -1,10 +1,10 @@
-/**
- * v0.9.1 OpenAI 兼容协议封装
+﻿/**
+ * v0.9.1 OpenAI å…¼å®¹åè®®å°è£…
  *
- * 所有调用走 {baseUrl}/chat/completions。
- * 支持 OpenAI / 通义 / DeepSeek / Kimi / 智谱 / OpenRouter / Ollama etc.。
+ * æ‰€æœ‰è°ƒç”¨èµ° {baseUrl}/chat/completionsã€‚
+ * æ”¯æŒ OpenAI / é€šä¹‰ / DeepSeek / Kimi / æ™ºè°± / OpenRouter / Ollama etc.ã€‚
  *
- * server-side only（直接读 SystemSetting）。
+ * server-side onlyï¼ˆç›´æŽ¥è¯» SystemSettingï¼‰ã€‚
  */
 import { getAiSettings } from "./settings";
 
@@ -20,7 +20,7 @@ export type ChatMessage =
 
 export interface AiChatOptions {
   messages: ChatMessage[];
-  model?: string; // 覆盖默认 textModel
+  model?: string; // è¦†ç›–é»˜è®¤ textModel
   maxTokens?: number;
   temperature?: number;
   timeoutMs?: number;
@@ -34,7 +34,7 @@ export interface AiChatResult {
 export class AiNotConfiguredError extends Error {
   constructor() {
     super(
-      "La IA no está configurada. Primero completá la clave de API en Configuración → Acceso a IA",
+      "La IA no estÃ¡ configurada. Primero completÃ¡ la clave de API en ConfiguraciÃ³n â†’ Acceso a IA",
     );
     this.name = "AiNotConfiguredError";
   }
@@ -63,7 +63,7 @@ async function callOpenAiCompatible(opts: {
     );
     if (!res.ok) {
       const body = await res.text();
-      throw new Error(`AI 请求Error (${res.status}): ${body.slice(0, 200)}`);
+      throw new Error(`AI è¯·æ±‚Error (${res.status}): ${body.slice(0, 200)}`);
     }
     return res.json();
   } finally {
@@ -96,7 +96,7 @@ export async function aiChat(input: AiChatOptions): Promise<AiChatResult> {
 }
 
 /**
- * 视觉识别：传 base64 / dataURL / URL 三选一，prompt 引导模型抽字段。
+ * è§†è§‰è¯†åˆ«ï¼šä¼  base64 / dataURL / URL ä¸‰é€‰ä¸€ï¼Œprompt å¼•å¯¼æ¨¡åž‹æŠ½å­—æ®µã€‚
  */
 export async function aiVision(input: {
   image: { dataUrl: string } | { url: string };
@@ -130,7 +130,7 @@ export async function aiVision(input: {
 }
 
 /**
- * 从 AI Volver文本中提取 JSON（容错：``` 包裹、前后有解释文字均能抽出）。
+ * ä»Ž AI Volveræ–‡æœ¬ä¸­æå– JSONï¼ˆå®¹é”™ï¼š``` åŒ…è£¹ã€å‰åŽæœ‰è§£é‡Šæ–‡å­—å‡èƒ½æŠ½å‡ºï¼‰ã€‚
  */
 export function extractJson<T = unknown>(content: string): T | null {
   const fenced = content.match(/```(?:json)?\s*([\s\S]*?)```/);
@@ -143,3 +143,4 @@ export function extractJson<T = unknown>(content: string): T | null {
     return null;
   }
 }
+

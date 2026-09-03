@@ -12,8 +12,9 @@ import { SealsView } from "./_components/seals-view";
 export default async function SealsPage({
   searchParams
 }: {
-  searchParams?: { new?: string; draftDocId?: string; matterId?: string; documentTitle?: string };
+  searchParams?: Promise<{ new?: string; draftDocId?: string; matterId?: string; documentTitle?: string }>;
 }) {
+  const params = await searchParams;
   const session = await getSession();
   if (!session?.user) return null;
 
@@ -36,12 +37,12 @@ export default async function SealsPage({
     })
   ]);
 
-  // 卷宗联动：?new=1&draftDocId=...&matterId=...&documentTitle=...
-  const presetFromQuery = searchParams?.new === "1"
+  // Vínculo con el expediente: ?new=1&draftDocId=...&matterId=...&documentTitle=...
+  const presetFromQuery = params?.new === "1"
     ? {
-        draftDocId: searchParams.draftDocId,
-        matterId: searchParams.matterId,
-        documentTitle: searchParams.documentTitle
+        draftDocId: params.draftDocId,
+        matterId: params.matterId,
+        documentTitle: params.documentTitle
       }
     : null;
 

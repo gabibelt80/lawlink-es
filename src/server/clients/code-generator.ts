@@ -1,11 +1,11 @@
-import { Prisma } from "@prisma/client";
+﻿import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 
 /**
- * v0.39: 原子生成Cliente编号 KH-{YYYY}-{4位流水}
+ * v0.39: åŽŸå­ç”ŸæˆClienteç¼–å· KH-{YYYY}-{4ä½æµæ°´}
  *
- * 计数器存在 SystemSetting，key 形如 `client-code-counter-2026`。
- * y matters/code-generator.ts 同款 Serializable 事务避免并发冲突。
+ * è®¡æ•°å™¨å­˜åœ¨ SystemSettingï¼Œkey å½¢å¦‚ `client-code-counter-2026`ã€‚
+ * y matters/code-generator.ts åŒæ¬¾ Serializable äº‹åŠ¡é¿å…å¹¶å‘å†²çªã€‚
  */
 export async function generateClientCode(): Promise<string> {
   const year = new Date().getFullYear();
@@ -29,3 +29,5 @@ export async function generateClientCode(): Promise<string> {
   const padded = String(next).padStart(4, "0");
   return `KH-${year}-${padded}`;
 }
+
+

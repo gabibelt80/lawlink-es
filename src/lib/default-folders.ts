@@ -1,24 +1,24 @@
-import type { MatterCategory } from "@prisma/client";
+﻿import type { MatterCategory } from "@prisma/client";
 import type { Prisma } from "@prisma/client";
 
 /**
- * v0.8 默认卷宗结构（按Caso类别）
- * 新建 Matter 时自动 seed；isDefault=true 不可删，可改名。
+ * v0.8 é»˜è®¤å·å®—ç»“æž„ï¼ˆæŒ‰Casoç±»åˆ«ï¼‰
+ * æ–°å»º Matter æ—¶è‡ªåŠ¨ seedï¼›isDefault=true ä¸å¯åˆ ï¼Œå¯æ”¹åã€‚
  */
 export const DEFAULT_FOLDERS_BY_CATEGORY: Record<MatterCategory, readonly string[]> = {
-  CIVIL_COMMERCIAL: ["收案", "立案", "委托手续", "证据", "程序文书", "庭审", "裁判", "Cerrar caso"],
-  LABOR_ARBITRATION: ["收案", "委托手续", "证据", "仲裁文书", "开庭", "裁决", "诉讼", "Cerrar caso"],
-  COMMERCIAL_ARBITRATION: ["收案", "委托手续", "证据", "仲裁文书", "开庭", "裁决", "Cerrar caso"],
-  ADMINISTRATIVE: ["收案", "立案", "委托手续", "证据", "程序文书", "庭审", "裁判", "Cerrar caso"],
-  CRIMINAL: ["收案", "委托手续", "阅卷", "会见", "取证", "庭前", "庭审", "判决y上诉", "Cerrar caso"],
-  NON_LITIGATION: ["立ítems", "调研", "工作底稿", "出具文件", "归档"],
-  LEGAL_COUNSEL: ["立ítems", "调研", "工作底稿", "出具文件", "归档"],
-  SPECIAL_PROJECT: ["立ítems", "调研", "工作底稿", "出具文件", "归档"]
+  CIVIL_COMMERCIAL: ["æ”¶æ¡ˆ", "ç«‹æ¡ˆ", "å§”æ‰˜æ‰‹ç»­", "è¯æ®", "ç¨‹åºæ–‡ä¹¦", "åº­å®¡", "è£åˆ¤", "Cerrar caso"],
+  LABOR_ARBITRATION: ["æ”¶æ¡ˆ", "å§”æ‰˜æ‰‹ç»­", "è¯æ®", "ä»²è£æ–‡ä¹¦", "å¼€åº­", "è£å†³", "è¯‰è®¼", "Cerrar caso"],
+  COMMERCIAL_ARBITRATION: ["æ”¶æ¡ˆ", "å§”æ‰˜æ‰‹ç»­", "è¯æ®", "ä»²è£æ–‡ä¹¦", "å¼€åº­", "è£å†³", "Cerrar caso"],
+  ADMINISTRATIVE: ["æ”¶æ¡ˆ", "ç«‹æ¡ˆ", "å§”æ‰˜æ‰‹ç»­", "è¯æ®", "ç¨‹åºæ–‡ä¹¦", "åº­å®¡", "è£åˆ¤", "Cerrar caso"],
+  CRIMINAL: ["æ”¶æ¡ˆ", "å§”æ‰˜æ‰‹ç»­", "é˜…å·", "ä¼šè§", "å–è¯", "åº­å‰", "åº­å®¡", "åˆ¤å†³yä¸Šè¯‰", "Cerrar caso"],
+  NON_LITIGATION: ["ç«‹Ã­tems", "è°ƒç ”", "å·¥ä½œåº•ç¨¿", "å‡ºå…·æ–‡ä»¶", "å½’æ¡£"],
+  LEGAL_COUNSEL: ["ç«‹Ã­tems", "è°ƒç ”", "å·¥ä½œåº•ç¨¿", "å‡ºå…·æ–‡ä»¶", "å½’æ¡£"],
+  SPECIAL_PROJECT: ["ç«‹Ã­tems", "è°ƒç ”", "å·¥ä½œåº•ç¨¿", "å‡ºå…·æ–‡ä»¶", "å½’æ¡£"]
 } as const;
 
 /**
- * 在事务中为新 Matter Crear默认卷宗。
- * 调用方提供 tx；本函数只写库，不做权限/校验。
+ * åœ¨äº‹åŠ¡ä¸­ä¸ºæ–° Matter Crearé»˜è®¤å·å®—ã€‚
+ * è°ƒç”¨æ–¹æä¾› txï¼›æœ¬å‡½æ•°åªå†™åº“ï¼Œä¸åšæƒé™/æ ¡éªŒã€‚
  */
 export async function seedDefaultFolders(
   tx: Prisma.TransactionClient,
@@ -38,8 +38,8 @@ export async function seedDefaultFolders(
 }
 
 /**
- * 按模板大类推荐默认归档卷宗名（用于"从模板新建"时自动选目标卷宗）。
- * 推荐不到时Volver null，由 UI 让用户手选。
+ * æŒ‰æ¨¡æ¿å¤§ç±»æŽ¨èé»˜è®¤å½’æ¡£å·å®—åï¼ˆç”¨äºŽ"ä»Žæ¨¡æ¿æ–°å»º"æ—¶è‡ªåŠ¨é€‰ç›®æ ‡å·å®—ï¼‰ã€‚
+ * æŽ¨èä¸åˆ°æ—¶Volver nullï¼Œç”± UI è®©ç”¨æˆ·æ‰‹é€‰ã€‚
  */
 export function suggestFolderByTemplateCategory(
   templateCategory: string,
@@ -51,27 +51,28 @@ export function suggestFolderByTemplateCategory(
     matterCategory === "CRIMINAL";
 
   const mapLitigation: Record<string, string> = {
-    INTAKE: "收案",
-    RETAINER: "委托手续",
-    LITIGATION: matterCategory === "CRIMINAL" ? "庭前" : "程序文书",
-    HEARING: matterCategory === "CRIMINAL" ? "庭审" : "庭审",
-    WORK_PRODUCT: matterCategory === "CRIMINAL" ? "取证" : "证据",
+    INTAKE: "æ”¶æ¡ˆ",
+    RETAINER: "å§”æ‰˜æ‰‹ç»­",
+    LITIGATION: matterCategory === "CRIMINAL" ? "åº­å‰" : "ç¨‹åºæ–‡ä¹¦",
+    HEARING: matterCategory === "CRIMINAL" ? "åº­å®¡" : "åº­å®¡",
+    WORK_PRODUCT: matterCategory === "CRIMINAL" ? "å–è¯" : "è¯æ®",
     ARCHIVE: matterCategory === "CRIMINAL" ? "Cerrar caso" : "Cerrar caso",
     CLOSING: "Cerrar caso",
-    BLANK: matterCategory === "CRIMINAL" ? "收案" : "收案"
+    BLANK: matterCategory === "CRIMINAL" ? "æ”¶æ¡ˆ" : "æ”¶æ¡ˆ"
   };
 
   const mapNonLitigation: Record<string, string> = {
-    INTAKE: "立ítems",
-    RETAINER: "立ítems",
-    LITIGATION: "出具文件",
-    HEARING: "工作底稿",
-    WORK_PRODUCT: "出具文件",
-    ARCHIVE: "归档",
-    CLOSING: "归档",
-    BLANK: "工作底稿"
+    INTAKE: "ç«‹Ã­tems",
+    RETAINER: "ç«‹Ã­tems",
+    LITIGATION: "å‡ºå…·æ–‡ä»¶",
+    HEARING: "å·¥ä½œåº•ç¨¿",
+    WORK_PRODUCT: "å‡ºå…·æ–‡ä»¶",
+    ARCHIVE: "å½’æ¡£",
+    CLOSING: "å½’æ¡£",
+    BLANK: "å·¥ä½œåº•ç¨¿"
   };
 
   const map = isLitigation ? mapLitigation : mapNonLitigation;
   return map[templateCategory] ?? null;
 }
+

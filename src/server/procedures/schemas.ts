@@ -1,4 +1,4 @@
-import { z } from "zod";
+﻿import { z } from "zod";
 import { procedureTypeSchema } from "@/server/matters/schemas";
 
 export const procedureEngagementSchema = z.enum(["ENGAGED", "INFORMATIONAL"]);
@@ -28,7 +28,7 @@ export const procedureCreateSchema = z.object({
   panel: z.string().max(80).optional().or(z.literal("")),
   handler: z.string().max(40).optional().or(z.literal("")),
   acceptedAt: z.string().optional().nullable().transform(v => (!v ? undefined : new Date(v))),
-  // v0.44: 主办Abogado
+  // v0.44: ä¸»åŠžAbogado
   leadLawyerId: z.string().cuid().optional().nullable(),
   isExternalLead: z.boolean().default(false)
 });
@@ -63,7 +63,7 @@ export const deadlineCategorySchema = z.enum([
 
 export const deadlineCreateSchema = z.object({
   procedureId: z.string().cuid(),
-  title: z.string().min(1, "PlazoNombre必填").max(100),
+  title: z.string().min(1, "PlazoNombreå¿…å¡«").max(100),
   category: deadlineCategorySchema.default("CUSTOM"),
   dueAt: z.coerce.date(),
   basis: z.string().max(200).optional().or(z.literal("")),
@@ -72,7 +72,7 @@ export const deadlineCreateSchema = z.object({
 
 export const hearingCreateSchema = z.object({
   procedureId: z.string().cuid(),
-  title: z.string().min(1, "开庭主题必填").max(80),
+  title: z.string().min(1, "å¼€åº­ä¸»é¢˜å¿…å¡«").max(80),
   startsAt: z.coerce.date(),
   endsAt: z.coerce.date().optional(),
   room: z.string().max(40).optional().or(z.literal("")),
@@ -84,8 +84,8 @@ export const hearingCreateSchema = z.object({
 
 export const procedureStageCreateSchema = z.object({
   procedureId: z.string().cuid(),
-  name: z.string().trim().min(1, "环节Nombre必填").max(40, "环节Nombre不能超过 40 个字"),
-  description: z.string().max(500, "说明不能超过 500 个字").optional().or(z.literal("")),
+  name: z.string().trim().min(1, "çŽ¯èŠ‚Nombreå¿…å¡«").max(40, "çŽ¯èŠ‚Nombreä¸èƒ½è¶…è¿‡ 40 ä¸ªå­—"),
+  description: z.string().max(500, "è¯´æ˜Žä¸èƒ½è¶…è¿‡ 500 ä¸ªå­—").optional().or(z.literal("")),
   insertPosition: z.enum(["START", "END", "AFTER"]).default("END"),
   insertAfterStageId: z.string().cuid().optional().or(z.literal("")),
   insertAfterStageName: z.string().max(40).optional().or(z.literal(""))
@@ -101,3 +101,5 @@ export type DeadlineCreateInput = z.infer<typeof deadlineCreateSchema>;
 export type HearingCreateInput = z.infer<typeof hearingCreateSchema>;
 export type ProcedureStageCreateInput = z.infer<typeof procedureStageCreateSchema>;
 export type ProcedureStageRemoveInput = z.infer<typeof procedureStageRemoveSchema>;
+
+

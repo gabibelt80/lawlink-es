@@ -1,9 +1,9 @@
-"use server";
+﻿"use server";
 
 /**
- * v0.44: OCR de cédula de notificación judicial
+ * v0.44: OCR de cÃ©dula de notificaciÃ³n judicial
  *
- * El abogado carga una imagen de la cédula → aiVision extrae fecha de audiencia, hora, sala, número de caso, juez, partes
+ * El abogado carga una imagen de la cÃ©dula â†’ aiVision extrae fecha de audiencia, hora, sala, nÃºmero de caso, juez, partes
  * Si falla, retorna campos null para que el abogado complete manualmente
  */
 import { requireSession } from "@/lib/auth/session";
@@ -13,7 +13,7 @@ export type ParsedSummons = {
   hearingDate: string | null; // YYYY-MM-DD
   hearingTime: string | null; // HH:mm
   courtRoom: string | null; // Sala (ej.: Sala 3)
-  caseNumber: string | null; // Número de expediente
+  caseNumber: string | null; // NÃºmero de expediente
   judge: string | null; // Nombre del juez
   parties: string[] | null; // Lista de partes
 };
@@ -26,20 +26,20 @@ const SUPPORTED = new Set([
   "application/pdf",
 ]);
 
-const PROMPT = `La siguiente imagen es una cédula de notificación judicial argentina (cédula de audiencia). Devolvé estrictamente JSON:
+const PROMPT = `La siguiente imagen es una cÃ©dula de notificaciÃ³n judicial argentina (cÃ©dula de audiencia). DevolvÃ© estrictamente JSON:
 {
   "hearingDate": "Fecha de audiencia (YYYY-MM-DD)",
   "hearingTime": "Hora de audiencia (HH:mm, formato 24h)",
   "courtRoom": "Lugar de audiencia / sala (ej.: Sala 3)",
-  "caseNumber": "Número de expediente",
+  "caseNumber": "NÃºmero de expediente",
   "judge": "Nombre del juez",
   "parties": ["Nombre del actor/apelante", "Nombre del demandado/apelado"]
 }
 Reglas:
-- Extraé estrictamente según el contenido de la cédula, los campos no reconocidos van null
+- ExtraÃ© estrictamente segÃºn el contenido de la cÃ©dula, los campos no reconocidos van null
 - hearingDate debe tener formato YYYY-MM-DD
 - hearingTime formato HH:mm
-- parties es un array con las partes indicadas en la cédula
+- parties es un array con las partes indicadas en la cÃ©dula
 - Solo JSON, sin explicaciones`;
 
 export async function parseSummons(form: FormData): Promise<ParsedSummons> {
@@ -48,7 +48,7 @@ export async function parseSummons(form: FormData): Promise<ParsedSummons> {
   if (!(file instanceof File)) throw new Error("Falta el archivo");
   if (!SUPPORTED.has(file.type)) {
     throw new Error(
-      `Solo se admiten imágenes (JPG/PNG); formato actual: ${file.type || "desconocido"}`,
+      `Solo se admiten imÃ¡genes (JPG/PNG); formato actual: ${file.type || "desconocido"}`,
     );
   }
   if (file.size > 10 * 1024 * 1024)
@@ -76,6 +76,7 @@ export async function parseSummons(form: FormData): Promise<ParsedSummons> {
     };
   } catch (err) {
     if (err instanceof AiNotConfiguredError) throw err;
-    throw new Error(err instanceof Error ? err.message : "Error al reconocer la cédula");
+    throw new Error(err instanceof Error ? err.message : "Error al reconocer la cÃ©dula");
   }
 }
+

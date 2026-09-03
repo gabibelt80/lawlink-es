@@ -1,13 +1,13 @@
-/**
- * v0.42 Configuración de información del estudio / sistema de numeración (ítems 1 + ítems 11)
+﻿/**
+ * v0.42 ConfiguraciÃ³n de informaciÃ³n del estudio / sistema de numeraciÃ³n (Ã­tems 1 + Ã­tems 11)
  *
  * Una sola clave SystemSetting `firmProfile`, value es JSON:
- *   - firmName / firmSubtitle / logoDataUrl: marca de la barra lateral (por defecto Juridictas / Panel de trabajo jurídico)
- *   - matterCodePrefix: prefijo de numeración interna (segmento LL del internalCode, por defecto LL)
- *   - firmShortName / caseNoTemplate / categoryWords: plantilla de número interno del estudio y mapeo de cada segmento
+ *   - firmName / firmSubtitle / logoDataUrl: marca de la barra lateral (por defecto Juridictas / Panel de trabajo jurÃ­dico)
+ *   - matterCodePrefix: prefijo de numeraciÃ³n interna (segmento LL del internalCode, por defecto LL)
+ *   - firmShortName / caseNoTemplate / categoryWords: plantilla de nÃºmero interno del estudio y mapeo de cada segmento
  *
- * Sigue el patrón de «clave única + lectura/escritura tipada» de src/lib/ai/settings.ts. El logo se guarda
- * directamente como data URL base64 (el logo del estudio es pequeño), evitando almacenamiento o rutas de servicio adicionales.
+ * Sigue el patrÃ³n de Â«clave Ãºnica + lectura/escritura tipadaÂ» de src/lib/ai/settings.ts. El logo se guarda
+ * directamente como data URL base64 (el logo del estudio es pequeÃ±o), evitando almacenamiento o rutas de servicio adicionales.
  */
 import type { MatterCategory } from "@prisma/client";
 
@@ -15,7 +15,7 @@ import { prisma } from "@/lib/prisma";
 
 const FIRM_PROFILE_KEY = "firmProfile";
 
-/** Mapeo por defecto de {palabraCat}: se puede editar por categoría en la página de Configuración */
+/** Mapeo por defecto de {palabraCat}: se puede editar por categorÃ­a en la pÃ¡gina de ConfiguraciÃ³n */
 export const CATEGORY_WORD_DEFAULTS: Record<MatterCategory, string> = {
   CIVIL_COMMERCIAL: "Civil",
   LABOR_ARBITRATION: "Laboral",
@@ -23,7 +23,7 @@ export const CATEGORY_WORD_DEFAULTS: Record<MatterCategory, string> = {
   CRIMINAL: "Penal",
   ADMINISTRATIVE: "Admin",
   NON_LITIGATION: "NoCont",
-  LEGAL_COUNSEL: "Asesoría",
+  LEGAL_COUNSEL: "AsesorÃ­a",
   SPECIAL_PROJECT: "Proyecto"
 };
 
@@ -51,11 +51,11 @@ export interface FirmProfile {
 
 export const FIRM_PROFILE_DEFAULTS: FirmProfile = {
   firmName: "Juridictas",
-  firmSubtitle: "Panel de trabajo jurídico",
+  firmSubtitle: "Panel de trabajo jurÃ­dico",
   logoDataUrl: null,
   matterCodePrefix: "LL",
   firmShortName: "",
-  caseNoTemplate: "{año}-{est}{palabraCat}-{sec3}",
+  caseNoTemplate: "{aÃ±o}-{est}{palabraCat}-{sec3}",
   categoryWords: CATEGORY_WORD_DEFAULTS
 };
 
@@ -75,7 +75,7 @@ export async function getFirmProfile(): Promise<FirmProfile> {
 
 export async function saveFirmProfile(patch: Partial<FirmProfile>): Promise<FirmProfile> {
   const current = await getFirmProfile();
-  // Fusión explícita campo por campo: undefined significa «no cambiar» (el spread de objetos sobrescribiría con undefined, por eso no se usa).
+  // FusiÃ³n explÃ­cita campo por campo: undefined significa Â«no cambiarÂ» (el spread de objetos sobrescribirÃ­a con undefined, por eso no se usa).
   // logoDataUrl es especial: undefined = conservar, null = eliminar.
   const next: FirmProfile = {
     firmName: patch.firmName ?? current.firmName,
@@ -93,3 +93,4 @@ export async function saveFirmProfile(patch: Partial<FirmProfile>): Promise<Firm
   });
   return next;
 }
+

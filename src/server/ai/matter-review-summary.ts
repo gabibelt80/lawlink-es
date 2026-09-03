@@ -1,5 +1,5 @@
-/**
- * v0.22: Resumen de revisión de IA a nivel de caso (agregación de todos los registros de revisión del caso)
+﻿/**
+ * v0.22: Resumen de revisiÃ³n de IA a nivel de caso (agregaciÃ³n de todos los registros de revisiÃ³n del caso)
  *
  * Solo lectura, sin "use server", llamado directamente por server component.
  */
@@ -25,7 +25,7 @@ export type MatterReviewSummary = {
   documentCount: number;
   totalItems: number;
   bySeverity: Record<ReviewSeverity, number>;
-  topHighItems: MatterReviewTopItem[]; // máximo 3
+  topHighItems: MatterReviewTopItem[]; // mÃ¡ximo 3
   latestReviewedAt: Date | null;
 };
 
@@ -52,7 +52,7 @@ export async function getMatterReviewSummary(
     LOW: 0,
   };
   let totalItems = 0;
-  // Recolecta todos los HIGH, en orden descendente por reviewedAt (los registros ya están en orden), toma los 3 títulos distintos más recientes
+  // Recolecta todos los HIGH, en orden descendente por reviewedAt (los registros ya estÃ¡n en orden), toma los 3 tÃ­tulos distintos mÃ¡s recientes
   const seenTitles = new Set<string>();
   const topHigh: MatterReviewTopItem[] = [];
   let latest: Date | null = null;
@@ -93,3 +93,4 @@ export async function getMatterReviewSummary(
     latestReviewedAt: latest,
   };
 }
+

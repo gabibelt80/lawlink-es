@@ -1,7 +1,7 @@
-"use server";
+﻿"use server";
 
 /**
- * v0.20: Guardar el resultado de revisión de IA de un documento como Document del caso (modelo simétrico al archivo de casos similares A3)
+ * v0.20: Guardar el resultado de revisiÃ³n de IA de un documento como Document del caso (modelo simÃ©trico al archivo de casos similares A3)
  */
 import { getTenantPrisma } from "@/lib/tenant-prisma";
 import { requireSession } from "@/lib/auth/session";
@@ -19,7 +19,7 @@ import { revalidateMatter } from "@/server/matters/route";
 const TYPE_CN: Record<ReviewType, string> = {
   MISSING: "Elementos faltantes",
   RISK: "Riesgo legal",
-  ISSUE: "Problemas de cláusulas",
+  ISSUE: "Problemas de clÃ¡usulas",
   SUGGESTION: "Sugerencias de mejora",
 };
 
@@ -36,16 +36,16 @@ function safeFileName(name: string): string {
 function buildMarkdown(reviewedDocName: string, items: ReviewItem[]): string {
   const now = new Date().toLocaleString("es-AR");
   const lines: string[] = [
-    `# Resultado de revisión de IA: ${reviewedDocName}`,
+    `# Resultado de revisiÃ³n de IA: ${reviewedDocName}`,
     "",
-    `- **Fecha de revisión**: ${now}`,
+    `- **Fecha de revisiÃ³n**: ${now}`,
     `- **Cantidad de hallazgos**: ${items.length}`,
     "",
     "---",
     "",
   ];
   if (items.length === 0) {
-    lines.push("> La IA no encontró problemas evidentes.");
+    lines.push("> La IA no encontrÃ³ problemas evidentes.");
     return lines.join("\n");
   }
   // Agrupar por tipo
@@ -83,7 +83,7 @@ export async function saveReviewToMatter(input: {
   });
   if (!matter) throw new Error("Caso no encontrado");
   if (matter.status === "ARCHIVED") {
-    throw new Error("Caso archivado (solo lectura), no se puede guardar el resultado de revisión");
+    throw new Error("Caso archivado (solo lectura), no se puede guardar el resultado de revisiÃ³n");
   }
 
   const md = buildMarkdown(input.reviewedDocName, input.items);
@@ -104,7 +104,7 @@ export async function saveReviewToMatter(input: {
       size: buf.byteLength,
       sha256: hash,
       encrypted: false,
-      tags: ["Revisión IA", "Archivo"],
+      tags: ["RevisiÃ³n IA", "Archivo"],
     },
     select: { id: true, name: true },
   });
@@ -125,3 +125,4 @@ export async function saveReviewToMatter(input: {
   await revalidateMatter(input.matterId);
   return { ok: true, documentId: doc.id, documentName: doc.name };
 }
+

@@ -1,4 +1,4 @@
-"use server";
+﻿"use server";
 
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
@@ -8,8 +8,8 @@ import { assertCanAccessMatter } from "@/lib/permissions";
 const procedureIdSchema = z.object({ procedureId: z.string().cuid() });
 
 /**
- * v0.49：列出适用于指定程序的法定Plazo规则（按程序类型 + Caso类别过滤）。
- * 生成Plazo本身仍走 addDeadline（单一Enviar路径，权限校验不重复实现）。
+ * v0.49ï¼šåˆ—å‡ºé€‚ç”¨äºŽæŒ‡å®šç¨‹åºçš„æ³•å®šPlazoè§„åˆ™ï¼ˆæŒ‰ç¨‹åºç±»åž‹ + Casoç±»åˆ«è¿‡æ»¤ï¼‰ã€‚
+ * ç”ŸæˆPlazoæœ¬èº«ä»èµ° addDeadlineï¼ˆå•ä¸€Enviarè·¯å¾„ï¼Œæƒé™æ ¡éªŒä¸é‡å¤å®žçŽ°ï¼‰ã€‚
  */
 export async function listDeadlineRulesForProcedure(input: { procedureId: string }) {
   const session = await requireSession();
@@ -23,7 +23,7 @@ export async function listDeadlineRulesForProcedure(input: { procedureId: string
       matter: { select: { category: true } }
     }
   });
-  if (!procedure) throw new Error("程序不存在");
+  if (!procedure) throw new Error("ç¨‹åºä¸å­˜åœ¨");
   await assertCanAccessMatter(session.user.id, session.user.role, procedure.matterId);
 
   return prisma.deadlineRule.findMany({
@@ -33,13 +33,13 @@ export async function listDeadlineRulesForProcedure(input: { procedureId: string
         {
           OR: [
             { applicableProcedures: { isEmpty: true } },
-            { applicableProcedures: { has: procedure.type } }
+            { applicableProcedures: { array_contains: procedure.type } }
           ]
         },
         {
           OR: [
-            { applicableCategories: { isEmpty: true } },
-            { applicableCategories: { has: procedure.matter.category } }
+            { applicableCategories: { equals: [] } },
+            { applicableCategories: { array_contains: procedure.matter.category } }
           ]
         }
       ]
@@ -61,3 +61,5 @@ export async function listDeadlineRulesForProcedure(input: { procedureId: string
     }
   });
 }
+
+

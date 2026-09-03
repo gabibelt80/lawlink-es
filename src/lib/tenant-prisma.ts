@@ -1,4 +1,4 @@
-import { PrismaClient } from "@prisma/client";
+﻿import { PrismaClient } from "@prisma/client";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth/options";
 import { cache } from "react";
@@ -13,14 +13,14 @@ const tenantClients = new Map<string, PrismaClient>();
 
 /**
  * Obtiene el cliente Prisma para el schema del estudio del usuario logueado.
- * Usa cache de React para evitar crear múltiples clientes en una misma request.
+ * Usa cache de React para evitar crear mÃºltiples clientes en una misma request.
  */
 export const getTenantPrisma = cache(async () => {
   const session = await getServerSession(authOptions);
   const firmSlug = session?.user?.firmSlug;
 
   if (!firmSlug) {
-    // Sin sesión o admin del sistema → devolvemos el central
+    // Sin sesiÃ³n o admin del sistema â†’ devolvemos el central
     return centralPrisma;
   }
 
@@ -43,7 +43,7 @@ export const getTenantPrisma = cache(async () => {
 });
 
 /**
- * Cierra todos los clientes de tenant (útil para tests o cierre del servidor).
+ * Cierra todos los clientes de tenant (Ãºtil para tests o cierre del servidor).
  */
 export async function closeAllTenantClients() {
   for (const client of tenantClients.values()) {

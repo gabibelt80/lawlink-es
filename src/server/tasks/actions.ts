@@ -1,4 +1,4 @@
-"use server";
+﻿"use server";
 
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
@@ -11,7 +11,7 @@ import { matterHrefById, revalidateMatter } from "@/server/matters/route";
 
 const taskCreateSchema = z.object({
   matterId: z.string().cuid(),
-  title: z.string().min(1, "事ítems标题必填").max(200),
+  title: z.string().min(1, "äº‹Ã­temsæ ‡é¢˜å¿…å¡«").max(200),
   description: z.string().max(2000).optional().or(z.literal("")),
   assigneeId: z.string().cuid().optional().or(z.literal("")),
   dueAt: z.coerce.date().optional(),
@@ -52,25 +52,25 @@ export async function createTask(input: TaskCreateInput) {
     detail: { matterId: data.matterId, title: created.title }
   });
 
-  // v0.43 ítems4：写入Caso动态时间线
+  // v0.43 Ã­tems4ï¼šå†™å…¥CasoåŠ¨æ€æ—¶é—´çº¿
   await prisma.timelineEvent.create({
     data: {
       matterId: data.matterId,
       eventType: "TASK_ADDED",
-      title: `新增事ítems：${created.title}`,
+      title: `æ–°å¢žäº‹Ã­temsï¼š${created.title}`,
       occurredAt: new Date(),
       refType: "Task",
       refId: created.id
     }
   });
 
-  // Notificaciones被指派人（非Crear者本人时）
+  // Notificacionesè¢«æŒ‡æ´¾äººï¼ˆéžCrearè€…æœ¬äººæ—¶ï¼‰
   if (data.assigneeId && data.assigneeId !== session.user.id) {
     await createNotification({
       userId: data.assigneeId,
       type: "TASK_ASSIGNED",
-      title: "您有新事ítems",
-      content: `事ítems「${created.title}」已指派给您`,
+      title: "æ‚¨æœ‰æ–°äº‹Ã­tems",
+      content: `äº‹Ã­temsã€Œ${created.title}ã€å·²æŒ‡æ´¾ç»™æ‚¨`,
       href: await matterHrefById(data.matterId),
       refType: "Task",
       refId: created.id
@@ -157,3 +157,5 @@ export async function deleteTask(id: string) {
   await revalidateMatter(current.matterId);
   return { ok: true };
 }
+
+

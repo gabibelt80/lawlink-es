@@ -1,8 +1,8 @@
-import { z } from "zod";
+﻿import { z } from "zod";
 
 export const folderCreateSchema = z.object({
   matterId: z.string().cuid(),
-  name: z.string().min(1, "卷宗名必填").max(40, "卷宗名最长 40 字")
+  name: z.string().min(1, "å·å®—åå¿…å¡«").max(40, "å·å®—åæœ€é•¿ 40 å­—")
 });
 
 export const folderRenameSchema = z.object({
@@ -23,3 +23,5 @@ export const moveDocumentToFolderSchema = z.object({
   documentId: z.string().cuid(),
   folderId: z.string().cuid().nullable()
 });
+
+

@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+﻿import { describe, expect, it } from "vitest";
 import {
   addDays,
   defaultDurationDays,
@@ -11,8 +11,8 @@ const d = (s: string) => new Date(`${s}T00:00:00`);
 const f = (x: Date) =>
   `${x.getFullYear()}-${`${x.getMonth() + 1}`.padStart(2, "0")}-${`${x.getDate()}`.padStart(2, "0")}`;
 
-describe("PreservaciónPlazo年限（民诉法解释第 485 条）", () => {
-  it("银行存款一年、动产两年、不动产y其他财产权三年", () => {
+describe("PreservaciÃ³nPlazoå¹´é™ï¼ˆæ°‘è¯‰æ³•è§£é‡Šç¬¬ 485 æ¡ï¼‰", () => {
+  it("é“¶è¡Œå­˜æ¬¾ä¸€å¹´ã€åŠ¨äº§ä¸¤å¹´ã€ä¸åŠ¨äº§yå…¶ä»–è´¢äº§æƒä¸‰å¹´", () => {
     expect(PRESERVATION_DURATION_YEARS.BANK_DEPOSIT).toBe(1);
     expect(PRESERVATION_DURATION_YEARS.VEHICLE).toBe(2);
     expect(PRESERVATION_DURATION_YEARS.OTHER).toBe(2);
@@ -21,31 +21,31 @@ describe("PreservaciónPlazo年限（民诉法解释第 485 条）", () => {
     expect(PRESERVATION_DURATION_YEARS.IP).toBe(3);
   });
 
-  it("Tipo desconocido回退两年", () => {
+  it("Tipo desconocidoå›žé€€ä¸¤å¹´", () => {
     expect(preservationDurationYears("VEHICLE")).toBe(2);
   });
 });
 
-describe("defaultExpiryDate 按日历年推进", () => {
-  it("跨闰年不再少算一días（旧实现 730 días会得到 06-14）", () => {
+describe("defaultExpiryDate æŒ‰æ—¥åŽ†å¹´æŽ¨è¿›", () => {
+  it("è·¨é—°å¹´ä¸å†å°‘ç®—ä¸€dÃ­asï¼ˆæ—§å®žçŽ° 730 dÃ­asä¼šå¾—åˆ° 06-14ï¼‰", () => {
     expect(f(defaultExpiryDate(d("2027-06-15"), "VEHICLE"))).toBe("2029-06-15");
   });
 
-  it("不动产三年跨闰年（旧实现 1095 días会得到 05-19）", () => {
+  it("ä¸åŠ¨äº§ä¸‰å¹´è·¨é—°å¹´ï¼ˆæ—§å®žçŽ° 1095 dÃ­asä¼šå¾—åˆ° 05-19ï¼‰", () => {
     expect(f(defaultExpiryDate(d("2026-05-20"), "REAL_ESTATE"))).toBe("2029-05-20");
   });
 
-  it("平年区间y日历年一致", () => {
+  it("å¹³å¹´åŒºé—´yæ—¥åŽ†å¹´ä¸€è‡´", () => {
     expect(f(defaultExpiryDate(d("2029-03-01"), "BANK_DEPOSIT"))).toBe("2030-03-01");
   });
 
-  it("2 月 29 日起算，到期年无对应日时取当月最后一日", () => {
+  it("2 æœˆ 29 æ—¥èµ·ç®—ï¼Œåˆ°æœŸå¹´æ— å¯¹åº”æ—¥æ—¶å–å½“æœˆæœ€åŽä¸€æ—¥", () => {
     expect(f(defaultExpiryDate(d("2028-02-29"), "BANK_DEPOSIT"))).toBe("2029-02-28");
   });
 });
 
-describe("defaultDurationDays yFecha de vencimiento同源", () => {
-  it("días数恰好etc.于起算日到Fecha de vencimiento的间隔", () => {
+describe("defaultDurationDays yFecha de vencimientoåŒæº", () => {
+  it("dÃ­asæ•°æ°å¥½etc.äºŽèµ·ç®—æ—¥åˆ°Fecha de vencimientoçš„é—´éš”", () => {
     for (const start of ["2027-06-15", "2026-05-20", "2029-03-01", "2028-02-29"]) {
       for (const t of ["BANK_DEPOSIT", "VEHICLE", "REAL_ESTATE"] as const) {
         const days = defaultDurationDays(d(start), t);
@@ -54,8 +54,9 @@ describe("defaultDurationDays yFecha de vencimiento同源", () => {
     }
   });
 
-  it("闰年区间比平年多一días", () => {
-    expect(defaultDurationDays(d("2027-06-15"), "VEHICLE")).toBe(731); // 含 2028-02-29
+  it("é—°å¹´åŒºé—´æ¯”å¹³å¹´å¤šä¸€dÃ­as", () => {
+    expect(defaultDurationDays(d("2027-06-15"), "VEHICLE")).toBe(731); // å« 2028-02-29
     expect(defaultDurationDays(d("2029-06-15"), "VEHICLE")).toBe(730);
   });
 });
+

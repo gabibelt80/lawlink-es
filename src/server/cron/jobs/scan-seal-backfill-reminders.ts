@@ -1,4 +1,4 @@
-import { prisma } from "@/lib/prisma";
+﻿import { prisma } from "@/lib/prisma";
 import { audit } from "@/server/audit";
 import { createNotification } from "@/server/notifications/create";
 
@@ -53,15 +53,15 @@ export async function scanSealBackfillReminders(): Promise<SealBackfillReminderS
     }
 
     const matterText = seal.matter
-      ? `Caso ${seal.matter.internalCode}·${seal.matter.title}`
-      : "未关联Caso";
+      ? `Caso ${seal.matter.internalCode}Â·${seal.matter.title}`
+      : "æœªå…³è”Caso";
 
     await createNotification({
       userId: seal.requestedById,
       type: "SEAL_STATUS_CHANGE",
       priority: "HIGH",
-      title: `请回填盖章件：${seal.code}`,
-      content: `${seal.documentTitle} · ${matterText}`,
+      title: `è¯·å›žå¡«ç›–ç« ä»¶ï¼š${seal.code}`,
+      content: `${seal.documentTitle} Â· ${matterText}`,
       href: `/approvals/seals?id=${seal.id}`,
       refType: REMINDER_REF_TYPE,
       refId: seal.id
@@ -84,3 +84,5 @@ export async function scanSealBackfillReminders(): Promise<SealBackfillReminderS
 
   return { scanned: seals.length, notified, suppressed };
 }
+
+

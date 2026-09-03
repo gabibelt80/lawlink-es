@@ -8,10 +8,8 @@ import { InvoiceRequestSheet } from "./invoice-request-sheet";
 import type { FinancePayload, UserOption } from "./matter-detail-tabs";
 
 /**
- * v0.12 重构：Finanzas面板瘦身
- * - Eliminar：合同板块 / 分成方案 / 快捷录入 / 收付流水（5 类）
- * - 保留：Abogado费到账列表（仅 RECEIVED 类型）+ 顶部小计 + 申请开票按钮
- * - 数据主要由后台Finanzas人员录入，Caso页只读
+ * v0.12: Panel de finanzas simplificado
+ * - Solo muestra pagos recibidos + totales + boton de factura
  */
 export function FinancePanel({
   matterId,
@@ -44,19 +42,18 @@ export function FinancePanel({
     className?: string;
   }[] = [
     {
-      label: "合同约定Abogado费",
+      label: "Honorarios pactados",
       value: stats.contractAmount,
       tone: "neutral",
       className: "col-span-3",
     },
-    { label: "已收", value: stats.received, tone: "emerald" },
-    { label: "待收", value: outstanding, tone: "amber" },
+    { label: "Cobrado", value: stats.received, tone: "emerald" },
+    { label: "Por cobrar", value: outstanding, tone: "amber" },
     { label: "Egresos", value: stats.cost, tone: "red" },
-    // v1.0: 分成降级——没配分成方案的Caso不展示该卡（独立Abogado无此概念）
     ...(stats.commission > 0
       ? [
           {
-            label: "分成",
+            label: "Comision",
             value: stats.commission,
             tone: "neutral" as StatTone,
           },
@@ -76,7 +73,7 @@ export function FinancePanel({
         <div className="flex flex-wrap items-center justify-between gap-2">
           <span className="flex items-center gap-1.5 text-[13px] font-medium">
             <Wallet className="h-3.5 w-3.5 text-primary" />
-            Gastos de Finanzas
+            Finanzas
           </span>
           {canRequestInvoice && (
             <Button
@@ -91,7 +88,6 @@ export function FinancePanel({
         </div>
       </header>
 
-      {/* 紧凑指标卡（对照Caso云"FinanzasVista general"指标看板） */}
       <div
         className={
           compact
@@ -113,7 +109,7 @@ export function FinancePanel({
 
       {received.length === 0 ? (
         <p className="py-6 text-center text-xs text-muted-foreground">
-          暂无到账记录（由FinanzasAdministrar人员后台录入）
+          Sin registros de cobros (ingresados por el personal de Finanzas)
         </p>
       ) : (
         <ul className="divide-y divide-border">
@@ -144,7 +140,7 @@ export function FinancePanel({
                 )}
               </span>
               <span className="shrink-0 font-mono text-[11px] tabular text-muted-foreground">
-                {new Date(e.occurredAt).toLocaleDateString("zh-CN")}
+                {new Date(e.occurredAt).toLocaleDateString("es-AR")}
               </span>
             </li>
           ))}

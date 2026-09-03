@@ -1,4 +1,4 @@
-"use server";
+﻿"use server";
 
 import bcrypt from "bcryptjs";
 import { prisma, createTenantSchema, migrateTenantSchema, dropTenantSchema } from "@/lib/tenant";
@@ -82,3 +82,4 @@ export async function updateFirmPlanAction({ firmId, plan }: { firmId: string; p
   await activatePlan(firmId, plan);
   return { ok: true };
 }
+

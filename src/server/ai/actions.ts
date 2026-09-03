@@ -1,4 +1,4 @@
-"use server";
+﻿"use server";
 
 import { requireSession } from "@/lib/auth/session";
 import { audit } from "@/server/audit";
@@ -23,26 +23,26 @@ export interface RecognizedInvoice {
   remark?: string;
 }
 
-const PROMPT = `Reconocé la información de esta imagen de factura argentina y devolvé JSON:
+const PROMPT = `ReconocÃ© la informaciÃ³n de esta imagen de factura argentina y devolvÃ© JSON:
 
 {
-  "invoiceType": "Tipo de factura (ej.: Factura A, Factura B, Factura C, Factura electrónica)",
-  "invoiceCode": "Código de factura (si tiene)",
-  "invoiceNumber": "Número de factura",
-  "invoiceDate": "Fecha de emisión YYYY-MM-DD",
+  "invoiceType": "Tipo de factura (ej.: Factura A, Factura B, Factura C, Factura electrÃ³nica)",
+  "invoiceCode": "CÃ³digo de factura (si tiene)",
+  "invoiceNumber": "NÃºmero de factura",
+  "invoiceDate": "Fecha de emisiÃ³n YYYY-MM-DD",
   "sellerName": "Nombre del vendedor",
   "sellerTaxId": "CUIT del vendedor",
   "buyerName": "Nombre del comprador",
   "buyerTaxId": "CUIT del comprador",
-  "totalAmount": "Monto total (número)",
-  "taxAmount": "Monto de impuestos (número)",
-  "totalWithTax": "Total con impuestos (número)",
-  "items": [{"name": "Nombre del ítem", "amount": Monto numérico, "taxRate": "Tasa de impuesto como texto"}],
-  "checkCode": "Código de verificación (últimos 6 dígitos)",
+  "totalAmount": "Monto total (nÃºmero)",
+  "taxAmount": "Monto de impuestos (nÃºmero)",
+  "totalWithTax": "Total con impuestos (nÃºmero)",
+  "items": [{"name": "Nombre del Ã­tem", "amount": Monto numÃ©rico, "taxRate": "Tasa de impuesto como texto"}],
+  "checkCode": "CÃ³digo de verificaciÃ³n (Ãºltimos 6 dÃ­gitos)",
   "remark": "Observaciones"
 }
 
-Respondé solo JSON, sin texto adicional. Los campos no reconocidos van vacíos u omitidos.`;
+RespondÃ© solo JSON, sin texto adicional. Los campos no reconocidos van vacÃ­os u omitidos.`;
 
 export async function recognizeInvoiceFromImage(
   formData: FormData,
@@ -54,7 +54,7 @@ export async function recognizeInvoiceFromImage(
 
   const file = formData.get("file");
   if (!(file instanceof File) || file.size === 0) {
-    return { ok: false, message: "Por favor, subí la imagen de la factura" };
+    return { ok: false, message: "Por favor, subÃ­ la imagen de la factura" };
   }
   if (file.size > MAX_IMAGE_SIZE) {
     return {
@@ -62,12 +62,12 @@ export async function recognizeInvoiceFromImage(
       message: `La imagen supera ${MAX_IMAGE_SIZE / 1024 / 1024} MB`,
     };
   }
-  // v0.11: PDF también permitido, pero el reconocimiento depende de si el modelo de visión soporta PDF nativamente
-  // Si el modelo no reconoce PDF, aiVision devolverá un error claro
+  // v0.11: PDF tambiÃ©n permitido, pero el reconocimiento depende de si el modelo de visiÃ³n soporta PDF nativamente
+  // Si el modelo no reconoce PDF, aiVision devolverÃ¡ un error claro
   const isImage = file.type.startsWith("image/");
   const isPdf = file.type === "application/pdf";
   if (!isImage && !isPdf) {
-    return { ok: false, message: "Solo se admiten imágenes o PDF" };
+    return { ok: false, message: "Solo se admiten imÃ¡genes o PDF" };
   }
 
   const buf = Buffer.from(await file.arrayBuffer());
@@ -107,3 +107,4 @@ export async function recognizeInvoiceFromImage(
     };
   }
 }
+

@@ -1,16 +1,16 @@
-/**
- * v0.9.4 归档 ZIP 导出
+﻿/**
+ * v0.9.4 å½’æ¡£ ZIP å¯¼å‡º
  *
- * 结构：
+ * ç»“æž„ï¼š
  *   {archiveNo}/
- *     README.md                 — 归档说明 + 结构索引
- *     manifest.json             — 结构化全量数据（matter + parties + procedures + ...）
- *     封皮和目录/
- *       卷宗封皮.docx
- *       卷宗目录.docx
- *     材料/
+ *     README.md                 â€” å½’æ¡£è¯´æ˜Ž + ç»“æž„ç´¢å¼•
+ *     manifest.json             â€” ç»“æž„åŒ–å…¨é‡æ•°æ®ï¼ˆmatter + parties + procedures + ...ï¼‰
+ *     å°çš®å’Œç›®å½•/
+ *       å·å®—å°çš®.docx
+ *       å·å®—ç›®å½•.docx
+ *     ææ–™/
  *       {category}/
- *         {N}_{原文件名}
+ *         {N}_{åŽŸæ–‡ä»¶å}
  */
 import PizZip from "pizzip";
 import { prisma } from "@/lib/prisma";
@@ -25,12 +25,12 @@ interface ZipResult {
 }
 
 const CATEGORY_DIR: Record<string, string> = {
-  EVIDENCE: "证据",
-  PLEADING: "诉讼文书",
-  PROCEDURE: "程序文书",
-  JUDGMENT: "裁判文书",
-  CONTRACT: "合同",
-  OTHER: "其他",
+  EVIDENCE: "è¯æ®",
+  PLEADING: "è¯‰è®¼æ–‡ä¹¦",
+  PROCEDURE: "ç¨‹åºæ–‡ä¹¦",
+  JUDGMENT: "è£åˆ¤æ–‡ä¹¦",
+  CONTRACT: "åˆåŒ",
+  OTHER: "å…¶ä»–",
 };
 
 function safeName(s: string): string {
@@ -45,7 +45,7 @@ async function readDocumentBuffer(doc: {
 }): Promise<Buffer> {
   const raw = await storage.readFile(doc.path);
   if (!doc.encrypted) return raw;
-  if (!doc.iv || !doc.authTag) throw new Error("加密pesos数据损坏");
+  if (!doc.iv || !doc.authTag) throw new Error("åŠ å¯†pesosæ•°æ®æŸå");
   return decryptBuffer(raw, doc.iv, doc.authTag);
 }
 
@@ -76,7 +76,7 @@ export async function buildArchiveZip(matterId: string): Promise<ZipResult> {
   });
   if (!matter) throw new Error("No existe el caso");
   if (matter.archiveRecords.length === 0)
-    throw new Error("El caso aún no está archivado y no se puede exportar");
+    throw new Error("El caso aÃºn no estÃ¡ archivado y no se puede exportar");
 
   const archive = matter.archiveRecords[0];
   const docs = await prisma.document.findMany({
@@ -100,7 +100,7 @@ export async function buildArchiveZip(matterId: string): Promise<ZipResult> {
   const zip = new PizZip();
   const root = safeName(archive.archiveNo);
 
-  // ===== manifest.json：结构化数据快照（脱敏：Contraseña、apiKey、authTag etc.不导出）
+  // ===== manifest.jsonï¼šç»“æž„åŒ–æ•°æ®å¿«ç…§ï¼ˆè„±æ•ï¼šContraseÃ±aã€apiKeyã€authTag etc.ä¸å¯¼å‡ºï¼‰
   const manifest = {
     archiveNo: archive.archiveNo,
     archivedAt: archive.archivedAt.toISOString(),
@@ -171,7 +171,7 @@ export async function buildArchiveZip(matterId: string): Promise<ZipResult> {
       refType: e.refType,
       refId: e.refId,
     })),
-    // v0.48：Preservación改读三层模型，manifest 仍按"每ítems财产一条"扁平输出，字段y旧版兼容
+    // v0.48ï¼šPreservaciÃ³næ”¹è¯»ä¸‰å±‚æ¨¡åž‹ï¼Œmanifest ä»æŒ‰"æ¯Ã­temsè´¢äº§ä¸€æ¡"æ‰å¹³è¾“å‡ºï¼Œå­—æ®µyæ—§ç‰ˆå…¼å®¹
     preservations: matter.preservationCases.flatMap((c) =>
       c.targets.flatMap((t) =>
         t.properties.map((p) => ({
@@ -225,71 +225,71 @@ export async function buildArchiveZip(matterId: string): Promise<ZipResult> {
   const md = [
     `# ${matter.title}`,
     "",
-    `归档编号：**${archive.archiveNo}**  `,
-    `Caso编号：${matter.internalCode}  `,
-    `归档Fecha：${archive.archivedAt.toISOString().slice(0, 10)}  `,
-    `归档人：${archive.archivedBy}  `,
+    `å½’æ¡£ç¼–å·ï¼š**${archive.archiveNo}**  `,
+    `Casoç¼–å·ï¼š${matter.internalCode}  `,
+    `å½’æ¡£Fechaï¼š${archive.archivedAt.toISOString().slice(0, 10)}  `,
+    `å½’æ¡£äººï¼š${archive.archivedBy}  `,
     archive.completedAt
-      ? `Cerrar casoFecha：${archive.completedAt.toISOString().slice(0, 10)}`
+      ? `Cerrar casoFechaï¼š${archive.completedAt.toISOString().slice(0, 10)}`
       : "",
     "",
-    "## Cerrar caso小结",
+    "## Cerrar casoå°ç»“",
     "",
     archive.summary,
     "",
     archive.judgmentSummary
-      ? "## 裁判结果\n\n" + archive.judgmentSummary + "\n"
+      ? "## è£åˆ¤ç»“æžœ\n\n" + archive.judgmentSummary + "\n"
       : "",
-    "## 目录",
+    "## ç›®å½•",
     "",
-    "- `manifest.json` — Caso全量结构化数据（JSON 格式）",
-    "- `封皮和目录/` — 自动生成的卷宗封皮y卷宗目录",
-    "- `材料/` — Ver todos上传材料按类别分目录归档",
+    "- `manifest.json` â€” Casoå…¨é‡ç»“æž„åŒ–æ•°æ®ï¼ˆJSON æ ¼å¼ï¼‰",
+    "- `å°çš®å’Œç›®å½•/` â€” è‡ªåŠ¨ç”Ÿæˆçš„å·å®—å°çš®yå·å®—ç›®å½•",
+    "- `ææ–™/` â€” Ver todosä¸Šä¼ ææ–™æŒ‰ç±»åˆ«åˆ†ç›®å½•å½’æ¡£",
     "",
     archive.missingItems.length > 0
-      ? `⚠️ 归档时存在缺ítems：${archive.missingItems.length} ítems（详见 manifest.json）`
+      ? `âš ï¸ å½’æ¡£æ—¶å­˜åœ¨ç¼ºÃ­temsï¼š${archive.missingItems.length} Ã­temsï¼ˆè¯¦è§ manifest.jsonï¼‰`
       : "",
   ]
     .filter(Boolean)
     .join("\n");
   zip.file(`${root}/README.md`, md);
 
-  // ===== 封皮和目录
+  // ===== å°çš®å’Œç›®å½•
   if (archive.coverDocId) {
     const cover = docs.find((d) => d.id === archive.coverDocId);
     if (cover) {
       const buf = await readDocumentBuffer(cover);
-      zip.file(`${root}/封皮和目录/卷宗封皮.docx`, buf);
+      zip.file(`${root}/å°çš®å’Œç›®å½•/å·å®—å°çš®.docx`, buf);
     }
   }
   if (archive.catalogDocId) {
     const catalog = docs.find((d) => d.id === archive.catalogDocId);
     if (catalog) {
       const buf = await readDocumentBuffer(catalog);
-      zip.file(`${root}/封皮和目录/卷宗目录.docx`, buf);
+      zip.file(`${root}/å°çš®å’Œç›®å½•/å·å®—ç›®å½•.docx`, buf);
     }
   }
 
-  // ===== 材料：跳过已经放进"封皮和目录"的两份
+  // ===== ææ–™ï¼šè·³è¿‡å·²ç»æ”¾è¿›"å°çš®å’Œç›®å½•"çš„ä¸¤ä»½
   const skipIds = new Set(
     [archive.coverDocId, archive.catalogDocId].filter((x): x is string => !!x),
   );
   const seqByCategory: Record<string, number> = {};
   for (const d of docs) {
     if (skipIds.has(d.id)) continue;
-    const dir = CATEGORY_DIR[d.category] ?? "其他";
+    const dir = CATEGORY_DIR[d.category] ?? "å…¶ä»–";
     const n = (seqByCategory[dir] ?? 0) + 1;
     seqByCategory[dir] = n;
     try {
       const buf = await readDocumentBuffer(d);
       const seq = String(n).padStart(3, "0");
-      zip.file(`${root}/材料/${dir}/${seq}_${safeName(d.name)}`, buf);
+      zip.file(`${root}/ææ–™/${dir}/${seq}_${safeName(d.name)}`, buf);
     } catch (err) {
-      console.error(`[archive-export] 材料读取Error：${d.id}`, err);
-      // 单文件Error不阻断；写一条说明
+      console.error(`[archive-export] ææ–™è¯»å–Errorï¼š${d.id}`, err);
+      // å•æ–‡ä»¶Errorä¸é˜»æ–­ï¼›å†™ä¸€æ¡è¯´æ˜Ž
       zip.file(
-        `${root}/材料/${dir}/_读取Error_${safeName(d.name)}.txt`,
-        `该文件读取Error：${err instanceof Error ? err.message : String(err)}`,
+        `${root}/ææ–™/${dir}/_è¯»å–Error_${safeName(d.name)}.txt`,
+        `è¯¥æ–‡ä»¶è¯»å–Errorï¼š${err instanceof Error ? err.message : String(err)}`,
       );
     }
   }
@@ -302,3 +302,5 @@ export async function buildArchiveZip(matterId: string): Promise<ZipResult> {
     size: buffer.length,
   };
 }
+
+

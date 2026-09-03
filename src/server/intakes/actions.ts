@@ -1,8 +1,8 @@
-"use server";
+﻿"use server";
 
 import { revalidatePath } from "next/cache";
 import { Prisma, type ClientType, type LitigationStanding, type PartyType } from "@prisma/client";
-import { getTenantPrisma } from "@/lib/tenant-prisma";
+import { prisma } from "@/lib/prisma";
 import { requireSession } from "@/lib/auth/session";
 import { audit } from "@/server/audit";
 import { intakeVisibilityFilter } from "@/lib/permissions";
@@ -30,17 +30,18 @@ function emptyToNull<T extends Record<string, unknown>>(obj: T): T {
 
 function requireApprover(role: string) {
   if (role !== "ADMIN" && role !== "PRINCIPAL_LAWYER") {
-    throw new Error("Solo el administrador o el abogado principal puede aprobar admisiones");
+    throw new Error("Solo el administrador o el abogado principal pueden aprobar admisiones");
   }
 }
 
+/** Genera tÃ­tulo automÃ¡tico segÃºn {cliente} y {contraparte} {causa} */
 function generateTitle(
   clientName: string | null,
   opposingNames: string[],
   causeName: string | null
 ): string {
   const left = clientName || "Cliente pendiente";
-  const right = opposingNames.length > 0 ? opposingNames.join(" y ") : "Contraparte pendiente";
+  const right = opposingNames.length > 0 ? opposingNames.join(", ") : "Contraparte pendiente";
   const cause = causeName ?? "Caso";
   return `${left} y ${right} ${cause}`.replace(/\s+/g, "");
 }
@@ -94,7 +95,7 @@ function formatConflictQuery(q: IntakeConflictQuery) {
     OPPOSING_PARTY: "Contraparte",
     THIRD_PARTY: "Tercero"
   };
-  return `${roleLabel[q.role]} «${q.name || q.idNumber}»`;
+  return `${roleLabel[q.role]} Â«${q.name || q.idNumber}Â»`;
 }
 
 function buildExpectedConflictQueries(intake: IntakeConflictGateInput) {
@@ -139,12 +140,12 @@ function getCheckedConflictQueries(payload: Prisma.JsonValue) {
 function assertConflictReviewAllowsConversion(intake: IntakeConflictGateInput) {
   const expectedQueries = buildExpectedConflictQueries(intake);
   if (expectedQueries.length === 0) {
-    throw new Error("Completá primero el cliente o la contraparte y luego ejecutá la búsqueda de conflictos");
+    throw new Error("Complete primero el cliente o la contraparte y luego ejecute la bÃºsqueda de conflictos");
   }
 
   const latestCheck = intake.conflictChecks[0];
   if (!latestCheck) {
-    throw new Error("Antes de convertir a caso formal debés ejecutar la búsqueda de conflictos");
+    throw new Error("Antes de convertir a caso formal debe ejecutar la bÃºsqueda de conflictos");
   }
 
   const checkedKeys = new Set(
@@ -153,36 +154,35 @@ function assertConflictReviewAllowsConversion(intake: IntakeConflictGateInput) {
   const missingQueries = expectedQueries.filter((q) => !checkedKeys.has(conflictQueryKey(q)));
   if (missingQueries.length > 0) {
     throw new Error(
-      `Las partes de la admisión cambiaron, ejecutá nuevamente la búsqueda de conflictos. Faltan: ${missingQueries
+      `Las partes de la admisiÃ³n cambiaron, ejecute nuevamente la bÃºsqueda de conflictos. Faltan: ${missingQueries
         .map(formatConflictQuery)
         .join(", ")}`
     );
   }
 
   if (latestCheck.conclusion === "PENDING") {
-    throw new Error("La búsqueda de conflictos no tiene conclusión, marcá si se puede aceptar");
+    throw new Error("La bÃºsqueda de conflictos no tiene conclusiÃ³n, marque si se puede aceptar");
   }
   if (latestCheck.conclusion === "NEED_INFO") {
-    throw new Error("La conclusión de la búsqueda de conflictos es información insuficiente, no se puede convertir a caso formal");
+    throw new Error("La conclusiÃ³n de la bÃºsqueda de conflictos es informaciÃ³n insuficiente, no se puede convertir a caso formal");
   }
   if (latestCheck.conclusion === "SAME_SUBJECT") {
-    throw new Error("Se confirmó que existe conflicto de intereses, no se puede convertir directamente a caso formal");
+    throw new Error("Se confirmÃ³ que existe conflicto de intereses, no se puede convertir directamente a caso formal");
   }
   if (latestCheck.conclusion !== "DIFFERENT") {
-    throw new Error("Conclusión de conflicto anómala, ejecutá nuevamente la búsqueda");
+    throw new Error("ConclusiÃ³n de conflicto anÃ³mala, ejecute nuevamente la bÃºsqueda");
   }
 
   const hasHighRiskHit = latestCheck.hits.some(
     (h) => h.severity === "HIGH" || h.severity === "BLOCKING"
   );
   if (hasHighRiskHit && !latestCheck.note?.trim()) {
-    throw new Error("Existen coincidencias de alto riesgo o bloqueantes, escribí el motivo de exclusión o el consentimiento por escrito en las notas de la conclusión");
+    throw new Error("Existen coincidencias de alto riesgo o bloqueantes, escriba el motivo de exclusiÃ³n o el consentimiento por escrito en las notas de la conclusiÃ³n");
   }
 }
 
 export async function listIntakes(input: Partial<IntakeListQuery> = {}) {
   const session = await requireSession();
-  const prisma = await getTenantPrisma();
   const query = intakeListQuerySchema.parse(input);
 
   const statusWhere: Prisma.IntakeWhereInput = query.statusIn?.length
@@ -212,9 +212,9 @@ export async function listIntakes(input: Partial<IntakeListQuery> = {}) {
   if (query.search) {
     whereParts.push({
       OR: [
-        { title: { contains: query.search, mode: "insensitive" } },
-        { description: { contains: query.search, mode: "insensitive" } },
-        { client: { name: { contains: query.search, mode: "insensitive" } } }
+        { title: { contains: query.search } },
+        { description: { contains: query.search } },
+        { client: { name: { contains: query.search } } }
       ]
     });
   }
@@ -247,7 +247,7 @@ export async function listIntakes(input: Partial<IntakeListQuery> = {}) {
 
 export async function getIntakeById(id: string) {
   const session = await requireSession();
-  const prisma = await getTenantPrisma();
+  // VerificaciÃ³n de permisos: los managers ven todo, otros solo lo propio
   if (session.user.role !== "ADMIN" && session.user.role !== "PRINCIPAL_LAWYER") {
     const owned = await prisma.intake.findFirst({
       where: {
@@ -255,12 +255,12 @@ export async function getIntakeById(id: string) {
         OR: [
           { createdById: session.user.id },
           { ownerUserId: session.user.id },
-          { coUserIds: { has: session.user.id } }
+          { coUserIds: { array_contains: session.user.id } }
         ]
       },
       select: { id: true }
     });
-    if (!owned) throw new Error("Registro de admisión no encontrado");
+    if (!owned) throw new Error("Registro de admisiÃ³n no encontrado");
   }
   const intake = await prisma.intake.findUnique({
     where: { id },
@@ -294,7 +294,6 @@ export async function getIntakeById(id: string) {
 
 export async function createIntake(input: IntakeCreateInput) {
   const session = await requireSession();
-  const prisma = await getTenantPrisma();
   const data = intakeCreateSchema.parse(input);
   assertAgencyAllowedForProcedure(data.firstAgency, data.firstProcedureType);
   await assertCauseAllowedForSelection({
@@ -316,6 +315,7 @@ export async function createIntake(input: IntakeCreateInput) {
         address: data.clientAddress || null,
         legalRep: data.clientLegalRep || null,
         phone: data.contactPhone || null,
+        tags: [],
         contacts:
           data.contactName?.trim() || data.contactPhone?.trim()
             ? {
@@ -462,8 +462,8 @@ export async function createIntake(input: IntakeCreateInput) {
   await notifyRoleApprovers({
     roles: ["ADMIN", "PRINCIPAL_LAWYER"],
     excludeUserId: session.user.id,
-    title: "Nueva aprobación de caso pendiente",
-    content: `${session.user.name ?? "Usuario"} envió una aprobación de caso: ${created.title}`,
+    title: "Nueva aprobaciÃ³n de caso pendiente",
+    content: `${session.user.name ?? "Un usuario"} enviÃ³ una aprobaciÃ³n de caso: ${created.title}`,
     href: `/intakes/${created.id}`,
     refType: "Intake",
     refId: created.id,
@@ -477,7 +477,6 @@ export async function createIntake(input: IntakeCreateInput) {
 
 export async function declineIntake(input: DeclineIntakeInput) {
   const session = await requireSession();
-  const prisma = await getTenantPrisma();
   requireApprover(session.user.role);
   const data = declineIntakeSchema.parse(input);
 
@@ -505,9 +504,8 @@ export async function declineIntake(input: DeclineIntakeInput) {
 
 export async function markIntakeNeedsRevision(input: { id: string; reason: string }) {
   const session = await requireSession();
-  const prisma = await getTenantPrisma();
   requireApprover(session.user.role);
-  if (!input.reason.trim()) throw new Error("Completá el motivo de corrección");
+  if (!input.reason.trim()) throw new Error("Complete el motivo de correcciÃ³n");
 
   await prisma.intake.update({
     where: { id: input.id },
@@ -533,14 +531,13 @@ export async function markIntakeNeedsRevision(input: { id: string; reason: strin
 
 export async function resubmitIntake(id: string) {
   const session = await requireSession();
-  const prisma = await getTenantPrisma();
 
   const intake = await prisma.intake.findUnique({
     where: { id },
     select: { status: true, title: true, createdById: true, ownerUserId: true }
   });
-  if (!intake) throw new Error("Admisión no encontrada");
-  if (intake.status !== "NEEDS_REVISION") throw new Error("Solo el estado Pendiente de corrección puede reenviarse");
+  if (!intake) throw new Error("AdmisiÃ³n no encontrada");
+  if (intake.status !== "NEEDS_REVISION") throw new Error("Solo el estado Pendiente de correcciÃ³n puede reenviarse");
 
   await prisma.intake.update({
     where: { id },
@@ -561,8 +558,8 @@ export async function resubmitIntake(id: string) {
   await notifyRoleApprovers({
     roles: ["ADMIN", "PRINCIPAL_LAWYER"],
     excludeUserId: session.user.id,
-    title: "Aprobación de caso reenviada",
-    content: `${session.user.name ?? "Usuario"} reenvió la aprobación: ${intake.title}`,
+    title: "AprobaciÃ³n de caso reenviada",
+    content: `${session.user.name ?? "Un usuario"} reenviÃ³ la aprobaciÃ³n: ${intake.title}`,
     href: `/intakes/${id}`,
     refType: "Intake",
     refId: id,
@@ -577,7 +574,6 @@ export async function resubmitIntake(id: string) {
 
 export async function convertIntakeToMatter(intakeId: string) {
   const session = await requireSession();
-  const prisma = await getTenantPrisma();
   requireApprover(session.user.role);
   const intake = await prisma.intake.findUnique({
     where: { id: intakeId },
@@ -597,8 +593,8 @@ export async function convertIntakeToMatter(intakeId: string) {
       documents: { select: { id: true } }
     }
   });
-  if (!intake) throw new Error("Admisión no encontrada");
-  if (intake.status === "CONVERTED") throw new Error("Esta admisión ya fue convertida");
+  if (!intake) throw new Error("AdmisiÃ³n no encontrada");
+  if (intake.status === "CONVERTED") throw new Error("Esta admisiÃ³n ya fue convertida");
   assertConflictReviewAllowsConversion(intake);
 
   const { generateInternalCode, generateFirmCaseNo } = await import("@/server/matters/code-generator");
@@ -682,7 +678,7 @@ export async function convertIntakeToMatter(intakeId: string) {
           contactName: intake.contactName,
           enterpriseSocialCode: intake.client.type === "INDIVIDUAL" ? null : intake.client.idNumber,
           enterpriseName: intake.client.type === "INDIVIDUAL" ? null : intake.client.name,
-          notes: "Incorporado automáticamente desde la admisión"
+          notes: "Incorporado automÃ¡ticamente desde la admisiÃ³n"
         },
         select: { id: true }
       });
@@ -751,7 +747,7 @@ export async function convertIntakeToMatter(intakeId: string) {
     if (intake.feeAmount && intake.feeType) {
       const feeTypeLabel: Record<string, string> = {
         FIXED: "Honorario fijo",
-        CONTINGENCY: "Representación de riesgo"
+        CONTINGENCY: "RepresentaciÃ³n de riesgo"
       };
       await tx.billing.create({
         data: {
@@ -780,7 +776,7 @@ export async function convertIntakeToMatter(intakeId: string) {
       data: {
         matterId: m.id,
         eventType: "MATTER_CREATED",
-        title: `Caso creado (desde admisión)`,
+        title: "Caso creado (desde admisiÃ³n)",
         occurredAt: new Date()
       }
     });
@@ -803,3 +799,4 @@ export async function convertIntakeToMatter(intakeId: string) {
   revalidatePath("/matters");
   return { ok: true, matterId: matter.id, internalCode };
 }
+

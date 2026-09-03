@@ -1,4 +1,4 @@
-import { promises as fs } from "node:fs";
+﻿import { promises as fs } from "node:fs";
 import path from "node:path";
 import { randomUUID } from "node:crypto";
 import type { StorageProvider } from "./provider";
@@ -13,8 +13,8 @@ const STORAGE_ROOT = process.env.APP_STORAGE_DIR
 
 export class LocalStorageProvider implements StorageProvider {
   /**
-   * 写入文件到 storage/<scope>/<yyyymm>/<uuid>.bin
-   * Volver相对 STORAGE_ROOT 的 path（存到数据库）
+   * å†™å…¥æ–‡ä»¶åˆ° storage/<scope>/<yyyymm>/<uuid>.bin
+   * Volverç›¸å¯¹ STORAGE_ROOT çš„ pathï¼ˆå­˜åˆ°æ•°æ®åº“ï¼‰
    */
   async writeFile(scope: string, data: Buffer): Promise<string> {
     const now = new Date();
@@ -31,10 +31,10 @@ export class LocalStorageProvider implements StorageProvider {
 
   async readFile(relPath: string): Promise<Buffer> {
     const full = path.join(STORAGE_ROOT, relPath);
-    // 防止路径穿越
+    // é˜²æ­¢è·¯å¾„ç©¿è¶Š
     const resolved = path.resolve(full);
     if (!resolved.startsWith(STORAGE_ROOT)) {
-      throw new Error("非法路径");
+      throw new Error("éžæ³•è·¯å¾„");
     }
     return fs.readFile(resolved);
   }
@@ -43,12 +43,12 @@ export class LocalStorageProvider implements StorageProvider {
     const full = path.join(STORAGE_ROOT, relPath);
     const resolved = path.resolve(full);
     if (!resolved.startsWith(STORAGE_ROOT)) {
-      throw new Error("非法路径");
+      throw new Error("éžæ³•è·¯å¾„");
     }
     try {
       await fs.unlink(resolved);
     } catch (err) {
-      // 容忍文件已不存在
+      // å®¹å¿æ–‡ä»¶å·²ä¸å­˜åœ¨
       if ((err as NodeJS.ErrnoException).code !== "ENOENT") throw err;
     }
   }
@@ -80,3 +80,4 @@ export function deleteStoredFile(relPath: string): Promise<void> {
 export function getStorageRoot() {
   return STORAGE_ROOT;
 }
+

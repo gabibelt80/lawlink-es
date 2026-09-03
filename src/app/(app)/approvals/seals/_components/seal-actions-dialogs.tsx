@@ -21,8 +21,8 @@ import {
 import { normalizeUploadedFilename } from "@/lib/filename";
 import {
   type SealRequestRow,
-  SEAL_STATUS_CN,
-  SEAL_TYPE_CN,
+  SEAL_STATUS_ES,
+  SEAL_TYPE_ES,
 } from "./seal-types";
 
 type Action = "detail" | "approve" | "reject" | "stamp" | "cancel";
@@ -76,10 +76,10 @@ function SealDetailDialog({
         </DialogHeader>
         <div className="min-w-0 space-y-2 rounded border border-border bg-muted/20 p-3 text-[12px]">
           <Field k="Número de serie" v={row.code} mono />
-          <Field k="Estado" v={SEAL_STATUS_CN[row.status] ?? row.status} />
+          <Field k="Estado" v={SEAL_STATUS_ES[row.status] ?? row.status} />
           <Field
             k="Tipo de sello"
-            v={SEAL_TYPE_CN[row.sealType] ?? row.sealType}
+            v={SEAL_TYPE_ES[row.sealType] ?? row.sealType}
           />
           <Field k="Solicitante" v={row.requestedBy.name} />
           {row.matter && (
@@ -205,7 +205,7 @@ function ApprovalDialog({
         </DialogHeader>
         <div className="min-w-0 space-y-2 rounded border border-border bg-muted/20 p-3 text-[12px]">
           <Field k="N° de serie" v={row.code} mono />
-          <Field k="Tipo de sello" v={SEAL_TYPE_CN[row.sealType] ?? row.sealType} />
+          <Field k="Tipo de sello" v={SEAL_TYPE_ES[row.sealType] ?? row.sealType} />
           <Field k="Solicitante" v={row.requestedBy.name} />
           {row.matter && (
             <Field
@@ -325,7 +325,7 @@ function StampDialog({
           <DialogTitle>Completar escaneo posterior al estampado</DialogTitle>
         </DialogHeader>
         <p className="text-[12px] text-muted-foreground">
-          {row.code} · {SEAL_TYPE_CN[row.sealType]} · {row.documentTitle}
+          {row.code} · {SEAL_TYPE_ES[row.sealType]} · {row.documentTitle}
         </p>
         <label className="mt-3 flex cursor-pointer items-center gap-2 rounded border border-dashed border-border px-3 py-4 text-[12px] text-muted-foreground hover:bg-muted/30">
           <Paperclip className="h-3.5 w-3.5" />

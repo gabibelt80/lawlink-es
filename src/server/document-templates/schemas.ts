@@ -1,4 +1,4 @@
-import { z } from "zod";
+﻿import { z } from "zod";
 
 export const templateListFilterSchema = z.object({
   category: z
@@ -32,11 +32,11 @@ export const templateToggleSchema = z.object({
 });
 
 /**
- * 渲染模板生成文书并归档（段 3 模板引擎实现）。
- * - matterId: 目标Caso
- * - templateId: 选定模板
- * - folderId: 目标卷宗（可空 = 散件）
- * - overrides: 行内补全的变量（路径化键值，如 {"client.idNumber": "320..."})；行内补全会回写源表
+ * æ¸²æŸ“æ¨¡æ¿ç”Ÿæˆæ–‡ä¹¦å¹¶å½’æ¡£ï¼ˆæ®µ 3 æ¨¡æ¿å¼•æ“Žå®žçŽ°ï¼‰ã€‚
+ * - matterId: ç›®æ ‡Caso
+ * - templateId: é€‰å®šæ¨¡æ¿
+ * - folderId: ç›®æ ‡å·å®—ï¼ˆå¯ç©º = æ•£ä»¶ï¼‰
+ * - overrides: è¡Œå†…è¡¥å…¨çš„å˜é‡ï¼ˆè·¯å¾„åŒ–é”®å€¼ï¼Œå¦‚ {"client.idNumber": "320..."})ï¼›è¡Œå†…è¡¥å…¨ä¼šå›žå†™æºè¡¨
  */
 export const templateRenderSchema = z.object({
   matterId: z.string().cuid(),
@@ -44,3 +44,5 @@ export const templateRenderSchema = z.object({
   folderId: z.string().cuid().nullable(),
   overrides: z.record(z.string()).default({})
 });
+
+

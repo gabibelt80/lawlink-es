@@ -1,4 +1,4 @@
-"use server";
+﻿"use server";
 
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
@@ -15,7 +15,7 @@ const noteCreateSchema = z.object({
   channel: noteChannelSchema.default("OTHER"),
   withWhom: z.string().max(80).optional().or(z.literal("")),
   occurredAt: z.coerce.date().default(() => new Date()),
-  content: z.string().min(1, "内容不能为空").max(5000),
+  content: z.string().min(1, "å†…å®¹ä¸èƒ½ä¸ºç©º").max(5000),
   tags: z.array(z.string().max(20)).default([])
 });
 
@@ -61,9 +61,9 @@ export async function updateNote(input: NoteUpdateInput) {
   const data = noteUpdateSchema.parse(input);
 
   const existing = await prisma.note.findUnique({ where: { id: data.id } });
-  if (!existing) throw new Error("沟通记录不存在");
+  if (!existing) throw new Error("æ²Ÿé€šè®°å½•ä¸å­˜åœ¨");
   if (existing.authorId !== session.user.id && session.user.role !== "ADMIN") {
-    throw new Error("只能Editar自己的沟通记录");
+    throw new Error("åªèƒ½Editarè‡ªå·±çš„æ²Ÿé€šè®°å½•");
   }
   await assertMatterWritable(existing.matterId);
 
@@ -94,7 +94,7 @@ export async function deleteNote(id: string) {
   const existing = await prisma.note.findUnique({ where: { id } });
   if (!existing) return { ok: false };
   if (existing.authorId !== session.user.id && session.user.role !== "ADMIN") {
-    throw new Error("只能Eliminar自己的沟通记录");
+    throw new Error("åªèƒ½Eliminarè‡ªå·±çš„æ²Ÿé€šè®°å½•");
   }
   await assertMatterWritable(existing.matterId);
 
@@ -123,3 +123,5 @@ export async function listNotes(matterId: string) {
     include: { author: { select: { id: true, name: true } } }
   });
 }
+
+

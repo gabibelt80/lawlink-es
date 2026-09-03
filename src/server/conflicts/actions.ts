@@ -1,4 +1,4 @@
-"use server";
+﻿"use server";
 
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
@@ -40,7 +40,7 @@ async function getOpenableMatterIds(userId: string, matterIds: string[]) {
 
 const queryItemSchema = z
   .object({
-    // v0.4: Rol可选（顶栏快查不需要），server 端默认 OPPOSING_PARTY
+    // v0.4: Rolå¯é€‰ï¼ˆé¡¶æ å¿«æŸ¥ä¸éœ€è¦ï¼‰ï¼Œserver ç«¯é»˜è®¤ OPPOSING_PARTY
     role: z
       .enum([
         "CLIENT_PARTY",
@@ -56,7 +56,7 @@ const queryItemSchema = z
     idNumber: z.string().max(50).optional().or(z.literal(""))
   })
   .refine((q) => (q.name && q.name.trim()) || (q.idNumber && q.idNumber.trim()), {
-    message: "Nombre y apellido或证件号至少填写一ítems"
+    message: "Nombre y apellidoæˆ–è¯ä»¶å·è‡³å°‘å¡«å†™ä¸€Ã­tems"
   });
 
 const runCheckSchema = z.object({
@@ -65,14 +65,15 @@ const runCheckSchema = z.object({
 });
 
 /**
- * 跑一次冲突检索并落库。
- * 如果 intakeId 在，则把 ConflictCheck 挂在该 Intake 上；否则单独存（targetType=Intake 为空）。
+ * è·‘ä¸€æ¬¡å†²çªæ£€ç´¢å¹¶è½åº“ã€‚
+ * å¦‚æžœ intakeId åœ¨ï¼Œåˆ™æŠŠ ConflictCheck æŒ‚åœ¨è¯¥ Intake ä¸Šï¼›å¦åˆ™å•ç‹¬å­˜ï¼ˆtargetType=Intake ä¸ºç©ºï¼‰ã€‚
  */
 export async function runCheckAndSave(input: z.infer<typeof runCheckSchema>) {
   const session = await requireSession();
+  const tenantUserId = await resolveTenantUserId(session.user.email, prisma);
   const data = runCheckSchema.parse(input);
 
-  // 清理 query（v0.4: 允许 name 为空，由 idNumber 兜底；role 缺省视为 OPPOSING_PARTY）
+  // æ¸…ç† queryï¼ˆv0.4: å…è®¸ name ä¸ºç©ºï¼Œç”± idNumber å…œåº•ï¼›role ç¼ºçœè§†ä¸º OPPOSING_PARTYï¼‰
   const queries: QueryItem[] = data.queries.map((q) => ({
     role: q.role ?? "OPPOSING_PARTY",
     name: (q.name ?? "").trim(),
@@ -96,9 +97,9 @@ export async function runCheckAndSave(input: z.infer<typeof runCheckSchema>) {
         idMatchedClients: result.idMatchedClients
       } as object,
       conclusion: noHits ? "DIFFERENT" : "PENDING",
-      decidedById: noHits ? session.user.id : null,
+      decidedById: noHits ? tenantUserId : null,
       decidedAt: noHits ? new Date() : null,
-      note: noHits ? "Sistema自动标记：未命中历史Caso冲突。" : null,
+      note: noHits ? "Sistemaè‡ªåŠ¨æ ‡è®°ï¼šæœªå‘½ä¸­åŽ†å²Casoå†²çªã€‚" : null,
       hits: {
         create: result.hits.map((h) => ({
           hitType: h.hitType,
@@ -117,7 +118,7 @@ export async function runCheckAndSave(input: z.infer<typeof runCheckSchema>) {
   });
 
   await audit({
-    userId: session.user.id,
+    userId: tenantUserId,
     action: "CONFLICT_CHECK_RUN",
     targetType: "ConflictCheck",
     targetId: check.id,
@@ -156,13 +157,14 @@ const conclusionSchema = z.object({
 
 export async function setConflictConclusion(input: z.infer<typeof conclusionSchema>) {
   const session = await requireSession();
+  const tenantUserId = await resolveTenantUserId(session.user.email, prisma);
   const data = conclusionSchema.parse(input);
 
   const updated = await prisma.conflictCheck.update({
     where: { id: data.checkId },
     data: {
       conclusion: data.conclusion,
-      decidedById: session.user.id,
+      decidedById: tenantUserId,
       decidedAt: new Date(),
       note: data.note || null
     },
@@ -170,7 +172,7 @@ export async function setConflictConclusion(input: z.infer<typeof conclusionSche
   });
 
   await audit({
-    userId: session.user.id,
+    userId: tenantUserId,
     action: "CONFLICT_CONCLUSION_SET",
     targetType: "ConflictCheck",
     targetId: updated.id,
@@ -182,3 +184,11 @@ export async function setConflictConclusion(input: z.infer<typeof conclusionSche
   }
   return { ok: true };
 }
+async function resolveTenantUserId(email: string, prisma: any): Promise<string | null> {
+  const user = await prisma.user.findUnique({
+    where: { email },
+    select: { id: true }
+  });
+  return user?.id ?? null;
+}
+

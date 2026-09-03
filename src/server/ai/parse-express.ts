@@ -1,10 +1,10 @@
-"use server";
+﻿"use server";
 
 /**
- * v0.27: OCR de etiqueta de envío
+ * v0.27: OCR de etiqueta de envÃ­o
  *
- * El abogado sube una foto de la etiqueta de envío → aiVision extrae el número de seguimiento + nombre de la empresa (si se puede reconocer)
- * Ante error devuelve vacío para que el abogado ingrese manualmente
+ * El abogado sube una foto de la etiqueta de envÃ­o â†’ aiVision extrae el nÃºmero de seguimiento + nombre de la empresa (si se puede reconocer)
+ * Ante error devuelve vacÃ­o para que el abogado ingrese manualmente
  */
 import { requireSession } from "@/lib/auth/session";
 import { aiVision, extractJson, AiNotConfiguredError } from "@/lib/ai/client";
@@ -21,11 +21,11 @@ const SUPPORTED = new Set([
   "image/heic",
 ]);
 
-const PROMPT = `La siguiente imagen es una foto de una etiqueta de envío. Devolvé estrictamente JSON:
-{"trackingNo": "Número de seguimiento", "companyCode": "Nombre de la empresa de mensajería argentina (ej.: Andreani / Correo Argentino / OCA / Pickit)"}
+const PROMPT = `La siguiente imagen es una foto de una etiqueta de envÃ­o. DevolvÃ© estrictamente JSON:
+{"trackingNo": "NÃºmero de seguimiento", "companyCode": "Nombre de la empresa de mensajerÃ­a argentina (ej.: Andreani / Correo Argentino / OCA / Pickit)"}
 Reglas:
-- trackingNo es el número de seguimiento más visible de la etiqueta, combinación alfanumérica de 10-30 caracteres
-- Si no encontrás algún dato devolvé null, no inventes
+- trackingNo es el nÃºmero de seguimiento mÃ¡s visible de la etiqueta, combinaciÃ³n alfanumÃ©rica de 10-30 caracteres
+- Si no encontrÃ¡s algÃºn dato devolvÃ© null, no inventes
 - Solo JSON, sin explicaciones`;
 
 export async function parseExpressLabel(
@@ -36,7 +36,7 @@ export async function parseExpressLabel(
   if (!(file instanceof File)) throw new Error("Falta el archivo");
   if (!SUPPORTED.has(file.type)) {
     throw new Error(
-      `Solo se admiten imágenes (JPG/PNG/WebP); actual: ${file.type || "desconocido"}`,
+      `Solo se admiten imÃ¡genes (JPG/PNG/WebP); actual: ${file.type || "desconocido"}`,
     );
   }
   if (file.size > 10 * 1024 * 1024) throw new Error("El archivo supera 10 MB");
@@ -60,7 +60,8 @@ export async function parseExpressLabel(
     throw new Error(
       err instanceof Error
         ? err.message
-        : "No se pudo reconocer la etiqueta de envío",
+        : "No se pudo reconocer la etiqueta de envÃ­o",
     );
   }
 }
+

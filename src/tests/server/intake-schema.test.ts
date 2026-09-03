@@ -1,11 +1,11 @@
-import { describe, expect, it } from "vitest";
+﻿import { describe, expect, it } from "vitest";
 import { intakeCreateSchema } from "@/server/intakes/schemas";
 
 const baseLitigationIntake = {
   category: "CIVIL_COMMERCIAL",
-  title: "甲y乙合同纠纷",
+  title: "ç”²yä¹™åˆåŒçº çº·",
   firstProcedureType: "FIRST_INSTANCE",
-  clientName: "甲",
+  clientName: "ç”²",
   clientType: "INDIVIDUAL",
   clientIdNumber: "330100199001010000",
   parties: [
@@ -13,7 +13,7 @@ const baseLitigationIntake = {
       role: "OPPOSING_PARTY",
       ordinal: 1,
       partyType: "NATURAL_PERSON",
-      name: "乙",
+      name: "ä¹™",
       idNumber: "330100199002020000",
       enterpriseSocialCode: "",
       phone: "",
@@ -27,7 +27,7 @@ const baseLitigationIntake = {
 };
 
 describe("intakeCreateSchema", () => {
-  it("诉讼/仲裁类收案必须填写委托方和Caso当事人的诉讼地位", () => {
+  it("è¯‰è®¼/ä»²è£ç±»æ”¶æ¡ˆå¿…é¡»å¡«å†™å§”æ‰˜æ–¹å’ŒCasoå½“äº‹äººçš„è¯‰è®¼åœ°ä½", () => {
     const result = intakeCreateSchema.safeParse(baseLitigationIntake);
 
     expect(result.success).toBe(false);
@@ -38,16 +38,16 @@ describe("intakeCreateSchema", () => {
       }));
       expect(issues).toContainEqual({
         path: "ourStanding",
-        message: "请选择委托方诉讼地位"
+        message: "è¯·é€‰æ‹©å§”æ‰˜æ–¹è¯‰è®¼åœ°ä½"
       });
       expect(issues).toContainEqual({
         path: "parties.0.standing",
-        message: "请选择诉讼地位"
+        message: "è¯·é€‰æ‹©è¯‰è®¼åœ°ä½"
       });
     }
   });
 
-  it("诉讼/仲裁类收案填写诉讼地位后Aprobar", () => {
+  it("è¯‰è®¼/ä»²è£ç±»æ”¶æ¡ˆå¡«å†™è¯‰è®¼åœ°ä½åŽAprobar", () => {
     const result = intakeCreateSchema.safeParse({
       ...baseLitigationIntake,
       ourStanding: "PLAINTIFF",
@@ -62,7 +62,7 @@ describe("intakeCreateSchema", () => {
     expect(result.success).toBe(true);
   });
 
-  it("非诉/顾问/专ítems不强制诉讼地位", () => {
+  it("éžè¯‰/é¡¾é—®/ä¸“Ã­temsä¸å¼ºåˆ¶è¯‰è®¼åœ°ä½", () => {
     const result = intakeCreateSchema.safeParse({
       ...baseLitigationIntake,
       category: "NON_LITIGATION",
@@ -72,7 +72,7 @@ describe("intakeCreateSchema", () => {
     expect(result.success).toBe(true);
   });
 
-  it("可选Monto留空时不因 HTML number 输入产生的 NaN 阻断Enviar", () => {
+  it("å¯é€‰Montoç•™ç©ºæ—¶ä¸å›  HTML number è¾“å…¥äº§ç”Ÿçš„ NaN é˜»æ–­Enviar", () => {
     const result = intakeCreateSchema.safeParse({
       ...baseLitigationIntake,
       ourStanding: "PLAINTIFF",
@@ -93,3 +93,4 @@ describe("intakeCreateSchema", () => {
     }
   });
 });
+

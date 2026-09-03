@@ -1,4 +1,4 @@
-"use server";
+﻿"use server";
 
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
@@ -16,13 +16,13 @@ const saveSchema = z.object({
     .string()
     .trim()
     .max(500)
-    .refine((v) => v === "" || v.startsWith("https://"), "仅支持 HTTPS 的机器人地址")
+    .refine((v) => v === "" || v.startsWith("https://"), "ä»…æ”¯æŒ HTTPS çš„æœºå™¨äººåœ°å€")
 });
 
 async function requireManager() {
   const session = await requireSession();
   if (session.user.role !== "ADMIN" && session.user.role !== "PRINCIPAL_LAWYER") {
-    throw new Error("仅Administrar员 / 主任Abogado可配置Recordatorios推送");
+    throw new Error("ä»…Administrarå‘˜ / ä¸»ä»»Abogadoå¯é…ç½®RecordatoriosæŽ¨é€");
   }
   return session;
 }
@@ -35,7 +35,7 @@ export async function getWebhookSettingsAction() {
 export async function saveWebhookSettingsAction(input: z.infer<typeof saveSchema>) {
   const session = await requireManager();
   const data = saveSchema.parse(input);
-  if (data.enabled && !data.url) throw new Error("启用推送需要填写机器人地址");
+  if (data.enabled && !data.url) throw new Error("å¯ç”¨æŽ¨é€éœ€è¦å¡«å†™æœºå™¨äººåœ°å€");
 
   await saveWebhookSettings({ enabled: data.enabled, url: data.url });
   await audit({
@@ -52,9 +52,11 @@ export async function saveWebhookSettingsAction(input: z.infer<typeof saveSchema
 export async function sendTestWebhookAction() {
   const session = await requireManager();
   const result = await sendWebhookText(
-    `LawLink 测试消息：Recordatorios推送配置成功（Iniciado por：${session.user.name ?? session.user.email}）`
+    `LawLink æµ‹è¯•æ¶ˆæ¯ï¼šRecordatoriosæŽ¨é€é…ç½®æˆåŠŸï¼ˆIniciado porï¼š${session.user.name ?? session.user.email}ï¼‰`
   );
-  if (result.skipped) throw new Error("推送未启用或未配置机器人地址");
-  if (!result.ok) throw new Error(`发送Error：${result.error ?? "Desconocido错误"}`);
+  if (result.skipped) throw new Error("æŽ¨é€æœªå¯ç”¨æˆ–æœªé…ç½®æœºå™¨äººåœ°å€");
+  if (!result.ok) throw new Error(`å‘é€Errorï¼š${result.error ?? "Desconocidoé”™è¯¯"}`);
   return { ok: true };
 }
+
+

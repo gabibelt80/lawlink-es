@@ -1,4 +1,4 @@
-"use server";
+﻿"use server";
 
 import { z } from "zod";
 import { requireSession } from "@/lib/auth/session";
@@ -10,7 +10,7 @@ import {
 import { aiChat, AiNotConfiguredError } from "@/lib/ai/client";
 
 const saveSchema = z.object({
-  apiKey: z.string().optional().or(z.literal("")), // 留空 = 保留原值
+  apiKey: z.string().optional().or(z.literal("")), // ç•™ç©º = ä¿ç•™åŽŸå€¼
   baseUrl: z.string().url().optional().or(z.literal("")),
   textModel: z.string().max(80).optional().or(z.literal("")),
   visionModel: z.string().max(80).optional().or(z.literal(""))
@@ -21,7 +21,7 @@ const clearSchema = z.object({ confirm: z.literal(true) });
 async function requireAdmin() {
   const session = await requireSession();
   if (session.user.role !== "ADMIN") {
-    throw new Error("仅Administrar员可修改 AI 配置");
+    throw new Error("ä»…Administrarå‘˜å¯ä¿®æ”¹ AI é…ç½®");
   }
   return session;
 }
@@ -73,7 +73,7 @@ export async function clearAiKeyAction(input: z.infer<typeof clearSchema>) {
   return { ok: true };
 }
 
-/** 测试连接：发一个 ping，验证 base_url + key + text_model 可用 */
+/** æµ‹è¯•è¿žæŽ¥ï¼šå‘ä¸€ä¸ª pingï¼ŒéªŒè¯ base_url + key + text_model å¯ç”¨ */
 export async function testAiConnection() {
   await requireAdmin();
   try {
@@ -94,7 +94,9 @@ export async function testAiConnection() {
     }
     return {
       ok: false,
-      message: e instanceof Error ? e.message : "Desconocido错误"
+      message: e instanceof Error ? e.message : "Desconocidoé”™è¯¯"
     };
   }
 }
+
+

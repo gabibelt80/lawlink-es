@@ -1,4 +1,4 @@
-export type PlanKey = "trial" | "basic" | "professional" | "studio";
+﻿export type PlanKey = "trial" | "basic" | "professional" | "studio";
 
 export const PLANS: Record<PlanKey, {
   label: string;
@@ -18,11 +18,11 @@ export const PLANS: Record<PlanKey, {
       "1 administrador",
       "Casos ilimitados",
       "1 sucursal",
-      "14 días gratis",
+      "14 dÃ­as gratis",
     ],
   },
   basic: {
-    label: "Básico",
+    label: "BÃ¡sico",
     price: 29900,
     maxUsers: 4,
     maxBranch: 1,
@@ -60,7 +60,7 @@ export const PLANS: Record<PlanKey, {
       "Multi-sucursal",
       "Soporte dedicado",
       "Onboarding personalizado",
-      "API de integración",
+      "API de integraciÃ³n",
     ],
   },
 };

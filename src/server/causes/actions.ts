@@ -1,4 +1,4 @@
-"use server";
+﻿"use server";
 
 import type { MatterCategory, Prisma, ProcedureType } from "@prisma/client";
 import { getTenantPrisma } from "@/lib/tenant-prisma";
@@ -112,10 +112,10 @@ export async function searchCauses(params: {
         scopedWhere,
         {
           OR: [
-            { name: { contains: q, mode: "insensitive" } },
-            { shortName: { contains: q, mode: "insensitive" } },
-            { keywords: { has: q } },
-            { pinyin: { contains: q, mode: "insensitive" } }
+            { name: { contains: q } },
+            { shortName: { contains: q } },
+            { keywords: { array_contains: q } },
+            { pinyin: { contains: q } }
           ]
         }
       ]
@@ -147,3 +147,4 @@ export async function listCauseL2(category: MatterCategory) {
     select: { id: true, code: true, name: true, parentId: true }
   });
 }
+

@@ -1,21 +1,21 @@
-/**
- * v0.9.3 ICS 日历文件生成（RFC 5545 简化版）
+﻿/**
+ * v0.9.3 ICS æ—¥åŽ†æ–‡ä»¶ç”Ÿæˆï¼ˆRFC 5545 ç®€åŒ–ç‰ˆï¼‰
  *
- * 用于：Preservación到期 / 开庭 / Plazo 一键导出 .ics，拖进 Apple 日历 / Google
- * Calendar / Outlook 即可在手机原生日历看到Recordatorios。
+ * ç”¨äºŽï¼šPreservaciÃ³nåˆ°æœŸ / å¼€åº­ / Plazo ä¸€é”®å¯¼å‡º .icsï¼Œæ‹–è¿› Apple æ—¥åŽ† / Google
+ * Calendar / Outlook å³å¯åœ¨æ‰‹æœºåŽŸç”Ÿæ—¥åŽ†çœ‹åˆ°Recordatoriosã€‚
  *
- * 不依赖第三方库；纯字符串拼接。
+ * ä¸ä¾èµ–ç¬¬ä¸‰æ–¹åº“ï¼›çº¯å­—ç¬¦ä¸²æ‹¼æŽ¥ã€‚
  */
 
 export interface IcsEvent {
   uid: string;
   title: string;
   start: Date;
-  end?: Date;       // 不传 = 1 小时事件；如果是 allDay 用 startAllDay
-  allDay?: boolean; // true → 用 DTSTART;VALUE=DATE
+  end?: Date;       // ä¸ä¼  = 1 å°æ—¶äº‹ä»¶ï¼›å¦‚æžœæ˜¯ allDay ç”¨ startAllDay
+  allDay?: boolean; // true â†’ ç”¨ DTSTART;VALUE=DATE
   description?: string;
   location?: string;
-  reminderMinutes?: number[]; // 提前多少分钟Recordatorios（多个）
+  reminderMinutes?: number[]; // æå‰å¤šå°‘åˆ†é’ŸRecordatoriosï¼ˆå¤šä¸ªï¼‰
 }
 
 function pad(n: number) {
@@ -30,12 +30,12 @@ function fmtUtc(d: Date): string {
   );
 }
 
-// YYYYMMDD（all-day 用）
+// YYYYMMDDï¼ˆall-day ç”¨ï¼‰
 function fmtDate(d: Date): string {
   return `${d.getFullYear()}${pad(d.getMonth() + 1)}${pad(d.getDate())}`;
 }
 
-// ICS 文本要做的转义：\, ; , \n
+// ICS æ–‡æœ¬è¦åšçš„è½¬ä¹‰ï¼š\, ; , \n
 function esc(s: string): string {
   return s
     .replace(/\\/g, "\\\\")
@@ -44,7 +44,7 @@ function esc(s: string): string {
     .replace(/\n/g, "\\n");
 }
 
-// 长行折叠（>75 字节按 ICS 规范折行）
+// é•¿è¡ŒæŠ˜å ï¼ˆ>75 å­—èŠ‚æŒ‰ ICS è§„èŒƒæŠ˜è¡Œï¼‰
 function fold(line: string): string {
   if (line.length <= 75) return line;
   const out: string[] = [];
@@ -105,7 +105,7 @@ export function buildIcs(opts: {
   return lines.join("\r\n") + "\r\n";
 }
 
-/** 浏览器端：下载 .ics 文件 */
+/** æµè§ˆå™¨ç«¯ï¼šä¸‹è½½ .ics æ–‡ä»¶ */
 export function downloadIcs(filename: string, content: string) {
   const blob = new Blob([content], { type: "text/calendar;charset=utf-8" });
   const url = URL.createObjectURL(blob);
@@ -117,3 +117,4 @@ export function downloadIcs(filename: string, content: string) {
   document.body.removeChild(a);
   setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
+

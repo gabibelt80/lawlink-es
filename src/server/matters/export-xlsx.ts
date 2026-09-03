@@ -1,4 +1,4 @@
-import ExcelJS from "exceljs";
+﻿import ExcelJS from "exceljs";
 import {
   MatterCategory,
   Prisma,
@@ -55,10 +55,10 @@ const EXPORT_TABS: MattersExportTab[] = [
 
 const TAB_LABEL: Record<MattersExportTab, string> = {
   all: "Ver todosCaso",
-  intake: "待Aprobación",
-  active: "进行中",
-  revision: "Pendiente de corrección",
-  archived: "已归档"
+  intake: "å¾…AprobaciÃ³n",
+  active: "è¿›è¡Œä¸­",
+  revision: "Pendiente de correcciÃ³n",
+  archived: "å·²å½’æ¡£"
 };
 
 const TAB_FILE_KEY: Record<MattersExportTab, string> = {
@@ -177,42 +177,42 @@ type IntakeExportRow = Prisma.IntakeGetPayload<{ include: typeof intakeInclude }
 type MatterExportRow = Prisma.MatterGetPayload<{ include: typeof matterInclude }>;
 
 const partyRoleLabel: Record<PartyRole, string> = {
-  CLIENT_PARTY: "委托方",
-  OPPOSING_PARTY: "对方",
-  THIRD_PARTY: "第三人",
-  CO_LITIGANT: "共同当事人",
-  AGENT: "代理人",
-  WITNESS: "证人",
-  OTHER: "其他"
+  CLIENT_PARTY: "å§”æ‰˜æ–¹",
+  OPPOSING_PARTY: "å¯¹æ–¹",
+  THIRD_PARTY: "ç¬¬ä¸‰äºº",
+  CO_LITIGANT: "å…±åŒå½“äº‹äºº",
+  AGENT: "ä»£ç†äºº",
+  WITNESS: "è¯äºº",
+  OTHER: "å…¶ä»–"
 };
 
 const memberRoleLabel: Record<MatterMemberRole, string> = {
-  LEAD: "主办",
-  CO_LEAD: "协办",
-  ASSISTANT: "助理"
+  LEAD: "ä¸»åŠž",
+  CO_LEAD: "ååŠž",
+  ASSISTANT: "åŠ©ç†"
 };
 
 const procedureStatusLabel: Record<ProcedureStatus, string> = {
-  PENDING: "未开始",
-  IN_PROGRESS: "进行中",
-  CONCLUDED: "已结束"
+  PENDING: "æœªå¼€å§‹",
+  IN_PROGRESS: "è¿›è¡Œä¸­",
+  CONCLUDED: "å·²ç»“æŸ"
 };
 
 const procedureEngagementLabel: Record<ProcedureEngagement, string> = {
-  ENGAGED: "承办",
-  INFORMATIONAL: "仅登记"
+  ENGAGED: "æ‰¿åŠž",
+  INFORMATIONAL: "ä»…ç™»è®°"
 };
 
 const procedureOutcomeLabel: Record<ProcedureOutcome, string> = {
-  WON: "胜诉",
-  PARTIAL_WON: "部分胜诉",
-  LOST: "败诉",
-  MEDIATED: "调解",
-  WITHDRAWN: "撤诉",
+  WON: "èƒœè¯‰",
+  PARTIAL_WON: "éƒ¨åˆ†èƒœè¯‰",
+  LOST: "è´¥è¯‰",
+  MEDIATED: "è°ƒè§£",
+  WITHDRAWN: "æ’¤è¯‰",
   DISMISSED: "Rechazar",
-  COMPLETED: "完成",
-  TRANSFERRED: "移送",
-  OTHER: "其他"
+  COMPLETED: "å®Œæˆ",
+  TRANSFERRED: "ç§»é€",
+  OTHER: "å…¶ä»–"
 };
 
 export function resolveMattersExportParams(searchParams: URLSearchParams): MattersExportParams {
@@ -301,7 +301,7 @@ async function addIntakesSheet(
   const coUserNames = await loadUserNameMap(rows.flatMap((row) => row.coUserIds));
   const groups = groupRowsByCategory(rows, params.category);
   if (groups.length === 0) {
-    const sheet = wb.addWorksheet("无数据");
+    const sheet = wb.addWorksheet("æ— æ•°æ®");
     sheet.columns = intakeColumnsForKind("litigation");
     polishSheet(sheet, ["money", "feeAmount"]);
     return 0;
@@ -336,7 +336,7 @@ async function addMattersSheet(
   );
   const groups = groupRowsByCategory(rows, params.category);
   if (groups.length === 0) {
-    const sheet = wb.addWorksheet("无数据");
+    const sheet = wb.addWorksheet("æ— æ•°æ®");
     sheet.columns = matterColumnsForKind("litigation", 1);
     polishSheet(sheet, ["claimAmount", "sourceClaimAmount", "sourceFeeAmount"]);
     return 0;
@@ -394,11 +394,11 @@ function buildIntakeWhere(params: MattersExportParams, user: ExportUser): Prisma
   if (params.search) {
     parts.push({
       OR: [
-        { title: { contains: params.search, mode: "insensitive" } },
-        { description: { contains: params.search, mode: "insensitive" } },
-        { client: { name: { contains: params.search, mode: "insensitive" } } },
-        { cause: { name: { contains: params.search, mode: "insensitive" } } },
-        { parties: { some: { name: { contains: params.search, mode: "insensitive" } } } }
+        { title: { contains: params.search } },
+        { description: { contains: params.search } },
+        { client: { name: { contains: params.search } } },
+        { cause: { name: { contains: params.search } } },
+        { parties: { some: { name: { contains: params.search } } } }
       ]
     });
   }
@@ -425,13 +425,13 @@ function buildMatterWhere(params: MattersExportParams, user: ExportUser): Prisma
   if (params.search) {
     parts.push({
       OR: [
-        { title: { contains: params.search, mode: "insensitive" } },
-        { internalCode: { contains: params.search, mode: "insensitive" } },
-        { firmCaseNo: { contains: params.search, mode: "insensitive" } },
-        { primaryClient: { name: { contains: params.search, mode: "insensitive" } } },
-        { cause: { name: { contains: params.search, mode: "insensitive" } } },
-        { parties: { some: { name: { contains: params.search, mode: "insensitive" } } } },
-        { procedures: { some: { caseNumber: { contains: params.search, mode: "insensitive" } } } }
+        { title: { contains: params.search } },
+        { internalCode: { contains: params.search } },
+        { firmCaseNo: { contains: params.search } },
+        { primaryClient: { name: { contains: params.search } } },
+        { cause: { name: { contains: params.search } } },
+        { parties: { some: { name: { contains: params.search } } } },
+        { procedures: { some: { caseNumber: { contains: params.search } } } }
       ]
     });
   }
@@ -505,62 +505,62 @@ async function loadUserNameMap(ids: string[]) {
 
 function intakeColumnsForKind(kind: MatterCategoryKind): Partial<ExcelJS.Column>[] {
   const commonStart: Partial<ExcelJS.Column>[] = [
-    { header: "收案ID", key: "id", width: 24 },
-    { header: "标题", key: "title", width: 36 },
-    { header: "收案分类", key: "category", width: 12 },
-    { header: "收案Estado", key: "status", width: 12 },
-    { header: "收案时间", key: "receivedAt", width: 12 },
+    { header: "æ”¶æ¡ˆID", key: "id", width: 24 },
+    { header: "æ ‡é¢˜", key: "title", width: 36 },
+    { header: "æ”¶æ¡ˆåˆ†ç±»", key: "category", width: 12 },
+    { header: "æ”¶æ¡ˆEstado", key: "status", width: 12 },
+    { header: "æ”¶æ¡ˆæ—¶é—´", key: "receivedAt", width: 12 },
     { header: "Causa", key: "cause", width: 18 },
-    { header: "自由Causa", key: "causeFreeText", width: 18 },
-    { header: "案情Descripción", key: "description", width: 36 },
-    { header: "委托方", key: "client", width: 20 },
-    { header: "委托方类型", key: "clientType", width: 12 },
-    { header: "委托方证件/代码", key: "clientIdNumber", width: 22 },
-    { header: "委托方地址", key: "clientAddress", width: 28 },
-    { header: "法定代表人", key: "clientLegalRep", width: 14 },
-    { header: "联系人", key: "contactName", width: 14 },
-    { header: "联系电话", key: "contactPhone", width: 16 },
-    { header: "Cliente档案联系人", key: "clientContacts", width: 28 },
-    { header: "主办Abogado", key: "owner", width: 12 },
-    { header: "共同Abogado", key: "coUsers", width: 24 }
+    { header: "è‡ªç”±Causa", key: "causeFreeText", width: 18 },
+    { header: "æ¡ˆæƒ…DescripciÃ³n", key: "description", width: 36 },
+    { header: "å§”æ‰˜æ–¹", key: "client", width: 20 },
+    { header: "å§”æ‰˜æ–¹ç±»åž‹", key: "clientType", width: 12 },
+    { header: "å§”æ‰˜æ–¹è¯ä»¶/ä»£ç ", key: "clientIdNumber", width: 22 },
+    { header: "å§”æ‰˜æ–¹åœ°å€", key: "clientAddress", width: 28 },
+    { header: "æ³•å®šä»£è¡¨äºº", key: "clientLegalRep", width: 14 },
+    { header: "è”ç³»äºº", key: "contactName", width: 14 },
+    { header: "è”ç³»ç”µè¯", key: "contactPhone", width: 16 },
+    { header: "Clienteæ¡£æ¡ˆè”ç³»äºº", key: "clientContacts", width: 28 },
+    { header: "ä¸»åŠžAbogado", key: "owner", width: 12 },
+    { header: "å…±åŒAbogado", key: "coUsers", width: 24 }
   ];
   const litigationColumns: Partial<ExcelJS.Column>[] = [
-    { header: "首次程序", key: "firstProcedureType", width: 14 },
-    { header: "争议解决机构", key: "firstAgency", width: 24 },
-    { header: "管辖地", key: "jurisdiction", width: 18 },
-    { header: "我方地位", key: "ourStanding", width: 14 },
-    { header: "标的Monto", key: "money", width: 14 },
-    { header: "标的Descripción", key: "claimDescription", width: 24 },
-    { header: "律协备案", key: "barFiling", width: 18 },
-    { header: "是否反诉", key: "counterclaim", width: 10 },
-    { header: "当事人", key: "parties", width: 44 }
+    { header: "é¦–æ¬¡ç¨‹åº", key: "firstProcedureType", width: 14 },
+    { header: "äº‰è®®è§£å†³æœºæž„", key: "firstAgency", width: 24 },
+    { header: "ç®¡è¾–åœ°", key: "jurisdiction", width: 18 },
+    { header: "æˆ‘æ–¹åœ°ä½", key: "ourStanding", width: 14 },
+    { header: "æ ‡çš„Monto", key: "money", width: 14 },
+    { header: "æ ‡çš„DescripciÃ³n", key: "claimDescription", width: 24 },
+    { header: "å¾‹åå¤‡æ¡ˆ", key: "barFiling", width: 18 },
+    { header: "æ˜¯å¦åè¯‰", key: "counterclaim", width: 10 },
+    { header: "å½“äº‹äºº", key: "parties", width: 44 }
   ];
   const projectColumns: Partial<ExcelJS.Column>[] = [
-    { header: "业务类型", key: "businessType", width: 16 },
-    { header: "服务范围", key: "serviceScope", width: 28 },
-    { header: "交付成果", key: "deliverables", width: 24 },
-    { header: "服务起", key: "serviceStart", width: 12 },
-    { header: "服务止", key: "serviceEnd", width: 12 },
-    { header: "相关方", key: "parties", width: 44 }
+    { header: "ä¸šåŠ¡ç±»åž‹", key: "businessType", width: 16 },
+    { header: "æœåŠ¡èŒƒå›´", key: "serviceScope", width: 28 },
+    { header: "äº¤ä»˜æˆæžœ", key: "deliverables", width: 24 },
+    { header: "æœåŠ¡èµ·", key: "serviceStart", width: 12 },
+    { header: "æœåŠ¡æ­¢", key: "serviceEnd", width: 12 },
+    { header: "ç›¸å…³æ–¹", key: "parties", width: 44 }
   ];
   const counselColumns: Partial<ExcelJS.Column>[] = [
-    { header: "顾问类型", key: "counselType", width: 16 },
-    { header: "服务范围", key: "serviceScope", width: 28 },
-    { header: "服务起", key: "serviceStart", width: 12 },
-    { header: "服务止", key: "serviceEnd", width: 12 },
-    { header: "相关方", key: "parties", width: 44 }
+    { header: "é¡¾é—®ç±»åž‹", key: "counselType", width: 16 },
+    { header: "æœåŠ¡èŒƒå›´", key: "serviceScope", width: 28 },
+    { header: "æœåŠ¡èµ·", key: "serviceStart", width: 12 },
+    { header: "æœåŠ¡æ­¢", key: "serviceEnd", width: 12 },
+    { header: "ç›¸å…³æ–¹", key: "parties", width: 44 }
   ];
   const commonEnd: Partial<ExcelJS.Column>[] = [
-    { header: "收费方式", key: "feeType", width: 14 },
-    { header: "Abogado费Monto", key: "feeAmount", width: 14 },
-    { header: "风险代理条款", key: "contingencyTerms", width: 26 },
-    { header: "付款Etapa", key: "feeSchedule", width: 26 },
+    { header: "æ”¶è´¹æ–¹å¼", key: "feeType", width: 14 },
+    { header: "Abogadoè´¹Monto", key: "feeAmount", width: 14 },
+    { header: "é£Žé™©ä»£ç†æ¡æ¬¾", key: "contingencyTerms", width: 26 },
+    { header: "ä»˜æ¬¾Etapa", key: "feeSchedule", width: 26 },
     { header: "GastosObservaciones", key: "feeNote", width: 24 },
     { header: "Adjunto", key: "documents", width: 36 },
-    { header: "转化Caso", key: "matter", width: 28 },
-    { header: "No aceptar caso/补正Motivo", key: "declinedReason", width: 30 },
-    { header: "Crear时间", key: "createdAt", width: 18 },
-    { header: "Actualizar时间", key: "updatedAt", width: 18 }
+    { header: "è½¬åŒ–Caso", key: "matter", width: 28 },
+    { header: "No aceptar caso/è¡¥æ­£Motivo", key: "declinedReason", width: 30 },
+    { header: "Crearæ—¶é—´", key: "createdAt", width: 18 },
+    { header: "Actualizaræ—¶é—´", key: "updatedAt", width: 18 }
   ];
   const typedColumns =
     kind === "litigation"
@@ -576,92 +576,92 @@ function matterColumnsForKind(
   maxProcedures: number
 ): Partial<ExcelJS.Column>[] {
   const commonStart: Partial<ExcelJS.Column>[] = [
-    { header: "Sistema编号", key: "internalCode", width: 16 },
-    { header: "所内案号", key: "firmCaseNo", width: 18 },
+    { header: "Sistemaç¼–å·", key: "internalCode", width: 16 },
+    { header: "æ‰€å†…æ¡ˆå·", key: "firmCaseNo", width: 18 },
     { header: "CasoNombre", key: "title", width: 38 },
-    { header: "Caso分类", key: "category", width: 12 },
+    { header: "Casoåˆ†ç±»", key: "category", width: 12 },
     { header: "CasoEstado", key: "status", width: 12 },
-    { header: "收案时间", key: "intakeDate", width: 12 },
-    { header: "首次立案/受理", key: "firstAcceptedAt", width: 12 },
-    { header: "Cerrar caso时间", key: "closedAt", width: 12 },
-    { header: "归档时间", key: "archivedAt", width: 12 },
-    { header: "主Cliente", key: "primaryClient", width: 20 },
-    { header: "主Cliente类型", key: "primaryClientType", width: 12 },
-    { header: "主Cliente证件/代码", key: "primaryClientIdNumber", width: 22 },
-    { header: "主Cliente地址", key: "primaryClientAddress", width: 28 },
-    { header: "主Cliente法定代表人", key: "primaryClientLegalRep", width: 16 },
-    { header: "主Cliente联系人", key: "primaryClientContacts", width: 28 },
-    { header: "其他Cliente", key: "otherClients", width: 30 },
-    { header: "主办Abogado", key: "owner", width: 12 },
-    { header: "团队成员", key: "members", width: 30 }
+    { header: "æ”¶æ¡ˆæ—¶é—´", key: "intakeDate", width: 12 },
+    { header: "é¦–æ¬¡ç«‹æ¡ˆ/å—ç†", key: "firstAcceptedAt", width: 12 },
+    { header: "Cerrar casoæ—¶é—´", key: "closedAt", width: 12 },
+    { header: "å½’æ¡£æ—¶é—´", key: "archivedAt", width: 12 },
+    { header: "ä¸»Cliente", key: "primaryClient", width: 20 },
+    { header: "ä¸»Clienteç±»åž‹", key: "primaryClientType", width: 12 },
+    { header: "ä¸»Clienteè¯ä»¶/ä»£ç ", key: "primaryClientIdNumber", width: 22 },
+    { header: "ä¸»Clienteåœ°å€", key: "primaryClientAddress", width: 28 },
+    { header: "ä¸»Clienteæ³•å®šä»£è¡¨äºº", key: "primaryClientLegalRep", width: 16 },
+    { header: "ä¸»Clienteè”ç³»äºº", key: "primaryClientContacts", width: 28 },
+    { header: "å…¶ä»–Cliente", key: "otherClients", width: 30 },
+    { header: "ä¸»åŠžAbogado", key: "owner", width: 12 },
+    { header: "å›¢é˜Ÿæˆå‘˜", key: "members", width: 30 }
   ];
   const litigationColumns: Partial<ExcelJS.Column>[] = [
     { header: "Causa", key: "cause", width: 18 },
-    { header: "自由Causa", key: "causeFreeText", width: 18 },
-    { header: "标的Monto", key: "claimAmount", width: 14 },
-    { header: "我方地位", key: "ourStanding", width: 14 },
-    { header: "反诉原告", key: "counterclaimAsPlaintiff", width: 10 },
-    { header: "反诉被告", key: "counterclaimAsDefendant", width: 10 },
-    { header: "律协备案", key: "barFiling", width: 18 },
-    { header: "Caso当事人", key: "parties", width: 48 }
+    { header: "è‡ªç”±Causa", key: "causeFreeText", width: 18 },
+    { header: "æ ‡çš„Monto", key: "claimAmount", width: 14 },
+    { header: "æˆ‘æ–¹åœ°ä½", key: "ourStanding", width: 14 },
+    { header: "åè¯‰åŽŸå‘Š", key: "counterclaimAsPlaintiff", width: 10 },
+    { header: "åè¯‰è¢«å‘Š", key: "counterclaimAsDefendant", width: 10 },
+    { header: "å¾‹åå¤‡æ¡ˆ", key: "barFiling", width: 18 },
+    { header: "Casoå½“äº‹äºº", key: "parties", width: 48 }
   ];
   const projectColumns: Partial<ExcelJS.Column>[] = [
-    { header: "业务类型", key: "businessType", width: 16 },
-    { header: "服务范围", key: "serviceScope", width: 28 },
-    { header: "交付成果", key: "deliverables", width: 24 },
-    { header: "服务起", key: "serviceStart", width: 12 },
-    { header: "服务止", key: "serviceEnd", width: 12 },
-    { header: "相关方", key: "parties", width: 48 },
-    { header: "阶段/程序摘要", key: "procedureSummary", width: 42 }
+    { header: "ä¸šåŠ¡ç±»åž‹", key: "businessType", width: 16 },
+    { header: "æœåŠ¡èŒƒå›´", key: "serviceScope", width: 28 },
+    { header: "äº¤ä»˜æˆæžœ", key: "deliverables", width: 24 },
+    { header: "æœåŠ¡èµ·", key: "serviceStart", width: 12 },
+    { header: "æœåŠ¡æ­¢", key: "serviceEnd", width: 12 },
+    { header: "ç›¸å…³æ–¹", key: "parties", width: 48 },
+    { header: "é˜¶æ®µ/ç¨‹åºæ‘˜è¦", key: "procedureSummary", width: 42 }
   ];
   const counselColumns: Partial<ExcelJS.Column>[] = [
-    { header: "顾问类型", key: "counselType", width: 16 },
-    { header: "服务范围", key: "serviceScope", width: 28 },
-    { header: "服务起", key: "serviceStart", width: 12 },
-    { header: "服务止", key: "serviceEnd", width: 12 },
-    { header: "相关方", key: "parties", width: 48 },
-    { header: "阶段/程序摘要", key: "procedureSummary", width: 42 }
+    { header: "é¡¾é—®ç±»åž‹", key: "counselType", width: 16 },
+    { header: "æœåŠ¡èŒƒå›´", key: "serviceScope", width: 28 },
+    { header: "æœåŠ¡èµ·", key: "serviceStart", width: 12 },
+    { header: "æœåŠ¡æ­¢", key: "serviceEnd", width: 12 },
+    { header: "ç›¸å…³æ–¹", key: "parties", width: 48 },
+    { header: "é˜¶æ®µ/ç¨‹åºæ‘˜è¦", key: "procedureSummary", width: 42 }
   ];
   const commonEnd: Partial<ExcelJS.Column>[] = [
-    { header: "关联实体", key: "relatedEntities", width: 36 },
-    { header: "关联Caso", key: "relatedMatters", width: 36 },
+    { header: "å…³è”å®žä½“", key: "relatedEntities", width: 36 },
+    { header: "å…³è”Caso", key: "relatedMatters", width: 36 },
     { header: "CasoAdjunto", key: "documents", width: 36 },
-    { header: "自定义字段", key: "customValues", width: 30 },
-    { header: "来源收案标题", key: "intakeTitle", width: 34 },
-    { header: "来源收案Estado", key: "intakeStatus", width: 12 },
-    { header: "来源收案时间", key: "sourceReceivedAt", width: 12 },
-    { header: "来源收案案情", key: "sourceDescription", width: 34 },
-    { header: "来源收费方式", key: "sourceFeeType", width: 14 },
-    { header: "来源Abogado费Monto", key: "sourceFeeAmount", width: 14 },
-    { header: "来源付款Etapa", key: "sourceFeeSchedule", width: 26 },
-    { header: "来源GastosObservaciones", key: "sourceFeeNote", width: 24 },
-    { header: "来源共同Abogado", key: "sourceCoUsers", width: 24 },
-    { header: "来源Adjunto", key: "sourceDocuments", width: 36 },
-    { header: "Crear时间", key: "createdAt", width: 18 },
-    { header: "Actualizar时间", key: "updatedAt", width: 18 }
+    { header: "è‡ªå®šä¹‰å­—æ®µ", key: "customValues", width: 30 },
+    { header: "æ¥æºæ”¶æ¡ˆæ ‡é¢˜", key: "intakeTitle", width: 34 },
+    { header: "æ¥æºæ”¶æ¡ˆEstado", key: "intakeStatus", width: 12 },
+    { header: "æ¥æºæ”¶æ¡ˆæ—¶é—´", key: "sourceReceivedAt", width: 12 },
+    { header: "æ¥æºæ”¶æ¡ˆæ¡ˆæƒ…", key: "sourceDescription", width: 34 },
+    { header: "æ¥æºæ”¶è´¹æ–¹å¼", key: "sourceFeeType", width: 14 },
+    { header: "æ¥æºAbogadoè´¹Monto", key: "sourceFeeAmount", width: 14 },
+    { header: "æ¥æºä»˜æ¬¾Etapa", key: "sourceFeeSchedule", width: 26 },
+    { header: "æ¥æºGastosObservaciones", key: "sourceFeeNote", width: 24 },
+    { header: "æ¥æºå…±åŒAbogado", key: "sourceCoUsers", width: 24 },
+    { header: "æ¥æºAdjunto", key: "sourceDocuments", width: 36 },
+    { header: "Crearæ—¶é—´", key: "createdAt", width: 18 },
+    { header: "Actualizaræ—¶é—´", key: "updatedAt", width: 18 }
   ];
   const litigationSourceColumns: Partial<ExcelJS.Column>[] = [
-    { header: "来源收案首次程序", key: "sourceFirstProcedureType", width: 14 },
-    { header: "来源争议解决机构", key: "sourceFirstAgency", width: 24 },
-    { header: "来源管辖地", key: "sourceJurisdiction", width: 18 },
-    { header: "来源我方地位", key: "sourceOurStanding", width: 14 },
-    { header: "来源标的Monto", key: "sourceClaimAmount", width: 14 },
-    { header: "来源标的Descripción", key: "sourceClaimDescription", width: 24 },
-    { header: "来源律协备案", key: "sourceBarFiling", width: 18 },
-    { header: "来源是否反诉", key: "sourceCounterclaim", width: 12 }
+    { header: "æ¥æºæ”¶æ¡ˆé¦–æ¬¡ç¨‹åº", key: "sourceFirstProcedureType", width: 14 },
+    { header: "æ¥æºäº‰è®®è§£å†³æœºæž„", key: "sourceFirstAgency", width: 24 },
+    { header: "æ¥æºç®¡è¾–åœ°", key: "sourceJurisdiction", width: 18 },
+    { header: "æ¥æºæˆ‘æ–¹åœ°ä½", key: "sourceOurStanding", width: 14 },
+    { header: "æ¥æºæ ‡çš„Monto", key: "sourceClaimAmount", width: 14 },
+    { header: "æ¥æºæ ‡çš„DescripciÃ³n", key: "sourceClaimDescription", width: 24 },
+    { header: "æ¥æºå¾‹åå¤‡æ¡ˆ", key: "sourceBarFiling", width: 18 },
+    { header: "æ¥æºæ˜¯å¦åè¯‰", key: "sourceCounterclaim", width: 12 }
   ];
   const projectSourceColumns: Partial<ExcelJS.Column>[] = [
-    { header: "来源业务类型", key: "sourceBusinessType", width: 16 },
-    { header: "来源服务范围", key: "sourceServiceScope", width: 28 },
-    { header: "来源交付成果", key: "sourceDeliverables", width: 24 },
-    { header: "来源服务起", key: "sourceServiceStart", width: 12 },
-    { header: "来源服务止", key: "sourceServiceEnd", width: 12 }
+    { header: "æ¥æºä¸šåŠ¡ç±»åž‹", key: "sourceBusinessType", width: 16 },
+    { header: "æ¥æºæœåŠ¡èŒƒå›´", key: "sourceServiceScope", width: 28 },
+    { header: "æ¥æºäº¤ä»˜æˆæžœ", key: "sourceDeliverables", width: 24 },
+    { header: "æ¥æºæœåŠ¡èµ·", key: "sourceServiceStart", width: 12 },
+    { header: "æ¥æºæœåŠ¡æ­¢", key: "sourceServiceEnd", width: 12 }
   ];
   const counselSourceColumns: Partial<ExcelJS.Column>[] = [
-    { header: "来源顾问类型", key: "sourceCounselType", width: 16 },
-    { header: "来源服务范围", key: "sourceServiceScope", width: 28 },
-    { header: "来源服务起", key: "sourceServiceStart", width: 12 },
-    { header: "来源服务止", key: "sourceServiceEnd", width: 12 }
+    { header: "æ¥æºé¡¾é—®ç±»åž‹", key: "sourceCounselType", width: 16 },
+    { header: "æ¥æºæœåŠ¡èŒƒå›´", key: "sourceServiceScope", width: 28 },
+    { header: "æ¥æºæœåŠ¡èµ·", key: "sourceServiceStart", width: 12 },
+    { header: "æ¥æºæœåŠ¡æ­¢", key: "sourceServiceEnd", width: 12 }
   ];
   const typedColumns =
     kind === "litigation"
@@ -678,27 +678,27 @@ function matterColumnsForKind(
   const procedureColumns: Partial<ExcelJS.Column>[] = [];
   for (let i = 1; i <= maxProcedures; i += 1) {
     procedureColumns.push(
-      { header: `程序${i}-类型`, key: `procedure${i}Type`, width: 14 },
-      { header: `程序${i}-标签`, key: `procedure${i}Label`, width: 16 },
-      { header: `程序${i}-参y方式`, key: `procedure${i}Engagement`, width: 12 },
-      { header: `程序${i}-Estado`, key: `procedure${i}Status`, width: 12 },
-      { header: `程序${i}-案号`, key: `procedure${i}CaseNumber`, width: 24 },
-      { header: `程序${i}-管辖地`, key: `procedure${i}Jurisdiction`, width: 18 },
-      { header: `程序${i}-办理机关`, key: `procedure${i}HandlingAgency`, width: 24 },
-      { header: `程序${i}-合议庭/部门`, key: `procedure${i}Panel`, width: 20 },
-      { header: `程序${i}-经办人`, key: `procedure${i}Handler`, width: 16 },
-      { header: `程序${i}-我方地位`, key: `procedure${i}OurStanding`, width: 14 },
-      { header: `程序${i}-主办Abogado`, key: `procedure${i}LeadLawyer`, width: 14 },
-      { header: `程序${i}-外部代理`, key: `procedure${i}ExternalLead`, width: 10 },
-      { header: `程序${i}-立案/受理`, key: `procedure${i}AcceptedAt`, width: 12 },
-      { header: `程序${i}-裁决/Cerrar caso`, key: `procedure${i}ConcludedAt`, width: 12 },
-      { header: `程序${i}-结果`, key: `procedure${i}Outcome`, width: 12 },
-      { header: `程序${i}-结果说明`, key: `procedure${i}OutcomeNote`, width: 26 },
-      { header: `程序${i}-主审/仲裁员/执行法官`, key: `procedure${i}PresidingJudge`, width: 22 },
-      { header: `程序${i}-联系方式`, key: `procedure${i}PresidingJudgeContact`, width: 18 },
-      { header: `程序${i}-助理`, key: `procedure${i}JudgeAssistant`, width: 16 },
-      { header: `程序${i}-助理联系方式`, key: `procedure${i}JudgeAssistantContact`, width: 18 },
-      { header: `程序${i}-程序当事人`, key: `procedure${i}Parties`, width: 48 }
+      { header: `ç¨‹åº${i}-ç±»åž‹`, key: `procedure${i}Type`, width: 14 },
+      { header: `ç¨‹åº${i}-æ ‡ç­¾`, key: `procedure${i}Label`, width: 16 },
+      { header: `ç¨‹åº${i}-å‚yæ–¹å¼`, key: `procedure${i}Engagement`, width: 12 },
+      { header: `ç¨‹åº${i}-Estado`, key: `procedure${i}Status`, width: 12 },
+      { header: `ç¨‹åº${i}-æ¡ˆå·`, key: `procedure${i}CaseNumber`, width: 24 },
+      { header: `ç¨‹åº${i}-ç®¡è¾–åœ°`, key: `procedure${i}Jurisdiction`, width: 18 },
+      { header: `ç¨‹åº${i}-åŠžç†æœºå…³`, key: `procedure${i}HandlingAgency`, width: 24 },
+      { header: `ç¨‹åº${i}-åˆè®®åº­/éƒ¨é—¨`, key: `procedure${i}Panel`, width: 20 },
+      { header: `ç¨‹åº${i}-ç»åŠžäºº`, key: `procedure${i}Handler`, width: 16 },
+      { header: `ç¨‹åº${i}-æˆ‘æ–¹åœ°ä½`, key: `procedure${i}OurStanding`, width: 14 },
+      { header: `ç¨‹åº${i}-ä¸»åŠžAbogado`, key: `procedure${i}LeadLawyer`, width: 14 },
+      { header: `ç¨‹åº${i}-å¤–éƒ¨ä»£ç†`, key: `procedure${i}ExternalLead`, width: 10 },
+      { header: `ç¨‹åº${i}-ç«‹æ¡ˆ/å—ç†`, key: `procedure${i}AcceptedAt`, width: 12 },
+      { header: `ç¨‹åº${i}-è£å†³/Cerrar caso`, key: `procedure${i}ConcludedAt`, width: 12 },
+      { header: `ç¨‹åº${i}-ç»“æžœ`, key: `procedure${i}Outcome`, width: 12 },
+      { header: `ç¨‹åº${i}-ç»“æžœè¯´æ˜Ž`, key: `procedure${i}OutcomeNote`, width: 26 },
+      { header: `ç¨‹åº${i}-ä¸»å®¡/ä»²è£å‘˜/æ‰§è¡Œæ³•å®˜`, key: `procedure${i}PresidingJudge`, width: 22 },
+      { header: `ç¨‹åº${i}-è”ç³»æ–¹å¼`, key: `procedure${i}PresidingJudgeContact`, width: 18 },
+      { header: `ç¨‹åº${i}-åŠ©ç†`, key: `procedure${i}JudgeAssistant`, width: 16 },
+      { header: `ç¨‹åº${i}-åŠ©ç†è”ç³»æ–¹å¼`, key: `procedure${i}JudgeAssistantContact`, width: 18 },
+      { header: `ç¨‹åº${i}-ç¨‹åºå½“äº‹äºº`, key: `procedure${i}Parties`, width: 48 }
     );
   }
 
@@ -749,7 +749,7 @@ function buildIntakeRow(intake: IntakeExportRow, coUserNames: Map<string, string
     feeSchedule: intake.feeSchedule ?? "",
     feeNote: intake.feeNote ?? "",
     owner: intake.ownerUser?.name ?? "",
-    coUsers: intake.coUserIds.map((id) => coUserNames.get(id) ?? id).join("；"),
+    coUsers: intake.coUserIds.map((id) => coUserNames.get(id) ?? id).join("ï¼›"),
     parties: formatParties(intake.parties),
     documents: formatDocuments(intake.documents),
     matter: intake.matter
@@ -769,7 +769,7 @@ function buildMatterRow(
   const otherClients = matter.clientLinks
     .filter((link) => link.clientId !== matter.primaryClientId)
     .map((link) => `${link.label ? `${link.label}:` : ""}${link.client.name}`)
-    .join("；");
+    .join("ï¼›");
   const source = matter.intake;
   const row: Record<string, unknown> = {
     internalCode: matter.internalCode,
@@ -803,13 +803,13 @@ function buildMatterRow(
     otherClients,
     owner: matter.owner.name,
     members: matter.members
-      .map((member) => `${member.user.name}（${memberRoleLabel[member.role]}）`)
-      .join("；"),
+      .map((member) => `${member.user.name}ï¼ˆ${memberRoleLabel[member.role]}ï¼‰`)
+      .join("ï¼›"),
     parties: formatParties(matter.parties),
     procedureSummary: formatProcedureSummary(matter.procedures),
     relatedEntities: matter.relatedEntities
       .map((entity) => [entity.name, entity.relationship, entity.notes].filter(Boolean).join(" / "))
-      .join("；"),
+      .join("ï¼›"),
     relatedMatters: formatRelatedMatters(matter),
     documents: formatDocuments(matter.documents),
     customValues: formatJson(matter.customValues),
@@ -835,7 +835,7 @@ function buildMatterRow(
     sourceFeeAmount: decimalNumber(source?.feeAmount),
     sourceFeeSchedule: source?.feeSchedule ?? "",
     sourceFeeNote: source?.feeNote ?? "",
-    sourceCoUsers: (source?.coUserIds ?? []).map((id) => coUserNames.get(id) ?? id).join("；"),
+    sourceCoUsers: (source?.coUserIds ?? []).map((id) => coUserNames.get(id) ?? id).join("ï¼›"),
     sourceDocuments: formatDocuments(source?.documents ?? []),
     createdAt: formatDateTime(matter.createdAt),
     updatedAt: formatDateTime(matter.updatedAt)
@@ -874,8 +874,8 @@ function buildProcedureCells(
     [`procedure${index}JudgeAssistant`]: procedure.judgeAssistant ?? "",
     [`procedure${index}JudgeAssistantContact`]: procedure.judgeAssistantContact ?? "",
     [`procedure${index}Parties`]: procedure.procedureParties
-      .map((row) => `${label(litigationStandingLabel, row.standing)}：${formatParty(row.party)}`)
-      .join("；")
+      .map((row) => `${label(litigationStandingLabel, row.standing)}ï¼š${formatParty(row.party)}`)
+      .join("ï¼›")
   };
 }
 
@@ -888,18 +888,18 @@ function formatProcedureSummary(procedures: MatterExportRow["procedures"]) {
         procedure.caseNumber,
         procedure.handlingAgency,
         procedure.status ? procedureStatusLabel[procedure.status] : "",
-        procedure.acceptedAt ? `受理:${formatDate(procedure.acceptedAt)}` : "",
+        procedure.acceptedAt ? `å—ç†:${formatDate(procedure.acceptedAt)}` : "",
         procedure.concludedAt ? `Cerrar caso:${formatDate(procedure.concludedAt)}` : "",
-        procedure.outcome ? `结果:${procedureOutcomeLabel[procedure.outcome]}` : ""
+        procedure.outcome ? `ç»“æžœ:${procedureOutcomeLabel[procedure.outcome]}` : ""
       ].filter(Boolean).join(" / ")
     )
-    .join("；");
+    .join("ï¼›");
 }
 
 function formatParties(parties: { role: PartyRole; standing: LitigationStanding | null; partyType: PartyType; name: string; idNumber: string | null; enterpriseSocialCode: string | null; phone: string | null; address: string | null; legalRep: string | null; contactName: string | null; notes: string | null }[]) {
   return parties
-    .map((party) => `${partyRoleLabel[party.role]}：${formatParty(party)}`)
-    .join("；");
+    .map((party) => `${partyRoleLabel[party.role]}ï¼š${formatParty(party)}`)
+    .join("ï¼›");
 }
 
 function formatParty(party: {
@@ -917,15 +917,15 @@ function formatParty(party: {
   const detail = [
     label(litigationStandingLabel, party.standing),
     partyTypeLabel[party.partyType],
-    party.idNumber ? `证件:${party.idNumber}` : "",
-    party.enterpriseSocialCode ? `代码:${party.enterpriseSocialCode}` : "",
-    party.phone ? `电话:${party.phone}` : "",
-    party.legalRep ? `法定代表人:${party.legalRep}` : "",
-    party.contactName ? `联系人:${party.contactName}` : "",
-    party.address ? `地址:${party.address}` : "",
+    party.idNumber ? `è¯ä»¶:${party.idNumber}` : "",
+    party.enterpriseSocialCode ? `ä»£ç :${party.enterpriseSocialCode}` : "",
+    party.phone ? `ç”µè¯:${party.phone}` : "",
+    party.legalRep ? `æ³•å®šä»£è¡¨äºº:${party.legalRep}` : "",
+    party.contactName ? `è”ç³»äºº:${party.contactName}` : "",
+    party.address ? `åœ°å€:${party.address}` : "",
     party.notes ? `Observaciones:${party.notes}` : ""
   ].filter(Boolean);
-  return detail.length > 0 ? `${party.name}（${detail.join("，")}）` : party.name;
+  return detail.length > 0 ? `${party.name}ï¼ˆ${detail.join("ï¼Œ")}ï¼‰` : party.name;
 }
 
 function formatContacts(
@@ -934,20 +934,20 @@ function formatContacts(
   return contacts
     .map((contact) =>
       [
-        contact.isPrimary ? "主" : "",
+        contact.isPrimary ? "ä¸»" : "",
         contact.name,
         contact.title,
         contact.phone,
         contact.email
       ].filter(Boolean).join(" / ")
     )
-    .join("；");
+    .join("ï¼›");
 }
 
 function formatDocuments(documents: { name: string; category: string; createdAt: Date }[]) {
   return documents
-    .map((doc) => `${doc.name}（${doc.category}，${formatDate(doc.createdAt)}）`)
-    .join("；");
+    .map((doc) => `${doc.name}ï¼ˆ${doc.category}ï¼Œ${formatDate(doc.createdAt)}ï¼‰`)
+    .join("ï¼›");
 }
 
 function formatRelatedMatters(matter: MatterExportRow) {
@@ -955,7 +955,7 @@ function formatRelatedMatters(matter: MatterExportRow) {
   const to = matter.linksTo.map((link) => link.matter);
   return [...from, ...to]
     .map((row) => `${row.firmCaseNo ?? row.internalCode} ${row.title}`)
-    .join("；");
+    .join("ï¼›");
 }
 
 function polishSheet(sheet: ExcelJS.Worksheet, moneyColumnKeys: string[]) {
@@ -1033,7 +1033,7 @@ function decimalNumber(value: Prisma.Decimal | number | null | undefined) {
 }
 
 function yesNo(value: boolean | null | undefined) {
-  return value ? "是" : "否";
+  return value ? "æ˜¯" : "å¦";
 }
 
 function label<T extends string>(
@@ -1051,3 +1051,5 @@ function formatJson(value: Prisma.JsonValue) {
   }
   return String(value);
 }
+
+

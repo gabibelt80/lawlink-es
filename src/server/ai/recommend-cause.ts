@@ -1,11 +1,11 @@
-"use server";
+﻿"use server";
 
 /**
- * v0.19: Recomendación de causa por IA
+ * v0.19: RecomendaciÃ³n de causa por IA
  *
- * Ingresa la descripción del caso → el LLM devuelve 3 causas de 4to nivel + motivo de recomendación + confianza
- * → Usa searchCauses para buscar el id en la base (descarta las no encontradas)
- * → Devuelve lista de candidatos con el objeto cause de la base
+ * Ingresa la descripciÃ³n del caso â†’ el LLM devuelve 3 causas de 4to nivel + motivo de recomendaciÃ³n + confianza
+ * â†’ Usa searchCauses para buscar el id en la base (descarta las no encontradas)
+ * â†’ Devuelve lista de candidatos con el objeto cause de la base
  */
 import type { MatterCategory, ProcedureType } from "@prisma/client";
 import { aiChat, extractJson, AiNotConfiguredError } from "@/lib/ai/client";
@@ -26,20 +26,20 @@ type LlmCandidate = {
   confidence?: unknown;
 };
 
-const SYSTEM_PROMPT = `Sos un asistente de clasificación de causas legales de Argentina.
-Según la categoría del caso y la descripción de los hechos dada por el usuario, seleccioná las 3 causas **más específicas** (tercer o cuarto nivel) más cercanas del sistema de causas civiles/penales/administrativas argentinas.
+const SYSTEM_PROMPT = `Sos un asistente de clasificaciÃ³n de causas legales de Argentina.
+SegÃºn la categorÃ­a del caso y la descripciÃ³n de los hechos dada por el usuario, seleccionÃ¡ las 3 causas **mÃ¡s especÃ­ficas** (tercer o cuarto nivel) mÃ¡s cercanas del sistema de causas civiles/penales/administrativas argentinas.
 
-Respondé estrictamente con el siguiente array JSON (solo JSON, sin texto explicativo):
+RespondÃ© estrictamente con el siguiente array JSON (solo JSON, sin texto explicativo):
 [
-  {"name": "Nombre completo de la causa (ej.: Conflicto de compraventa)", "reason": "Por qué se ajusta a este caso, máximo 30 caracteres", "confidence": "HIGH" | "MEDIUM" | "LOW"},
+  {"name": "Nombre completo de la causa (ej.: Conflicto de compraventa)", "reason": "Por quÃ© se ajusta a este caso, mÃ¡ximo 30 caracteres", "confidence": "HIGH" | "MEDIUM" | "LOW"},
   ...
 ]
 
 Reglas:
-- Devolvé 3 resultados ordenados por relevancia de mayor a menor
-- El nombre de la causa debe usar la denominación formal completa
-- Priorizá causas específicas de último nivel, evitá clasificaciones genéricas de segundo nivel
-- Autoevaluación de confianza: HIGH = los elementos del caso coinciden completamente; MEDIUM = los elementos principales coinciden pero hay ambigüedad; LOW = información insuficiente, solo se puede adivinar`;
+- DevolvÃ© 3 resultados ordenados por relevancia de mayor a menor
+- El nombre de la causa debe usar la denominaciÃ³n formal completa
+- PriorizÃ¡ causas especÃ­ficas de Ãºltimo nivel, evitÃ¡ clasificaciones genÃ©ricas de segundo nivel
+- AutoevaluaciÃ³n de confianza: HIGH = los elementos del caso coinciden completamente; MEDIUM = los elementos principales coinciden pero hay ambigÃ¼edad; LOW = informaciÃ³n insuficiente, solo se puede adivinar`;
 
 function categoryHint(category: MatterCategory): string {
   switch (category) {
@@ -52,7 +52,7 @@ function categoryHint(category: MatterCategory): string {
     case "NON_LITIGATION":
       return "No contencioso";
     case "LEGAL_COUNSEL":
-      return "Asesoría legal permanente";
+      return "AsesorÃ­a legal permanente";
     case "SPECIAL_PROJECT":
       return "Proyecto especial";
     default:
@@ -67,10 +67,10 @@ function normalizeConfidence(v: unknown): CauseConfidence {
 }
 
 /**
- * Búsqueda inversa: mapea el nombre de causa dado por el LLM a un registro de la base.
+ * BÃºsqueda inversa: mapea el nombre de causa dado por el LLM a un registro de la base.
  * - Prioriza coincidencia exacta de nombre
  * - Si no, toma el primer resultado de searchCauses
- * - Filtra los de nivel < 3 (segundo nivel es muy genérico, mejor no recomendar)
+ * - Filtra los de nivel < 3 (segundo nivel es muy genÃ©rico, mejor no recomendar)
  */
 async function resolveCauseId(
   category: MatterCategory,
@@ -102,7 +102,7 @@ export async function recommendCause(input: {
   const situation = input.situation.trim();
   if (situation.length < 5) {
     throw new Error(
-      "La descripción del caso es demasiado corta; debe tener al menos 5 caracteres.",
+      "La descripciÃ³n del caso es demasiado corta; debe tener al menos 5 caracteres.",
     );
   }
 
@@ -113,7 +113,7 @@ export async function recommendCause(input: {
         { role: "system", content: SYSTEM_PROMPT },
         {
           role: "user",
-          content: `Categoría del caso: ${categoryHint(input.category)}\n\nHechos:\n${situation.slice(0, 4000)}`,
+          content: `CategorÃ­a del caso: ${categoryHint(input.category)}\n\nHechos:\n${situation.slice(0, 4000)}`,
         },
       ],
       maxTokens: 800,
@@ -147,8 +147,9 @@ export async function recommendCause(input: {
   }
 
   if (results.length === 0) {
-    throw new Error("Las causas recomendadas por la IA no están en la biblioteca de causas, seleccioná manualmente");
+    throw new Error("Las causas recomendadas por la IA no estÃ¡n en la biblioteca de causas, seleccionÃ¡ manualmente");
   }
 
   return results;
 }
+

@@ -16,8 +16,8 @@ import {
   type SealRequestRow,
   type SealTypeConfigRow,
   type MatterOption,
-  SEAL_TYPE_CN,
-  SEAL_STATUS_CN,
+  SEAL_TYPE_ES,
+  SEAL_STATUS_ES,
   SEAL_STATUS_COLOR,
 } from "./seal-types";
 import { matterHref } from "@/lib/matters/route";
@@ -62,7 +62,7 @@ export function SealsView({
     action: "detail" | "approve" | "reject" | "stamp" | "cancel";
   } | null>(null);
 
-  // 卷宗联动：URL 带 ?new=1 自动打开新建 Sheet
+  // Vínculo con expediente: URL con ?new=1 abre automáticamente el Sheet nuevo
   useEffect(() => {
     if (presetFromQuery?.draftDocId) {
       setSheetOpen(true);
@@ -88,7 +88,7 @@ export function SealsView({
     [toApprove],
   );
   const firmTabLabel =
-    currentUser.role === "FINANCE" ? "Finanzas章Aprobación" : "全所Aprobación";
+    currentUser.role === "FINANCE" ? "Aprobación de Finanzas" : "Aprobación del estudio";
   const rows =
     tab === "allMine"
       ? mine
@@ -102,7 +102,7 @@ export function SealsView({
 
   return (
     <div className="space-y-5">
-      {/* 标题区 */}
+      {/* Zona de título */}
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl">Aprobación · Uso de sellos</h1>
@@ -117,44 +117,44 @@ export function SealsView({
         </Button>
       </div>
 
-      {/* KPI 顶部 */}
+      {/* KPI superior */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
         <KpiCard
           icon={<CheckCircle2 className="h-3.5 w-3.5" />}
-          label="本月已盖章"
+          label="Sellados este mes"
           value={stats.monthStamped}
           accent="rgb(22 163 74)"
         />
         <KpiCard
           icon={<AlertOctagon className="h-3.5 w-3.5" />}
-          label="待Aprobación"
+          label="Pendiente de aprobación"
           value={stats.pendingApprovalCount}
           accent="rgb(180 130 0)"
         />
         <KpiCard
           icon={<Stamp className="h-3.5 w-3.5" />}
-          label="待盖章"
+          label="Pendiente de sellado"
           value={stats.waitingStampCount}
           accent="rgb(37 99 235)"
         />
       </div>
 
-      {/* Tab */}
+      {/* Tabs */}
       <div className="border-b border-border">
         <div className="flex gap-5">
           <TabBtn active={tab === "allMine"} onClick={() => setTab("allMine")}>
-            我的申请
+            Mis solicitudes
             <Count n={mine.length} />
           </TabBtn>
           <TabBtn active={tab === "pending"} onClick={() => setTab("pending")}>
-            待Aprobación
+            Pendiente de aprobación
             <Count n={minePending.length} hot={minePending.length > 0} />
           </TabBtn>
           <TabBtn
             active={tab === "processed"}
             onClick={() => setTab("processed")}
           >
-            已Aprobación
+            Aprobadas
             <Count n={mineProcessed.length} />
           </TabBtn>
           {capabilities.canApprove && (
@@ -162,7 +162,7 @@ export function SealsView({
               active={tab === "toApprove"}
               onClick={() => setTab("toApprove")}
             >
-              待我Aprobación
+              Pendientes de mi aprobación
               <Count n={toApprove.length} hot={toApprove.length > 0} />
             </TabBtn>
           )}
@@ -175,7 +175,7 @@ export function SealsView({
         </div>
       </div>
 
-      {/* 表格 */}
+      {/* Tabla */}
       <div>
         {rows.length === 0 ? (
           <div className="ll-surface rounded-lg p-12 text-center text-sm text-muted-foreground">
@@ -187,13 +187,13 @@ export function SealsView({
             <table className="w-full text-[12px]">
               <thead className="bg-muted/30 text-[10px] uppercase tracking-wider text-muted-foreground">
                 <tr>
-                  <th className="px-3 py-2 text-left font-normal">流水号</th>
-                  <th className="px-3 py-2 text-left font-normal">章种类</th>
-                  <th className="px-3 py-2 text-left font-normal">申请人</th>
-                  <th className="px-3 py-2 text-left font-normal">关联Caso</th>
-                  <th className="px-3 py-2 text-left font-normal">用章事由</th>
+                  <th className="px-3 py-2 text-left font-normal">Nº secuencia</th>
+                  <th className="px-3 py-2 text-left font-normal">Tipo de sello</th>
+                  <th className="px-3 py-2 text-left font-normal">Solicitante</th>
+                  <th className="px-3 py-2 text-left font-normal">Caso vinculado</th>
+                  <th className="px-3 py-2 text-left font-normal">Motivo del sello</th>
                   <th className="px-3 py-2 text-left font-normal">Estado</th>
-                  <th className="px-3 py-2 text-left font-normal">Enviar时间</th>
+                  <th className="px-3 py-2 text-left font-normal">Fecha de envío</th>
                   <th className="px-3 py-2 text-right font-normal">Acciones</th>
                 </tr>
               </thead>
@@ -300,11 +300,11 @@ function Count({ n, hot }: { n: number; hot?: boolean }) {
 }
 
 function emptyText(tab: Tab, firmTabLabel: string) {
-  if (tab === "pending") return "暂无待Aprobación申请";
-  if (tab === "processed") return "暂无已Aprobación申请";
-  if (tab === "toApprove") return "暂无待你Aprobación的申请";
-  if (tab === "firm") return `暂无${firmTabLabel}记录`;
-  return "你还没有Solicitud de sello";
+  if (tab === "pending") return "No hay solicitudes pendientes de aprobación";
+  if (tab === "processed") return "No hay solicitudes aprobadas";
+  if (tab === "toApprove") return "No hay solicitudes pendientes de tu aprobación";
+  if (tab === "firm") return `No hay registros de ${firmTabLabel}`;
+  return "Aún no tenés solicitudes de sello";
 }
 
 function SealRow({
@@ -337,13 +337,13 @@ function SealRow({
           type="button"
           onClick={() => onAction("detail")}
           className="font-mono text-[11px] text-primary hover:underline"
-          title="VerSolicitud de sello详情"
+          title="Ver detalle de la solicitud de sello"
         >
           {row.code}
         </button>
       </td>
       <td className="px-3 py-2">
-        {SEAL_TYPE_CN[row.sealType] ?? row.sealType}
+        {SEAL_TYPE_ES[row.sealType] ?? row.sealType}
       </td>
       <td className="px-3 py-2 text-foreground">{row.requestedBy.name}</td>
       <td className="px-3 py-2 text-muted-foreground">
@@ -374,11 +374,11 @@ function SealRow({
             borderColor: colors.border,
           }}
         >
-          {SEAL_STATUS_CN[row.status]}
+          {SEAL_STATUS_ES[row.status]}
         </span>
       </td>
       <td className="px-3 py-2 font-mono text-[10px] text-muted-foreground">
-        {new Date(row.requestedAt).toLocaleDateString("zh-CN")}
+        {new Date(row.requestedAt).toLocaleDateString("es-AR")}
       </td>
       <td className="px-3 py-2 text-right">
         {row.status === "PENDING" && (
@@ -389,7 +389,7 @@ function SealRow({
                 onClick={() => onAction("approve")}
                 className="text-[11px] text-primary hover:underline"
               >
-                Aprobación
+                Aprobar
               </button>
             )}
             {isOwner && (
@@ -400,7 +400,7 @@ function SealRow({
                   onClick={() => onAction("cancel")}
                   className="text-[11px] text-muted-foreground hover:text-destructive"
                 >
-                  撤销
+                  Cancelar
                 </button>
               </>
             )}
@@ -412,7 +412,7 @@ function SealRow({
             onClick={() => onAction("stamp")}
             className="text-[11px] text-primary hover:underline"
           >
-            回填盖章件
+            Cargar documento sellado
           </button>
         )}
         {row.status === "STAMPED" && row.stampedDoc && (
@@ -420,7 +420,7 @@ function SealRow({
             href={`/api/documents/${row.stampedDoc.id}/download`}
             className="text-[11px] text-muted-foreground hover:text-foreground"
           >
-            下载
+            Descargar
           </a>
         )}
         {row.status === "REJECTED" && isAdmin && (

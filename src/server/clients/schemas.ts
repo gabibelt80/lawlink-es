@@ -1,4 +1,4 @@
-import { z } from "zod";
+﻿import { z } from "zod";
 
 export const clientTypeSchema = z.enum([
   "INDIVIDUAL",
@@ -40,7 +40,7 @@ export const clientCreateSchema = z.object({
     .optional()
     .or(z.literal("")),
   source: z.string().max(80).optional().or(z.literal("")),
-  // v0.39: Caso云式补充字段（internalCode Sistema生成，不收用户输入）
+  // v0.39: Casoäº‘å¼è¡¥å……å­—æ®µï¼ˆinternalCode Sistemaç”Ÿæˆï¼Œä¸æ”¶ç”¨æˆ·è¾“å…¥ï¼‰
   cooperationStatus: cooperationStatusSchema.default("SIGNED"),
   industry: z.string().max(60).optional().or(z.literal("")),
   gender: clientGenderSchema.optional().or(z.literal("")),
@@ -67,3 +67,5 @@ export const clientListQuerySchema = z.object({
 });
 
 export type ClientListQuery = z.infer<typeof clientListQuerySchema>;
+
+

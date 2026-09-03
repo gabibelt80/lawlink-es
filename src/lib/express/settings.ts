@@ -1,13 +1,13 @@
-/**
- * v0.9.3 快递 API 配置（双 provider：快递鸟 主 + 快递100 备）
+﻿/**
+ * v0.9.3 å¿«é€’ API é…ç½®ï¼ˆåŒ providerï¼šå¿«é€’é¸Ÿ ä¸» + å¿«é€’100 å¤‡ï¼‰
  *
- * SystemSetting 单 key `expressSettings`，value：
+ * SystemSetting å• key `expressSettings`ï¼Œvalueï¼š
  *   {
  *     kdniao: { ebusinessId, appKeyCipher: {ct,iv,tag} },
  *     kuaidi100: { customer, keyCipher: {ct,iv,tag} }
  *   }
  *
- * appKey/key 用 storage/crypto 同密钥加密。
+ * appKey/key ç”¨ storage/crypto åŒå¯†é’¥åŠ å¯†ã€‚
  */
 import { prisma } from "@/lib/prisma";
 import { encryptBuffer, decryptBuffer } from "@/lib/storage/crypto";
@@ -67,12 +67,12 @@ export async function readPublicExpressSettings(): Promise<{
     kdniao: {
       ebusinessId: s.kdniao.ebusinessId,
       configured: !!(s.kdniao.ebusinessId && kdniaoKey),
-      appKeyMasked: kdniaoKey ? `${kdniaoKey.slice(0, 4)}••••${kdniaoKey.slice(-4)}` : ""
+      appKeyMasked: kdniaoKey ? `${kdniaoKey.slice(0, 4)}â€¢â€¢â€¢â€¢${kdniaoKey.slice(-4)}` : ""
     },
     kuaidi100: {
       customer: s.kuaidi100.customer,
       configured: !!(s.kuaidi100.customer && kd100Key),
-      keyMasked: kd100Key ? `${kd100Key.slice(0, 4)}••••${kd100Key.slice(-4)}` : ""
+      keyMasked: kd100Key ? `${kd100Key.slice(0, 4)}â€¢â€¢â€¢â€¢${kd100Key.slice(-4)}` : ""
     }
   };
 }
@@ -131,3 +131,4 @@ export async function saveExpressSettings(input: {
 
   return { ok: true };
 }
+

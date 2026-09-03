@@ -1,5 +1,5 @@
-// 内部 helper：仅供 server action / cron 调用，不做鉴权。
-// 不能标 "use server"，否则任何Cliente端可直接调用给任意用户伪造Notificaciones。
+﻿// å†…éƒ¨ helperï¼šä»…ä¾› server action / cron è°ƒç”¨ï¼Œä¸åšé‰´æƒã€‚
+// ä¸èƒ½æ ‡ "use server"ï¼Œå¦åˆ™ä»»ä½•Clienteç«¯å¯ç›´æŽ¥è°ƒç”¨ç»™ä»»æ„ç”¨æˆ·ä¼ªé€ Notificacionesã€‚
 import { prisma } from "@/lib/prisma";
 import type { NotificationPriority, NotificationType } from "@prisma/client";
 
@@ -14,7 +14,7 @@ type CreateNotificationInput = {
   refId?: string;
 };
 
-/** 通用NotificacionesCrear helper，被其他 server action 调用 */
+/** é€šç”¨NotificacionesCrear helperï¼Œè¢«å…¶ä»– server action è°ƒç”¨ */
 export async function createNotification(input: CreateNotificationInput) {
   return prisma.notification.create({
     data: {
@@ -29,3 +29,5 @@ export async function createNotification(input: CreateNotificationInput) {
     },
   });
 }
+
+

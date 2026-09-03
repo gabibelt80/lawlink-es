@@ -1,4 +1,4 @@
-"use server";
+﻿"use server";
 
 import { revalidatePath } from "next/cache";
 import { LitigationStanding, PartyRole, PartyType, Prisma } from "@prisma/client";
@@ -65,9 +65,9 @@ export async function listMatters(input: Partial<MatterListQuery> = {}) {
   if (query.search) {
     whereParts.push({
       OR: [
-        { title: { contains: query.search, mode: "insensitive" } },
-        { internalCode: { contains: query.search, mode: "insensitive" } },
-        { primaryClient: { name: { contains: query.search, mode: "insensitive" } } }
+        { title: { contains: query.search } },
+        { internalCode: { contains: query.search } },
+        { primaryClient: { name: { contains: query.search } } }
       ]
     });
   }
@@ -110,14 +110,14 @@ export async function listMatters(input: Partial<MatterListQuery> = {}) {
             }
           }
         },
-        // v0.8.1: 卡片化需要前几位对方/第三人
+        // v0.8.1: å¡ç‰‡åŒ–éœ€è¦å‰å‡ ä½å¯¹æ–¹/ç¬¬ä¸‰äºº
         parties: {
           where: { role: { in: ["OPPOSING_PARTY", "THIRD_PARTY"] } },
           orderBy: [{ role: "asc" }, { ordinal: "asc" }],
           take: 3,
           select: { id: true, name: true, role: true, standing: true }
         },
-        // v0.16: 是否有归档申请待Aprobación
+        // v0.16: æ˜¯å¦æœ‰å½’æ¡£ç”³è¯·å¾…AprobaciÃ³n
         archiveRecords: {
           where: { status: "PENDING_REVIEW" },
           take: 1,
@@ -171,7 +171,7 @@ export async function listMatters(input: Partial<MatterListQuery> = {}) {
   return { items, total, page: query.page, pageSize: query.pageSize };
 }
 
-// v0.32: 程序级基本信息Editar
+// v0.32: ç¨‹åºçº§åŸºæœ¬ä¿¡æ¯Editar
 export async function updateProcedureInfo(input: {
   procedureId: string;
   jurisdiction?: string;
@@ -212,7 +212,7 @@ export async function updateProcedureInfo(input: {
     where: { id: input.procedureId },
     select: { matterId: true, type: true }
   });
-  if (!proc) throw new Error("程序不存在");
+  if (!proc) throw new Error("ç¨‹åºä¸å­˜åœ¨");
   await assertCanAccessMatter(session.user.id, session.user.role, proc.matterId);
   await assertMatterWritable(proc.matterId);
   assertAgencyAllowedForProcedure(input.handlingAgency, proc.type);
@@ -223,10 +223,10 @@ export async function updateProcedureInfo(input: {
   const updatedPartyRows = normalizeUpdatedParties(input.updatedParties ?? []);
   const newPartyRows = normalizeNewProcedureParties(input.newProcedureParties ?? []);
   if ((input.updatedParties?.length ?? 0) !== updatedPartyRows.length) {
-    throw new Error("已有当事人信息不完整");
+    throw new Error("å·²æœ‰å½“äº‹äººä¿¡æ¯ä¸å®Œæ•´");
   }
   if ((input.newProcedureParties?.length ?? 0) !== newPartyRows.length) {
-    throw new Error("新增程序当事人信息不完整");
+    throw new Error("æ–°å¢žç¨‹åºå½“äº‹äººä¿¡æ¯ä¸å®Œæ•´");
   }
 
   if (partyRows || updatedPartyRows.length > 0) {
@@ -267,7 +267,7 @@ export async function updateProcedureInfo(input: {
       ) ?? false) ||
       clientIds.some((clientId) => !validClientIds.has(clientId))
     ) {
-      throw new Error("存在不属于本案的当事人");
+      throw new Error("å­˜åœ¨ä¸å±žäºŽæœ¬æ¡ˆçš„å½“äº‹äºº");
     }
   }
 
@@ -313,7 +313,7 @@ export async function updateProcedureInfo(input: {
             where: { id: partyId, matterId: proc.matterId },
             select: { id: true }
           });
-          if (!existingParty) throw new Error("存在不属于本案的当事人");
+          if (!existingParty) throw new Error("å­˜åœ¨ä¸å±žäºŽæœ¬æ¡ˆçš„å½“äº‹äºº");
           await tx.party.update({
             where: { id: existingParty.id },
             data: {
@@ -434,7 +434,7 @@ async function ensureClientParty(
     where: { id: clientId },
     select: { id: true, name: true, type: true, idNumber: true }
   });
-  if (!client) throw new Error("Cliente不存在");
+  if (!client) throw new Error("Clienteä¸å­˜åœ¨");
 
   const existing = await tx.party.findFirst({
     where: {
@@ -462,7 +462,7 @@ async function ensureClientParty(
       idNumber: partyType === "NATURAL_PERSON" ? client.idNumber : null,
       enterpriseSocialCode: partyType === "NATURAL_PERSON" ? null : client.idNumber,
       enterpriseName: partyType === "NATURAL_PERSON" ? null : client.name,
-      notes: "由Caso关联Cliente自动补入"
+      notes: "ç”±Casoå…³è”Clienteè‡ªåŠ¨è¡¥å…¥"
     },
     select: { id: true }
   });
@@ -548,12 +548,12 @@ function normalizeNewProcedureParties(rows: NewProcedurePartyInput[]) {
     );
 }
 
-// v0.32: 关联Caso —— Buscar / 关联 / 解除
+// v0.32: å…³è”Caso â€”â€” Buscar / å…³è” / è§£é™¤
 export async function searchMattersForLink(matterId: string, q: string) {
   const session = await requireSession();
   await assertCanAssociateMatter(session.user.id, matterId);
   const query = q.trim();
-  // 已关联的（两个方向）排除
+  // å·²å…³è”çš„ï¼ˆä¸¤ä¸ªæ–¹å‘ï¼‰æŽ’é™¤
   const links = await prisma.matterLink.findMany({
     where: { OR: [{ matterId }, { relatedMatterId: matterId }] },
     select: { matterId: true, relatedMatterId: true }
@@ -571,8 +571,8 @@ export async function searchMattersForLink(matterId: string, q: string) {
       ...(query
         ? {
             OR: [
-              { title: { contains: query, mode: "insensitive" } },
-              { firmCaseNo: { contains: query, mode: "insensitive" } }
+              { title: { contains: query } },
+              { firmCaseNo: { contains: query } }
             ]
           }
         : {})
@@ -588,7 +588,7 @@ export async function addMatterLink(matterId: string, relatedMatterId: string) {
   const session = await requireSession();
   await assertCanAssociateMatter(session.user.id, matterId);
   await assertCanAssociateMatter(session.user.id, relatedMatterId);
-  if (matterId === relatedMatterId) throw new Error("不能关联到自身");
+  if (matterId === relatedMatterId) throw new Error("ä¸èƒ½å…³è”åˆ°è‡ªèº«");
   await prisma.matterLink.upsert({
     where: { matterId_relatedMatterId: { matterId, relatedMatterId } },
     create: { matterId, relatedMatterId },
@@ -608,7 +608,7 @@ export async function removeMatterLink(matterId: string, relatedMatterId: string
   const session = await requireSession();
   await assertCanAssociateMatter(session.user.id, matterId);
   await assertCanAssociateMatter(session.user.id, relatedMatterId);
-  // 两个方向都删（无论当初谁关联谁）
+  // ä¸¤ä¸ªæ–¹å‘éƒ½åˆ ï¼ˆæ— è®ºå½“åˆè°å…³è”è°ï¼‰
   await prisma.matterLink.deleteMany({
     where: {
       OR: [
@@ -718,21 +718,21 @@ export async function createMatter(input: MatterCreateInput) {
 
         primaryClientId,
 
-        // 主办Abogado默认是Crear者
+        // ä¸»åŠžAbogadoé»˜è®¤æ˜¯Crearè€…
         members: {
           create: { userId: session.user.id, role: "LEAD" }
         },
 
-        // 多Cliente关联表
+        // å¤šClienteå…³è”è¡¨
         clientLinks: {
           create: data.clientIds.map((cid, idx) => ({
             clientId: cid,
             isPrimary: idx === 0,
-            label: idx === 0 ? "主要委托方" : `委托方 ${idx + 1}`
+            label: idx === 0 ? "ä¸»è¦å§”æ‰˜æ–¹" : `å§”æ‰˜æ–¹ ${idx + 1}`
           }))
         },
 
-        // 当事人
+        // å½“äº‹äºº
         parties: {
           create: data.parties.map((p) =>
             emptyToNull({
@@ -752,7 +752,7 @@ export async function createMatter(input: MatterCreateInput) {
           )
         },
 
-        // 首程序
+        // é¦–ç¨‹åº
         procedures: {
           create: {
             type: data.firstProcedure.type,
@@ -775,15 +775,15 @@ export async function createMatter(input: MatterCreateInput) {
       data: {
         matterId: matter.id,
         eventType: "MATTER_CREATED",
-        title: "Caso已Crear",
+        title: "Casoå·²Crear",
         occurredAt: new Date()
       }
     });
 
-    // v0.8: 默认卷宗
+    // v0.8: é»˜è®¤å·å®—
     await seedDefaultFolders(tx, matter.id, data.category);
 
-    // 标记 otherClientIds 避免被 lint 误判未用
+    // æ ‡è®° otherClientIds é¿å…è¢« lint è¯¯åˆ¤æœªç”¨
     void otherClientIds;
 
     return matter;
@@ -802,10 +802,10 @@ export async function createMatter(input: MatterCreateInput) {
 }
 
 /**
- * v0.5: ActualizarCaso团队。
- * - 仅当前主办Abogado可Acciones；AdministrarRol只负责Aprobación，不因Rol放开他人Caso处理权
- * - ownerId 改变时同步替换 MatterMember 中的 LEAD
- * - coLeadIds 和 assistantIds 覆盖式Actualizar对应Rol（不影响主办自动 LEAD）
+ * v0.5: ActualizarCasoå›¢é˜Ÿã€‚
+ * - ä»…å½“å‰ä¸»åŠžAbogadoå¯Accionesï¼›AdministrarRolåªè´Ÿè´£AprobaciÃ³nï¼Œä¸å› Rolæ”¾å¼€ä»–äººCasoå¤„ç†æƒ
+ * - ownerId æ”¹å˜æ—¶åŒæ­¥æ›¿æ¢ MatterMember ä¸­çš„ LEAD
+ * - coLeadIds å’Œ assistantIds è¦†ç›–å¼Actualizarå¯¹åº”Rolï¼ˆä¸å½±å“ä¸»åŠžè‡ªåŠ¨ LEADï¼‰
  */
 export async function updateMatterTeam(input: {
   matterId: string;
@@ -818,11 +818,11 @@ export async function updateMatterTeam(input: {
     where: { id: input.matterId, deletedAt: null },
     select: { id: true, ownerId: true }
   });
-  if (!matter) throw new Error("Caso不存在");
+  if (!matter) throw new Error("Casoä¸å­˜åœ¨");
   await assertMatterWritable(input.matterId);
-  await assertCanOwnMatter(session.user.id, input.matterId, "只有当前主办Abogado可以修改承办团队");
+  await assertCanOwnMatter(session.user.id, input.matterId, "åªæœ‰å½“å‰ä¸»åŠžAbogadoå¯ä»¥ä¿®æ”¹æ‰¿åŠžå›¢é˜Ÿ");
 
-  // 校验：coLeadIds / assistantIds 不能y ownerId 重叠
+  // æ ¡éªŒï¼šcoLeadIds / assistantIds ä¸èƒ½y ownerId é‡å 
   const co = input.coLeadIds.filter((id) => id !== input.ownerId);
   const ass = input.assistantIds.filter(
     (id) => id !== input.ownerId && !co.includes(id)
@@ -837,7 +837,7 @@ export async function updateMatterTeam(input: {
       });
     }
 
-    // 重建 MatterMember：先EliminarVer todos，再按新结构插入
+    // é‡å»º MatterMemberï¼šå…ˆEliminarVer todosï¼Œå†æŒ‰æ–°ç»“æž„æ’å…¥
     await tx.matterMember.deleteMany({ where: { matterId: input.matterId } });
 
     const rows = [
@@ -864,12 +864,12 @@ export async function updateMatterTeam(input: {
     detail: { ownerId: input.ownerId, coLeads: co.length, assistants: ass.length }
   });
 
-  // v0.43 ítems4：写入Caso动态时间线
+  // v0.43 Ã­tems4ï¼šå†™å…¥CasoåŠ¨æ€æ—¶é—´çº¿
   await prisma.timelineEvent.create({
     data: {
       matterId: input.matterId,
       eventType: "TEAM_CHANGED",
-      title: "Actualizar办案团队",
+      title: "ActualizaråŠžæ¡ˆå›¢é˜Ÿ",
       occurredAt: new Date(),
       refType: "Matter",
       refId: input.matterId
@@ -880,7 +880,7 @@ export async function updateMatterTeam(input: {
   return { ok: true };
 }
 
-// v0.27: EditarCaso基本信息（收案Fecha readonly，Estado走 lifecycle）
+// v0.27: EditarCasoåŸºæœ¬ä¿¡æ¯ï¼ˆæ”¶æ¡ˆFecha readonlyï¼ŒEstadoèµ° lifecycleï¼‰
 export async function updateMatterBasicInfo(input: MatterUpdateBasicInput) {
   const session = await requireSession();
   const data = matterUpdateBasicSchema.parse(input);
@@ -894,9 +894,9 @@ export async function updateMatterBasicInfo(input: MatterUpdateBasicInput) {
       category: true
     }
   });
-  if (!matter) throw new Error("Caso不存在");
+  if (!matter) throw new Error("Casoä¸å­˜åœ¨");
   await assertMatterWritable(data.id);
-  await assertCanLeadMatter(session.user.id, data.id, "只有Caso主办/协办可以EditarCaso基本信息");
+  await assertCanLeadMatter(session.user.id, data.id, "åªæœ‰Casoä¸»åŠž/ååŠžå¯ä»¥EditarCasoåŸºæœ¬ä¿¡æ¯");
   await assertCauseAllowedForMatter(data.id, data.causeId);
 
   await prisma.matter.update({
@@ -928,7 +928,7 @@ export async function updateMatterBasicInfo(input: MatterUpdateBasicInput) {
 export async function softDeleteMatter(id: string) {
   const session = await requireSession();
   await assertMatterWritable(id);
-  await assertCanOwnMatter(session.user.id, id, "只有当前主办Abogado可以EliminarCaso");
+  await assertCanOwnMatter(session.user.id, id, "åªæœ‰å½“å‰ä¸»åŠžAbogadoå¯ä»¥EliminarCaso");
 
   await prisma.matter.update({
     where: { id },
@@ -945,3 +945,5 @@ export async function softDeleteMatter(id: string) {
   revalidatePath("/matters");
   return { ok: true };
 }
+
+

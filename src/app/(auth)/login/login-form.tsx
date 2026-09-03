@@ -53,30 +53,33 @@ export function LoginForm() {
   return (
     <form method="post" onSubmit={handleSubmit(onSubmit)} className="space-y-4" noValidate>
       {authError ? (
-        <Alert variant="destructive" className="border-destructive/40 bg-destructive/10">
-          <AlertCircle className="h-4 w-4" />
-          <AlertDescription>{authError}</AlertDescription>
+        <Alert variant="destructive" className="border-red-200 bg-red-50">
+          <AlertCircle className="h-4 w-4 text-red-500" />
+          <AlertDescription className="text-red-600">{authError}</AlertDescription>
         </Alert>
       ) : null}
 
       <div className="space-y-1.5">
-        <Label htmlFor="email">Email</Label>
+        <Label htmlFor="email" className="text-slate-700">Email</Label>
         <Input
           id="email"
           type="email"
           autoComplete="email"
           placeholder="tu@email.com"
           aria-invalid={!!errors.email}
-          className={cn(errors.email && "border-destructive focus-visible:ring-destructive")}
+          className={cn(
+            "h-11 border-slate-300 bg-white text-slate-900 placeholder:text-slate-400",
+            errors.email && "border-red-400"
+          )}
           {...register("email")}
         />
         {errors.email && (
-          <p className="text-xs text-destructive">{errors.email.message}</p>
+          <p className="text-xs text-red-500">{errors.email.message}</p>
         )}
       </div>
 
       <div className="space-y-1.5">
-        <Label htmlFor="password">Contraseña</Label>
+        <Label htmlFor="password" className="text-slate-700">Contraseña</Label>
         <div className="relative">
           <Input
             id="password"
@@ -84,8 +87,8 @@ export function LoginForm() {
             autoComplete="current-password"
             aria-invalid={!!errors.password}
             className={cn(
-              "pr-10",
-              errors.password && "border-destructive focus-visible:ring-destructive"
+              "h-11 border-slate-300 bg-white pr-10 text-slate-900 placeholder:text-slate-400",
+              errors.password && "border-red-400"
             )}
             {...register("password")}
           />
@@ -94,26 +97,26 @@ export function LoginForm() {
             onClick={() => setShowPassword((v) => !v)}
             tabIndex={-1}
             aria-label={showPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
-            className="absolute inset-y-0 right-0 flex w-10 items-center justify-center text-muted-foreground transition-colors hover:text-foreground"
+            className="absolute inset-y-0 right-0 flex w-10 items-center justify-center text-slate-400 transition-colors hover:text-slate-600"
           >
             {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
           </button>
         </div>
         {errors.password && (
-          <p className="text-xs text-destructive">{errors.password.message}</p>
+          <p className="text-xs text-red-500">{errors.password.message}</p>
         )}
       </div>
 
       <Button
         type="submit"
-        className="h-10 w-full gap-2 shadow-md"
+        className="h-11 w-full gap-2 bg-blue-600 text-white shadow-md hover:bg-blue-700"
         disabled={isSubmitting}
       >
         {isSubmitting && <Loader2 className="h-4 w-4 animate-spin" />}
         {isSubmitting ? "Iniciando sesión..." : "Iniciar Sesión"}
       </Button>
 
-      <p className="text-center text-xs text-muted-foreground">
+      <p className="text-center text-xs text-slate-400">
         ¿Olvidaste tu contraseña? Contactá al administrador
       </p>
     </form>

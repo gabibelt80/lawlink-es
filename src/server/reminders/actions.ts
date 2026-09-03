@@ -1,19 +1,21 @@
-"use server";
+﻿"use server";
 
 /**
- * v0.38: Recordatorios扫描的可调用 Server Action 入口。
+ * v0.38: Recordatoriosæ‰«æçš„å¯è°ƒç”¨ Server Action å…¥å£ã€‚
  *
- * 单独成文件（顶层 "use server"）是因为 scan-due-reminders.ts 同时导出普通函数，
- * 内联 "use server" 无法被Cliente端组件 import（Next 14 限制）。
+ * å•ç‹¬æˆæ–‡ä»¶ï¼ˆé¡¶å±‚ "use server"ï¼‰æ˜¯å› ä¸º scan-due-reminders.ts åŒæ—¶å¯¼å‡ºæ™®é€šå‡½æ•°ï¼Œ
+ * å†…è” "use server" æ— æ³•è¢«Clienteç«¯ç»„ä»¶ importï¼ˆNext 14 é™åˆ¶ï¼‰ã€‚
  */
 import { scanDueReminders, type DueReminderScanResult } from "@/server/cron/jobs/scan-due-reminders";
 import { requireSession } from "@/lib/auth/session";
 
-/** admin / 主任Abogado可立即扫一遍（灰度验证 + Urgente补推 + 本地 dev 验证） */
+/** admin / ä¸»ä»»Abogadoå¯ç«‹å³æ‰«ä¸€éï¼ˆç°åº¦éªŒè¯ + Urgenteè¡¥æŽ¨ + æœ¬åœ° dev éªŒè¯ï¼‰ */
 export async function triggerDueReminderScan(): Promise<DueReminderScanResult> {
   const session = await requireSession();
   if (session.user.role !== "ADMIN" && session.user.role !== "PRINCIPAL_LAWYER") {
-    throw new Error("仅Administrar员 / 主任Abogado可手动触发到期Recordatorios扫描");
+    throw new Error("ä»…Administrarå‘˜ / ä¸»ä»»Abogadoå¯æ‰‹åŠ¨è§¦å‘åˆ°æœŸRecordatoriosæ‰«æ");
   }
   return scanDueReminders();
 }
+
+

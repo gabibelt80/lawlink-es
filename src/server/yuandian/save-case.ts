@@ -1,10 +1,10 @@
-"use server";
+﻿"use server";
 
 /**
- * v0.20: 把检索到的pesos典类案Guardar为Caso Document（category=JUDGMENT）
+ * v0.20: æŠŠæ£€ç´¢åˆ°çš„pesoså…¸ç±»æ¡ˆGuardarä¸ºCaso Documentï¼ˆcategory=JUDGMENTï¼‰
  *
- * 跳过 uploadDocument 的 file validation —— 这是 LawLink 内部生成的 md 文本，
- * 不走"用户上传"路径。
+ * è·³è¿‡ uploadDocument çš„ file validation â€”â€” è¿™æ˜¯ LawLink å†…éƒ¨ç”Ÿæˆçš„ md æ–‡æœ¬ï¼Œ
+ * ä¸èµ°"ç”¨æˆ·ä¸Šä¼ "è·¯å¾„ã€‚
  */
 import { prisma } from "@/lib/prisma";
 import { requireSession } from "@/lib/auth/session";
@@ -34,28 +34,28 @@ export type SaveCaseInput = {
 };
 
 function safeFileName(ah: string): string {
-  // 案号含特殊字符（）etc.，做最小清理用于文件名
+  // æ¡ˆå·å«ç‰¹æ®Šå­—ç¬¦ï¼ˆï¼‰etc.ï¼Œåšæœ€å°æ¸…ç†ç”¨äºŽæ–‡ä»¶å
   return ah.replace(/[\\/:*?"<>|]/g, "").slice(0, 80);
 }
 
 function buildMarkdown(c: SaveCaseInput["caseHit"]): string {
   const now = new Date().toLocaleString("zh-CN");
   return [
-    `# 类案存档：${c.title}`,
+    `# ç±»æ¡ˆå­˜æ¡£ï¼š${c.title}`,
     "",
-    `- **案号**：${c.ah}`,
-    `- **法院**：${c.jbdw}`,
-    `- **裁判Fecha**：${c.cprq}`,
-    `- **Causa**：${c.ay.join("、")}`,
-    `- **Caso类别**：${c.ajlb}`,
-    `- **地区**：${c.xzqh_p}`,
-    `- **文书种类**：${c.wszl}`,
-    `- **pesos典Enlace**：${c.detailUrl}`,
-    `- **Guardar时间**：${now}`,
+    `- **æ¡ˆå·**ï¼š${c.ah}`,
+    `- **æ³•é™¢**ï¼š${c.jbdw}`,
+    `- **è£åˆ¤Fecha**ï¼š${c.cprq}`,
+    `- **Causa**ï¼š${c.ay.join("ã€")}`,
+    `- **Casoç±»åˆ«**ï¼š${c.ajlb}`,
+    `- **åœ°åŒº**ï¼š${c.xzqh_p}`,
+    `- **æ–‡ä¹¦ç§ç±»**ï¼š${c.wszl}`,
+    `- **pesoså…¸Enlace**ï¼š${c.detailUrl}`,
+    `- **Guardaræ—¶é—´**ï¼š${now}`,
     "",
     "---",
     "",
-    c.content || "（无内容片段）"
+    c.content || "ï¼ˆæ— å†…å®¹ç‰‡æ®µï¼‰"
   ].join("\n");
 }
 
@@ -71,16 +71,16 @@ export async function saveCaseToMatter(input: SaveCaseInput): Promise<{
     where: { id: input.matterId, deletedAt: null },
     select: { id: true, status: true }
   });
-  if (!matter) throw new Error("Caso不存在");
+  if (!matter) throw new Error("Casoä¸å­˜åœ¨");
   if (matter.status === "ARCHIVED") {
-    throw new Error("Caso已归档（只读），不能再Guardar类案");
+    throw new Error("Casoå·²å½’æ¡£ï¼ˆåªè¯»ï¼‰ï¼Œä¸èƒ½å†Guardarç±»æ¡ˆ");
   }
 
   const md = buildMarkdown(input.caseHit);
   const buf = Buffer.from(md, "utf-8");
   const path = await storage.writeFile(`m_${input.matterId}`, buf);
   const hash = sha256(buf);
-  const docName = `类案_${safeFileName(input.caseHit.ah)}.md`;
+  const docName = `ç±»æ¡ˆ_${safeFileName(input.caseHit.ah)}.md`;
 
   const doc = await prisma.document.create({
     data: {
@@ -93,7 +93,7 @@ export async function saveCaseToMatter(input: SaveCaseInput): Promise<{
       size: buf.byteLength,
       sha256: hash,
       encrypted: false,
-      tags: ["类案", "pesos典"]
+      tags: ["ç±»æ¡ˆ", "pesoså…¸"]
     },
     select: { id: true, name: true }
   });
@@ -116,7 +116,7 @@ export async function saveCaseToMatter(input: SaveCaseInput): Promise<{
 }
 
 // ============================================================
-// v0.22: 语义检索结果存档（vector 路径，字段映射不同）
+// v0.22: è¯­ä¹‰æ£€ç´¢ç»“æžœå­˜æ¡£ï¼ˆvector è·¯å¾„ï¼Œå­—æ®µæ˜ å°„ä¸åŒï¼‰
 // ============================================================
 
 export type SaveVectorCaseInput = {
@@ -148,26 +148,26 @@ function formatJaDate(n: number | undefined | null): string {
 
 function buildVectorMarkdown(c: SaveVectorCaseInput["caseHit"]): string {
   const now = new Date().toLocaleString("zh-CN");
-  // Causa：优先 anyou（名字），否则 ay code 兜底
+  // Causaï¼šä¼˜å…ˆ anyouï¼ˆåå­—ï¼‰ï¼Œå¦åˆ™ ay code å…œåº•
   const ay =
-    (c.anyou && c.anyou.length ? c.anyou : c.ay)?.join("、") || "（无Causa信息）";
+    (c.anyou && c.anyou.length ? c.anyou : c.ay)?.join("ã€") || "ï¼ˆæ— Causaä¿¡æ¯ï¼‰";
   return [
-    `# 类案存档（语义检索）：${c.title}`,
+    `# ç±»æ¡ˆå­˜æ¡£ï¼ˆè¯­ä¹‰æ£€ç´¢ï¼‰ï¼š${c.title}`,
     "",
-    `- **案号**：${c.ah || "—"}`,
-    `- **法院**：${c.jbdw || "—"}`,
-    `- **裁判Fecha**：${formatJaDate(c.jaDate)}`,
-    `- **Causa**：${ay}`,
-    `- **Caso类别**：${c.ajlb}`,
-    `- **地区**：${c.xzqh_p}`,
-    `- **文书种类**：${c.wszl}`,
-    `- **相似度评分**：${c.score.toFixed(4)}`,
-    `- **pesos典Enlace**：${c.detailUrl}`,
-    `- **Guardar时间**：${now}`,
+    `- **æ¡ˆå·**ï¼š${c.ah || "â€”"}`,
+    `- **æ³•é™¢**ï¼š${c.jbdw || "â€”"}`,
+    `- **è£åˆ¤Fecha**ï¼š${formatJaDate(c.jaDate)}`,
+    `- **Causa**ï¼š${ay}`,
+    `- **Casoç±»åˆ«**ï¼š${c.ajlb}`,
+    `- **åœ°åŒº**ï¼š${c.xzqh_p}`,
+    `- **æ–‡ä¹¦ç§ç±»**ï¼š${c.wszl}`,
+    `- **ç›¸ä¼¼åº¦è¯„åˆ†**ï¼š${c.score.toFixed(4)}`,
+    `- **pesoså…¸Enlace**ï¼š${c.detailUrl}`,
+    `- **Guardaræ—¶é—´**ï¼š${now}`,
     "",
     "---",
     "",
-    c.content || "（无内容片段）"
+    c.content || "ï¼ˆæ— å†…å®¹ç‰‡æ®µï¼‰"
   ].join("\n");
 }
 
@@ -183,18 +183,18 @@ export async function saveVectorCaseToMatter(input: SaveVectorCaseInput): Promis
     where: { id: input.matterId, deletedAt: null },
     select: { id: true, status: true }
   });
-  if (!matter) throw new Error("Caso不存在");
+  if (!matter) throw new Error("Casoä¸å­˜åœ¨");
   if (matter.status === "ARCHIVED") {
-    throw new Error("Caso已归档（只读），不能再Guardar类案");
+    throw new Error("Casoå·²å½’æ¡£ï¼ˆåªè¯»ï¼‰ï¼Œä¸èƒ½å†Guardarç±»æ¡ˆ");
   }
 
   const md = buildVectorMarkdown(input.caseHit);
   const buf = Buffer.from(md, "utf-8");
   const path = await storage.writeFile(`m_${input.matterId}`, buf);
   const hash = sha256(buf);
-  // 案号缺失时用 scid 兜底（vector 来的某些案例 ah 可能为空）
+  // æ¡ˆå·ç¼ºå¤±æ—¶ç”¨ scid å…œåº•ï¼ˆvector æ¥çš„æŸäº›æ¡ˆä¾‹ ah å¯èƒ½ä¸ºç©ºï¼‰
   const tag = input.caseHit.ah?.trim() || input.caseHit.scid.slice(0, 12);
-  const docName = `类案_${safeFileName(tag)}.md`;
+  const docName = `ç±»æ¡ˆ_${safeFileName(tag)}.md`;
 
   const doc = await prisma.document.create({
     data: {
@@ -207,7 +207,7 @@ export async function saveVectorCaseToMatter(input: SaveVectorCaseInput): Promis
       size: buf.byteLength,
       sha256: hash,
       encrypted: false,
-      tags: ["类案", "pesos典", "语义"]
+      tags: ["ç±»æ¡ˆ", "pesoså…¸", "è¯­ä¹‰"]
     },
     select: { id: true, name: true }
   });
@@ -229,3 +229,5 @@ export async function saveVectorCaseToMatter(input: SaveVectorCaseInput): Promis
 
   return { ok: true, documentId: doc.id, documentName: doc.name };
 }
+
+

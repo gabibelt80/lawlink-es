@@ -1,4 +1,4 @@
-import type { NextAuthOptions } from "next-auth";
+﻿import type { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import bcrypt from "bcryptjs";
 import { z } from "zod";
@@ -18,10 +18,10 @@ export const authOptions: NextAuthOptions = {
   },
   providers: [
     CredentialsProvider({
-      name: "Email y contraseña",
+      name: "Email y contraseÃ±a",
       credentials: {
         email: { label: "Email", type: "email" },
-        password: { label: "Contraseña", type: "password" }
+        password: { label: "ContraseÃ±a", type: "password" }
       },
       async authorize(credentials) {
         const parsed = credentialsSchema.safeParse(credentials);
@@ -62,6 +62,13 @@ export const authOptions: NextAuthOptions = {
 
         prisma.firmUser.update({
           where: { id: firmUser.id },
+          data: { lastLoginAt: new Date() }
+        }).catch(() => {});
+
+        // Actualizar lastLoginAt en el tenant
+        const tenantPrisma = getTenantPrisma(firmUser.firm.slug);
+        tenantPrisma.user.updateMany({
+          where: { email: firmUser.email },
           data: { lastLoginAt: new Date() }
         }).catch(() => {});
 

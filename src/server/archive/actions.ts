@@ -1,4 +1,4 @@
-"use server";
+﻿"use server";
 
 import { revalidatePath } from "next/cache";
 import { Prisma } from "@prisma/client";
@@ -23,12 +23,12 @@ import { matterHref } from "@/lib/matters/route";
 import { revalidateMatter } from "@/server/matters/route";
 
 /**
- * v0.9.4 归档：完整流程
- *   1. 权限：本案主办 / 协办Enviar，ADMIN Aprobación
- *   2. 校验 checklist 缺必填ítems → 若有且未 forceWithMissing 则拒绝
- *   3. 生成 archiveNo
- *   4. 渲染卷宗封皮 → 入 ARCHIVE 卷宗
- *   5. 渲染卷宗目录（含已生成的封皮自身可选不入目录）
+ * v0.9.4 å½’æ¡£ï¼šå®Œæ•´æµç¨‹
+ *   1. æƒé™ï¼šæœ¬æ¡ˆä¸»åŠž / ååŠžEnviarï¼ŒADMIN AprobaciÃ³n
+ *   2. æ ¡éªŒ checklist ç¼ºå¿…å¡«Ã­tems â†’ è‹¥æœ‰ä¸”æœª forceWithMissing åˆ™æ‹’ç»
+ *   3. ç”Ÿæˆ archiveNo
+ *   4. æ¸²æŸ“å·å®—å°çš® â†’ å…¥ ARCHIVE å·å®—
+ *   5. æ¸²æŸ“å·å®—ç›®å½•ï¼ˆå«å·²ç”Ÿæˆçš„å°çš®è‡ªèº«å¯é€‰ä¸å…¥ç›®å½•ï¼‰
  *   6. Crear ArchiveRecord
  *   7. Matter status=ARCHIVED + archivedAt + closedAt
  *   8. TimelineEvent + audit
@@ -56,19 +56,19 @@ export async function archiveMatter(input: ArchiveSubmitInput) {
   });
   if (!matter) throw new Error("El Caso no existe");
   if (matter.status === "ARCHIVED")
-    throw new Error("El Caso ya está archivado");
+    throw new Error("El Caso ya estÃ¡ archivado");
 
-  // checklist 缺ítems校验
+  // checklist ç¼ºÃ­temsæ ¡éªŒ
   const checklist = checklistForCategory(matter.category);
   const { missingRequired } = evaluateChecklist(checklist, data.checklist);
   if (missingRequired.length > 0 && !data.forceWithMissing) {
     throw new Error(
-      `La lista de archivo tiene ${missingRequired.length} campos obligatorios faltantes: ${missingRequired.map((x) => x.label).join(", ")}. Si confirmás el archivo forzado, marcá "Archivo forzado".`,
+      `La lista de archivo tiene ${missingRequired.length} campos obligatorios faltantes: ${missingRequired.map((x) => x.label).join(", ")}. Si confirmÃ¡s el archivo forzado, marcÃ¡ "Archivo forzado".`,
     );
   }
   const missingItems = missingRequired.map((x) => x.id);
 
-  // 渲染必须在事务外（涉y文件Sistema + 加密）。先渲染再事务里建记录。
+  // æ¸²æŸ“å¿…é¡»åœ¨äº‹åŠ¡å¤–ï¼ˆæ¶‰yæ–‡ä»¶Sistema + åŠ å¯†ï¼‰ã€‚å…ˆæ¸²æŸ“å†äº‹åŠ¡é‡Œå»ºè®°å½•ã€‚
   const now = new Date();
   const archiveNo = await nextArchiveNo(prisma, matter.category, now);
 
@@ -102,7 +102,7 @@ export async function archiveMatter(input: ArchiveSubmitInput) {
       excludeDocIds: [coverDocId],
     });
   } catch (err) {
-    // 封皮已落库；目录Error时回滚封皮文档（标记软删）。Abogado重试可重新生成。
+    // å°çš®å·²è½åº“ï¼›ç›®å½•Erroræ—¶å›žæ»šå°çš®æ–‡æ¡£ï¼ˆæ ‡è®°è½¯åˆ ï¼‰ã€‚Abogadoé‡è¯•å¯é‡æ–°ç”Ÿæˆã€‚
     await prisma.document
       .update({
         where: { id: coverDocId },
@@ -110,7 +110,7 @@ export async function archiveMatter(input: ArchiveSubmitInput) {
       })
       .catch(() => null);
     throw new Error(
-      `Error al renderizar el índice del expediente: ${err instanceof Error ? err.message : String(err)}`,
+      `Error al renderizar el Ã­ndice del expediente: ${err instanceof Error ? err.message : String(err)}`,
     );
   }
 
@@ -139,8 +139,8 @@ export async function archiveMatter(input: ArchiveSubmitInput) {
       data: {
         matterId: matter.id,
         eventType: "MATTER_ARCHIVE_REQUESTED",
-        title: `Se envió la solicitud de archivo (${archiveNo}, pendiente de aprobación)`,
-        content: `Modo de cierre: ${CLOSED_REASON_CN[data.closedReason]}。${data.summary}`,
+        title: `Se enviÃ³ la solicitud de archivo (${archiveNo}, pendiente de aprobaciÃ³n)`,
+        content: `Modo de cierre: ${CLOSED_REASON_CN[data.closedReason]}ã€‚${data.summary}`,
         occurredAt: now,
       },
     });
@@ -166,7 +166,7 @@ export async function archiveMatter(input: ArchiveSubmitInput) {
 }
 
 /**
- * v0.16: Administrar员AprobaciónAprobar归档申请（PENDING_REVIEW → APPROVED）
+ * v0.16: Administrarå‘˜AprobaciÃ³nAprobarå½’æ¡£ç”³è¯·ï¼ˆPENDING_REVIEW â†’ APPROVEDï¼‰
  */
 export async function approveArchiveRecord(input: {
   archiveId: string;
@@ -219,14 +219,14 @@ export async function approveArchiveRecord(input: {
         eventType: "MATTER_ARCHIVED",
         title: `El Caso ha sido archivado (${record.archiveNo})`,
         content: input.note?.trim()
-          ? `Aprobación del Administrador: ${input.note.trim()}`
-          : "Aprobación del Administrador aprobada",
+          ? `AprobaciÃ³n del Administrador: ${input.note.trim()}`
+          : "AprobaciÃ³n del Administrador aprobada",
         occurredAt: now,
       },
     });
   });
 
-  // v0.18: Notificaciones申请人
+  // v0.18: Notificacionesç”³è¯·äºº
   if (record.archivedById && record.archivedById !== session.user.id) {
     const matter = await prisma.matter.findUnique({
       where: { id: record.matterId },
@@ -237,7 +237,7 @@ export async function approveArchiveRecord(input: {
       type: "ARCHIVE_APPROVED",
       priority: "NORMAL",
       title: `La solicitud de archivo fue aprobada (${record.archiveNo})`,
-      content: `La solicitud de archivo del Caso ${matter?.internalCode ?? record.matterId}·${matter?.title ?? ""} fue aprobada por el Administrador.`,
+      content: `La solicitud de archivo del Caso ${matter?.internalCode ?? record.matterId}Â·${matter?.title ?? ""} fue aprobada por el Administrador.`,
       href: matterHref({
         id: record.matterId,
         internalCode: matter?.internalCode ?? null,
@@ -262,7 +262,7 @@ export async function approveArchiveRecord(input: {
 }
 
 /**
- * v0.16: Administrar员Rechazar归档申请
+ * v0.16: Administrarå‘˜Rechazarå½’æ¡£ç”³è¯·
  */
 export async function rejectArchiveRecord(input: {
   archiveId: string;
@@ -274,7 +274,7 @@ export async function rejectArchiveRecord(input: {
       "Solo el Administrador puede rechazar la solicitud de archivo",
     );
   }
-  if (!input.note.trim()) throw new Error("Ingresá el motivo del rechazo");
+  if (!input.note.trim()) throw new Error("IngresÃ¡ el motivo del rechazo");
 
   const record = await prisma.archiveRecord.findUnique({
     where: { id: input.archiveId },
@@ -300,7 +300,7 @@ export async function rejectArchiveRecord(input: {
     },
   });
 
-  // v0.18: Notificaciones申请人
+  // v0.18: Notificacionesç”³è¯·äºº
   if (record.archivedById && record.archivedById !== session.user.id) {
     const matter = await prisma.matter.findUnique({
       where: { id: record.matterId },
@@ -311,7 +311,7 @@ export async function rejectArchiveRecord(input: {
       type: "ARCHIVE_REJECTED",
       priority: "HIGH",
       title: `La solicitud de archivo fue rechazada (${record.archiveNo})`,
-      content: `La solicitud de archivo del Caso ${matter?.internalCode ?? record.matterId}·${matter?.title ?? ""} fue rechazada. Motivo: ${input.note.trim()}`,
+      content: `La solicitud de archivo del Caso ${matter?.internalCode ?? record.matterId}Â·${matter?.title ?? ""} fue rechazada. Motivo: ${input.note.trim()}`,
       href: matterHref({
         id: record.matterId,
         internalCode: matter?.internalCode ?? null,
@@ -339,14 +339,14 @@ export async function rejectArchiveRecord(input: {
 }
 
 /**
- * 获取Caso的归档准备数据：当前 checklist 模板 + 已有 ArchiveRecord（若有）
+ * èŽ·å–Casoçš„å½’æ¡£å‡†å¤‡æ•°æ®ï¼šå½“å‰ checklist æ¨¡æ¿ + å·²æœ‰ ArchiveRecordï¼ˆè‹¥æœ‰ï¼‰
  */
 export async function getArchivePrepData(matterId: string) {
   const session = await requireSession();
   await assertCanLeadMatter(
     session.user.id,
     matterId,
-    "仅Caso主办/协办可以准备归档",
+    "ä»…Casoä¸»åŠž/ååŠžå¯ä»¥å‡†å¤‡å½’æ¡£",
   );
   const matter = await prisma.matter.findUnique({
     where: { id: matterId },
@@ -377,18 +377,18 @@ export async function getArchivePrepData(matterId: string) {
       },
     },
   });
-  if (!matter) throw new Error("Caso不存在");
+  if (!matter) throw new Error("Casoä¸å­˜åœ¨");
 
   const checklist = checklistForCategory(matter.category);
 
-  // v0.11: 取最近一次Cerrar caso事件的 content 作为预填小结
+  // v0.11: å–æœ€è¿‘ä¸€æ¬¡Cerrar casoäº‹ä»¶çš„ content ä½œä¸ºé¢„å¡«å°ç»“
   const lastCloseEvent = await prisma.timelineEvent.findFirst({
     where: { matterId, eventType: "MATTER_CLOSED" },
     orderBy: { occurredAt: "desc" },
     select: { content: true },
   });
 
-  // v0.17: 已上传并关联到 checklist item 的材料（用于向导自动勾选）
+  // v0.17: å·²ä¸Šä¼ å¹¶å…³è”åˆ° checklist item çš„ææ–™ï¼ˆç”¨äºŽå‘å¯¼è‡ªåŠ¨å‹¾é€‰ï¼‰
   const linkedDocs = await prisma.document.findMany({
     where: {
       matterId,
@@ -404,7 +404,7 @@ export async function getArchivePrepData(matterId: string) {
     orderBy: { createdAt: "desc" },
   });
 
-  // itemId → 关联材料列表（保留Ver todos，UI 展示首条 + 余数）
+  // itemId â†’ å…³è”ææ–™åˆ—è¡¨ï¼ˆä¿ç•™Ver todosï¼ŒUI å±•ç¤ºé¦–æ¡ + ä½™æ•°ï¼‰
   const docsByItem: Record<string, { id: string; name: string }[]> = {};
   for (const d of linkedDocs) {
     const key = d.archiveChecklistItemId!;
@@ -420,7 +420,7 @@ export async function getArchivePrepData(matterId: string) {
 }
 
 /**
- * 已归档Caso列表（/archive Total览页）—— 仅 status=APPROVED
+ * å·²å½’æ¡£Casoåˆ—è¡¨ï¼ˆ/archive Totalè§ˆé¡µï¼‰â€”â€” ä»… status=APPROVED
  */
 export async function listArchivedMatters() {
   await requireSession();
@@ -452,13 +452,13 @@ export async function listArchivedMatters() {
 }
 
 /**
- * v0.17: 待Aprobación归档申请列表（仅 ADMIN）
- * /archive 待Aprobación tab 使用
+ * v0.17: å¾…AprobaciÃ³nå½’æ¡£ç”³è¯·åˆ—è¡¨ï¼ˆä»… ADMINï¼‰
+ * /archive å¾…AprobaciÃ³n tab ä½¿ç”¨
  */
 export async function listPendingArchiveRecords() {
   const session = await requireSession();
   if (session.user.role !== "ADMIN") {
-    throw new Error("仅Administrar员可Ver待Aprobación归档");
+    throw new Error("ä»…Administrarå‘˜å¯Verå¾…AprobaciÃ³nå½’æ¡£");
   }
   return prisma.archiveRecord.findMany({
     where: { status: "PENDING_REVIEW" },
@@ -490,8 +490,8 @@ export async function listPendingArchiveRecords() {
 }
 
 /**
- * v0.18: Abogado端查询自己的Rechazado归档申请
- * 用于"我的Rechazado归档"入口或Caso详情页 banner
+ * v0.18: Abogadoç«¯æŸ¥è¯¢è‡ªå·±çš„Rechazadoå½’æ¡£ç”³è¯·
+ * ç”¨äºŽ"æˆ‘çš„Rechazadoå½’æ¡£"å…¥å£æˆ–Casoè¯¦æƒ…é¡µ banner
  */
 export async function listRejectedArchiveRecords() {
   const session = await requireSession();
@@ -523,8 +523,8 @@ export async function listRejectedArchiveRecords() {
 }
 
 /**
- * v0.18: 获取Caso最新一条 ArchiveRecord（无论Estado）
- * Caso详情页展示"归档中/Rechazado"Estado banner 用
+ * v0.18: èŽ·å–Casoæœ€æ–°ä¸€æ¡ ArchiveRecordï¼ˆæ— è®ºEstadoï¼‰
+ * Casoè¯¦æƒ…é¡µå±•ç¤º"å½’æ¡£ä¸­/Rechazado"Estado banner ç”¨
  */
 export async function getLatestArchiveRecord(matterId: string) {
   await requireSession();
@@ -545,10 +545,10 @@ export async function getLatestArchiveRecord(matterId: string) {
 }
 
 /**
- * v0.20: 批量Aprobación —— Aprobar
+ * v0.20: æ‰¹é‡AprobaciÃ³n â€”â€” Aprobar
  *
- * 单条独立处理（不强求原子），逐条复用 approveArchiveRecord 的事务。
- * Volver { succeeded, failed }，failed 含ErrorMotivo，前端展示部分Error的情况。
+ * å•æ¡ç‹¬ç«‹å¤„ç†ï¼ˆä¸å¼ºæ±‚åŽŸå­ï¼‰ï¼Œé€æ¡å¤ç”¨ approveArchiveRecord çš„äº‹åŠ¡ã€‚
+ * Volver { succeeded, failed }ï¼Œfailed å«ErrorMotivoï¼Œå‰ç«¯å±•ç¤ºéƒ¨åˆ†Errorçš„æƒ…å†µã€‚
  */
 export async function batchApproveArchiveRecords(input: {
   archiveIds: string[];
@@ -559,10 +559,10 @@ export async function batchApproveArchiveRecords(input: {
 }> {
   const session = await requireSession();
   if (session.user.role !== "ADMIN") {
-    throw new Error("只有Administrar员可以Aprobación归档申请");
+    throw new Error("åªæœ‰Administrarå‘˜å¯ä»¥AprobaciÃ³nå½’æ¡£ç”³è¯·");
   }
-  if (!input.archiveIds.length) throw new Error("未选择任何归档申请");
-  if (input.archiveIds.length > 100) throw new Error("单次批量不超过 100 条");
+  if (!input.archiveIds.length) throw new Error("æœªé€‰æ‹©ä»»ä½•å½’æ¡£ç”³è¯·");
+  if (input.archiveIds.length > 100) throw new Error("å•æ¬¡æ‰¹é‡ä¸è¶…è¿‡ 100 æ¡");
 
   const succeeded: string[] = [];
   const failed: { id: string; error: string }[] = [];
@@ -573,7 +573,7 @@ export async function batchApproveArchiveRecords(input: {
     } catch (err) {
       failed.push({
         id,
-        error: err instanceof Error ? err.message : "Desconocido错误",
+        error: err instanceof Error ? err.message : "Desconocidoé”™è¯¯",
       });
     }
   }
@@ -592,7 +592,7 @@ export async function batchApproveArchiveRecords(input: {
 }
 
 /**
- * v0.20: 批量Aprobación —— Rechazar（统一Motivo）
+ * v0.20: æ‰¹é‡AprobaciÃ³n â€”â€” Rechazarï¼ˆç»Ÿä¸€Motivoï¼‰
  */
 export async function batchRejectArchiveRecords(input: {
   archiveIds: string[];
@@ -603,11 +603,11 @@ export async function batchRejectArchiveRecords(input: {
 }> {
   const session = await requireSession();
   if (session.user.role !== "ADMIN") {
-    throw new Error("只有Administrar员可以Rechazar归档申请");
+    throw new Error("åªæœ‰Administrarå‘˜å¯ä»¥Rechazarå½’æ¡£ç”³è¯·");
   }
-  if (!input.archiveIds.length) throw new Error("未选择任何归档申请");
-  if (input.archiveIds.length > 100) throw new Error("单次批量不超过 100 条");
-  if (!input.note.trim()) throw new Error("请填写RechazarMotivo");
+  if (!input.archiveIds.length) throw new Error("æœªé€‰æ‹©ä»»ä½•å½’æ¡£ç”³è¯·");
+  if (input.archiveIds.length > 100) throw new Error("å•æ¬¡æ‰¹é‡ä¸è¶…è¿‡ 100 æ¡");
+  if (!input.note.trim()) throw new Error("è¯·å¡«å†™RechazarMotivo");
 
   const succeeded: string[] = [];
   const failed: { id: string; error: string }[] = [];
@@ -618,7 +618,7 @@ export async function batchRejectArchiveRecords(input: {
     } catch (err) {
       failed.push({
         id,
-        error: err instanceof Error ? err.message : "Desconocido错误",
+        error: err instanceof Error ? err.message : "Desconocidoé”™è¯¯",
       });
     }
   }
@@ -636,3 +636,5 @@ export async function batchRejectArchiveRecords(input: {
   });
   return { succeeded, failed };
 }
+
+

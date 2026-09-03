@@ -1,7 +1,7 @@
-"use server";
+﻿"use server";
 
 /**
- * v0.21: Consulta de historial de revisión de IA de documentos
+ * v0.21: Consulta de historial de revisiÃ³n de IA de documentos
  */
 import { getTenantPrisma } from "@/lib/tenant-prisma";
 import { requireSession } from "@/lib/auth/session";
@@ -18,7 +18,7 @@ export type ReviewHistoryEntry = {
   itemCount: number;
   truncated: boolean;
   textPreviewChars: number;
-  /** Estadísticas por severidad: { HIGH: 2, MEDIUM: 3, LOW: 0 } */
+  /** EstadÃ­sticas por severidad: { HIGH: 2, MEDIUM: 3, LOW: 0 } */
   severityCounts: Record<ReviewSeverity, number>;
 };
 
@@ -107,3 +107,4 @@ export async function getReviewRecord(input: {
     items: (Array.isArray(rec.itemsJson) ? rec.itemsJson : []) as ReviewItem[]
   };
 }
+

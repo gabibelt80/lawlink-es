@@ -1,11 +1,11 @@
-/**
- * v0.50: 数据库 + 文件存储自动备份（PRD §六承诺的"内置备份"最后一公里）。
+﻿/**
+ * v0.50: æ•°æ®åº“ + æ–‡ä»¶å­˜å‚¨è‡ªåŠ¨å¤‡ä»½ï¼ˆPRD Â§å…­æ‰¿è¯ºçš„"å†…ç½®å¤‡ä»½"æœ€åŽä¸€å…¬é‡Œï¼‰ã€‚
  *
- * 每días 02:30 调 scripts/backup.sh（pg_dump + storage 打包），备份到
- * BACKUP_DIR（默认 ./backups），并做保留数清理（BACKUP_KEEP，默认 14 份）。
- * Error时给所有 ADMIN 发站内Notificaciones——备份静默Erroretc.于没有备份。
+ * æ¯dÃ­as 02:30 è°ƒ scripts/backup.shï¼ˆpg_dump + storage æ‰“åŒ…ï¼‰ï¼Œå¤‡ä»½åˆ°
+ * BACKUP_DIRï¼ˆé»˜è®¤ ./backupsï¼‰ï¼Œå¹¶åšä¿ç•™æ•°æ¸…ç†ï¼ˆBACKUP_KEEPï¼Œé»˜è®¤ 14 ä»½ï¼‰ã€‚
+ * Erroræ—¶ç»™æ‰€æœ‰ ADMIN å‘ç«™å†…Notificacionesâ€”â€”å¤‡ä»½é™é»˜Erroretc.äºŽæ²¡æœ‰å¤‡ä»½ã€‚
  *
- * Cerrar方式：环境变量 BACKUP_CRON_ENABLED=false（部署环境没有 pg_dump 时）。
+ * Cerraræ–¹å¼ï¼šçŽ¯å¢ƒå˜é‡ BACKUP_CRON_ENABLED=falseï¼ˆéƒ¨ç½²çŽ¯å¢ƒæ²¡æœ‰ pg_dump æ—¶ï¼‰ã€‚
  */
 import { spawn } from "node:child_process";
 import { readdir, rm, stat } from "node:fs/promises";
@@ -47,7 +47,7 @@ function runScript(baseDir: string): Promise<{ code: number; output: string }> {
     let output = "";
     const timer = setTimeout(() => {
       child.kill("SIGKILL");
-      reject(new Error("备份超时（10 分钟）"));
+      reject(new Error("å¤‡ä»½è¶…æ—¶ï¼ˆ10 åˆ†é’Ÿï¼‰"));
     }, BACKUP_TIMEOUT_MS);
     child.stdout.on("data", (d) => (output += String(d)));
     child.stderr.on("data", (d) => (output += String(d)));
@@ -62,7 +62,7 @@ function runScript(baseDir: string): Promise<{ code: number; output: string }> {
   });
 }
 
-/** 只保留最近 N 份备份目录（目录名以时间戳开头，字典序即时间序） */
+/** åªä¿ç•™æœ€è¿‘ N ä»½å¤‡ä»½ç›®å½•ï¼ˆç›®å½•åä»¥æ—¶é—´æˆ³å¼€å¤´ï¼Œå­—å…¸åºå³æ—¶é—´åºï¼‰ */
 async function pruneOldBackups(baseDir: string, keep: number): Promise<number> {
   let entries: string[];
   try {
@@ -72,12 +72,12 @@ async function pruneOldBackups(baseDir: string, keep: number): Promise<number> {
   }
   const backupDirs: string[] = [];
   for (const name of entries) {
-    if (!/^\d{8}_\d{6}$/.test(name)) continue; // 只清理本脚本产生的目录
+    if (!/^\d{8}_\d{6}$/.test(name)) continue; // åªæ¸…ç†æœ¬è„šæœ¬äº§ç”Ÿçš„ç›®å½•
     const full = path.join(baseDir, name);
     try {
       if ((await stat(full)).isDirectory()) backupDirs.push(name);
     } catch {
-      // 忽略读取Error的条目
+      // å¿½ç•¥è¯»å–Errorçš„æ¡ç›®
     }
   }
   backupDirs.sort();
@@ -114,7 +114,7 @@ export async function runDatabaseBackup(): Promise<BackupResult> {
   try {
     const { code, output } = await runScript(baseDir);
     if (code !== 0) {
-      throw new Error(`backup.sh Cerrar sesión码 ${code}：${output.slice(-500)}`);
+      throw new Error(`backup.sh Cerrar sesiÃ³nç  ${code}ï¼š${output.slice(-500)}`);
     }
     const removedOld = await pruneOldBackups(baseDir, keepCount());
 
@@ -129,10 +129,12 @@ export async function runDatabaseBackup(): Promise<BackupResult> {
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
     await notifyAdmins(
-      "数据库自动备份Error",
-      `${message.slice(0, 300)}｜请检查 pg_dump 是否可用、BACKUP_DIR 是否可写；修复前Sistema没有新备份。`
+      "æ•°æ®åº“è‡ªåŠ¨å¤‡ä»½Error",
+      `${message.slice(0, 300)}ï½œè¯·æ£€æŸ¥ pg_dump æ˜¯å¦å¯ç”¨ã€BACKUP_DIR æ˜¯å¦å¯å†™ï¼›ä¿®å¤å‰Sistemaæ²¡æœ‰æ–°å¤‡ä»½ã€‚`
     );
-    // 抛出让 scheduler 统一写 *_FAILED_CRON audit
+    // æŠ›å‡ºè®© scheduler ç»Ÿä¸€å†™ *_FAILED_CRON audit
     throw err;
   }
 }
+
+
