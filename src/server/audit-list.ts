@@ -1,19 +1,19 @@
 ﻿"use server";
 
 /**
- * v0.22: AuditLog æŸ¥è¯¢ï¼ˆadmin-only å®¡è®¡å›žæ”¾ï¼‰
+ * v0.22: Consulta de Auditoria (acceso para administradores)
  */
-import { prisma } from "@/lib/prisma";
+import { getTenantPrisma } from "@/lib/tenant-prisma";
 import { requireSession } from "@/lib/auth/session";
 
 export type AuditFilter = {
   userId?: string;
   action?: string;
   targetType?: string;
-  startStr?: string; // yyyy-MM-dd
+  startStr?: string;
   endStr?: string;
   limit?: number;
-  cursor?: string; // ä¸Šä¸€é¡µæœ€åŽä¸€æ¡ id
+  cursor?: string;
 };
 
 export type AuditEntry = {
@@ -35,7 +35,7 @@ export type AuditListResult = {
 async function requireAdmin() {
   const session = await requireSession();
   if (session.user.role !== "ADMIN" && session.user.role !== "PRINCIPAL_LAWYER") {
-    throw new Error("ä»…Administrarå‘˜ / ä¸»ä»»Abogadoå¯è®¿é—®å®¡è®¡æ—¥å¿—");
+    throw new Error("Solo el Administrador / Abogado Principal puede acceder a la auditoria");
   }
   return session;
 }
@@ -49,6 +49,7 @@ function parseDate(s: string | undefined): Date | undefined {
 
 export async function listAuditLogs(filter: AuditFilter): Promise<AuditListResult> {
   await requireAdmin();
+  const prisma = await getTenantPrisma();
   const limit = Math.min(Math.max(filter.limit ?? 50, 1), 200);
 
   const where: Record<string, unknown> = {};
@@ -94,16 +95,13 @@ export async function listAuditLogs(filter: AuditFilter): Promise<AuditListResul
   };
 }
 
-/**
- * æ‹‰æ‰€æœ‰å‡ºçŽ°è¿‡çš„ action / targetType / userï¼Œç”¨äºŽå‰ç«¯ç­›é€‰ä¸‹æ‹‰ã€‚
- * ç›´æŽ¥ distinct æŸ¥è¯¢ï¼Œç»“æžœæ•°æœ‰é™ï¼ˆä¸šåŠ¡é‡Œ action ç±»åž‹æœ‰é™ï¼‰ã€‚
- */
 export async function getAuditFilterOptions(): Promise<{
   actions: string[];
   targetTypes: string[];
   users: { id: string; name: string }[];
 }> {
   await requireAdmin();
+  const prisma = await getTenantPrisma();
   const [actionsRaw, targetsRaw, users] = await Promise.all([
     prisma.auditLog.findMany({
       select: { action: true },
@@ -128,5 +126,3 @@ export async function getAuditFilterOptions(): Promise<{
     users
   };
 }
-
-
