@@ -1,14 +1,10 @@
 ﻿"use server";
 
 /**
- * v0.27: æœåŠ¡ä¸­å¿ƒ - å¾‹æ‰€Anuncio
- *
- * - ADMIN / ä¸»ä»»Abogado å¯Publicarã€Editarã€ç½®é¡¶ã€å½’æ¡£
- * - æ‰€æœ‰Iniciar sesiÃ³nç”¨æˆ·å¯è¯»
- * - pinned + æœªè¿‡æœŸ + æœªå½’æ¡£çš„Anuncioæ˜¾ç¤ºä¸ºé¡¶éƒ¨ banner
+ * v0.27: Centro de servicios - Anuncios del estudio
  */
 import { z } from "zod";
-import { prisma } from "@/lib/prisma";
+import { getTenantPrisma } from "@/lib/tenant-prisma";
 import { revalidatePath } from "next/cache";
 import { requireSession } from "@/lib/auth/session";
 import { audit } from "@/server/audit";
@@ -21,8 +17,16 @@ function assertCanManage(role: string) {
   }
 }
 
+async function resolveTenantUserId(email: string, prisma: any): Promise<string | null> {
+  const user = await prisma.user.findUnique({
+    where: { email },
+    select: { id: true }
+  });
+  return user?.id ?? null;
+}
+
 const announcementCreateSchema = z.object({
-  title: z.string().min(1, "El tÃ­tulo es obligatorio").max(120),
+  title: z.string().min(1, "El titulo es obligatorio").max(120),
   content: z.string().min(1, "El contenido es obligatorio").max(20000),
   pinned: z.boolean().default(false),
   expiresAt: z.coerce.date().optional().nullable(),
@@ -36,6 +40,7 @@ export async function listAnnouncements({
   includeArchived = false,
 }: { includeArchived?: boolean } = {}) {
   await requireSession();
+  const prisma = await getTenantPrisma();
   return prisma.announcement.findMany({
     where: includeArchived ? {} : { archivedAt: null },
     orderBy: [{ pinned: "desc" }, { publishedAt: "desc" }],
@@ -45,11 +50,9 @@ export async function listAnnouncements({
   });
 }
 
-/**
- * é¡¶éƒ¨ bannerï¼špinned + æœªå½’æ¡£ + æœªè¿‡æœŸ
- */
 export async function listActiveBanners() {
   await requireSession();
+  const prisma = await getTenantPrisma();
   const now = new Date();
   return prisma.announcement.findMany({
     where: {
@@ -66,8 +69,12 @@ export async function createAnnouncement(
   input: z.infer<typeof announcementCreateSchema>,
 ) {
   const session = await requireSession();
+  const prisma = await getTenantPrisma();
   assertCanManage(session.user.role);
   const data = announcementCreateSchema.parse(input);
+
+  const tenantUserId = await resolveTenantUserId(session.user.email, prisma);
+  if (!tenantUserId) throw new Error("Usuario no encontrado");
 
   const created = await prisma.announcement.create({
     data: {
@@ -75,12 +82,12 @@ export async function createAnnouncement(
       content: data.content,
       pinned: data.pinned,
       expiresAt: data.expiresAt ?? null,
-      authorId: session.user.id,
+      authorId: tenantUserId,
     },
   });
 
   await audit({
-    userId: session.user.id,
+    userId: tenantUserId,
     action: "ANNOUNCEMENT_CREATE",
     targetType: "Announcement",
     targetId: created.id,
@@ -88,7 +95,7 @@ export async function createAnnouncement(
   });
 
   revalidatePath("/announcements");
-  revalidatePath("/", "layout"); // banner åœ¨å…¨ç«™å¸ƒå±€
+  revalidatePath("/", "layout");
   return created;
 }
 
@@ -96,8 +103,12 @@ export async function updateAnnouncement(
   input: z.infer<typeof announcementUpdateSchema>,
 ) {
   const session = await requireSession();
+  const prisma = await getTenantPrisma();
   assertCanManage(session.user.role);
   const data = announcementUpdateSchema.parse(input);
+
+  const tenantUserId = await resolveTenantUserId(session.user.email, prisma);
+  if (!tenantUserId) throw new Error("Usuario no encontrado");
 
   const updated = await prisma.announcement.update({
     where: { id: data.id },
@@ -110,7 +121,7 @@ export async function updateAnnouncement(
   });
 
   await audit({
-    userId: session.user.id,
+    userId: tenantUserId,
     action: "ANNOUNCEMENT_UPDATE",
     targetType: "Announcement",
     targetId: data.id,
@@ -124,7 +135,11 @@ export async function updateAnnouncement(
 
 export async function archiveAnnouncement(id: string) {
   const session = await requireSession();
+  const prisma = await getTenantPrisma();
   assertCanManage(session.user.role);
+
+  const tenantUserId = await resolveTenantUserId(session.user.email, prisma);
+  if (!tenantUserId) throw new Error("Usuario no encontrado");
 
   await prisma.announcement.update({
     where: { id },
@@ -132,7 +147,7 @@ export async function archiveAnnouncement(id: string) {
   });
 
   await audit({
-    userId: session.user.id,
+    userId: tenantUserId,
     action: "ANNOUNCEMENT_ARCHIVE",
     targetType: "Announcement",
     targetId: id,
@@ -141,5 +156,3 @@ export async function archiveAnnouncement(id: string) {
   revalidatePath("/announcements");
   revalidatePath("/", "layout");
 }
-
-

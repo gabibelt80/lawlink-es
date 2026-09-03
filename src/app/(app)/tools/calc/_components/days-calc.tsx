@@ -19,7 +19,7 @@ type Mode = "between" | "add";
 export function DaysCalc() {
   const [mode, setMode] = useState<Mode>("between");
 
-  // 模式 1：两Fecha之间
+  // Modo 1: entre dos fechas
   const today = new Date();
   const [dateA, setDateA] = useState(fmtDate(today));
   const [dateB, setDateB] = useState(fmtDate(today));
@@ -36,7 +36,7 @@ export function DaysCalc() {
     setBetween(daysBetween(a, b, excludeWeekend));
   }
 
-  // 模式 2：加减días数
+  // Modo 2: sumar/restar dias
   const [baseDate, setBaseDate] = useState(fmtDate(today));
   const [offset, setOffset] = useState("15");
   const [targetDate, setTargetDate] = useState<Date | null>(null);
@@ -54,17 +54,17 @@ export function DaysCalc() {
     <section className="ll-surface rounded-lg border border-border p-5">
       <header className="mb-4 flex items-center gap-2">
         <CalendarDays className="h-4 w-4 text-primary" strokeWidth={1.8} />
-        <h2 className="text-lg">días数计算</h2>
+        <h2 className="text-lg">Calculadora de dias</h2>
         <span className="ml-2 text-[10px] text-muted-foreground">
-          举证期 / 上诉期 / 答辩期常用
+          Util para plazos procesales
         </span>
       </header>
 
       <RadioChips
         size="sm"
         items={[
-          { value: "between", label: "两Fecha之间" },
-          { value: "add", label: "加减días数" }
+          { value: "between", label: "Entre dos fechas" },
+          { value: "add", label: "Sumar/restar dias" }
         ]}
         value={mode}
         onChange={(v) => setMode(v as Mode)}
@@ -74,7 +74,7 @@ export function DaysCalc() {
         <div className="mt-4 space-y-3">
           <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
             <div>
-              <Label className="text-[11px]">起始日</Label>
+              <Label className="text-[11px]">Fecha de inicio</Label>
               <Input
                 type="date"
                 value={dateA}
@@ -83,7 +83,7 @@ export function DaysCalc() {
               />
             </div>
             <div>
-              <Label className="text-[11px]">截止日</Label>
+              <Label className="text-[11px]">Fecha de fin</Label>
               <Input
                 type="date"
                 value={dateB}
@@ -99,22 +99,22 @@ export function DaysCalc() {
                 checked={excludeWeekend}
                 onCheckedChange={(v) => setExcludeWeekend(v === true)}
               />
-              仅算工作日（排除周末，不含法定节假日）
+              Solo dias habiles (excluye fines de semana, no feriados)
             </label>
             <Button onClick={computeBetween} className="h-9 gap-1.5">
               <Calculator className="h-3.5 w-3.5" />
-              计算
+              Calcular
             </Button>
           </div>
 
           {between !== null && (
             <div className="rounded-lg border border-border bg-muted/20 p-4">
-              <div className="text-[10px] tracking-wider text-muted-foreground">间隔días数</div>
+              <div className="text-[10px] tracking-wider text-muted-foreground">Dias de diferencia</div>
               <div className="mt-1 font-mono text-[26px] font-medium tabular text-primary">
-                {between >= 0 ? between : `-${Math.abs(between)}`} días
+                {between >= 0 ? between : `-${Math.abs(between)}`} dias
               </div>
               {between < 0 && (
-                <p className="mt-1 text-[11px] text-muted-foreground">截止日早于起始日</p>
+                <p className="mt-1 text-[11px] text-muted-foreground">La fecha de fin es anterior a la de inicio</p>
               )}
             </div>
           )}
@@ -123,7 +123,7 @@ export function DaysCalc() {
         <div className="mt-4 space-y-3">
           <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
             <div>
-              <Label className="text-[11px]">基准日</Label>
+              <Label className="text-[11px]">Fecha base</Label>
               <Input
                 type="date"
                 value={baseDate}
@@ -132,7 +132,7 @@ export function DaysCalc() {
               />
             </div>
             <div>
-              <Label className="text-[11px]">加减días数（可负）</Label>
+              <Label className="text-[11px]">Dias a sumar/restar (puede ser negativo)</Label>
               <Input
                 type="number"
                 value={offset}
@@ -145,14 +145,14 @@ export function DaysCalc() {
           <div className="flex justify-end">
             <Button onClick={computeTarget} className="h-9 gap-1.5">
               <Calculator className="h-3.5 w-3.5" />
-              计算
+              Calcular
             </Button>
           </div>
 
           {targetDate && (
             <div className="flex items-center gap-3 rounded-lg border border-border bg-muted/20 p-4">
               <div className="text-center">
-                <div className="text-[10px] tracking-wider text-muted-foreground">基准日</div>
+                <div className="text-[10px] tracking-wider text-muted-foreground">Fecha base</div>
                 <div className="mt-1 font-mono text-[14px] tabular text-foreground">
                   {baseDate}
                 </div>
@@ -160,13 +160,13 @@ export function DaysCalc() {
               <ArrowRight className="h-4 w-4 text-muted-foreground" />
               <div className="text-center">
                 <div className="text-[10px] tracking-wider text-muted-foreground">
-                  Fecha objetivo（{parseInt(offset) >= 0 ? "+" : ""}{offset} días）
+                  Fecha objetivo ({parseInt(offset) >= 0 ? "+" : ""}{offset} dias)
                 </div>
                 <div className="mt-1 font-mono text-[20px] font-medium tabular text-primary">
                   {fmtDate(targetDate)}
                 </div>
                 <div className="mt-0.5 text-[10px] text-muted-foreground">
-                  {["日", "一", "二", "三", "四", "五", "六"][targetDate.getDay()]}
+                  {["Dom", "Lun", "Mar", "Mie", "Jue", "Vie", "Sab"][targetDate.getDay()]}
                 </div>
               </div>
             </div>
