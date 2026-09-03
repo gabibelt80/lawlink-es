@@ -3,7 +3,8 @@
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import bcrypt from "bcryptjs";
-import { prisma } from "@/lib/prisma";
+import { randomBytes } from "node:crypto";
+import { getTenantPrisma } from "@/lib/tenant-prisma";
 import { requireSession } from "@/lib/auth/session";
 import { audit } from "@/server/audit";
 
@@ -16,9 +17,9 @@ const userRoleSchema = z.enum([
 ]);
 
 const userCreateSchema = z.object({
-  name: z.string().min(1, "Nombre y apellidoå¿…å¡«").max(40),
-  email: z.string().email("Emailæ ¼å¼ä¸æ­£ç¡®"),
-  password: z.string().min(8, "ContraseÃ±aè‡³å°‘ 8 ä½").max(128),
+  name: z.string().min(1, "Nombre y apellido obligatorio").max(40),
+  email: z.string().email("Email invalido"),
+  password: z.string().min(8, "La contrasena debe tener al menos 8 caracteres").max(128),
   role: userRoleSchema,
   phone: z.string().max(30).optional().or(z.literal(""))
 });
@@ -43,16 +44,21 @@ export type UserUpdateRoleInput = z.infer<typeof userUpdateRoleSchema>;
 export type ResetPasswordInput = z.infer<typeof resetPasswordSchema>;
 export type ChangeMyPasswordInput = z.infer<typeof changeMyPasswordSchema>;
 
+function newCalendarToken() {
+  return randomBytes(24).toString("base64url");
+}
+
 async function requireAdmin() {
   const session = await requireSession();
   if (session.user.role !== "ADMIN") {
-    throw new Error("ä»…Administrarå‘˜å¯æ‰§è¡Œ");
+    throw new Error("Solo el administrador puede ejecutar esta accion");
   }
   return session;
 }
 
 export async function listUsers() {
   await requireAdmin();
+  const prisma = await getTenantPrisma();
   return prisma.user.findMany({
     orderBy: [{ active: "desc" }, { role: "asc" }, { createdAt: "asc" }],
     select: {
@@ -69,12 +75,9 @@ export async function listUsers() {
   });
 }
 
-/**
- * ä»»æ„Iniciar sesiÃ³nç”¨æˆ·éƒ½å¯è°ƒï¼šæ‹¿æ´»è·ƒåŒäº‹åˆ—è¡¨ï¼Œç”¨äºŽæ”¶æ¡ˆ/Casoå›¢é˜Ÿé€‰æ‹©ã€‚
- * é»˜è®¤æŽ’é™¤ FINANCE/ADMIN SistemaRolï¼ˆä»å¯é€‰ï¼Œåš"Ver todos"åˆ‡æ¢æ—¶å†å¼€æ”¾ï¼‰ã€‚
- */
 export async function listActiveColleagues() {
   await requireSession();
+  const prisma = await getTenantPrisma();
   return prisma.user.findMany({
     where: { active: true },
     orderBy: [{ role: "asc" }, { name: "asc" }],
@@ -84,12 +87,15 @@ export async function listActiveColleagues() {
 
 export async function createUser(input: UserCreateInput) {
   const session = await requireAdmin();
+  const prisma = await getTenantPrisma();
   const data = userCreateSchema.parse(input);
 
   const existing = await prisma.user.findUnique({ where: { email: data.email } });
-  if (existing) throw new Error("Emailå·²è¢«ä½¿ç”¨");
+  if (existing) throw new Error("El email ya esta en uso");
 
   const passwordHash = await bcrypt.hash(data.password, 12);
+  const calendarToken = newCalendarToken();
+
   const created = await prisma.user.create({
     data: {
       name: data.name,
@@ -97,7 +103,8 @@ export async function createUser(input: UserCreateInput) {
       passwordHash,
       role: data.role,
       phone: data.phone || null,
-      active: true
+      active: true,
+      calendarToken
     }
   });
 
@@ -115,9 +122,10 @@ export async function createUser(input: UserCreateInput) {
 
 export async function updateUserRole(input: UserUpdateRoleInput) {
   const session = await requireAdmin();
+  const prisma = await getTenantPrisma();
   const data = userUpdateRoleSchema.parse(input);
   if (data.id === session.user.id) {
-    throw new Error("ä¸èƒ½ä¿®æ”¹è‡ªå·±çš„Rol");
+    throw new Error("No podes modificar tu propio rol");
   }
 
   await prisma.user.update({
@@ -139,11 +147,12 @@ export async function updateUserRole(input: UserUpdateRoleInput) {
 
 export async function toggleUserActive(id: string) {
   const session = await requireAdmin();
+  const prisma = await getTenantPrisma();
   if (id === session.user.id) {
-    throw new Error("ä¸èƒ½Deshabilitarè‡ªå·±");
+    throw new Error("No podes deshabilitarte a vos mismo");
   }
   const current = await prisma.user.findUnique({ where: { id }, select: { active: true } });
-  if (!current) throw new Error("ç”¨æˆ·ä¸å­˜åœ¨");
+  if (!current) throw new Error("El usuario no existe");
 
   await prisma.user.update({
     where: { id },
@@ -163,6 +172,7 @@ export async function toggleUserActive(id: string) {
 
 export async function resetUserPassword(input: ResetPasswordInput) {
   const session = await requireAdmin();
+  const prisma = await getTenantPrisma();
   const data = resetPasswordSchema.parse(input);
 
   const passwordHash = await bcrypt.hash(data.newPassword, 12);
@@ -181,21 +191,19 @@ export async function resetUserPassword(input: ResetPasswordInput) {
   return { ok: true };
 }
 
-/**
- * å½“å‰ç”¨æˆ·æ”¹è‡ªå·±çš„ContraseÃ±aï¼ˆä»»ä½•Rolå¯ç”¨ï¼‰ã€‚
- */
 export async function changeMyPassword(input: ChangeMyPasswordInput) {
   const session = await requireSession();
+  const prisma = await getTenantPrisma();
   const data = changeMyPasswordSchema.parse(input);
 
   const me = await prisma.user.findUnique({
     where: { id: session.user.id },
     select: { passwordHash: true }
   });
-  if (!me) throw new Error("ç”¨æˆ·ä¸å­˜åœ¨");
+  if (!me) throw new Error("El usuario no existe");
 
   const matches = await bcrypt.compare(data.currentPassword, me.passwordHash);
-  if (!matches) throw new Error("å½“å‰ContraseÃ±aä¸æ­£ç¡®");
+  if (!matches) throw new Error("La contrasena actual es incorrecta");
 
   const passwordHash = await bcrypt.hash(data.newPassword, 12);
   await prisma.user.update({
@@ -213,17 +221,17 @@ export async function changeMyPassword(input: ChangeMyPasswordInput) {
   return { ok: true };
 }
 
-/** v0.43ï¼šGuardar / æ¸…é™¤ä¸ªäººå¤´åƒï¼ˆbase64 data URL å†…è”å­˜ User.avatarï¼Œçº¦ 256KB ä¸Šé™ï¼‰ */
 const AVATAR_MAX_CHARS = 256 * 1024;
 export async function saveMyAvatar(input: { avatar: string | null }) {
   const session = await requireSession();
+  const prisma = await getTenantPrisma();
   let avatar = input.avatar;
   if (typeof avatar === "string" && avatar.length > 0) {
     if (!/^data:image\/(png|jpeg|jpg|webp|svg\+xml);base64,/.test(avatar)) {
-      throw new Error("å¤´åƒå¿…é¡»æ˜¯ PNG / JPG / WebP / SVG å›¾ç‰‡");
+      throw new Error("El avatar debe ser una imagen PNG / JPG / WebP / SVG");
     }
     if (avatar.length > AVATAR_MAX_CHARS) {
-      throw new Error("å¤´åƒä½“ç§¯è¿‡å¤§ï¼Œè¯·æŽ§åˆ¶åœ¨çº¦ 180KB ä»¥å†…");
+      throw new Error("El avatar es demasiado grande, maximo 180KB");
     }
   } else {
     avatar = null;
@@ -244,5 +252,3 @@ export async function saveMyAvatar(input: { avatar: string | null }) {
   revalidatePath("/", "layout");
   return { ok: true };
 }
-
-
