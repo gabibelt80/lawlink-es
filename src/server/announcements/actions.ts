@@ -5,6 +5,7 @@
  */
 import { z } from "zod";
 import { getTenantPrisma } from "@/lib/tenant-prisma";
+import { emitAnnouncementChanged } from "@/app/api/announcements/sse/route";
 import { revalidatePath } from "next/cache";
 import { requireSession } from "@/lib/auth/session";
 import { audit } from "@/server/audit";
@@ -54,7 +55,7 @@ export async function listActiveBanners() {
   await requireSession();
   const prisma = await getTenantPrisma();
   const now = new Date();
-  return prisma.announcement.findMany({
+  const banners = await prisma.announcement.findMany({
     where: {
       pinned: true,
       archivedAt: null,
@@ -63,6 +64,8 @@ export async function listActiveBanners() {
     orderBy: { publishedAt: "desc" },
     select: { id: true, title: true, content: true, publishedAt: true },
   });
+  console.log("Banners encontrados:", banners.length);
+  return banners;
 }
 
 export async function createAnnouncement(
@@ -96,6 +99,7 @@ export async function createAnnouncement(
 
   revalidatePath("/announcements");
   revalidatePath("/", "layout");
+  emitAnnouncementChanged();
   return created;
 }
 
@@ -130,6 +134,7 @@ export async function updateAnnouncement(
 
   revalidatePath("/announcements");
   revalidatePath("/", "layout");
+  emitAnnouncementChanged();
   return updated;
 }
 
