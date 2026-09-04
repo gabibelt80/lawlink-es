@@ -9,7 +9,7 @@ import { getMatterReviewSummary } from "@/server/ai/matter-review-summary";
 import { getSession } from "@/lib/auth/session";
 import { resolveMatterRoute } from "@/server/matters/route";
 import { matterHref } from "@/lib/matters/route";
-import { prisma } from "@/lib/prisma";
+import { getTenantPrisma } from "@/lib/tenant-prisma";
 import { nullableDecimalToNumber, serializeDecimals } from "@/lib/decimal";
 import { MatterDetailTabs } from "./_components/matter-detail-tabs";
 import { ReviewSummaryCard } from "./_components/review-summary-card";
@@ -23,6 +23,7 @@ export default async function MatterDetailPage({ params }: PageProps) {
 
   // 路由键是 internalCode（`LL-2026-CC-0001`），但历史书签、Notificacionesy审计日志里
   // 存的是 cuid 地址，两者都要认；命中 cuid 时在鉴权Aprobar后再跳规范地址。
+  const prisma = await getTenantPrisma();
   const route = await resolveMatterRoute(param);
   if (!route) notFound();
 

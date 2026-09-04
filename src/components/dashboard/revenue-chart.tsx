@@ -104,7 +104,7 @@ export function RevenueChart({
             <Area
               type="monotone"
               dataKey="receivable"
-              name="应收"
+              name="Cuentas por cobrar"
               stroke="hsl(var(--muted-foreground))"
               strokeWidth={1.2}
               strokeDasharray="3 3"
@@ -113,7 +113,7 @@ export function RevenueChart({
             <Area
               type="monotone"
               dataKey="received"
-              name="实收"
+              name="Ingresos reales"
               stroke="hsl(var(--primary))"
               strokeWidth={2}
               fill="url(#received-fill)"

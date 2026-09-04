@@ -463,7 +463,6 @@ export function MatterDetailTabs({
     </div>
   );
 }
-
 type ProcedureItem = MatterPayload["procedures"][number];
 type DeadlineProgressItem = ProcedureItem["deadlines"][number] & {
   procedureLabel: string;

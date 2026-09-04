@@ -153,7 +153,7 @@ export const matterCategoryShort: Record<MatterCategory, string> = {
 
 export const matterStatusLabel: Record<MatterStatus, string> = {
   PENDING_ACCEPTANCE: "Pendiente de inicio",
-  IN_PROGRESS: "En trÃ¡mite",
+  IN_PROGRESS: "En tramite",
   ON_HOLD: "Suspendido",
   CLOSED: "Cerrado",
   ARCHIVED: "Archivado"

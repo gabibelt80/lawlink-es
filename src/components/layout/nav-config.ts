@@ -10,6 +10,7 @@ import {
   Archive,
   Settings,
   BarChart3,
+  BookOpen,
 } from "lucide-react";
 
 export type NavItem = {
@@ -42,6 +43,7 @@ export const secondaryNav: NavItem[] = [
     icon: Inbox,
     tone: "courtSms",
   },
+  { label: "Biblioteca", href: "/settings/writings", icon: BookOpen },
   { label: "Archivo", href: "/archive", icon: Archive },
   { label: "Informes", href: "/reports", icon: BarChart3 },
   // v0.43: ã€Œå®¡è®¡ã€å…¥å£ç§»é™¤ï¼ˆå®¡è®¡æ—¥å¿—åœ¨ ConfiguraciÃ³n â†’ å®¡è®¡æ—¥å¿—ï¼‰

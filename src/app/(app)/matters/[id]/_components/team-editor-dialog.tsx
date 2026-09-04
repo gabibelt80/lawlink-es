@@ -1,12 +1,12 @@
 "use client";
 
 /**
- * v0.27: 由"Editar团队"扩展为"EditarCaso"。
+ * v0.27: De "Editar equipo" se expandio a "Editar caso".
  *
- * - 基本信息：title / Causa / 标的额 / 我方地位（收案Fecha readonly）
- * - 团队：主办 / 协办 / 助理（沿用 v0.22 实现）
+ * - Informacion basica: titulo / Causa / monto / posicion nuestra (fecha de ingreso readonly)
+ * - Equipo: titular / colaborador / asistente (se mantiene la implementacion de v0.22)
  *
- * Guardar时按需触发两个 server action（基本信息 + 团队）。
+ * Al guardar se disparan dos server actions segun necesidad (informacion basica + equipo).
  */
 import { useState, useTransition, useEffect, useMemo } from "react";
 import { useRouter } from "next/navigation";
@@ -164,12 +164,12 @@ const formLabelClass = "text-[12px] font-medium text-muted-foreground";
 
 const PARTY_ROLE_LABEL: Record<PartyRole, string> = {
   CLIENT_PARTY: "Cliente",
-  OPPOSING_PARTY: "相对方",
-  THIRD_PARTY: "第三人",
-  CO_LITIGANT: "共同诉讼人",
-  AGENT: "代理人",
-  WITNESS: "证人",
-  OTHER: "其他"
+  OPPOSING_PARTY: "Contraparte",
+  THIRD_PARTY: "Tercero",
+  CO_LITIGANT: "Colitigante",
+  AGENT: "Apoderado",
+  WITNESS: "Testigo",
+  OTHER: "Otro"
 };
 
 const PARTY_ROLE_OPTIONS: PartyRole[] = [
@@ -237,9 +237,9 @@ function toInputDate(d: Date | null | undefined) {
 }
 
 function procedureJudgeLabel(type: ProcedureType) {
-  if (ARBITRATION_TYPES.includes(type)) return "首席仲裁员";
-  if (EXECUTION_TYPES.includes(type)) return "执行法官";
-  return "主审法官";
+  if (ARBITRATION_TYPES.includes(type)) return "Arbitro presidente";
+  if (EXECUTION_TYPES.includes(type)) return "Juez de ejecucion";
+  return "Juez a cargo";
 }
 
 function normalizePartyTypeForForm(partyType: PartyType): PartyType {
@@ -375,7 +375,7 @@ export function TeamEditorDialog({
   const partyStandingOptions = currentProcedure
     ? standingOrder(currentProcedure.type, currentProcedure.procedureParties)
     : [];
-  // 基本信息字段
+  // Campos de informacion basica
   const [title, setTitle] = useState(matterMeta.title);
   const [causeId, setCauseId] = useState<string>(matterMeta.causeId ?? "");
   const [causeFreeText, setCauseFreeText] = useState(matterMeta.causeFreeText ?? "");
@@ -386,7 +386,7 @@ export function TeamEditorDialog({
     matterMeta.ourStanding ?? ""
   );
 
-  // 团队字段
+  // Campos de equipo
   const [ownerId, setOwnerId] = useState(currentOwnerId);
   const [coLeads, setCoLeads] = useState<string[]>(
     currentMembers.filter((m) => m.role === "CO_LEAD").map((m) => m.userId)
@@ -443,7 +443,7 @@ export function TeamEditorDialog({
   const procedureLabel = currentProcedure
     ? currentProcedure.customLabel ?? procedureTypeLabel[currentProcedure.type]
     : "";
-  const judgeLabel = currentProcedure ? procedureJudgeLabel(currentProcedure.type) : "主审法官";
+  const judgeLabel = currentProcedure ? procedureJudgeLabel(currentProcedure.type) : "Juez a cargo";
   const procedureAgencyOptions = useMemo(
     () => agencyOptionsForProcedure(procedureForm.jurisdiction, currentProcedure?.type),
     [procedureForm.jurisdiction, currentProcedure?.type]
@@ -551,19 +551,19 @@ export function TeamEditorDialog({
   function addNewProcedureParty() {
     const name = newPartyForm.name.trim();
     if (!name) {
-      toast.error("请填写当事人Nombre");
+      toast.error("Complete el nombre de la parte");
       return;
     }
     if (newPartyForm.standings.length === 0) {
-      toast.error("请选择程序地位");
+      toast.error("Seleccione la posicion procesal");
       return;
     }
     if (newPartyForm.partyType === "NATURAL_PERSON" && !newPartyForm.idNumber.trim()) {
-      toast.error("请填写证件号");
+      toast.error("Complete el numero de documento");
       return;
     }
     if (newPartyForm.partyType !== "NATURAL_PERSON" && !newPartyForm.enterpriseSocialCode.trim()) {
-      toast.error("请填写统一社会信用代码");
+      toast.error("Complete el codigo de identificacion");
       return;
     }
     setNewProcedureParties((rows) => [
@@ -594,12 +594,12 @@ export function TeamEditorDialog({
       try {
         if (canEditMatterInfo) {
           if (!title.trim()) {
-            toast.error("CasoNombre不能为空");
+            toast.error("El nombre del caso no puede estar vacio");
             return;
           }
           const parsedAmount = claimAmount.trim() === "" ? null : Number(claimAmount);
           if (parsedAmount !== null && (isNaN(parsedAmount) || parsedAmount < 0)) {
-            toast.error("标的额格式有误");
+            toast.error("El monto tiene formato incorrecto");
             return;
           }
 
@@ -624,12 +624,12 @@ export function TeamEditorDialog({
 
         if (currentProcedure && canManageProcedure) {
           if (newProcedureParties.some((party) => party.standings.length === 0)) {
-            toast.error("新增当事人需至少选择一个程序地位");
+            toast.error("La nueva parte debe tener al menos una posicion procesal");
             return;
           }
           if (!isAgencyAllowedForProcedure(procedureForm.handlingAgency, currentProcedure.type)) {
-            toast.error("商事仲裁程序不能选择法院作为管辖机构", {
-              description: "撤裁、强制执行、不予执行审查etc.后续程序仍可选择法院。"
+            toast.error("El arbitraje comercial no puede tener tribunal como organismo", {
+              description: "La anulacion, ejecucion forzosa, revision de no ejecucion, etc. si pueden."
             });
             return;
           }
@@ -674,11 +674,11 @@ export function TeamEditorDialog({
           });
         }
 
-        toast.success("Caso信息已Actualizar");
+        toast.success("Informacion del caso actualizada");
         onOpenChange(false);
         router.refresh();
       } catch (err) {
-        toast.error("ActualizarError", {
+        toast.error("Error al actualizar", {
           description: err instanceof Error ? err.message : ""
         });
       }
@@ -689,35 +689,34 @@ export function TeamEditorDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="flex max-h-[86vh] w-[92vw] max-w-[720px] flex-col gap-0 overflow-hidden bg-[#EEF2F6] p-0">
         <DialogHeader className="border-b border-border bg-card px-5 py-4">
-          <DialogTitle>EditarCaso信息</DialogTitle>
+          <DialogTitle>Editar informacion del caso</DialogTitle>
           <DialogDescription className="text-xs">
-            收案Fecha、类别不可修改；Caso基础信息和当前程序信息在同一处维护。
+            La fecha de ingreso y la categoria no se pueden modificar; la informacion basica del caso y del procedimiento actual se mantienen en el mismo lugar.
           </DialogDescription>
         </DialogHeader>
 
         <div className="max-h-[calc(86vh-128px)] space-y-4 overflow-y-auto bg-[#EEF2F6] px-5 py-4">
-          {/* readonly 行 */}
+          {/* Fila readonly */}
           <section className="grid grid-cols-2 gap-2 rounded-md border border-border bg-[#F4F7FB] px-3 py-2 text-xs shadow-[inset_0_1px_1px_rgba(15,23,42,0.03)]">
             <div>
-              <div className="text-[10px] text-muted-foreground">收案日</div>
+              <div className="text-[10px] text-muted-foreground">Fecha de ingreso</div>
               <div>{matterMeta.intakeDate ? formatDate(matterMeta.intakeDate) : "—"}</div>
             </div>
             <div>
-              <div className="text-[10px] text-muted-foreground">类别</div>
+              <div className="text-[10px] text-muted-foreground">Categoria</div>
               <div>{matterCategoryLabel[matterMeta.category]}</div>
             </div>
           </section>
-
-          {canEditMatterInfo && (
+		            {canEditMatterInfo && (
             <section className={formSectionClass}>
-              <SectionTitle>Caso基础信息</SectionTitle>
+              <SectionTitle>Informacion basica del caso</SectionTitle>
 
               <div className="space-y-1.5">
-                <Label className={formLabelClass}>CasoNombre</Label>
+                <Label className={formLabelClass}>Nombre del caso</Label>
                 <Input
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
-                  placeholder="CasoNombre（Guardar时自动去除空格）"
+                  placeholder="Nombre del caso (se limpian espacios al guardar)"
                   className={formControlClass}
                 />
               </div>
@@ -734,7 +733,7 @@ export function TeamEditorDialog({
                   />
                 </div>
                 <div className="space-y-1.5">
-                  <Label className={formLabelClass}>自由文本Causa（不在标准库时填）</Label>
+                  <Label className={formLabelClass}>Causa libre (si no esta en el catalogo)</Label>
                   <Input
                     value={causeFreeText}
                     onChange={(e) => setCauseFreeText(e.target.value)}
@@ -745,25 +744,25 @@ export function TeamEditorDialog({
 
               <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                 <div className="space-y-1.5">
-                  <Label className={formLabelClass}>标的额（pesos）</Label>
+                  <Label className={formLabelClass}>Monto (pesos)</Label>
                   <Input
                     type="number"
                     inputMode="decimal"
                     step="0.01"
                     value={claimAmount}
                     onChange={(e) => setClaimAmount(e.target.value)}
-                    placeholder="非金钱标的留空"
+                    placeholder="Dejar vacio si no es monetario"
                     className={cn(formControlClass, "font-mono")}
                   />
                 </div>
                 <div className="space-y-1.5">
-                  <Label className={formLabelClass}>我方诉讼地位</Label>
+                  <Label className={formLabelClass}>Nuestra posicion procesal</Label>
                   <Select
                     value={ourStanding || ""}
                     onValueChange={(v) => setOurStanding(v as LitigationStanding | "")}
                   >
                     <SelectTrigger className={formControlClass}>
-                      <SelectValue placeholder="选择地位" />
+                      <SelectValue placeholder="Seleccionar posicion" />
                     </SelectTrigger>
                     <SelectContent>
                       {availableStandings.map((s) => (
@@ -781,7 +780,7 @@ export function TeamEditorDialog({
           {currentProcedure && canManageProcedure && (
             <section className={formSectionClass}>
               <div className="flex flex-wrap items-center justify-between gap-2">
-                <SectionTitle>当前程序信息</SectionTitle>
+                <SectionTitle>Informacion del procedimiento actual</SectionTitle>
                 <span className="font-mono text-[11px] text-muted-foreground">
                   {procedureLabel}
                 </span>
@@ -789,7 +788,7 @@ export function TeamEditorDialog({
 
               <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                 <div className="space-y-1.5">
-                  <Label className={formLabelClass}>管辖地（省/市/区县）</Label>
+                  <Label className={formLabelClass}>Jurisdiccion (provincia/ciudad/partido)</Label>
                   <JurisdictionSelect
                     value={procedureForm.jurisdiction}
                     onChange={handleJurisdictionChange}
@@ -797,12 +796,12 @@ export function TeamEditorDialog({
                   />
                 </div>
                 <div className="space-y-1.5">
-                  <Label className={formLabelClass}>管辖机构</Label>
+                  <Label className={formLabelClass}>Organismo</Label>
                   <Input
                     list={`matter-info-agency-${currentProcedure.id}`}
                     value={procedureForm.handlingAgency}
                     onChange={(e) => handleHandlingAgencyChange(e.target.value)}
-                    placeholder="如：最高人民法院 / 广州市días河区人民法院"
+                    placeholder="Ej: Camara Nacional de Apelaciones / Juzgado Civil N° 1"
                     className={formControlClass}
                   />
                   <datalist id={`matter-info-agency-${currentProcedure.id}`}>
@@ -812,7 +811,7 @@ export function TeamEditorDialog({
                   </datalist>
                 </div>
                 <div className="space-y-1.5">
-                  <Label className={formLabelClass}>案号</Label>
+                  <Label className={formLabelClass}>Numero de expediente</Label>
                   <Input
                     value={procedureForm.caseNumber}
                     onChange={(e) => setProcedureField("caseNumber", e.target.value)}
@@ -820,13 +819,13 @@ export function TeamEditorDialog({
                   />
                 </div>
                 <div className="space-y-1.5">
-                  <Label className={formLabelClass}>我方程序地位</Label>
+                  <Label className={formLabelClass}>Nuestra posicion en el procedimiento</Label>
                   <Select
                     value={procedureForm.ourStanding || ""}
                     onValueChange={(v) => setProcedureField("ourStanding", v as LitigationStanding | "")}
                   >
                     <SelectTrigger className={formControlClass}>
-                      <SelectValue placeholder="选择地位" />
+                      <SelectValue placeholder="Seleccionar posicion" />
                     </SelectTrigger>
                     <SelectContent>
                       {procedureStandingOptions.map((s) => (
@@ -846,7 +845,7 @@ export function TeamEditorDialog({
                   />
                 </div>
                 <div className="space-y-1.5">
-                  <Label className={formLabelClass}>{judgeLabel}联系方式</Label>
+                  <Label className={formLabelClass}>Contacto de {judgeLabel.toLowerCase()}</Label>
                   <Input
                     value={procedureForm.presidingJudgeContact}
                     onChange={(e) => setProcedureField("presidingJudgeContact", e.target.value)}
@@ -854,7 +853,7 @@ export function TeamEditorDialog({
                   />
                 </div>
                 <div className="space-y-1.5">
-                  <Label className={formLabelClass}>书记员</Label>
+                  <Label className={formLabelClass}>Secretario</Label>
                   <Input
                     value={procedureForm.judgeAssistant}
                     onChange={(e) => setProcedureField("judgeAssistant", e.target.value)}
@@ -862,7 +861,7 @@ export function TeamEditorDialog({
                   />
                 </div>
                 <div className="space-y-1.5">
-                  <Label className={formLabelClass}>书记员联系方式</Label>
+                  <Label className={formLabelClass}>Contacto del secretario</Label>
                   <Input
                     value={procedureForm.judgeAssistantContact}
                     onChange={(e) => setProcedureField("judgeAssistantContact", e.target.value)}
@@ -870,7 +869,7 @@ export function TeamEditorDialog({
                   />
                 </div>
                 <div className="space-y-1.5">
-                  <Label className={formLabelClass}>立案时间</Label>
+                  <Label className={formLabelClass}>Fecha de inicio</Label>
                   <Input
                     type="date"
                     value={procedureForm.acceptedAt}
@@ -879,7 +878,7 @@ export function TeamEditorDialog({
                   />
                 </div>
                 <div className="space-y-1.5">
-                  <Label className={formLabelClass}>裁决 / Cerrar caso时间</Label>
+                  <Label className={formLabelClass}>Fecha de resolucion / cierre</Label>
                   <Input
                     type="date"
                     value={procedureForm.concludedAt}
@@ -894,7 +893,7 @@ export function TeamEditorDialog({
           {currentProcedure && canManageProcedure && (
             <section className={formSectionClass}>
               <div className="flex items-center justify-between gap-3">
-                <SectionTitle>当前程序当事人</SectionTitle>
+                <SectionTitle>Partes del procedimiento actual</SectionTitle>
                 <Button
                   type="button"
                   variant="outline"
@@ -907,13 +906,13 @@ export function TeamEditorDialog({
                   ) : (
                     <Plus className="h-3.5 w-3.5" />
                   )}
-                  {showNewPartyForm ? "收起" : "Agregar"}
+                  {showNewPartyForm ? "Cerrar" : "Agregar"}
                 </Button>
               </div>
 
               {parties.length === 0 ? (
                 <div className={cn(nestedPanelClass, "px-3 py-2 text-xs text-muted-foreground")}>
-                  暂无Caso当事人
+                  No hay partes en el caso
                 </div>
               ) : (
                 <div className={cn(nestedPanelClass, "max-h-[440px] overflow-y-auto")}>
@@ -955,7 +954,7 @@ export function TeamEditorDialog({
                         </div>
                         <div className="rounded-md border border-[#E2E7EF] bg-[#F6F8FB] p-2">
                           <div className="mb-2 text-[11px] font-medium text-muted-foreground">
-                            主体基础信息
+                            Datos basicos de la parte
                           </div>
                           <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
                             <div className="space-y-1.5">
@@ -967,7 +966,7 @@ export function TeamEditorDialog({
                               />
                             </div>
                             <div className="space-y-1.5">
-                              <Label className={formLabelClass}>当事人Rol</Label>
+                              <Label className={formLabelClass}>Rol de la parte</Label>
                               <Select
                                 value={draft.role}
                                 onValueChange={(v) => setPartyEditValue(party.id, "role", v as PartyRole)}
@@ -985,7 +984,7 @@ export function TeamEditorDialog({
                               </Select>
                             </div>
                             <div className="space-y-1.5">
-                              <Label className={formLabelClass}>主体类型</Label>
+                              <Label className={formLabelClass}>Tipo de parte</Label>
                               <Select
                                 value={draft.partyType}
                                 onValueChange={(v) => setPartyEditValue(party.id, "partyType", v as PartyType)}
@@ -1004,7 +1003,7 @@ export function TeamEditorDialog({
                             </div>
                             <div className="space-y-1.5">
                               <Label className={formLabelClass}>
-                                {isOrg ? "统一社会信用代码" : "证件号码"}
+                                {isOrg ? "Codigo de identificacion" : "Numero de documento"}
                               </Label>
                               <Input
                                 className={cn(formControlClass, "font-mono")}
@@ -1020,7 +1019,7 @@ export function TeamEditorDialog({
                             </div>
                             {isOrg && (
                               <div className="space-y-1.5">
-                                <Label className={formLabelClass}>法定代表人</Label>
+                                <Label className={formLabelClass}>Representante legal</Label>
                                 <Input
                                   value={draft.legalRep}
                                   onChange={(e) => setPartyEditValue(party.id, "legalRep", e.target.value)}
@@ -1029,7 +1028,7 @@ export function TeamEditorDialog({
                               </div>
                             )}
                             <div className="space-y-1.5">
-                              <Label className={formLabelClass}>联系人</Label>
+                              <Label className={formLabelClass}>Contacto</Label>
                               <Input
                                 value={draft.contactName}
                                 onChange={(e) => setPartyEditValue(party.id, "contactName", e.target.value)}
@@ -1037,7 +1036,7 @@ export function TeamEditorDialog({
                               />
                             </div>
                             <div className="space-y-1.5">
-                              <Label className={formLabelClass}>联系方式</Label>
+                              <Label className={formLabelClass}>Telefono</Label>
                               <Input
                                 className={cn(formControlClass, "font-mono")}
                                 value={draft.phone}
@@ -1045,7 +1044,7 @@ export function TeamEditorDialog({
                               />
                             </div>
                             <div className="space-y-1.5 sm:col-span-2">
-                              <Label className={formLabelClass}>地址</Label>
+                              <Label className={formLabelClass}>Direccion</Label>
                               <Input
                                 value={draft.address}
                                 onChange={(e) => setPartyEditValue(party.id, "address", e.target.value)}
@@ -1084,7 +1083,7 @@ export function TeamEditorDialog({
                             )
                           }
                           className="ml-auto rounded p-0.5 text-muted-foreground hover:text-destructive"
-                          title="移除"
+                          title="Quitar"
                         >
                           <X className="h-3.5 w-3.5" />
                         </button>
@@ -1117,7 +1116,7 @@ export function TeamEditorDialog({
                       list={`matter-editor-new-party-${currentProcedure.id}`}
                       value={newPartyForm.name}
                       onChange={(e) => handleNewPartyNameChange(e.target.value)}
-                      placeholder="新增当事人Nombre"
+                      placeholder="Nombre de nueva parte"
                       className={cn(formControlClass, "h-8 text-xs")}
                     />
                     <datalist id={`matter-editor-new-party-${currentProcedure.id}`}>
@@ -1168,8 +1167,8 @@ export function TeamEditorDialog({
                       }
                       placeholder={
                         newPartyForm.partyType === "NATURAL_PERSON"
-                          ? "证件号"
-                          : "统一社会信用代码"
+                          ? "Numero de documento"
+                          : "Codigo de identificacion"
                       }
                       className={cn(formControlClass, "h-8 text-xs")}
                     />
@@ -1179,7 +1178,7 @@ export function TeamEditorDialog({
                       onClick={addNewProcedureParty}
                       className="h-8 px-2 text-xs"
                     >
-                      ConfirmarAgregar
+                      Confirmar
                     </Button>
                   </div>
                   <div className="mt-2 flex flex-wrap gap-x-3 gap-y-2">
@@ -1203,13 +1202,13 @@ export function TeamEditorDialog({
             </section>
           )}
 
-          {/* 团队 */}
+          {/* Equipo */}
           {canManageTeam && (
             <section className={formSectionClass}>
-              <SectionTitle>承办团队</SectionTitle>
+              <SectionTitle>Equipo a cargo</SectionTitle>
 
               <div className="space-y-1.5">
-                <Label className={formLabelClass}>主办Abogado</Label>
+                <Label className={formLabelClass}>Abogado titular</Label>
                 <Select value={ownerId} onValueChange={setOwnerId}>
                   <SelectTrigger className={formControlClass}>
                     <SelectValue />
@@ -1225,7 +1224,7 @@ export function TeamEditorDialog({
               </div>
 
               <div className="space-y-1.5">
-                <Label className={formLabelClass}>协办Abogado（可多选）</Label>
+                <Label className={formLabelClass}>Abogados colaboradores (multiple)</Label>
                 <div className="grid grid-cols-1 gap-2 rounded-md border border-[#D9E0EA] bg-white p-2.5 sm:grid-cols-2">
                   {userOptions
                     .filter((u) => u.id !== ownerId)
@@ -1245,7 +1244,7 @@ export function TeamEditorDialog({
               </div>
 
               <div className="space-y-1.5">
-                <Label className={formLabelClass}>助理（可多选）</Label>
+                <Label className={formLabelClass}>Asistentes (multiple)</Label>
                 <div className="grid grid-cols-1 gap-2 rounded-md border border-[#D9E0EA] bg-white p-2.5 sm:grid-cols-2">
                   {userOptions
                     .filter((u) => u.id !== ownerId && !coLeads.includes(u.id))

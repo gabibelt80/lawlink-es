@@ -1,6 +1,6 @@
-// LawLink 数据 schema
-// 对应 docs/DATA-MODEL.md v0.3
-// 修改前先改文档，再改 schema
+// LawLink esquema de datos
+// Correspondiente a docs/DATA-MODEL.md v0.3
+// Antes de modificar, actualizar el documento y luego el esquema
 
 generator client {
   provider = "prisma-client-js"
@@ -12,7 +12,7 @@ datasource db {
 }
 
 // ============================================================
-// 枚举
+// Enumeraciones
 // ============================================================
 
 enum UserRole {
@@ -52,8 +52,8 @@ enum IntakeStatus {
   INTAKE
   PENDING_CONFIRMATION
   CONVERTED
-  DECLINED // 最终拒绝（无法补正）
-  NEEDS_REVISION // 待补正（可由律师补充材料后重新提交审批）
+  DECLINED // Rechazo definitivo (no se puede subsanar)
+  NEEDS_REVISION // Pendiente de subsanacion (el abogado puede completar y reenviar)
 }
 
 enum LitigationStanding {
@@ -64,56 +64,56 @@ enum LitigationStanding {
   THIRD_PARTY
   COUNTERCLAIM_PLAINTIFF
   COUNTERCLAIM_DEFENDANT
-  // v0.5: 二审 / 再审 / 执行
+  // v0.5: Segunda instancia / Revision / Ejecucion
   APPELLANT
   APPELLEE
   RETRIAL_APPLICANT
   RETRIAL_RESPONDENT
   ENFORCEMENT_APPLICANT
   EXECUTED_PERSON
-  // 刑事
+  // Penal
   CRIMINAL_DEFENDANT
   CRIMINAL_VICTIM
   PRIVATE_PROSECUTOR
   CRIMINAL_INCIDENTAL_PLAINTIFF
-  // 仲裁
+  // Arbitraje
   ARBITRATION_CLAIMANT
   ARBITRATION_RESPONDENT
-  // 行政
+  // Administrativo
   ADMIN_PLAINTIFF
   ADMIN_DEFENDANT
   ADMIN_RECONSIDERATION_APPLICANT
   ADMIN_RECONSIDERATION_RESPONDENT
-  // 非诉
+  // No contencioso
   NON_LITIGATION_PARTY
 }
 
 enum FeeType {
-  FIXED // 固定收费
-  CONTINGENCY // 风险代理
-  TIMED // 计时收费
+  FIXED // Honorario fijo
+  CONTINGENCY // Representacion de riesgo
+  TIMED // Honorario por hora
 }
 
 enum InvoiceType {
-  PLAIN // 普通发票
-  SPECIAL // 增值税专用发票
+  PLAIN // Factura comun
+  SPECIAL // Factura con IVA
 }
 
 enum InvoiceItem {
-  LAWYER_FEE // 律师服务费
-  CONSULTING_FEE // 法律咨询费
-  AGENCY_FEE // 代理费
-  OTHER // 其他法律服务
+  LAWYER_FEE // Honorarios profesionales
+  CONSULTING_FEE // Consultoria legal
+  AGENCY_FEE // Honorarios de representacion
+  OTHER // Otros servicios legales
 }
 
 enum InvoiceRequestStatus {
-  PENDING // 律师已申请、待财务处理
-  APPROVED // 财务已批准、待开票
-  ISSUED // 已开具（含电子发票）
-  REJECTED // 被拒
+  PENDING // Solicitado por abogado, pendiente de finanzas
+  APPROVED // Aprobado por finanzas, pendiente de emision
+  ISSUED // Emitida (incluye factura electronica)
+  REJECTED // Rechazada
 }
 
-// v0.10: 文书审批状态
+// v0.10: Estado de aprobacion de documentos
 enum DocumentStatus {
   DRAFT
   PENDING_REVIEW
@@ -187,11 +187,11 @@ enum PartyRole {
   OTHER
 }
 
-// v0.27: 当事人主体类型（自然人需身份证号；其余主体需统一社会信用代码）
-// v0.30: 细分主体类型（公司/合伙企业/个体工商户/事业单位/社会组织/政府机关/其他组织）
+// v0.27: Tipo de parte (persona fisica requiere documento; resto requiere codigo de identificacion)
+// v0.30: Tipos detallados (empresa/sociedad/monotributista/institucion/organizacion social/gobierno/otra organizacion)
 enum PartyType {
   NATURAL_PERSON
-  ORGANIZATION // 旧数据兼容（= 其他组织）
+  ORGANIZATION // Compatibilidad con datos viejos (= otra organizacion)
   COMPANY
   PARTNERSHIP
   INDIVIDUAL_BUSINESS
@@ -201,13 +201,13 @@ enum PartyType {
   OTHER_ORG
 }
 
-// v0.30: 需向律协备案与否
+// v0.30: Declaracion ante el colegio de abogados
 enum BarFilingType {
-  NONE // 否
-  COLLECTIVE // 涉集体案件
-  SENSITIVE // 涉敏感案件
-  MAJOR // 涉重大案件
-  OTHER // 其他特殊案件
+  NONE // No
+  COLLECTIVE // Caso colectivo
+  SENSITIVE // Caso sensible
+  MAJOR // Caso de gravedad
+  OTHER // Otro caso especial
 }
 
 enum ClientType {
@@ -216,15 +216,15 @@ enum ClientType {
   ORGANIZATION
 }
 
-// v0.39: 客户合作状态（生命周期）
+// v0.39: Estado de cooperacion del cliente (ciclo de vida)
 enum ClientCooperationStatus {
-  POTENTIAL    // 潜在
-  NEGOTIATING  // 洽谈中
-  SIGNED       // 已签约
-  TERMINATED   // 已终止
+  POTENTIAL    // Potencial
+  NEGOTIATING  // En negociacion
+  SIGNED       // Firmado
+  TERMINATED   // Terminado
 }
 
-// v0.39: 客户性别（个人客户）
+// v0.39: Genero del cliente (cliente persona fisica)
 enum ClientGender {
   MALE
   FEMALE
@@ -258,7 +258,7 @@ enum DeadlineCategory {
   RESPONSE
   ENFORCEMENT
   ARBITRATION_SET_ASIDE
-  // v0.42: 保全期限（含续期）
+  // v0.42: Plazo de medida cautelar (incluye renovacion)
   PRESERVATION
   CUSTOM
 }
@@ -295,44 +295,44 @@ enum FeeEntryType {
   COMMISSION
 }
 
-// v0.8: 文档模板分类
+// v0.8: Categoria de plantillas de documentos
 enum TemplateCategory {
-  INTAKE // 收案文书：收案登记表 / 风险告知书 / 质量反馈卡
-  RETAINER // 委托文书：委托代理合同 / 授权委托书
-  LITIGATION // 诉讼文书：起诉状 / 答辩状 / 上诉状 / 反诉状 / 仲裁申请书
-  HEARING // 庭审文书：谈话笔录 / 庭审笔录 / 阅卷笔录 / 询问笔录
-  WORK_PRODUCT // 工作成果：办案小结 / 法律意见书 / 代理意见 / 律师函 / 公函
-  ARCHIVE // 卷宗文书：卷宗封皮 / 卷宗目录 / 备考表 / 证据目录
-  CLOSING // 结案文书：结案登记表 / 结算单
-  BLANK // 空白文档（套律所抬头）
+  INTAKE // Documentos de ingreso: registro de ingreso / notificacion de riesgo / encuesta de calidad
+  RETAINER // Documentos de mandato: contrato de representacion / poder
+  LITIGATION // Documentos procesales: demanda / contestacion / apelacion / reconvencion / solicitud de arbitraje
+  HEARING // Documentos de audiencia: acta de entrevista / acta de audiencia / acta de lectura de expediente / acta de interrogatorio
+  WORK_PRODUCT // Productos de trabajo: resumen del caso / dictamen legal / alegato / carta documento / oficio
+  ARCHIVE // Documentos de archivo: caratula / indice / constancia / indice de prueba
+  CLOSING // Documentos de cierre: registro de cierre / liquidacion
+  BLANK // Documento en blanco (con membrete del estudio)
 }
 
-// v0.8: 用章种类
+// v0.8: Tipos de sello
 enum SealType {
-  OFFICIAL_SEAL // 律师事务所公章
-  CONTRACT_SEAL // 合同专用章
-  FINANCE_SEAL // 财务专用章
-  LEGAL_REP_SEAL // 法定代表人章
-  CONTRACT_REVIEW_SEAL // 合同审核章
+  OFFICIAL_SEAL // Sello del estudio juridico
+  CONTRACT_SEAL // Sello de contratos
+  FINANCE_SEAL // Sello de finanzas
+  LEGAL_REP_SEAL // Sello del representante legal
+  CONTRACT_REVIEW_SEAL // Sello de revision de contratos
 }
 
-// v0.8: 用章申请状态
+// v0.8: Estado de solicitud de sello
 enum SealRequestStatus {
-  PENDING // 待审批
-  APPROVED // 已批准，待盖章
-  STAMPED // 已盖章并回填扫描件（终态）
-  REJECTED // 被驳回（终态，但可新建一条引用此 ID 重新申请）
-  CANCELLED // 申请人主动撤销
+  PENDING // Pendiente de aprobacion
+  APPROVED // Aprobado, pendiente de sellado
+  STAMPED // Sellado y escaneado cargado (estado final)
+  REJECTED // Rechazado (estado final, pero se puede crear nueva solicitud referenciando esta)
+  CANCELLED // Cancelado por el solicitante
 }
 
-// v0.8: 紧急程度
+// v0.8: Nivel de urgencia
 enum Urgency {
   NORMAL
   URGENT
 }
 
 // ============================================================
-// 用户与权限
+// Usuarios y permisos
 // ============================================================
 
 model User {
@@ -345,7 +345,7 @@ model User {
   avatar       String?
   active       Boolean   @default(true)
   lastLoginAt  DateTime?
-  // v0.50: ICS 日历订阅 token（URL 即凭证，可重置）
+  // v0.50: Token de suscripcion a calendario ICS (la URL es la credencial, se puede resetear)
   calendarToken String?  @unique
 
   ownedMatters          Matter[]              @relation("MatterOwner")
@@ -363,35 +363,35 @@ model User {
   ownedIntakes          Intake[]              @relation("IntakeOwner")
   invoiceRequests       InvoiceRequest[]      @relation("InvoiceRequester")
   invoiceProcessing     InvoiceRequest[]      @relation("InvoiceProcessor")
-  // v0.8: 模板创建者 + 用章申请人/审批人/盖章人
+  // v0.8: Creador de plantillas + solicitante/aprobador/sellador de sellos
   createdTemplates      DocumentTemplate[]    @relation("TemplateCreator")
   sealRequests          SealRequest[]         @relation("SealRequester")
   sealApprovals         SealRequest[]         @relation("SealApprover")
   sealStamps            SealRequest[]         @relation("SealStamper")
-  // v0.9: 短信收件人 / 快递创建人
+  // v0.9: Receptor de SMS / creador de envios
   receivedSmsMessages   SmsMessage[]          @relation("SmsReceiver")
-  // v0.44: 保全三层重构（v0.48 移除旧单表模型）
+  // v0.44: Reestructuracion de medidas cautelares en 3 capas (v0.48 elimina modelo viejo)
   ownedPreservationCases PreservationCase[]      @relation("PreservationCaseOwner")
   propertyRenewals        PreservationPropertyRenewal[] @relation("PropertyRenewalPerformer")
   createdExpress        ExpressTracking[]     @relation("ExpressCreator")
-  // v0.10: 通知
+  // v0.10: Notificaciones
   notifications         Notification[]
-  // v0.21: AI 文书审查历史（发起人）
+  // v0.21: Historial de revision de documentos con IA (solicitante)
   aiReviews             ReviewRecord[]        @relation("ReviewAuthor")
-  // v0.22: 律所资料上传者
+  // v0.22: Cargador de archivos del estudio
   firmFilesUploaded     FirmFile[]            @relation("FirmFileUploader")
-  // v0.27: 服务中心 - 公告发布者 / 外部联系人录入者
+  // v0.27: Centro de servicios - publicador de anuncios / cargador de contactos externos
   publishedAnnouncements Announcement[]       @relation("AnnouncementAuthor")
   createdExternalContacts ExternalContact[]   @relation("ExternalContactCreator")
   reviewedExternalContacts ExternalContact[]  @relation("ExternalContactReviewer")
-  // v0.44: 程序主办律师
+  // v0.44: Abogado titular del procedimiento
   leadProcedures         MatterProcedure[]     @relation("ProcedureLeadLawyer")
   createdAt             DateTime              @default(now())
   updatedAt             DateTime              @updatedAt
 }
 
 // ============================================================
-// 客户与联系人
+// Clientes y contactos
 // ============================================================
 
 model Client {
@@ -406,12 +406,12 @@ model Client {
   tags        Json
   notes       String?
   legalRep    String?
-  // v0.39: 案件云式补充字段
-  internalCode      String?                 @unique // 客户编号 KH-{YYYY}-{4位}
-  cooperationStatus ClientCooperationStatus @default(SIGNED) // 合作状态
-  industry          String? // 所属行业
-  gender            ClientGender? // 性别（个人客户）
-  ethnicity         String? // 民族（个人客户）
+  // v0.39: Campos complementarios estilo expediente en la nube
+  internalCode      String?                 @unique // Codigo de cliente KH-{YYYY}-{4 digitos}
+  cooperationStatus ClientCooperationStatus @default(SIGNED) // Estado de cooperacion
+  industry          String? // Industria
+  gender            ClientGender? // Genero (cliente persona fisica)
+  ethnicity         String? // Nacionalidad (cliente persona fisica)
   contacts    Contact[]
   intakes     Intake[]
   matterLinks MatterClient[]
@@ -442,7 +442,7 @@ model Contact {
 }
 
 // ============================================================
-// 案由规范库
+// Catalogo de causas
 // ============================================================
 
 model CauseOfAction {
@@ -470,9 +470,8 @@ model CauseOfAction {
   @@index([name])
   @@index([parentId])
 }
-
 // ============================================================
-// 收案
+// Ingreso de casos
 // ============================================================
 
 model Intake {
@@ -487,41 +486,41 @@ model Intake {
   receivedAt     DateTime       @default(now())
   declinedReason String?
 
-  // v0.5: 客户 + 联系人
+  // v0.5: Cliente + contacto
   clientId     String?
   client       Client?     @relation(fields: [clientId], references: [id])
-  clientType   ClientType? // 提交时自动建档用，转化后随 Client 表
+  clientType   ClientType? // Para archivar automaticamente al enviar, luego queda en la tabla Client
   contactName  String?
   contactPhone String?
 
-  // v0.5: 程序 + 诉讼地位 + 争议解决机构 + 标的
+  // v0.5: Procedimiento + posicion procesal + organismo + monto
   firstProcedureType ProcedureType?
-  firstAgency        String? // 争议解决机构：法院/仲裁机构/侦查机关 名称
-  jurisdiction       String? // v0.30 管辖地：省/市/区县 路径
+  firstAgency        String? // Organismo de resolucion: tribunal / arbitraje / fiscalia
+  jurisdiction       String? // v0.30 Jurisdiccion: provincia/ciudad/partido
   ourStanding        LitigationStanding?
   claimAmount        Decimal?            @db.Decimal(14, 2)
-  claimDescription   String? // 非金钱标的描述
+  claimDescription   String? // Descripcion de monto no monetario
 
-  // v0.30: 律协备案 + 是否反诉（诉讼/仲裁类）
+  // v0.30: Declaracion ante el colegio + reconvencion (litigio/arbitraje)
   barFiling    BarFilingType?
   counterclaim Boolean        @default(false)
 
-  // v0.31: 非诉 / 顾问 / 专项（非诉讼类）专属字段
-  businessType String? // 业务类型（非诉/专项）
-  serviceScope String? // 服务范围 / 内容（非诉/专项/顾问）
-  deliverables String? // 交付成果（非诉/专项）
-  counselType  String? // 顾问类型：常年 / 专项（顾问）
-  serviceStart DateTime? // 起始 / 顾问期限起
-  serviceEnd   DateTime? // 结束 / 顾问期限止
+  // v0.31: Campos exclusivos para no contencioso / asesoria / proyectos
+  businessType String? // Tipo de negocio (no contencioso/proyecto)
+  serviceScope String? // Alcance del servicio
+  deliverables String? // Entregables (no contencioso/proyecto)
+  counselType  String? // Tipo de asesoria: permanente / especial
+  serviceStart DateTime? // Inicio / inicio de asesoria
+  serviceEnd   DateTime? // Fin / fin de asesoria
 
-  // v0.5: 律师费
+  // v0.5: Honorarios
   feeType          FeeType?
-  feeAmount        Decimal? @db.Decimal(14, 2) // FIXED: 总金额；CONTINGENCY: 基础办案费
-  contingencyTerms String? // 风险代理收费方式自由文本（仅 CONTINGENCY 用）
-  feeSchedule      String? // 付款节点
+  feeAmount        Decimal? @db.Decimal(14, 2) // FIXED: monto total; CONTINGENCY: monto base
+  contingencyTerms String? // Terminos de representacion de riesgo (solo CONTINGENCY)
+  feeSchedule      String? // Cronograma de pagos
   feeNote          String?
 
-  // v0.5: 主办律师 + 共同律师（转化时生成 MatterMember）
+  // v0.5: Abogado titular + co-abogados (al convertir se genera MatterMember)
   ownerUserId String?
   ownerUser   User?    @relation("IntakeOwner", fields: [ownerUserId], references: [id])
   coUserIds   Json @default("[]")
@@ -541,13 +540,13 @@ model Intake {
 }
 
 // ============================================================
-// 案件 (Matter) + 团队成员 + 多客户
+// Caso (Matter) + Equipo + Multi-cliente
 // ============================================================
 
 model Matter {
   id           String         @id @default(cuid())
   internalCode String         @unique
-  firmCaseNo   String?        @unique // v0.42 所内案号（按可配置模板生成）
+  firmCaseNo   String?        @unique // v0.42 Numero interno del estudio (generado por plantilla configurable)
   title        String
   category     MatterCategory @default(CIVIL_COMMERCIAL)
   status       MatterStatus   @default(IN_PROGRESS)
@@ -561,15 +560,15 @@ model Matter {
   ourStanding             LitigationStanding?
   counterclaimAsPlaintiff Boolean             @default(false)
   counterclaimAsDefendant Boolean             @default(false)
-  barFiling               BarFilingType? // v0.35 是否需向律协备案（诉讼/仲裁类）
+  barFiling               BarFilingType? // v0.35 Declaracion ante el colegio (litigio/arbitraje)
 
-  // v0.35: 非诉 / 顾问 / 专项 专属（从 Intake 转化带入）
-  businessType String? // 业务类型（非诉/专项）
-  serviceScope String? // 服务范围 / 内容
-  deliverables String? // 交付成果（非诉/专项）
-  counselType  String? // 顾问类型（顾问）
-  serviceStart DateTime? // 起始 / 顾问期限起
-  serviceEnd   DateTime? // 结束 / 顾问期限止
+  // v0.35: Campos exclusivos no contencioso / asesoria / proyecto (desde Intake)
+  businessType String? // Tipo de negocio (no contencioso/proyecto)
+  serviceScope String? // Alcance del servicio
+  deliverables String? // Entregables (no contencioso/proyecto)
+  counselType  String? // Tipo de asesoria (asesoria)
+  serviceStart DateTime? // Inicio / inicio de asesoria
+  serviceEnd   DateTime? // Fin / fin de asesoria
 
   intakeDate DateTime?
 
@@ -591,8 +590,8 @@ model Matter {
   procedures       MatterProcedure[]
   parties          Party[]
   relatedEntities  RelatedEntity[]
-  linksFrom        MatterLink[]    @relation("MatterLinkFrom") // v0.32 关联案件（本案 → 关联案）
-  linksTo          MatterLink[]    @relation("MatterLinkTo") // 反向（关联案 → 本案）
+  linksFrom        MatterLink[]    @relation("MatterLinkFrom") // v0.32 Casos relacionados (este caso → caso relacionado)
+  linksTo          MatterLink[]    @relation("MatterLinkTo") // Inverso (caso relacionado → este caso)
   notes            Note[]
   tasks            Task[]
   documents        Document[]
@@ -602,17 +601,17 @@ model Matter {
   commissionPlans  CommissionPlan[]
   archiveRecords   ArchiveRecord[]
   invoiceRequests  InvoiceRequest[]
-  // v0.8: 卷宗 + 用章
+  // v0.8: Carpetas + sellos
   folders          DocumentFolder[]
   sealRequests     SealRequest[]
-  // v0.9: 法院短信 + 财产保全 + 快递追踪（保全 v0.48 起仅三层模型）
+  // v0.9: SMS judiciales + medidas cautelares + envios (medidas v0.48 en adelante solo modelo 3 capas)
   smsMessages      SmsMessage[]
   preservationCases PreservationCase[]
   expressTrackings ExpressTracking[]
-  // v0.21: AI 文书审查历史
+  // v0.21: Historial de revision de documentos con IA
   reviewRecords    ReviewRecord[]
 
-  // v0.28: 自定义字段值（{ [CustomFieldDef.key]: string }）
+  // v0.28: Valores de campos personalizados ({ [CustomFieldDef.key]: string })
   customValues Json @default("{}")
 
   deletedAt DateTime?
@@ -626,7 +625,7 @@ model Matter {
   @@index([causeId])
 }
 
-// v0.28: 自定义字段（JSON 列方案）。字段定义存表，值存于实体的 customValues JSON。
+// v0.28: Campos personalizados (esquema de columna JSON). La definicion se guarda en tabla, el valor en customValues JSON de la entidad.
 enum CustomFieldEntity {
   MATTER
   CLIENT
@@ -642,10 +641,10 @@ enum CustomFieldType {
 model CustomFieldDef {
   id         String            @id @default(cuid())
   entityType CustomFieldEntity
-  key        String // 稳定键，写入实体 customValues 的属性名
+  key        String // Clave estable, se escribe en customValues de la entidad
   label      String
   fieldType  CustomFieldType   @default(TEXT)
-  options    Json // SELECT 类型的可选值
+  options    Json // Opciones para tipo SELECT
   required   Boolean           @default(false)
   order      Int               @default(0)
   enabled    Boolean           @default(true)
@@ -682,7 +681,7 @@ model MatterClient {
 }
 
 // ============================================================
-// 程序阶段
+// Etapas del procedimiento
 // ============================================================
 
 model MatterProcedure {
@@ -696,25 +695,25 @@ model MatterProcedure {
   order       Int
 
   caseNumber     String?
-  handlingAgency String? // 管辖机构（法院/仲裁委/执行法院…）
+  handlingAgency String? // Organismo (tribunal/arbitraje/ejecucion...)
   panel          String?
   handler        String?
 
-  // v0.32: 程序级补充信息
-  jurisdiction          String? // 管辖地（省/市/区县）
-  presidingJudge        String? // 主审法官 / 首席仲裁员 / 执行法官
-  presidingJudgeContact String? // 主审法官联系方式
-  judgeAssistant        String? // 法官助理 / 仲裁庭助理
-  judgeAssistantContact String? // 助理联系方式
-  ourStanding           LitigationStanding? // 我方地位（按程序确定可选项）
+  // v0.32: Informacion complementaria del procedimiento
+  jurisdiction          String? // Jurisdiccion (provincia/ciudad/partido)
+  presidingJudge        String? // Juez a cargo / arbitro presidente / juez de ejecucion
+  presidingJudgeContact String? // Contacto del juez a cargo
+  judgeAssistant        String? // Secretario / asistente del tribunal arbitral
+  judgeAssistantContact String? // Contacto del secretario
+  ourStanding           LitigationStanding? // Nuestra posicion (segun el procedimiento)
 
-  // v0.44: 主办律师
-  leadLawyerId   String? // 主办律师（所内律师）
+  // v0.44: Abogado titular
+  leadLawyerId   String? // Abogado titular (del estudio)
   leadLawyer     User?   @relation("ProcedureLeadLawyer", fields: [leadLawyerId], references: [id], onDelete: SetNull)
-  isExternalLead Boolean @default(false) // 是否非本所代理
+  isExternalLead Boolean @default(false) // Si es representacion externa
 
-  acceptedAt  DateTime? // 立案时间
-  concludedAt DateTime? // 裁决 / 结案时间
+  acceptedAt  DateTime? // Fecha de inicio
+  concludedAt DateTime? // Fecha de resolucion / cierre
 
   status      ProcedureStatus   @default(PENDING)
   outcome     ProcedureOutcome?
@@ -725,7 +724,7 @@ model MatterProcedure {
   deadlines Deadline[]
   documents Document[]
   procedureParties ProcedureParty[]
-  // v0.42: 程序备忘录（待办/已办）
+  // v0.42: Notas del procedimiento (pendientes/completadas)
   memos     ProcedureMemo[]
 
   createdAt DateTime @default(now())
@@ -736,8 +735,8 @@ model MatterProcedure {
   @@index([status])
 }
 
-// v0.48: 环节状态。有任务/材料/专项记录的环节移除时置 HIDDEN 而非删除，
-// 数据保留可恢复；工作台只展示 ACTIVE。
+// v0.48: Estado de etapa. Las etapas con tareas/materiales/registros al eliminarse pasan a HIDDEN en vez de borrarse,
+// los datos se conservan y se pueden recuperar; el panel de trabajo solo muestra ACTIVE.
 enum MatterStageStatus {
   ACTIVE
   HIDDEN
@@ -754,7 +753,7 @@ model MatterStage {
   startedAt   DateTime?
   completedAt DateTime?
   tasks       Task[]
-  // v0.48: 阶段材料改外键关联（原字符串标签"阶段:xx"仅作展示，改名不再断链）
+  // v0.48: Los materiales de etapa ahora usan clave foranea (la etiqueta vieja "etapa:xx" solo es visual)
   documents   Document[]
   createdAt   DateTime          @default(now())
   updatedAt   DateTime          @updatedAt
@@ -763,7 +762,7 @@ model MatterStage {
 }
 
 // ============================================================
-// 任务 / 开庭 / 期限
+// Tareas / Audiencias / Plazos
 // ============================================================
 
 model Task {
@@ -823,26 +822,26 @@ model Deadline {
   @@index([dueAt, completed])
 }
 
-// v0.49: 法定期限规则库（PRD §二十）。规则须经元典核验后方可入 seed，
-// verifiedAt 为空表示未核验，UI 不展示为"法定依据"。
+// v0.49: Reglas de plazos legales (PRD §veinte). Las reglas deben verificarse antes de incluirse en seed,
+// verifiedAt vacio significa no verificado, la UI no lo muestra como "base legal".
 model DeadlineRule {
   id           String             @id @default(cuid())
   code         String             @unique
   name         String
   description  String?
-  triggerLabel String // 触发事件文案，如"判决书送达之日"
+  triggerLabel String // Texto del evento disparador, ej: "Desde la notificacion de la sentencia"
   periodValue  Int
   periodUnit   DeadlinePeriodUnit @default(DAYS)
   category     DeadlineCategory   @default(CUSTOM)
 
-  legalBasis    String // 如《中华人民共和国民事诉讼法(2023修正)》第一百七十一条
+  legalBasis    String // Ej: "Codigo Procesal Civil y Comercial de la Nacion, Art. 171"
   legalBasisUrl String?
-  verifiedAt    DateTime? // 元典核验时间
+  verifiedAt    DateTime? // Fecha de verificacion
 
-  applicableProcedures Json // 空 = 全部程序
-  applicableCategories Json // 空 = 全部案件类别
+  applicableProcedures Json // Vacio = todos los procedimientos
+  applicableCategories Json // Vacio = todas las categorias de casos
 
-  remindDays Int     @default(7) // 生成 Deadline 时的建议提前提醒天数
+  remindDays Int     @default(7) // Dias de recordatorio sugeridos al generar Deadline
   enabled    Boolean @default(true)
   isBuiltIn  Boolean @default(true)
   sortOrder  Int     @default(0)
@@ -853,7 +852,7 @@ model DeadlineRule {
   @@index([enabled, sortOrder])
 }
 
-// v0.42: 程序备忘录（与重要时限并排，待办/已办状态）
+// v0.42: Notas del procedimiento (junto a plazos importantes, estado pendiente/completado)
 model ProcedureMemo {
   id          String          @id @default(cuid())
   procedureId String
@@ -867,9 +866,8 @@ model ProcedureMemo {
 
   @@index([procedureId])
 }
-
 // ============================================================
-// 当事人 / 关联实体
+// Partes / Entidades relacionadas
 // ============================================================
 
 model Party {
@@ -879,20 +877,20 @@ model Party {
   matterId  String?
   matter    Matter?             @relation(fields: [matterId], references: [id], onDelete: Cascade)
   role      PartyRole
-  // v0.5: 具体诉讼地位（依首程序联动），role 保留作粗粒度
+  // v0.5: Posicion procesal especifica (segun procedimiento), role se mantiene como granularidad gruesa
   standing  LitigationStanding?
   ordinal   Int                 @default(1)
   name      String
-  // v0.27: 主体类型决定必填字段分支（自然人 → idNumber；公司 → enterpriseSocialCode + legalRep + address）
+  // v0.27: El tipo de parte determina los campos obligatorios (persona fisica → documento; empresa → codigo + representante + direccion)
   partyType PartyType           @default(NATURAL_PERSON)
   idNumber  String?
   phone     String?
   address   String?
   legalRep  String?
-  // v0.27: 经办联系人（区别于 phone 当事人本人电话，常用于公司路径）
+  // v0.27: Contacto operativo (distinto del telefono de la parte, usado en empresas)
   contactName String?
   notes     String?
-  // v0.26: 对方公司风险查询 — 绑定元典企业后，可一键拉取风险总览
+  // v0.26: Consulta de riesgo de contraparte - vinculado a empresa
   enterpriseId         String?
   enterpriseSocialCode String?
   enterpriseName       String?
@@ -938,7 +936,7 @@ model RelatedEntity {
   @@index([name])
 }
 
-// v0.32: 关联案件（案件 ↔ 案件，方向性记录，展示时双向合并）
+// v0.32: Casos relacionados (caso ↔ caso, registro direccional, se muestran bidireccionalmente)
 model MatterLink {
   id              String   @id @default(cuid())
   matterId        String
@@ -953,7 +951,7 @@ model MatterLink {
 }
 
 // ============================================================
-// 冲突检索
+// Busqueda de conflictos
 // ============================================================
 
 model ConflictCheck {
@@ -986,7 +984,7 @@ model ConflictHit {
 }
 
 // ============================================================
-// 沟通记录
+// Registros de comunicacion
 // ============================================================
 
 model Note {
@@ -1009,26 +1007,26 @@ model Note {
 }
 
 // ============================================================
-// 材料（含加密支持）
+// Materiales (con soporte de cifrado)
 // ============================================================
 
 model Document {
   id          String           @id @default(cuid())
-  // v0.4: matterId 可空（收案阶段挂在 Intake 上），转 Matter 时回填
+  // v0.4: matterId puede ser nulo (en ingreso se cuelga de Intake), al convertir a Matter se rellena
   matterId    String?
   matter      Matter?          @relation(fields: [matterId], references: [id], onDelete: Cascade)
   intakeId    String?
   intake      Intake?          @relation(fields: [intakeId], references: [id], onDelete: Cascade)
   procedureId String?
   procedure   MatterProcedure? @relation(fields: [procedureId], references: [id])
-  // v0.48: 归属环节（外键，环节改名/隐藏不断链）；环节删除时置空保留材料
+  // v0.48: Etapa de pertenencia (clave foranea, no se rompe al renombrar/ocultar etapa); al eliminar etapa se desvincula
   stageId     String?
   stage       MatterStage?     @relation(fields: [stageId], references: [id], onDelete: SetNull)
   name        String
   category    DocumentCategory @default(OTHER)
-  // v0.42: 材料来源方（我方/对方/第三人 等，取自本案当事人，可空）
+  // v0.42: Parte de origen del material (nuestra/contraria/tercero, etc., tomado de las partes del caso, puede ser vacio)
   sourceParty String?
-  // v0.10: 文书审批流程
+  // v0.10: Flujo de aprobacion de documentos
   status      DocumentStatus   @default(DRAFT)
   reviewedById String?
   reviewedBy   User?            @relation("DocumentReviewer", fields: [reviewedById], references: [id])
@@ -1057,27 +1055,27 @@ model Document {
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @updatedAt
 
-  // v0.5: 发票工作流附件反向
+  // v0.5: Adjuntos de flujo de facturacion
   invoiceAsContract InvoiceRequest? @relation("InvoiceContractScan")
   invoiceAsFile     InvoiceRequest? @relation("InvoiceFile")
 
-  // v0.8: 卷宗归属 + 模板生成
+  // v0.8: Carpeta de pertenencia + generacion por plantilla
   folderId                String?
   folder                  DocumentFolder?   @relation(fields: [folderId], references: [id])
   templateId              String?
   template                DocumentTemplate? @relation("TemplateGenerated", fields: [templateId], references: [id])
   templateContextSnapshot Json?
-  // v0.8: 反向 - 作为某模板的源 docx
+  // v0.8: Inverso - como docx fuente de una plantilla
   templateBlobOf          DocumentTemplate? @relation("TemplateBlob")
-  // v0.8: 反向 - 作为用章申请的待盖章稿 / 盖章后扫描件
+  // v0.8: Inverso - como borrador de solicitud de sello / escaneo post-sellado
   sealAsDraft             SealRequest?      @relation("SealDraft")
   sealAsStamped           SealRequest?      @relation("SealStamped")
 
-  // v0.17: 归档清单关联——上传时绑定到 ArchiveChecklistItem.id（lib/archive/checklists.ts 内的字符串 id），
-  // 用于归档向导自动勾选已上传的必交项。一个材料只能绑定一个 checklist item。
+  // v0.17: Relacion con lista de cotejo de archivo - se vincula al subir a ArchiveChecklistItem.id,
+  // usado para auto-marcar items obligatorios en el asistente de archivo. Un material solo puede vincularse a un item.
   archiveChecklistItemId String?
 
-  // v0.21: 反向 - AI 审查历史
+  // v0.21: Inverso - historial de revision con IA
   reviewRecords ReviewRecord[]
 
   @@index([matterId, category])
@@ -1091,34 +1089,34 @@ model Document {
 }
 
 // ============================================================
-// 发票申请工作流（v0.5）
-// 律师在案件详情提交申请 → 财务审核 → 上传扫描件合同 + 电子发票
+// Flujo de solicitud de factura (v0.5)
+// El abogado solicita desde el detalle del caso → finanzas revisa → sube contrato escaneado + factura electronica
 // ============================================================
 
 model InvoiceRequest {
   id          String               @id @default(cuid())
-  // v0.43 项5：matterId 可空——支持「无关联案件」开票（须填 noMatterReason）
+  // v0.43 item 5: matterId puede ser nulo - soporta facturacion sin caso asociado (requiere noMatterReason)
   matterId    String?
   matter      Matter?              @relation(fields: [matterId], references: [id], onDelete: Cascade)
-  noMatterReason String? // 无关联案件时的原因说明（matterId 为空时必填）
+  noMatterReason String? // Motivo cuando no hay caso asociado (obligatorio si matterId es vacio)
   amount      Decimal              @db.Decimal(14, 2)
-  title       String? // 备注 / 客户称谓（仅做兼容，新字段用 buyerName）
+  title       String? // Nota / nombre del cliente (compatibilidad, nuevo campo usa buyerName)
   status      InvoiceRequestStatus @default(PENDING)
   requestNote String?
 
-  // v0.12: 开票类型 + 名目 + 抬头 + 税号 + 开票依据
+  // v0.12: Tipo de factura + concepto + titular + CUIT + base
   invoiceType    InvoiceType?
   invoiceItem    InvoiceItem?
-  buyerName      String? // 开票抬头（客户名，可编辑）
-  buyerTaxNo     String? // 客户税号（专票必填）
-  // v0.42: 增值税专用发票购方"六要素"补全（税法：开户行/账号/地址/电话必填）
-  buyerAddress     String? // 购方地址（专票必填）
-  buyerPhone       String? // 购方电话（专票必填）
-  buyerBank        String? // 购方开户银行（专票必填）
-  buyerBankAccount String? // 购方银行账号（专票必填）
-  evidenceDocIds Json @default("[]") // 开票依据 Document id 列表
+  buyerName      String? // Titular de la factura (nombre del cliente, editable)
+  buyerTaxNo     String? // CUIT del cliente (obligatorio para factura con IVA)
+  // v0.42: Datos completos del comprador para factura con IVA (requisitos fiscales)
+  buyerAddress     String? // Direccion del comprador (obligatorio)
+  buyerPhone       String? // Telefono del comprador (obligatorio)
+  buyerBank        String? // Banco del comprador (obligatorio)
+  buyerBankAccount String? // Cuenta bancaria del comprador (obligatorio)
+  evidenceDocIds Json @default("[]") // Lista de Document ids de respaldo
 
-  // v0.14: 真实发票号（财务开票完成时回填）
+  // v0.14: Numero real de factura (cuando finanzas completa la emision)
   invoiceNo String?
   issuedAt  DateTime?
 
@@ -1131,7 +1129,7 @@ model InvoiceRequest {
   processedAt   DateTime?
   processNote   String?
 
-  // 财务上传：扫描件合同 + 电子发票文件（均走 Document）
+  // Finanzas sube: contrato escaneado + archivo de factura electronica (ambos via Document)
   contractScanId String?   @unique
   contractScan   Document? @relation("InvoiceContractScan", fields: [contractScanId], references: [id])
   invoiceFileId  String?   @unique
@@ -1144,9 +1142,8 @@ model InvoiceRequest {
   @@index([status, requestedAt])
   @@index([requestedById])
 }
-
 // ============================================================
-// 财务：合同 / 收付 / 分成
+// Finanzas: contratos / ingresos y egresos / comisiones
 // ============================================================
 
 model Billing {
@@ -1216,7 +1213,7 @@ model CommissionPlan {
 }
 
 // ============================================================
-// 时间线 / 归档 / 审计
+// Linea de tiempo / Archivo / Auditoria
 // ============================================================
 
 model TimelineEvent {
@@ -1235,9 +1232,9 @@ model TimelineEvent {
 }
 
 enum ArchiveStatus {
-  PENDING_REVIEW // 归档申请已提交，等管理员审批
-  APPROVED // 已审批通过，正式归档
-  REJECTED // 管理员驳回
+  PENDING_REVIEW // Solicitud de archivo enviada, esperando aprobacion
+  APPROVED // Aprobada, archivado formal
+  REJECTED // Rechazada
 }
 
 model ArchiveRecord {
@@ -1256,13 +1253,13 @@ model ArchiveRecord {
   coverDocId   String?
   catalogDocId String?
 
-  archivedBy   String  // 申请人姓名快照（兼容历史，不删）
-  archivedById String? // v0.18: 申请人 User.id，用于审批通知路由
+  archivedBy   String  // Nombre del solicitante (compatibilidad historica)
+  archivedById String? // v0.18: User.id del solicitante, para ruteo de notificaciones
   archivedAt   DateTime @default(now())
   exportPath   String?
   checksum     String?
 
-  // v0.16: 归档审批流
+  // v0.16: Flujo de aprobacion de archivo
   status       ArchiveStatus @default(PENDING_REVIEW)
   reviewedById String?
   reviewedAt   DateTime?
@@ -1300,7 +1297,7 @@ model AuditLog {
 }
 
 // ============================================================
-// 系统配置
+// Configuracion del sistema
 // ============================================================
 
 model StageTemplate {
@@ -1322,20 +1319,20 @@ model SystemSetting {
 }
 
 // ============================================================
-// v0.8: 文档模板系统
+// v0.8: Sistema de plantillas de documentos
 // ============================================================
 
-// 模板定义（系统/律所级，不属于具体 Matter）
+// Definicion de plantilla (nivel sistema/estudio, no pertenece a un Matter especifico)
 model DocumentTemplate {
   id                   String           @id @default(cuid())
   name                 String
   category             TemplateCategory
   description          String?
-  applicableCategories Json // 空数组 = 适用全部案件类别
+  applicableCategories Json // Array vacio = aplicable a todas las categorias de casos
   docxBlobId           String           @unique
   docxBlob             Document         @relation("TemplateBlob", fields: [docxBlobId], references: [id])
-  variables            Json // 变量清单 ["client.name", "matter.caseNumber", ...] 用于缺失提示
-  isBuiltIn            Boolean          @default(false) // 系统内置不可删
+  variables            Json // Lista de variables ["client.name", "matter.caseNumber", ...] para aviso de faltantes
+  isBuiltIn            Boolean          @default(false) // Integrada del sistema, no se puede eliminar
   enabled              Boolean          @default(true)
   createdById          String?
   createdBy            User?            @relation("TemplateCreator", fields: [createdById], references: [id])
@@ -1347,14 +1344,30 @@ model DocumentTemplate {
   @@index([isBuiltIn])
 }
 
-// 卷宗（每个 Matter 内的物理归档目录）
+// v1.0: Biblioteca de escritos pre-cargados
+model WritingTemplate {
+  id          String   @id @default(cuid())
+  name        String
+  category    String   @default("OTRO")
+  stage       String   @default("TODAS")
+  content     String   @db.Text
+  enabled     Boolean  @default(true)
+  createdById String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([category, enabled])
+  @@index([stage, enabled])
+}
+
+// Carpeta de expediente (directorio fisico de archivo dentro de cada Matter)
 model DocumentFolder {
   id         String     @id @default(cuid())
   matterId   String
   matter     Matter     @relation(fields: [matterId], references: [id], onDelete: Cascade)
   name       String
   orderIndex Int        @default(0)
-  isDefault  Boolean    @default(false) // 系统按案件类别预置（可改名不可删）
+  isDefault  Boolean    @default(false) // Preestablecida por categoria de caso (se puede renombrar, no eliminar)
   documents  Document[]
   createdAt  DateTime   @default(now())
   updatedAt  DateTime   @updatedAt
@@ -1364,36 +1377,36 @@ model DocumentFolder {
 }
 
 // ============================================================
-// v0.8: 用章审批工作流
+// v0.8: Flujo de aprobacion de sellos
 // ============================================================
 
-// 章种类配置（决策 §12.9.2：approverRoles: Role[] 多角色 OR 关系）
+// Configuracion de tipos de sello (decision §12.9.2: approverRoles: Role[] multi-rol OR)
 model SealTypeConfig {
   type             SealType   @id
-  label            String // 中文显示名
+  label            String // Nombre visible
   description      String?
-  approverRoles    Json // 多角色 OR 关系；空数组 = 仅 requiresLegalRep 生效
-  requiresLegalRep Boolean    @default(false) // 必须法定代表人本人审批（取 SystemSetting key=firmLegalRepUserId）
+  approverRoles    Json // Multi-rol OR; array vacio = solo aplica requiresLegalRep
+  requiresLegalRep Boolean    @default(false) // Requiere aprobacion del representante legal (SystemSetting key=firmLegalRepUserId)
   enabled          Boolean    @default(true)
   updatedAt        DateTime   @updatedAt
 }
 
-// 用章申请
+// Solicitud de sello
 model SealRequest {
   id       String   @id @default(cuid())
-  code     String   @unique // SEAL-2026-0001
+  code     String   @unique // SELLO-2026-0001
   sealType SealType
   matterId String?
   matter   Matter?  @relation(fields: [matterId], references: [id])
 
-  purpose              String // 用章事由
-  documentTitle        String // 待盖章文件标题
+  purpose              String // Motivo del sello
+  documentTitle        String // Titulo del documento a sellar
   pageCount            Int     @default(1)
   requireCrossPageSeal Boolean @default(false)
   copies               Int     @default(1)
   urgency              Urgency @default(NORMAL)
 
-  // 待盖章稿（必传） + 盖章后扫描件（盖章完成时必补）
+  // Borrador a sellar (obligatorio) + escaneo post-sellado (obligatorio al completar)
   draftDocId   String    @unique
   draftDoc     Document  @relation("SealDraft", fields: [draftDocId], references: [id])
   stampedDocId String?   @unique
@@ -1417,7 +1430,7 @@ model SealRequest {
 
   rejectedAt DateTime?
 
-  // 被驳回后重新申请的溯源链（旧 → 新）
+  // Cadena de reenvio despues de rechazo (vieja → nueva)
   parentSealRequestId String?
   parentSealRequest   SealRequest?  @relation("SealResubmission", fields: [parentSealRequestId], references: [id])
   resubmissions       SealRequest[] @relation("SealResubmission")
@@ -1430,55 +1443,53 @@ model SealRequest {
   @@index([sealType, status])
   @@index([matterId])
 }
-
 // ============================================================
-// v0.9: 法院短信收件箱
+// v0.9: Bandeja de entrada de SMS judiciales
 // ============================================================
 
-// 短信类型（与旧系统 SMS_TYPE_KEYWORDS 对齐）
+// Tipo de SMS (alineado con SMS_TYPE_KEYWORDS del sistema viejo)
 enum SmsType {
-  HEARING_NOTICE // 开庭通知
-  SERVICE_NOTICE // 送达通知
-  FEE_NOTICE // 缴费通知
-  MEDIATION // 调解通知
-  ENFORCEMENT // 执行通知
-  FILING_NOTICE // 立案通知
-  JUDGMENT_NOTICE // 判决通知
-  EVIDENCE_SUBMIT // 提交材料 / 举证
+  HEARING_NOTICE // Notificacion de audiencia
+  SERVICE_NOTICE // Notificacion de traslado
+  FEE_NOTICE // Notificacion de pago
+  MEDIATION // Notificacion de mediacion
+  ENFORCEMENT // Notificacion de ejecucion
+  FILING_NOTICE // Notificacion de radicacion
+  JUDGMENT_NOTICE // Notificacion de sentencia
+  EVIDENCE_SUBMIT // Presentacion de documentacion / prueba
   OTHER
 }
 
-// 与 Matter 的匹配来源
+// Origen de la vinculacion con Matter
 enum SmsMatchSource {
-  AUTO_CASE_NUMBER // 按案号自动匹配
-  MANUAL // 用户手动指派
+  AUTO_CASE_NUMBER // Vinculacion automatica por numero de expediente
+  MANUAL // Asignacion manual del usuario
   UNMATCHED
 }
 
 model SmsMessage {
   id           String   @id @default(cuid())
-  rawText      String // 原始短信全文
+  rawText      String // Texto completo del SMS original
   receivedAt   DateTime @default(now())
   receivedById String
   receivedBy   User     @relation("SmsReceiver", fields: [receivedById], references: [id], onDelete: Restrict)
 
-  // 解析结果（含 caseNumbers / court / hearingDate / urls / judge / clerk / phones ...）
+  // Resultado del analisis (incluye caseNumbers / court / hearingDate / urls / judge / clerk / phones ...)
   parsedJson Json
   smsType    SmsType @default(OTHER)
 
-  // 关联匹配
+  // Vinculacion
   matchedMatterId String?
   matchedMatter   Matter?        @relation(fields: [matchedMatterId], references: [id], onDelete: SetNull)
   matchedBy       SmsMatchSource @default(UNMATCHED)
 
-  // 一键生成动作的产物 id（追溯）
+  // IDs de elementos generados con un clic (trazabilidad)
   generatedHearingId  String?
   generatedDeadlineId String?
 
   processed   Boolean   @default(false)
   processedAt DateTime?
-  // v0.48: 电子送达附件需人工处理（需登录/验证码/未关联案件），从
-  // parsedJson.attachmentResults 冗余出来供 SQL 过滤（ROADMAP §四.2）
+  // v0.48: Adjuntos de notificacion electronica requieren accion manual (requiere login/codigo/sin caso asociado)
   needsManualAction Boolean @default(false)
 
   createdAt DateTime @default(now())
@@ -1491,42 +1502,42 @@ model SmsMessage {
 }
 
 // ============================================================
-// v0.9: 财产保全
+// v0.9: Medidas cautelares
 // ============================================================
 
 enum PreservationType {
-  PRE_LITIGATION // 诉前保全
-  LITIGATION // 诉中保全
-  ENFORCEMENT // 执行保全
+  PRE_LITIGATION // Medida previa al juicio
+  LITIGATION // Medida durante el juicio
+  ENFORCEMENT // Medida de ejecucion
 }
 
 enum PropertyType {
-  BANK_DEPOSIT // 银行存款
-  REAL_ESTATE // 房产
-  VEHICLE // 车辆
-  EQUITY // 股权
-  IP // 知识产权
-  OTHER // 其他财产
+  BANK_DEPOSIT // Deposito bancario
+  REAL_ESTATE // Inmueble
+  VEHICLE // Vehiculo
+  EQUITY // Participacion societaria
+  IP // Propiedad intelectual
+  OTHER // Otro bien
 }
 
 enum GuaranteeType {
-  CASH_DEPOSIT // 保证金
-  GUARANTEE_LETTER // 保函
-  PROPERTY // 财产担保
-  NONE // 无需担保
+  CASH_DEPOSIT // Deposito en efectivo
+  GUARANTEE_LETTER // Poliza de seguro
+  PROPERTY // Garantia real
+  NONE // Sin garantia
 }
 
 enum PreservationStatus {
-  ACTIVE // 生效中
-  RENEWED // 已续保
-  EXPIRED // 已到期
-  LIFTED // 已解除
+  ACTIVE // Vigente
+  RENEWED // Renovada
+  EXPIRED // Vencida
+  LIFTED // Levantada
 }
 
 // ============================================================
-// v0.44: 保全三层重构（案件 → 被保全人 → 财产）
-// v0.48: 移除旧 Preservation / PreservationRenewal 单表模型，
-//        存量数据已在 migration 中迁入三层模型
+// v0.44: Reestructuracion de medidas cautelares en 3 capas (caso → sujeto → bien)
+// v0.48: Eliminados modelos viejos Preservation / PreservationRenewal,
+//         los datos existentes se migraron en la migracion al modelo de 3 capas
 // ============================================================
 
 model PreservationCase {
@@ -1560,7 +1571,7 @@ model PreservationTarget {
   caseId String
   case   PreservationCase @relation(fields: [caseId], references: [id], onDelete: Cascade)
 
-  name String // 被保全人名称
+  name String // Nombre del sujeto afectado
   note String?
 
   properties PreservationProperty[]
@@ -1610,12 +1621,12 @@ model PreservationPropertyRenewal {
 }
 
 // ============================================================
-// v0.9.3: 快递追踪
+// v0.9.3: Seguimiento de envios
 // ============================================================
 
 enum ExpressDirection {
-  OUTBOUND // 寄出（律所 → 法院 / 当事人 / 对方）
-  INBOUND // 收到（法院 / 当事人 → 律所）
+  OUTBOUND // Enviado (estudio → tribunal / parte / contraparte)
+  INBOUND // Recibido (tribunal / parte → estudio)
 }
 
 model ExpressTracking {
@@ -1623,15 +1634,15 @@ model ExpressTracking {
   matterId       String?
   matter         Matter?          @relation(fields: [matterId], references: [id], onDelete: SetNull)
   trackingNo     String
-  companyCode    String? // 中文公司名（顺丰速运 / 中通快递 等）
+  companyCode    String? // Nombre de la empresa (Correo Argentino / Andreani / OCA, etc.)
   direction      ExpressDirection
-  purpose        String // 用途（如：起诉状寄朝阳法院 / 法院送达判决书）
-  recipient      String? // 收件人/单位
+  purpose        String // Uso (ej: demanda enviada al juzgado / notificacion del tribunal)
+  recipient      String? // Destinatario / entidad
   recipientPhone String?
 
-  lastState    String? // 揽件 / 在途 / 到达派件 / 已签收 / 退签 / 疑难
+  lastState    String? // En origen / En transito / En distribucion / Entregado / Devuelto / Con problema
   lastUpdateAt DateTime?
-  tracesJson   Json? // 完整轨迹快照（旧次刷新覆盖；不入历史）
+  tracesJson   Json? // Snapshot completo del seguimiento (se sobrescribe en cada refresco)
 
   createdById String
   createdBy   User     @relation("ExpressCreator", fields: [createdById], references: [id], onDelete: Restrict)
@@ -1644,7 +1655,7 @@ model ExpressTracking {
 }
 
 // ============================================================
-// v0.10: 通知系统
+// v0.10: Sistema de notificaciones
 // ============================================================
 
 enum NotificationType {
@@ -1655,7 +1666,7 @@ enum NotificationType {
   SMS_ARRIVAL
   TASK_ASSIGNED
   SYSTEM
-  // v0.18: 归档审批通知
+  // v0.18: Notificaciones de aprobacion de archivo
   ARCHIVE_APPROVED
   ARCHIVE_REJECTED
 }
@@ -1686,8 +1697,8 @@ model Notification {
   @@index([userId, createdAt])
 }
 
-// v0.21: AI 文书审查历史
-// 每次点「AI 审查」+ 拿到结果都会写一条；按 document/matter 反查能拿全部历史
+// v0.21: Historial de revision de documentos con IA
+// Cada clic en "Revision IA" + resultado escribe un registro; se puede consultar por documento/materia
 model ReviewRecord {
   id           String   @id @default(cuid())
   matterId     String
@@ -1707,17 +1718,17 @@ model ReviewRecord {
   @@index([matterId, reviewedAt])
 }
 
-// v0.22: 律所级资料库（与案件无关）
-// 制度 / 指引 / 参考模板（不同于 v0.8 生成型 DocumentTemplate）/ 其他文件
+// v0.22: Biblioteca de recursos del estudio (sin relacion con casos)
+// Normas / guias / plantillas de referencia (distintas de las plantillas de generacion v0.8) / otros archivos
 enum FirmFileCategory {
-  POLICY     // 制度（员工手册、保密协议、薪酬制度等）
-  GUIDE      // 指引（办案指引、客户接待指引等）
-  TEMPLATE   // 参考模板（律师下载手动改的样本，区别于 docxtemplater 生成型）
-  REFERENCE  // 其他文件（营业执照、执业证扫描件等）
-  CONTRACT   // 合同
-  LETTER     // 函件
-  LICENSE    // 证照
-  OTHER_FIRM // 其他
+  POLICY     // Normas (manual del empleado, confidencialidad, salarios, etc.)
+  GUIDE      // Guias (guia de trabajo, guia de atencion al cliente, etc.)
+  TEMPLATE   // Plantillas de referencia (muestras que el abogado descarga y modifica, distintas de las generadas por docxtemplater)
+  REFERENCE  // Otros archivos (licencia comercial, escaneo de matricula, etc.)
+  CONTRACT   // Contratos
+  LETTER     // Notas y oficios
+  LICENSE    // Matriculas y habilitaciones
+  OTHER_FIRM // Otros
 }
 
 model FirmFile {
@@ -1735,12 +1746,12 @@ model FirmFile {
   uploadedById String
   uploadedBy   User   @relation("FirmFileUploader", fields: [uploadedById], references: [id])
 
-  // 旧版被新版替代时，旧版指向新版 id；列表默认隐藏被替代的
+  // Cuando una version vieja es reemplazada por una nueva, la vieja apunta a la nueva; la lista oculta las reemplazadas por defecto
   supersededById String?
   supersededBy   FirmFile?  @relation("FirmFileSupersedes", fields: [supersededById], references: [id])
   supersedes     FirmFile[] @relation("FirmFileSupersedes")
 
-  archivedAt DateTime? // soft delete
+  archivedAt DateTime? // borrado logico
   createdAt  DateTime  @default(now())
   updatedAt  DateTime  @updatedAt
 
@@ -1748,18 +1759,18 @@ model FirmFile {
   @@index([supersededById])
 }
 
-// v0.27: 服务中心 —— 律所公告（独立 Model，pinned 公告作顶部 banner）
+// v0.27: Centro de servicios —— Anuncios del estudio (modelo independiente, anuncios fijados como banner superior)
 model Announcement {
   id          String   @id @default(cuid())
   title       String
   content     String   @db.Text
   pinned      Boolean  @default(false)
   publishedAt DateTime @default(now())
-  // 到期后 banner 不再显示；列表仍保留
+  // Despues del vencimiento el banner no se muestra; la lista se mantiene
   expiresAt   DateTime?
   authorId    String
   author      User     @relation("AnnouncementAuthor", fields: [authorId], references: [id])
-  archivedAt  DateTime? // soft delete
+  archivedAt  DateTime? // borrado logico
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
@@ -1767,22 +1778,22 @@ model Announcement {
   @@index([authorId, createdAt])
 }
 
-// v0.27: 服务中心 —— 外部联系人（法院 / 公证 / 他所律师 等）
+// v0.27: Centro de servicios —— Contactos externos (tribunales / escribanias / abogados de otros estudios, etc.)
 enum ExternalContactCategory {
-  COURT       // 法院
-  PROSECUTOR  // 检察院
-  POLICE      // 公安
-  NOTARY      // 公证处
-  ARBITRATION // 仲裁机构
-  OTHER_FIRM  // 他所律师
-  EXPERT      // 鉴定 / 评估专家
-  OTHER       // 其他
+  COURT       // Tribunal
+  PROSECUTOR  // Fiscalia
+  POLICE      // Policia
+  NOTARY      // Escribania
+  ARBITRATION // Tribunal arbitral
+  OTHER_FIRM  // Abogado de otro estudio
+  EXPERT      // Perito / tasador
+  OTHER       // Otro
 }
 
 enum ExternalContactStatus {
-  PENDING_REVIEW // 待审核
-  APPROVED       // 已通过
-  REJECTED       // 已驳回
+  PENDING_REVIEW // Pendiente de revision
+  APPROVED       // Aprobado
+  REJECTED       // Rechazado
 }
 
 model ExternalContact {
@@ -1814,8 +1825,9 @@ model ExternalContact {
   @@index([reviewedById])
   @@index([name])
 }
+
 // ============================================================
-// Multi-tenant: Estudio jurídico (schema central)
+// Multi-tenant: Estudio juridico (esquema central)
 // ============================================================
 
 model Firm {

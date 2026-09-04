@@ -63,35 +63,35 @@ export function LifecycleActions({
 
   function handleSubmit() {
     if (dialog === "close" && !text.trim()) {
-      toast.warning("请填写Cerrar caso小结");
+      toast.warning("Complete el resumen de cierre");
       return;
     }
     startTransition(async () => {
       try {
         if (dialog === "close") {
           await closeMatter({ id: matterId, summary: text });
-          toast.success("Caso已Cerrar caso");
+          toast.success("Caso cerrado");
         } else if (dialog === "hold") {
           await holdMatter({ id: matterId, reason: text });
-          toast.success("Caso已暂停");
+          toast.success("Caso suspendido");
         }
         setDialog(null);
         router.refresh();
       } catch (err) {
-        toast.error("Operación fallida", { description: err instanceof Error ? err.message : "" });
+        toast.error("Operacion fallida", { description: err instanceof Error ? err.message : "" });
       }
     });
   }
 
   function handleReopen() {
-    if (!confirm("将Caso重新开放为'办理中'？")) return;
+    if (!confirm("Reabrir el caso como 'En tramite'?")) return;
     startTransition(async () => {
       try {
         await reopenMatter(matterId);
-        toast.success("Caso已重新开放");
+        toast.success("Caso reabierto");
         router.refresh();
       } catch (err) {
-        toast.error("Operación fallida", { description: err instanceof Error ? err.message : "" });
+        toast.error("Operacion fallida", { description: err instanceof Error ? err.message : "" });
       }
     });
   }
@@ -101,15 +101,15 @@ export function LifecycleActions({
       <div className="inline-flex items-center gap-2">
         <span className="inline-flex items-center gap-1.5 rounded-md border border-[#9B7BF7]/30 bg-[#9B7BF7]/10 px-3 py-1.5 text-xs text-[#9B7BF7]">
           <Lock className="h-3.5 w-3.5" />
-          已归档（只读）
+          Archivado (solo lectura)
         </span>
         <a
           href={`/api/archive/${matterId}/export`}
           className="inline-flex items-center gap-1.5 rounded-md border border-border/60 px-3 py-1.5 text-xs hover:bg-muted/30"
-          title="导出归档 ZIP（含材料 + 结构化数据 + 卷宗封皮目录）"
+          title="Exportar ZIP de archivo (incluye materiales + datos estructurados + portada)"
         >
           <Download className="h-3.5 w-3.5" />
-          导出 ZIP
+          Exportar ZIP
         </a>
       </div>
     );
@@ -128,13 +128,13 @@ export function LifecycleActions({
           {(status === "ON_HOLD" || status === "CLOSED") && (
             <DropdownMenuItem onSelect={handleReopen}>
               <Play className="mr-2 h-4 w-4" />
-              重新开放
+              Reabrir
             </DropdownMenuItem>
           )}
           {status === "IN_PROGRESS" && (
             <DropdownMenuItem onSelect={() => open("hold")}>
               <Pause className="mr-2 h-4 w-4" />
-              暂停办理
+              Suspender
             </DropdownMenuItem>
           )}
           {status !== "CLOSED" && (
@@ -151,7 +151,7 @@ export function LifecycleActions({
                 className="text-[#9B7BF7] focus:text-[#9B7BF7]"
               >
                 <Archive className="mr-2 h-4 w-4" />
-                归档（不可逆）
+                Archivar (irreversible)
               </DropdownMenuItem>
             </>
           )}
@@ -161,17 +161,17 @@ export function LifecycleActions({
       <Dialog open={dialog !== null} onOpenChange={(o) => !o && setDialog(null)}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>{dialog === "close" ? "Cerrar caso" : "暂停Caso"}</DialogTitle>
+            <DialogTitle>{dialog === "close" ? "Cerrar caso" : "Suspender caso"}</DialogTitle>
             <DialogDescription>
               {dialog === "close" &&
-                "Cerrar caso后CasoEstado为'已Cerrar caso'，仍可Editar。Cerrar caso小结会进入时间线。"}
-              {dialog === "hold" && "暂停后Caso不再显示在'办理中'筛选。"}
+                "Despues de cerrar, el estado sera 'Cerrado' y se podra editar. El resumen ingresara en la linea de tiempo."}
+              {dialog === "hold" && "Despues de suspender, el caso no se mostrara en el filtro 'En tramite'."}
             </DialogDescription>
           </DialogHeader>
 
           <div className="space-y-1.5">
             <Label className="text-xs">
-              {dialog === "close" ? "Cerrar caso小结" : "Motivo de suspensión"}
+              {dialog === "close" ? "Resumen de cierre" : "Motivo de suspension"}
               {dialog === "close" && <span className="ml-1 text-destructive">*</span>}
             </Label>
             <Textarea
@@ -179,8 +179,8 @@ export function LifecycleActions({
               onChange={(e) => setText(e.target.value)}
               placeholder={
                 dialog === "close"
-                  ? "如：经一审判决支持原告诉请，对方未上诉，判决已生效"
-                  : "如：etc.待Cliente补充证据材料"
+                  ? "Ej.: sentencia de primera instancia favorable, la contraparte no apelo, sentencia firme"
+                  : "Ej.: a la espera de que el cliente aporte evidencia complementaria"
               }
               rows={5}
             />
@@ -192,7 +192,7 @@ export function LifecycleActions({
             </Button>
             <Button onClick={handleSubmit} disabled={isPending}>
               {isPending && <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />}
-              {dialog === "close" ? "ConfirmarCerrar caso" : "Confirmar暂停"}
+              {dialog === "close" ? "Confirmar cierre" : "Confirmar suspension"}
             </Button>
           </DialogFooter>
         </DialogContent>

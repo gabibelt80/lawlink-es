@@ -60,16 +60,16 @@ import { cn } from "@/lib/utils";
 // ============ AddProcedureSheet ============
 
 const CN_NUM: Record<number, string> = {
-  1: "一",
-  2: "二",
-  3: "三",
-  4: "四",
-  5: "五",
-  6: "六",
-  7: "七",
-  8: "八",
-  9: "九",
-  10: "十"
+  1: "I",
+  2: "II",
+  3: "III",
+  4: "IV",
+  5: "V",
+  6: "VI",
+  7: "VII",
+  8: "VIII",
+  9: "IX",
+  10: "X"
 };
 
 export function AddProcedureSheet({
@@ -87,7 +87,7 @@ export function AddProcedureSheet({
   category: MatterCategory;
   nextOrder: number;
   colleagues?: { id: string; name: string }[];
-  /** 已有的程序类型，防止重复Agregar */
+  /** Tipos de procedimiento ya existentes, para evitar duplicados */
   existingTypes?: string[];
 }) {
   const [isPending, startTransition] = useTransition();
@@ -133,7 +133,7 @@ export function AddProcedureSheet({
 
   function handleProcedureTypeChange(p: ProcedureType) {
     setValue("type", p);
-    // 机构可自由手输，只在新程序下不合法时清空（商事仲裁下选了法院）
+    // El organismo se puede escribir libremente, solo se limpia cuando es invalido para el nuevo procedimiento
     const cur = getValues("handlingAgency");
     if (cur && !isAgencyAllowedForProcedure(cur, p)) {
       setValue("handlingAgency", "");
@@ -161,11 +161,11 @@ export function AddProcedureSheet({
     startTransition(async () => {
       try {
         await addProcedure(values);
-        toast.success(`程序已Agregar（${procedureTypeLabel[values.type]}）`);
+        toast.success(`Procedimiento agregado (${procedureTypeLabel[values.type]})`);
         reset();
         onOpenChange(false);
       } catch (err) {
-        toast.error("AgregarError", {
+        toast.error("Error al agregar", {
           description: err instanceof Error ? err.message : ""
         });
       }
@@ -176,17 +176,17 @@ export function AddProcedureSheet({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-xl max-h-[85vh] flex flex-col gap-0 p-0">
         <DialogHeader className="border-b border-border px-6 py-4">
-          <DialogTitle>Agregar程序（第 {nextOrder} 个）</DialogTitle>
+          <DialogTitle>Agregar procedimiento (N° {nextOrder})</DialogTitle>
           <DialogDescription className="text-xs">
-            填写程序基本信息和主办Abogado
+            Complete la informacion basica del procedimiento y el abogado titular
           </DialogDescription>
         </DialogHeader>
 
         <form onSubmit={handleSubmit(onSubmit)} className="flex flex-1 flex-col overflow-hidden">
           <div className="flex-1 space-y-5 overflow-y-auto px-6 py-5">
-            {/* 程序类型 */}
+            {/* Tipo de procedimiento */}
             <div className="space-y-2">
-              <Label className="text-xs">程序类型 *</Label>
+              <Label className="text-xs">Tipo de procedimiento *</Label>
               <div className="flex flex-wrap gap-1.5">
                 {procedureOptions.map((p) => (
                   <button
@@ -206,10 +206,10 @@ export function AddProcedureSheet({
               </div>
             </div>
 
-            {/* 主办Abogado */}
+            {/* Abogado titular */}
             {colleagues && colleagues.length > 0 && (
               <div className="space-y-2">
-                <Label className="text-xs">主办Abogado</Label>
+                <Label className="text-xs">Abogado titular</Label>
                 <div className="flex items-center gap-3">
                   <Select
                     value={isExternalLead ? "__external__" : (leadLawyerId ?? "__none__")}
@@ -227,45 +227,45 @@ export function AddProcedureSheet({
                     }}
                   >
                     <SelectTrigger className="h-9 text-xs">
-                      <SelectValue placeholder="选择主办Abogado" />
+                      <SelectValue placeholder="Seleccionar abogado titular" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="__none__">未指定</SelectItem>
+                      <SelectItem value="__none__">Sin asignar</SelectItem>
                       {colleagues.map((c) => (
                         <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
                       ))}
-                      <SelectItem value="__external__">非本所代理</SelectItem>
+                      <SelectItem value="__external__">Representacion externa</SelectItem>
                     </SelectContent>
                   </Select>
                   {isExternalLead && (
-                    <span className="text-xs text-muted-foreground">此程序由外部Abogado代理</span>
+                    <span className="text-xs text-muted-foreground">Este procedimiento lo lleva un abogado externo</span>
                   )}
                 </div>
               </div>
             )}
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <Field label="案号">
+              <Field label="Numero de expediente">
                 <Input
                   className="font-mono"
-                  placeholder="如 (2026)沪0105民初1288号"
+                  placeholder="Ej: 1288/2026"
                   {...register("caseNumber")}
                 />
               </Field>
-              <Field label="管辖地">
+              <Field label="Jurisdiccion">
                 <JurisdictionSelect
                   value={jurisdiction}
                   onChange={handleJurisdictionChange}
                 />
               </Field>
-              <Field label="办理机关">
+              <Field label="Organismo">
                 <Select
                   value={handlingAgency}
                   onValueChange={handleHandlingAgencyChange}
                   disabled={agencyOpts.length === 0}
                 >
                   <SelectTrigger className="h-9 bg-background">
-                    <SelectValue placeholder="选择机构" />
+                    <SelectValue placeholder="Seleccionar organismo" />
                   </SelectTrigger>
                   <SelectContent>
                     {agencyOpts.map((a) => (
@@ -274,14 +274,14 @@ export function AddProcedureSheet({
                   </SelectContent>
                 </Select>
               </Field>
-              <Field label="主审 / 仲裁员">
+              <Field label="Juez / Arbitro a cargo">
                 <Input {...register("handler")} />
               </Field>
-              <Field label="庭别 / 合议庭">
+              <Field label="Sala / Tribunal">
                 <Input {...register("panel")} />
               </Field>
               <Field
-                label="立案 / 受理Fecha"
+                label="Fecha de inicio"
                 error={errors.acceptedAt?.message as string | undefined}
               >
                 <Input
@@ -307,7 +307,7 @@ export function AddProcedureSheet({
             </Button>
             <Button type="submit" disabled={isPending} className="gap-1.5">
               {isPending && <Loader2 className="h-4 w-4 animate-spin" />}
-              Agregar程序
+              Agregar procedimiento
             </Button>
           </DialogFooter>
         </form>
@@ -322,15 +322,15 @@ const deadlineCategoryLabel: Record<
   DeadlineCreateInput["category"],
   string
 > = {
-  LIMITATION: "诉讼时效",
-  EVIDENCE: "举证Plazo",
-  APPEAL: "上诉期",
-  PERFORMANCE: "履行期",
-  RESPONSE: "答辩期",
-  ENFORCEMENT: "执行申请",
-  ARBITRATION_SET_ASIDE: "撤销仲裁期",
-  PRESERVATION: "PreservaciónPlazo",
-  CUSTOM: "其他"
+  LIMITATION: "Prescripcion",
+  EVIDENCE: "Plazo de prueba",
+  APPEAL: "Plazo de apelacion",
+  PERFORMANCE: "Plazo de cumplimiento",
+  RESPONSE: "Plazo de contestacion",
+  ENFORCEMENT: "Ejecucion de sentencia",
+  ARBITRATION_SET_ASIDE: "Nulidad de laudo",
+  PRESERVATION: "Plazo de medida cautelar",
+  CUSTOM: "Otro"
 };
 
 export function AddDeadlineDialog({
@@ -341,7 +341,7 @@ export function AddDeadlineDialog({
 }: {
   open: boolean;
   onOpenChange: (o: boolean) => void;
-  /** v0.45：Recordatorios全案聚合，新增Plazo需明确所处程序 */
+  /** v0.45: Recordatorios agregados por caso, el nuevo plazo debe indicar el procedimiento */
   procedures: { id: string; label: string }[];
   defaultProcedureId: string;
 }) {
@@ -368,7 +368,7 @@ export function AddDeadlineDialog({
   const procedureId = useWatch({ control, name: "procedureId" });
   const category = useWatch({ control, name: "category" });
 
-  // v0.49：法定Plazo规则（按当前程序类型 + Caso类别过滤，Ver todos经pesos典核验）
+  // v0.49: Reglas de plazos legales (filtradas por tipo de procedimiento + categoria del caso)
   type RuleOption = Awaited<ReturnType<typeof listDeadlineRulesForProcedure>>[number];
   const [rules, setRules] = useState<RuleOption[]>([]);
   const [rulesLoading, setRulesLoading] = useState(false);
@@ -408,8 +408,8 @@ export function AddDeadlineDialog({
     const trigger = new Date(`${triggerDate}T00:00:00`);
     setValue("title", selectedRule.name, { shouldDirty: true });
     setValue("category", selectedRule.category, { shouldDirty: true });
-    // date input Registrarse了 valueAsDate，程序化赋值需要 yyyy-MM-dd 字符串才能正确
-    // 回显；Enviar时 zod coerce.date() 会转回 Date
+    // El input date registra valueAsDate, la asignacion programatica necesita string yyyy-MM-dd
+    // para mostrar correctamente; al enviar zod coerce.date() lo convierte a Date
     setValue("dueAt", formatLocalDate(computedDue) as unknown as Date, {
       shouldDirty: true
     });
@@ -425,10 +425,10 @@ export function AddDeadlineDialog({
       { shouldDirty: true }
     );
     setValue("remindDays", selectedRule.remindDays, { shouldDirty: true });
-    toast.success("已按法定Plazo填入，可再人工调整", { description: HOLIDAY_NOTE });
+    toast.success("Plazo legal aplicado, puede ajustar manualmente", { description: HOLIDAY_NOTE });
   }
 
-  // 打开时把所处程序默认值同步为当前选中程序
+  // Al abrir se sincroniza el procedimiento seleccionado
   useEffect(() => {
     if (open) setValue("procedureId", defaultProcedureId);
   }, [open, defaultProcedureId, setValue]);
@@ -437,11 +437,11 @@ export function AddDeadlineDialog({
     startTransition(async () => {
       try {
         await addDeadline(values);
-        toast.success("Plazo已Agregar");
+        toast.success("Plazo agregado");
         reset();
         onOpenChange(false);
       } catch (err) {
-        toast.error("AgregarError", {
+        toast.error("Error al agregar", {
           description: err instanceof Error ? err.message : ""
         });
       }
@@ -452,18 +452,18 @@ export function AddDeadlineDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="flex max-h-[85vh] max-w-md flex-col gap-0 p-0">
         <DialogHeader className="border-b border-border px-6 py-4">
-          <DialogTitle>AgregarPlazo</DialogTitle>
+          <DialogTitle>Agregar plazo</DialogTitle>
         </DialogHeader>
 
         <form onSubmit={handleSubmit(onSubmit)} className="flex flex-1 flex-col overflow-hidden">
           <div className="flex-1 space-y-3 overflow-y-auto px-6 py-5">
-            <Field label="所处程序" required>
+            <Field label="Procedimiento" required>
               <Select
                 value={procedureId || undefined}
                 onValueChange={(v) => setValue("procedureId", v)}
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="选择所处程序" />
+                  <SelectValue placeholder="Seleccionar procedimiento" />
                 </SelectTrigger>
                 <SelectContent>
                   {procedures.map((p) => (
@@ -479,14 +479,14 @@ export function AddDeadlineDialog({
               <section className="space-y-2.5 rounded-md border border-primary/25 bg-primary/[0.04] p-3">
                 <div className="flex items-center gap-1.5 text-[12px] font-medium text-foreground/85">
                   <Scale className="h-3.5 w-3.5 text-primary" strokeWidth={1.8} />
-                  按法定Plazo生成
+                  Generar por plazo legal
                   {rulesLoading && <Loader2 className="h-3 w-3 animate-spin text-muted-foreground" />}
                 </div>
                 <div className="space-y-1.5">
-                  <Label className="text-xs text-muted-foreground">法定Plazo规则</Label>
+                  <Label className="text-xs text-muted-foreground">Regla de plazo legal</Label>
                   <Select value={selectedRuleId || undefined} onValueChange={setSelectedRuleId}>
                     <SelectTrigger className="bg-background">
-                      <SelectValue placeholder="选择适用的法定Plazo" />
+                      <SelectValue placeholder="Seleccionar plazo legal aplicable" />
                     </SelectTrigger>
                     <SelectContent>
                       {rules.map((rule) => (
@@ -521,24 +521,24 @@ export function AddDeadlineDialog({
                             className="ml-1 inline-flex items-center gap-0.5 text-primary hover:underline"
                           >
                             <ExternalLink className="h-3 w-3" />
-                            Ver法条
+                            Ver norma
                           </a>
                         )}
                         {selectedRule.verifiedAt && (
                           <span className="ml-1.5 rounded bg-emerald-500/10 px-1.5 py-0.5 text-[10px] text-emerald-700">
-                            已核验 {formatLocalDate(new Date(selectedRule.verifiedAt))}
+                            Verificado {formatLocalDate(new Date(selectedRule.verifiedAt))}
                           </span>
                         )}
                       </p>
                       {selectedRule.description && <p>{selectedRule.description}</p>}
                       {computedDue && (
                         <p className="font-medium text-foreground/85">
-                          Fecha de vencimiento：
+                          Fecha de vencimiento:
                           <span className="font-mono tabular">
                             {formatLocalDate(computedDue)}
                           </span>
                           <span className="ml-1.5 font-normal text-muted-foreground">
-                            （{HOLIDAY_NOTE}）
+                            ({HOLIDAY_NOTE})
                           </span>
                         </p>
                       )}
@@ -551,21 +551,21 @@ export function AddDeadlineDialog({
                       disabled={!computedDue}
                       className="h-7 px-2.5 text-[11px]"
                     >
-                      填入下方表单
+                      Completar formulario
                     </Button>
                   </>
                 )}
               </section>
             )}
 
-            <Field label="PlazoNombre" required error={errors.title?.message}>
+            <Field label="Nombre del plazo" required error={errors.title?.message}>
               <Input
-                placeholder="如：举证截止 / 上诉Fecha de vencimiento"
+                placeholder="Ej: Vencimiento de prueba / Vencimiento de apelacion"
                 {...register("title")}
               />
             </Field>
 
-            <Field label="Plazo类型">
+            <Field label="Tipo de plazo">
               <Select
                 value={category}
                 onValueChange={(v) =>
@@ -589,14 +589,14 @@ export function AddDeadlineDialog({
               <Input type="date" {...register("dueAt", { valueAsDate: true })} />
             </Field>
 
-            <Field label="计算依据">
+            <Field label="Base de calculo">
               <Input
-                placeholder="如：判决书送达日 2026-05-01 + 15 日"
+                placeholder="Ej: Notificacion de sentencia 2026-05-01 + 15 dias"
                 {...register("basis")}
               />
             </Field>
 
-            <Field label="提前Recordatorios（días）">
+            <Field label="Recordatorio previo (dias)">
               <Input
                 type="number"
                 min={0}
@@ -618,7 +618,7 @@ export function AddDeadlineDialog({
             </Button>
             <Button type="submit" disabled={isPending} className="gap-1.5">
               {isPending && <Loader2 className="h-4 w-4 animate-spin" />}
-              AgregarPlazo
+              Agregar plazo
             </Button>
           </DialogFooter>
         </form>
@@ -626,7 +626,6 @@ export function AddDeadlineDialog({
     </Dialog>
   );
 }
-
 // ============ AddHearingDialog ============
 
 export function AddHearingDialog({
@@ -642,7 +641,7 @@ export function AddHearingDialog({
   procedures: { id: string; label: string }[];
   defaultProcedureId: string;
   hearingCounts?: Record<string, number>;
-  /** 各程序附加信息（审理法院etc.），用于预填 */
+  /** Informacion adicional de cada procedimiento (organismo, sala, etc.) para precompletar */
   proceduresDetail?: Record<string, { handlingAgency?: string | null; panel?: string | null; jurisdiction?: string | null }>;
 }) {
   const [isPending, startTransition] = useTransition();
@@ -678,10 +677,10 @@ export function AddHearingDialog({
     if (!proc) return;
     const count = (hearingCounts?.[procId] ?? 0) + 1;
     const numStr = CN_NUM[count] ?? String(count);
-    setValue("title", `${proc.label}第${numStr}次开庭`);
+    setValue("title", `${proc.label} audiencia N° ${numStr}`);
   }, [hearingCounts, procedures, setValue]);
 
-  // 打开时同步默认程序 + 自动生成主题
+  // Al abrir se sincroniza el procedimiento y se genera el titulo automatico
   useEffect(() => {
     if (!open) return;
     setValue("procedureId", defaultProcedureId);
@@ -707,18 +706,18 @@ export function AddHearingDialog({
         if (result.judge) setValue("judge", result.judge);
         if (result.caseNumber || result.parties) {
           const parts: string[] = [];
-          if (result.caseNumber) parts.push(`案号：${result.caseNumber}`);
-          if (result.parties?.length) parts.push(`当事人：${result.parties.join("、")}`);
+          if (result.caseNumber) parts.push(`Expediente: ${result.caseNumber}`);
+          if (result.parties?.length) parts.push(`Partes: ${result.parties.join(", ")}`);
           setValue("notes", parts.join("\n"));
         }
-        toast.success("传票识别完成，请核对信息");
+        toast.success("Cedula reconocida, verifique la informacion");
       } catch (err) {
-        toast.error("传票识别Error", {
-          description: err instanceof Error ? err.message : "请手动填写"
+        toast.error("Error al reconocer cedula", {
+          description: err instanceof Error ? err.message : "Complete manualmente"
         });
       } finally {
         setOcrLoading(false);
-        // reset file input so same file can be re-selected
+        // Limpiar input para poder seleccionar el mismo archivo
         if (fileInputRef.current) fileInputRef.current.value = "";
       }
     });
@@ -728,11 +727,11 @@ export function AddHearingDialog({
     startTransition(async () => {
       try {
         await addHearing(values);
-        toast.success("开庭已Agregar");
+        toast.success("Audiencia agregada");
         reset();
         onOpenChange(false);
       } catch (err) {
-        toast.error("AgregarError", {
+        toast.error("Error al agregar", {
           description: err instanceof Error ? err.message : ""
         });
       }
@@ -743,12 +742,12 @@ export function AddHearingDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="flex max-h-[85vh] max-w-md flex-col gap-0 p-0">
         <DialogHeader className="border-b border-border px-6 py-4">
-          <DialogTitle>Agregar开庭</DialogTitle>
+          <DialogTitle>Agregar audiencia</DialogTitle>
         </DialogHeader>
 
         <form onSubmit={handleSubmit(onSubmit)} className="flex flex-1 flex-col overflow-hidden">
           <div className="flex-1 space-y-3 overflow-y-auto px-6 py-5">
-            {/* 上传传票 */}
+            {/* Subir cedula */}
             <div className="flex items-center gap-2">
               <input
                 ref={fileInputRef}
@@ -770,20 +769,20 @@ export function AddHearingDialog({
                 ) : (
                   <ScanText className="h-3.5 w-3.5" />
                 )}
-                {ocrLoading ? "识别中…" : "上传传票识别"}
+                {ocrLoading ? "Reconociendo..." : "Subir cedula para reconocer"}
               </Button>
               <span className="text-[11px] text-muted-foreground">
-                上传传票照片，AI 自动填充开庭信息
+                Suba la foto de la cedula, la IA completa automaticamente
               </span>
             </div>
 
-            <Field label="主题" required error={errors.title?.message}>
-              <Input placeholder="如：第一次开庭" {...register("title")} />
+            <Field label="Titulo" required error={errors.title?.message}>
+              <Input placeholder="Ej: Primera audiencia" {...register("title")} />
             </Field>
 
-            {/* 所处程序 + 审理法院 一行 */}
+            {/* Procedimiento + Organismo */}
             <div className="grid grid-cols-2 gap-3">
-              <Field label="所处程序" required>
+              <Field label="Procedimiento" required>
                 <Select
                   value={hearingProcedureId || undefined}
                   onValueChange={(v) => {
@@ -792,7 +791,7 @@ export function AddHearingDialog({
                   }}
                 >
                   <SelectTrigger>
-                    <SelectValue placeholder="选择程序" />
+                    <SelectValue placeholder="Seleccionar procedimiento" />
                   </SelectTrigger>
                   <SelectContent>
                     {procedures.map((p) => (
@@ -803,7 +802,7 @@ export function AddHearingDialog({
                   </SelectContent>
                 </Select>
               </Field>
-              <Field label="审理法院">
+              <Field label="Organismo">
                 <Input
                   readOnly
                   value={proceduresDetail?.[hearingProcedureId]?.handlingAgency ?? "—"}
@@ -812,31 +811,31 @@ export function AddHearingDialog({
               </Field>
             </div>
 
-            {/* 开庭时间 + 法庭 一行 */}
+            {/* Fecha y sala */}
             <div className="grid grid-cols-2 gap-3">
-              <Field label="开庭时间" required>
+              <Field label="Fecha y hora" required>
                 <Input
                   type="datetime-local"
                   {...register("startsAt", { valueAsDate: true })}
                 />
               </Field>
-              <Field label="法庭">
-                <Input placeholder="如：第三法庭" {...register("room")} />
+              <Field label="Sala">
+                <Input placeholder="Ej: Sala 3" {...register("room")} />
               </Field>
             </div>
 
-            {/* 主审/仲裁员 + 联系方式 一行 */}
+            {/* Juez y contacto */}
             <div className="grid grid-cols-2 gap-3">
-              <Field label="主审 / 仲裁员">
+              <Field label="Juez / Arbitro">
                 <Input {...register("judge")} />
               </Field>
-              <Field label="联系方式">
-                <Input placeholder="法官/书记员电话" {...register("contact")} />
+              <Field label="Contacto">
+                <Input placeholder="Telefono del juzgado" {...register("contact")} />
               </Field>
             </div>
 
-            <Field label="开庭地址">
-              <Input placeholder="如：XX路XX号XX法院" {...register("address")} />
+            <Field label="Direccion">
+              <Input placeholder="Ej: Calle X 123, Ciudad" {...register("address")} />
             </Field>
 
             <Field label="Observaciones">
@@ -855,7 +854,7 @@ export function AddHearingDialog({
             </Button>
             <Button type="submit" disabled={isPending} className="gap-1.5">
               {isPending && <Loader2 className="h-4 w-4 animate-spin" />}
-              Agregar开庭
+              Agregar audiencia
             </Button>
           </DialogFooter>
         </form>
@@ -864,7 +863,7 @@ export function AddHearingDialog({
   );
 }
 
-// ============ Shared Field ============
+// ============ Campo compartido ============
 
 function Field({
   label,

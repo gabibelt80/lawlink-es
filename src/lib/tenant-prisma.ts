@@ -28,8 +28,9 @@ export async function getTenantPrisma(): Promise<PrismaClient> {
     return tenantClients.get(schema)!;
   }
 
-  const baseUrl = process.env.DATABASE_URL!;
-  const tenantUrl = baseUrl.replace(/\/[^/]+$/, `/${schema}`);
+const baseUrl = process.env.DATABASE_URL!;
+const tenantUrl = baseUrl.replace(/\/[^/]+$/, `/${schema}`);
+console.log("TENANT URL:", tenantUrl);
 
   const client = new PrismaClient({
     datasources: { db: { url: tenantUrl } },
