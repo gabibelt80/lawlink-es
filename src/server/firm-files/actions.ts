@@ -1,12 +1,12 @@
 ﻿"use server";
 
 /**
- * v0.22: å¾‹æ‰€Materialåº“ï¼ˆFirmFileï¼‰
+ * v0.22: Archivos del estudio (FirmFile)
  *
- * å…¨æ‰€å…±äº«ï¼šæ‰€æœ‰ active ç”¨æˆ·å¯è¯»ï¼›admin / PRINCIPAL_LAWYER å¯ä¸Šä¼  / æ›¿ä»£ / Eliminarã€‚
- * 4 åˆ†ç±»ï¼šåˆ¶åº¦ / æŒ‡å¼• / å‚è€ƒæ¨¡æ¿ / å…¶ä»–æ–‡ä»¶ã€‚
- * ç‰ˆæœ¬ï¼šsupersededById Enlaceæ—§â†’æ–°ï¼›åˆ—è¡¨é»˜è®¤åªæ˜¾ç¤º"æœ€æ–°"ã€‚
- * Buscarï¼šILIKE name + description + tags å¤šå­—æ®µæ¨¡ç³ŠCoincidenciaï¼ˆä¸ç”¨ tsvectorï¼‰ã€‚
+ * Compartidos en todo el estudio: todos los usuarios activos pueden leer;
+ * admin / PRINCIPAL_LAWYER pueden subir / reemplazar / eliminar.
+ * 4 categorias: normativa / guias / plantillas de referencia / otros.
+ * Versiones: supersededById enlaza version anterior a nueva.
  */
 import { getTenantPrisma } from "@/lib/tenant-prisma";
 import { requireSession } from "@/lib/auth/session";
@@ -36,7 +36,7 @@ export type FirmFileEntry = {
 async function requireUploader() {
   const session = await requireSession();
   if (session.user.role !== "ADMIN" && session.user.role !== "PRINCIPAL_LAWYER") {
-    throw new Error("ä»…Administrarå‘˜ / ä¸»ä»»Abogadoå¯Administrarå¾‹æ‰€Material");
+    throw new Error("Solo el Administrador / Abogado Principal puede administrar archivos del estudio");
   }
   return session;
 }
@@ -44,15 +44,15 @@ async function requireUploader() {
 const CATEGORY_VALUES: FirmFileCategory[] = ["POLICY", "GUIDE", "TEMPLATE", "REFERENCE"];
 
 function parseCategory(raw: unknown): FirmFileCategory {
-  if (typeof raw !== "string") throw new Error("åˆ†ç±»å¿…å¡«");
+  if (typeof raw !== "string") throw new Error("La categoria es obligatoria");
   if ((CATEGORY_VALUES as string[]).includes(raw)) return raw as FirmFileCategory;
-  throw new Error(`æ— æ•ˆåˆ†ç±»ï¼š${raw}`);
+  throw new Error(`Categoria invalida: ${raw}`);
 }
 
 function parseTags(raw: unknown): string[] {
   if (typeof raw !== "string" || !raw.trim()) return [];
   return raw
-    .split(/[,ï¼Œã€\s]+/)
+    .split(/[,，、\s]+/)
     .map((s) => s.trim())
     .filter(Boolean)
     .slice(0, 20);
@@ -63,6 +63,7 @@ export async function listFirmFiles(input: {
   search?: string;
   includeSuperseded?: boolean;
 }): Promise<FirmFileEntry[]> {
+  const prisma = await getTenantPrisma();
   await requireSession();
 
   const where: Prisma.FirmFileWhereInput = {
@@ -116,7 +117,6 @@ export async function listFirmFiles(input: {
 export async function getFirmFileVersionHistory(input: { id: string }) {
   const prisma = await getTenantPrisma();
   await requireSession();
-  // æ²¿ç€ supersedes é“¾å‘æ—§ç‰ˆæ·±æŒ–ï¼ˆç†è®ºæ˜¯æ ‘ï¼Œä¸šåŠ¡ä¸Šå•é“¾ï¼‰
   type Node = {
     id: string;
     name: string;
@@ -158,6 +158,7 @@ export async function uploadFirmFile(formData: FormData): Promise<{
   id: string;
   name: string;
 }> {
+  const prisma = await getTenantPrisma();
   const session = await requireUploader();
 
   const file = formData.get("file");
@@ -167,32 +168,31 @@ export async function uploadFirmFile(formData: FormData): Promise<{
   const tags = parseTags(formData.get("tags"));
   const supersedesRaw = formData.get("supersedesId");
 
-  if (!(file instanceof File)) throw new Error("ç¼ºå°‘æ–‡ä»¶");
-  if (file.size === 0) throw new Error("ç©ºæ–‡ä»¶");
+  if (!(file instanceof File)) throw new Error("Falta el archivo");
+  if (file.size === 0) throw new Error("El archivo esta vacio");
   if (file.size > FIRM_FILE_MAX_BYTES)
-    throw new Error(`æ–‡ä»¶è¶…è¿‡ ${Math.round(FIRM_FILE_MAX_BYTES / 1024 / 1024)}MB`);
-  if (typeof name !== "string" || !name.trim()) throw new Error("Nombreå¿…å¡«");
+    throw new Error(`El archivo supera los ${Math.round(FIRM_FILE_MAX_BYTES / 1024 / 1024)}MB`);
+  if (typeof name !== "string" || !name.trim()) throw new Error("El nombre es obligatorio");
 
   const supersedesId =
     typeof supersedesRaw === "string" && supersedesRaw ? supersedesRaw : null;
 
-  // æ›¿ä»£æ—§ç‰ˆçš„åˆæ³•æ€§
+  // Validacion de reemplazo de version anterior
   if (supersedesId) {
     const old = await prisma.firmFile.findUnique({
       where: { id: supersedesId },
       select: { id: true, supersededById: true, archivedAt: true }
     });
-    if (!old) throw new Error("è¢«æ›¿ä»£çš„æ—§ç‰ˆä¸å­˜åœ¨");
-    if (old.supersededById) throw new Error("è¯¥æ—§ç‰ˆå·²è¢«å…¶ä»–æ–°ç‰ˆæ›¿ä»£");
-    if (old.archivedAt) throw new Error("è¯¥æ—§ç‰ˆå·²Eliminarï¼Œæ— æ³•è¢«æ›¿ä»£");
+    if (!old) throw new Error("La version anterior no existe");
+    if (old.supersededById) throw new Error("La version anterior ya fue reemplazada");
+    if (old.archivedAt) throw new Error("La version anterior esta eliminada");
   }
 
   const buf = Buffer.from(await file.arrayBuffer());
   const path = await storage.writeFile("firm-files", buf);
   const hash = sha256(buf);
 
-  // ç”¨æˆ·å¡«çš„ name å¯èƒ½ä¸å«æ‰©å±•åï¼ˆå¦‚"å‘˜å·¥æ‰‹å†Œ v2.4"ï¼‰ï¼Œä¸‹è½½æ—¶æµè§ˆå™¨è¦é æ‰©å±•åè¯†åˆ«ç¨‹åºï¼Œ
-  // è¿™é‡Œä¼˜å…ˆå–åŽŸå§‹æ–‡ä»¶åçš„æ‰©å±•åå…œåº•ï¼Œå…¶æ¬¡ç”¨ mimeType æŽ¨æ–­
+  // Asegura que el nombre tenga extension
   const trimmedName = name.trim().slice(0, 200);
   const userHasExt = /\.[A-Za-z0-9]{1,5}$/.test(trimmedName);
   let nameWithFileExt = trimmedName;
@@ -253,8 +253,8 @@ export async function updateFirmFile(input: {
     where: { id: input.id },
     select: { id: true, archivedAt: true }
   });
-  if (!existing) throw new Error("Materialä¸å­˜åœ¨");
-  if (existing.archivedAt) throw new Error("å·²Eliminarçš„Materialä¸å¯Editar");
+  if (!existing) throw new Error("El archivo no existe");
+  if (existing.archivedAt) throw new Error("No se puede editar un archivo eliminado");
 
   const data: Prisma.FirmFileUpdateInput = {};
   if (input.name !== undefined) data.name = input.name.trim().slice(0, 200);
@@ -293,5 +293,3 @@ export async function deleteFirmFile(input: { id: string }) {
   revalidatePath("/firm-resources");
   return { ok: true };
 }
-
-

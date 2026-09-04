@@ -32,7 +32,7 @@ export async function markNotificationRead(id: string) {
   const notif = await prisma.notification.findFirst({
     where: { id, userId: session.user.id },
   });
-  if (!notif) throw new Error("Notificacionesä¸å­˜åœ¨");
+  if (!notif) throw new Error("La notificacion no existe");
 
   return prisma.notification.update({
     where: { id },

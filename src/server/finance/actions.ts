@@ -87,11 +87,11 @@ export async function deleteBilling(id: string) {
   return { ok: true };
 }
 
-// ============ FeeEntry + comisiÃ³n automÃ¡tica ============
+// ============ FeeEntry + comision automÃ¡tica ============
 
 /**
  * Crea un registro de cobro/pago.
- * - Al crear RECEIVED se deriva automÃ¡ticamente un subregistro COMMISSION por cada beneficiario segÃºn CommissionPlan
+ * - Al crear RECEIVED se deriva automÃ¡ticamente un subregistro COMMISSION por cada beneficiario Segun CommissionPlan
  * - parent / children se vinculan por parentFeeEntryId
  */
 export async function createFeeEntry(input: FeeEntryCreateInput) {
@@ -116,7 +116,7 @@ export async function createFeeEntry(input: FeeEntryCreateInput) {
       }
     });
 
-    // ComisiÃ³n automÃ¡tica
+    // comision automÃ¡tica
     if (data.type === "RECEIVED" && data.amount > 0) {
       const plans = await tx.commissionPlan.findMany({
         where: { matterId: data.matterId, active: true }
@@ -133,7 +133,7 @@ export async function createFeeEntry(input: FeeEntryCreateInput) {
             occurredAt: data.occurredAt,
             parentFeeEntryId: entry.id,
             beneficiaryUserId: plan.userId,
-            note: plan.label ? `SegÃºn plan [${plan.label}] comisiÃ³n automÃ¡tica ${plan.percent}%` : `ComisiÃ³n automÃ¡tica ${plan.percent}%`,
+            note: plan.label ? `Segun plan [${plan.label}] comision automÃ¡tica ${plan.percent}%` : `comision automÃ¡tica ${plan.percent}%`,
             recordedById: session.user.id
           }
         });
@@ -211,7 +211,7 @@ export async function deleteFeeEntry(id: string) {
 
 /**
  * Reemplaza por completo el plan de comisiones del caso.
- * Estrategia simple: elimina todos los planes existentes y crea nuevos segÃºn los items.
+ * Estrategia simple: elimina todos los planes existentes y crea nuevos Segun los items.
  */
 export async function setCommissionPlan(input: CommissionPlanSetInput) {
   const prisma = await getTenantPrisma();
@@ -294,7 +294,7 @@ export async function getMatterFinance(matterId: string) {
 }
 
 /**
- * v0.11: Lista las solicitudes de facturaciÃ³n del caso
+ * v0.11: Lista las solicitudes de facturacion del caso
  */
 export async function listMatterInvoiceRequests(matterId: string) {
   const prisma = await getTenantPrisma();
@@ -405,7 +405,7 @@ export async function getMatterInvoiceContext(matterId: string) {
 }
 
 /**
- * v0.12: Crear solicitud de facturaciÃ³n (con tipo/concepto/titular/respaldo)
+ * v0.12: Crear solicitud de facturacion (con tipo/concepto/titular/respaldo)
  */
 export async function createInvoiceRequest(input: {
   matterId: string | null;
@@ -428,7 +428,7 @@ export async function createInvoiceRequest(input: {
     await assertCanAssociateMatter(session.user.id, input.matterId);
   } else {
     if (!isManager(session.user.role) && session.user.role !== "FINANCE") {
-      throw new Error("La facturaciÃ³n sin caso asociado solo puede iniciarla Finanzas / Administrador / Abogado principal");
+      throw new Error("La facturacion sin caso asociado solo puede iniciarla Finanzas / Administrador / Abogado principal");
     }
     if (!input.noMatterReason?.trim()) {
       throw new Error("Cuando no hay caso asociado se debe completar el motivo");
@@ -437,18 +437,18 @@ export async function createInvoiceRequest(input: {
 
   if (input.amount <= 0) throw new Error("El monto debe ser mayor a 0");
   if (input.invoiceType !== "PLAIN" && input.invoiceType !== "SPECIAL") {
-    throw new Error("SeleccionÃ¡ el tipo de factura");
+    throw new Error("Selecciona el tipo de factura");
   }
-  if (!input.buyerName.trim()) throw new Error("CompletÃ¡ el titular de la factura");
+  if (!input.buyerName.trim()) throw new Error("Completa el titular de la factura");
   if (input.invoiceType === "SPECIAL") {
-    if (!input.buyerTaxNo?.trim()) throw new Error("La factura especial debe incluir el nÃºmero de identificaciÃ³n fiscal");
-    if (!input.buyerAddress?.trim()) throw new Error("La factura especial debe incluir la direcciÃ³n del comprador");
-    if (!input.buyerPhone?.trim()) throw new Error("La factura especial debe incluir el telÃ©fono del comprador");
+    if (!input.buyerTaxNo?.trim()) throw new Error("La factura especial debe incluir el numero de identificaciÃ³n fiscal");
+    if (!input.buyerAddress?.trim()) throw new Error("La factura especial debe incluir la direccion del comprador");
+    if (!input.buyerPhone?.trim()) throw new Error("La factura especial debe incluir el telefono del comprador");
     if (!input.buyerBank?.trim()) throw new Error("La factura especial debe incluir el banco");
     if (!input.buyerBankAccount?.trim()) throw new Error("La factura especial debe incluir la cuenta bancaria");
   }
   if (input.matterId && input.evidenceDocIds.length === 0) {
-    throw new Error("SubÃ­ al menos un respaldo de facturaciÃ³n (contrato de mandato escaneado, etc.)");
+    throw new Error("Subi al menos un respaldo de facturacion (contrato de mandato escaneado, etc.)");
   }
 
   const isSpecial = input.invoiceType === "SPECIAL";
@@ -484,9 +484,9 @@ export async function createInvoiceRequest(input: {
     roles: ["ADMIN", "PRINCIPAL_LAWYER", "FINANCE"],
     excludeUserId: session.user.id,
     title: "Nueva aprobaciÃ³n de factura pendiente",
-    content: `${session.user.name ?? "Usuario"} enviÃ³ una solicitud de facturaciÃ³n: ${
+    content: `${session.user.name ?? "Usuario"} envio una solicitud de facturacion: ${
       matter ? `${matter.internalCode} ${matter.title}` : input.noMatterReason?.trim() || "Sin caso asociado"
-    }ï¼ŒMonto ${input.amount.toLocaleString("es-AR")} ARS`,
+    },Monto ${input.amount.toLocaleString("es-AR")} ARS`,
     href: "/finance",
     refType: "InvoiceRequest",
     refId: created.id,
@@ -573,7 +573,7 @@ export async function getPersonalRevenue(userId: string) {
   const prisma = await getTenantPrisma();
   const session = await requireSession();
   if (!isManager(session.user.role) && session.user.id !== userId) {
-    throw new Error("Solo podÃ©s ver tus propios datos de ingresos");
+    throw new Error("Solo podes ver tus propios datos de ingresos");
   }
   const monthStart = new Date();
   monthStart.setDate(1);

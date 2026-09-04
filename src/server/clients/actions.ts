@@ -18,7 +18,7 @@ import {
   type ClientListQuery,
 } from "./schemas";
 
-// Los strings vacÃ­os se convierten a null (Prisma no acepta "" en campos anulables)
+// Los strings vacios se convierten a null (Prisma no acepta "" en campos anulables)
 function emptyToNull<T extends Record<string, unknown>>(obj: T): T {
   const out: Record<string, unknown> = {};
   for (const [k, v] of Object.entries(obj)) {
@@ -69,7 +69,7 @@ export async function listClients(input: Partial<ClientListQuery> = {}) {
 export async function getClientById(id: string) {
   const prisma = await getTenantPrisma();
   const session = await requireSession();
-  // Control de permisos: manager/finance ven todo, los demÃ¡s necesitan casos asociados
+  // Control de permisos: manager/finance ven todo, los demas necesitan casos asociados
   if (!isManager(session.user.role) && session.user.role !== "FINANCE") {
     const accessible = await prisma.client.findFirst({
       where: {
@@ -112,7 +112,7 @@ export async function getClientById(id: string) {
   return client;
 }
 
-// v0.37: Resumen financiero del cliente â€” agrega contratos/por cobrar/cobrado de todos los casos del cliente
+// v0.37: Resumen financiero del cliente - agrega contratos/por cobrar/cobrado de todos los casos del cliente
 export async function getClientFinanceSummary(clientId: string) {
   const prisma = await getTenantPrisma();
   const session = await requireSession();
@@ -230,13 +230,13 @@ export async function updateClient(input: ClientUpdateInput) {
   const session = await requireSession();
   if (!isManager(session.user.role)) {
     throw new Error(
-      "Solo el Administrador o el Abogado Principal puede editar la informaciÃ³n del cliente",
+      "Solo el Administrador o el Abogado Principal puede editar la informacion del cliente",
     );
   }
   const data = clientUpdateSchema.parse(input);
   const { id, contacts, gender, ...rest } = data;
 
-  // Estrategia simple: eliminar todos los contactos + crearlos de nuevo. Se puede optimizar con diff mÃ¡s adelante
+  // Estrategia simple: eliminar todos los contactos + crearlos de nuevo
   await prisma.$transaction([
     prisma.contact.deleteMany({ where: { clientId: id } }),
     prisma.client.update({
@@ -302,7 +302,7 @@ export async function softDeleteClient(id: string) {
   return { ok: true };
 }
 
-// Acciones de contacto separadas (para editar rÃ¡pidamente contactos desde la pÃ¡gina de detalle, sin reescribir todo el cliente)
+// Acciones de contacto separadas
 export async function addContact(clientId: string, input: ContactInput) {
   const prisma = await getTenantPrisma();
   const session = await requireSession();
@@ -347,4 +347,3 @@ export async function deleteContact(id: string) {
   revalidatePath(`/clients/${contact.clientId}`);
   return { ok: true };
 }
-

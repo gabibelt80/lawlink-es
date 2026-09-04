@@ -107,7 +107,7 @@ export async function updateAnnouncement(
   input: z.infer<typeof announcementUpdateSchema>,
 ) {
   const prisma = await getTenantPrisma();
-  const session = await requireSession();;
+  const session = await requireSession();
   assertCanManage(session.user.role);
   const data = announcementUpdateSchema.parse(input);
 

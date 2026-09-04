@@ -74,7 +74,7 @@ export async function addProcedure(input: ProcedureCreateInput) {
     data: {
       matterId: data.matterId,
       eventType: "PROCEDURE_ADDED",
-      title: `æ–°å¢žç¨‹åºï¼š${created.customLabel ?? created.type}`,
+      title: `Nuevo procedimiento: ${created.customLabel ?? created.type}`,
       occurredAt: new Date(),
       refType: "MatterProcedure",
       refId: created.id
@@ -103,7 +103,7 @@ export async function updateProcedure(input: ProcedureUpdateInput) {
     where: { id },
     select: { matterId: true, type: true, jurisdiction: true, handlingAgency: true }
   });
-  if (!existing) throw new Error("ç¨‹åºä¸å­˜åœ¨");
+  if (!existing) throw new Error("El procedimiento no existe");
   await assertCanAccessMatter(session.user.id, session.user.role, existing.matterId);
   await assertMatterWritable(existing.matterId);
   assertAgencyAllowedForProcedure(rest.handlingAgency ?? existing.handlingAgency, rest.type ?? existing.type);
@@ -142,7 +142,7 @@ export async function deleteProcedure(id: string) {
 
   await assertCanAccessMatter(session.user.id, session.user.role, procedure.matterId);
   await assertMatterWritable(procedure.matterId);
-  await assertCanLeadMatter(session.user.id, procedure.matterId, "ä»…Casoä¸»åŠž/ååŠžå¯ä»¥Eliminarç¨‹åº");
+  await assertCanLeadMatter(session.user.id, procedure.matterId, "Solo el responsable/co-responsable puede eliminar el procedimiento");
 
   await prisma.matterProcedure.delete({ where: { id } });
   await audit({
@@ -163,6 +163,7 @@ async function materializeProcedureStage(
   input: ProcedureStageCreateInput,
   options: { allowExisting: boolean }
 ) {
+  const prisma = await getTenantPrisma();
   const session = await requireSession();
   const data = procedureStageCreateSchema.parse(input);
 
@@ -170,7 +171,7 @@ async function materializeProcedureStage(
     where: { id: data.procedureId },
     select: { matterId: true, type: true }
   });
-  if (!procedure) throw new Error("ç¨‹åºä¸å­˜åœ¨");
+  if (!procedure) throw new Error("El procedimiento no existe");
 
   await assertCanAssociateMatter(session.user.id, procedure.matterId);
   await assertMatterWritable(procedure.matterId);
@@ -186,7 +187,7 @@ async function materializeProcedureStage(
     const existing = existingStages.find((stage) => normalizeProcedureStageName(stage.name) === normalizedTarget);
 
     if (existing) {
-      // v0.48: éšè—çš„çŽ¯èŠ‚é‡æ–°Agregaræ—¶æ¢å¤ä¸º ACTIVEï¼ˆæ•°æ®æœªåˆ ï¼Œç›´æŽ¥å¤ç”¨ï¼‰
+      // La etapa oculta se restaura al agregarla de nuevo
       if (existing.status === "HIDDEN") {
         const revived = await tx.matterStage.update({
           where: { id: existing.id },
@@ -198,7 +199,7 @@ async function materializeProcedureStage(
       if (options.allowExisting) {
         return { stage: existing, created: false, revived: false, materializedCount: 0 };
       }
-      throw new Error("è¯¥çŽ¯èŠ‚å·²å­˜åœ¨");
+      throw new Error("La etapa ya existe");
     }
 
     if (existingStages.length === 0) {
@@ -226,7 +227,7 @@ async function materializeProcedureStage(
         }
       }
 
-      if (!targetStage) throw new Error("çŽ¯èŠ‚CrearError");
+      if (!targetStage) throw new Error("Error al crear la etapa");
       return { stage: targetStage, created: true, revived: false, materializedCount: names.length };
     }
 
@@ -253,7 +254,7 @@ async function materializeProcedureStage(
       data: {
         matterId: procedure.matterId,
         eventType: "STAGE_ADDED",
-        title: result.revived ? `Restaurar etapaï¼š${result.stage.name}` : `æ–°å¢žçŽ¯èŠ‚ï¼š${result.stage.name}`,
+        title: result.revived ? `Restaurar etapa: ${result.stage.name}` : `Nueva etapa: ${result.stage.name}`,
         occurredAt: new Date(),
         refType: "MatterStage",
         refId: result.stage.id
@@ -279,12 +280,10 @@ async function materializeProcedureStage(
 }
 
 export async function createProcedureStage(input: ProcedureStageCreateInput) {
-  const prisma = await getTenantPrisma();
   return materializeProcedureStage(input, { allowExisting: false });
 }
 
 export async function ensureProcedureStage(input: ProcedureStageCreateInput) {
-  const prisma = await getTenantPrisma();
   return materializeProcedureStage(input, { allowExisting: true });
 }
 
@@ -335,20 +334,19 @@ export async function removeProcedureStage(input: ProcedureStageRemoveInput) {
 
   const preset = stagePresetForName(stage.procedure.type, stage.name);
   if (preset?.kind === "required") {
-    throw new Error("å¿…å¤‡çŽ¯èŠ‚ä¸èƒ½ç§»é™¤");
+    throw new Error("Las etapas obligatorias no se pueden eliminar");
   }
 
-  // v0.48: å…³è”ææ–™æŒ‰ stageId å¤–é”®ç»Ÿè®¡ï¼ˆæ ‡ç­¾ä»…ä½œå±•ç¤ºï¼‰ï¼ŒçŽ¯èŠ‚æ”¹åä¸å†å½±å“åˆ¤å®š
   const linkedDocuments = await prisma.document.count({
     where: { stageId: stage.id, deletedAt: null }
   });
-  const preservationRecords = stage.name.includes("PreservaciÃ³n")
+  const preservationRecords = stage.name.includes("Preservacion")
     ? await prisma.preservationCase.count({ where: { matterId: stage.procedure.matterId } })
     : 0;
   const hasContent = stage._count.tasks > 0 || linkedDocuments > 0 || preservationRecords > 0;
 
   if (hasContent) {
-    // æœ‰Tarea/ææ–™/ä¸“Ã­temsè®°å½•ï¼šç½® HIDDEN ä¿ç•™æ•°æ®ï¼Œé‡æ–°AgregaråŒåçŽ¯èŠ‚æ—¶å¯æ¢å¤
+    // Con contenido: ocultar conservando datos
     await prisma.$transaction(async (tx) => {
       await tx.matterStage.update({
         where: { id: stage.id },
@@ -358,7 +356,7 @@ export async function removeProcedureStage(input: ProcedureStageRemoveInput) {
         data: {
           matterId: stage.procedure.matterId,
           eventType: "STAGE_REMOVED",
-          title: `éšè—çŽ¯èŠ‚ï¼š${stage.name}ï¼ˆæ•°æ®ä¿ç•™ï¼‰`,
+          title: `Etapa oculta: ${stage.name} (datos conservados)`,
           occurredAt: new Date(),
           refType: "MatterStage",
           refId: stage.id
@@ -394,7 +392,7 @@ export async function removeProcedureStage(input: ProcedureStageRemoveInput) {
       data: {
         matterId: stage.procedure.matterId,
         eventType: "STAGE_REMOVED",
-        title: `ç§»é™¤çŽ¯èŠ‚ï¼š${stage.name}`,
+        title: `Etapa eliminada: ${stage.name}`,
         occurredAt: new Date(),
         refType: "MatterStage",
         refId: stage.id
@@ -425,7 +423,7 @@ export async function addDeadline(input: DeadlineCreateInput) {
     where: { id: data.procedureId },
     select: { matterId: true }
   });
-  if (!procedureForGuard) throw new Error("ç¨‹åºä¸å­˜åœ¨");
+  if (!procedureForGuard) throw new Error("El procedimiento no existe");
   await assertCanAccessMatter(session.user.id, session.user.role, procedureForGuard.matterId);
   await assertMatterWritable(procedureForGuard.matterId);
 
@@ -453,12 +451,11 @@ export async function addDeadline(input: DeadlineCreateInput) {
       targetId: created.id,
       detail: { matterId: procedure.matterId, procedureId: data.procedureId }
     });
-    // v0.43 Ã­tems4ï¼šå†™å…¥CasoåŠ¨æ€æ—¶é—´çº¿
     await prisma.timelineEvent.create({
       data: {
         matterId: procedure.matterId,
         eventType: "DEADLINE_ADDED",
-        title: `æ–°å¢žPlazoï¼š${data.title}`,
+        title: `Nuevo plazo: ${data.title}`,
         occurredAt: new Date(),
         refType: "Deadline",
         refId: created.id
@@ -534,7 +531,7 @@ export async function addHearing(input: HearingCreateInput) {
     where: { id: data.procedureId },
     select: { matterId: true }
   });
-  if (!procedureForGuard) throw new Error("ç¨‹åºä¸å­˜åœ¨");
+  if (!procedureForGuard) throw new Error("El procedimiento no existe");
   await assertCanAccessMatter(session.user.id, session.user.role, procedureForGuard.matterId);
   await assertMatterWritable(procedureForGuard.matterId);
 
@@ -562,7 +559,7 @@ export async function addHearing(input: HearingCreateInput) {
       data: {
         matterId: procedure.matterId,
         eventType: "HEARING_SCHEDULED",
-        title: `å¼€åº­ï¼š${data.title}`,
+        title: `Audiencia: ${data.title}`,
         occurredAt: data.startsAt,
         refType: "Hearing",
         refId: created.id
@@ -604,7 +601,7 @@ export async function deleteHearing(id: string) {
   return { ok: true };
 }
 
-// ============ ProcedureMemoï¼ˆv0.42 å¤‡å¿˜å½•ï¼‰============
+// ============ ProcedureMemo (v0.42 notas) ============
 
 export async function addProcedureMemo(input: {
   procedureId: string;
@@ -613,14 +610,14 @@ export async function addProcedureMemo(input: {
   const prisma = await getTenantPrisma();
   const session = await requireSession();
   const content = input.content.trim();
-  if (!content) throw new Error("å¤‡å¿˜å†…å®¹ä¸èƒ½ä¸ºç©º");
-  if (content.length > 1000) throw new Error("å¤‡å¿˜å†…å®¹è¿‡é•¿ï¼ˆâ‰¤1000å­—ï¼‰");
+  if (!content) throw new Error("El contenido de la nota no puede estar vacio");
+  if (content.length > 1000) throw new Error("El contenido es demasiado largo (maximo 1000 caracteres)");
 
   const proc = await prisma.matterProcedure.findUnique({
     where: { id: input.procedureId },
     select: { matterId: true }
   });
-  if (!proc) throw new Error("ç¨‹åºä¸å­˜åœ¨");
+  if (!proc) throw new Error("El procedimiento no existe");
   await assertCanAccessMatter(session.user.id, session.user.role, proc.matterId);
   await assertMatterWritable(proc.matterId);
 
@@ -670,5 +667,3 @@ export async function deleteProcedureMemo(id: string) {
   await revalidateMatter(current.procedure.matterId);
   return { ok: true };
 }
-
-

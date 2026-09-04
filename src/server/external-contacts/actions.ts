@@ -1,12 +1,12 @@
 ﻿"use server";
 
 /**
- * v0.27: æœåŠ¡ä¸­å¿ƒ - å¤–éƒ¨è”ç³»äººé€šè®¯å½•
+ * v0.27: Centro de servicios - Contactos externos
  *
- * èŒƒå›´ï¼šæ³•é™¢ / æ£€å¯Ÿé™¢ / å…¬è¯ / ä»²è£ / ä»–æ‰€Abogado / é‰´å®šä¸“å®¶ / å…¶ä»–å¤–éƒ¨è”ç³»
- * åŒäº‹ç”¨ User è¡¨ï¼Œä¸åœ¨æ­¤ï¼ˆå‰ç«¯å¯ä¸€å¹¶å±•ç¤ºï¼‰ã€‚
+ * Alcance: tribunales / fiscalias / notarias / arbitraje / otros estudios / peritos / otros
  *
- * æƒé™ï¼šæ‰€æœ‰Iniciar sesiÃ³nç”¨æˆ·å¯çœ‹å·²Aprobarè”ç³»äººï¼Œå¯æ–°å»ºï¼›æ™®é€šæˆå‘˜æ–°å»ºåŽéœ€Administrarå±‚å®¡æ ¸ã€‚
+ * Permisos: todos los usuarios pueden ver contactos aprobados y crear nuevos;
+ * los usuarios regulares requieren aprobacion de un administrador.
  */
 import { z } from "zod";
 import { getTenantPrisma } from "@/lib/tenant-prisma";
@@ -31,7 +31,7 @@ const categories = [
 ] as const;
 
 const externalContactSchema = z.object({
-  name: z.string().min(1, "Nombre y apellidoå¿…å¡«").max(60),
+  name: z.string().min(1, "El nombre es obligatorio").max(60),
   category: z.enum(categories),
   organization: z.string().max(120).optional().or(z.literal("")),
   title: z.string().max(60).optional().or(z.literal("")),
@@ -59,6 +59,7 @@ function empty(s?: string | null) {
 export async function listExternalContacts(
   filter: { category?: (typeof categories)[number] | "ALL"; search?: string } = {}
 ) {
+  const prisma = await getTenantPrisma();
   const session = await requireSession();
   const canReview = isManager(session.user.role);
   const where: Prisma.ExternalContactWhereInput = {
@@ -104,21 +105,22 @@ async function notifyRequester(userId: string, input: {
 }
 
 async function assertCanModify(id: string, sessionUserId: string, role: string) {
+  const prisma = await getTenantPrisma();
   const c = await prisma.externalContact.findUnique({
     where: { id },
     select: { createdById: true }
   });
-  if (!c) throw new Error("è”ç³»äººä¸å­˜åœ¨");
+  if (!c) throw new Error("El contacto no existe");
   const allowed =
     role === "ADMIN" || role === "PRINCIPAL_LAWYER" || c.createdById === sessionUserId;
-  if (!allowed) throw new Error("æ— æƒä¿®æ”¹æ­¤è”ç³»äºº");
+  if (!allowed) throw new Error("Sin permiso para modificar este contacto");
 }
 
 export async function createExternalContact(input: z.infer<typeof externalContactSchema>) {
   const prisma = await getTenantPrisma();
   const session = await requireSession();
   const data = externalContactSchema.parse(input);
-  // v1.0: å®¡æ ¸æµé»˜è®¤Cerrarï¼ˆå°æ‰€ä¿¡ä»»çŽ¯å¢ƒï¼Œæ–°å¢žç›´æŽ¥Aprobarï¼‰ï¼›å¯åœ¨ConfiguraciÃ³né‡Œæ‰“å¼€
+  // v1.0: Revision desactivada por defecto (entorno de confianza)
   const { externalContactReview } = await getWorkflowToggles();
   const status =
     !externalContactReview || isManager(session.user.role) ? "APPROVED" : "PENDING_REVIEW";
@@ -149,8 +151,8 @@ export async function createExternalContact(input: z.infer<typeof externalContac
     await notifyRoleApprovers({
       roles: ["ADMIN", "PRINCIPAL_LAWYER"],
       excludeUserId: session.user.id,
-      title: "æ–°çš„é€šè®¯å½•è”ç³»äººå¾…å®¡æ ¸",
-      content: `${session.user.name ?? "åŒäº‹"} æ–°å¢žäº†å¤–éƒ¨è”ç³»äººã€Œ${created.name}ã€`,
+      title: "Nuevo contacto externo pendiente de revision",
+      content: `${session.user.name ?? "Un colega"} agrego el contacto externo "${created.name}"`,
       href: "/contacts",
       refType: "ExternalContact",
       refId: created.id,
@@ -195,14 +197,14 @@ export async function updateExternalContact(input: z.infer<typeof externalContac
 export async function approveExternalContact(input: z.infer<typeof externalContactReviewSchema>) {
   const prisma = await getTenantPrisma();
   const session = await requireSession();
-  if (!isManager(session.user.role)) throw new Error("ä»…Administrarå‘˜å¯å®¡æ ¸è”ç³»äºº");
+  if (!isManager(session.user.role)) throw new Error("Solo el Administrador puede aprobar contactos");
   const data = externalContactReviewSchema.parse(input);
   const current = await prisma.externalContact.findUnique({
     where: { id: data.id },
     select: { id: true, name: true, status: true, createdById: true }
   });
-  if (!current) throw new Error("è”ç³»äººä¸å­˜åœ¨");
-  if (current.status !== "PENDING_REVIEW") throw new Error("è¯¥è”ç³»äººå½“å‰ä¸åœ¨å¾…å®¡æ ¸Estado");
+  if (!current) throw new Error("El contacto no existe");
+  if (current.status !== "PENDING_REVIEW") throw new Error("El contacto no esta pendiente de revision");
 
   const approved = await prisma.externalContact.update({
     where: { id: data.id },
@@ -223,8 +225,8 @@ export async function approveExternalContact(input: z.infer<typeof externalConta
   });
   if (current.createdById !== session.user.id) {
     await notifyRequester(current.createdById, {
-      title: "é€šè®¯å½•è”ç³»äººå·²Aprobar",
-      content: `å¤–éƒ¨è”ç³»äººã€Œ${approved.name}ã€å·²Aprobarå®¡æ ¸å¹¶å±•ç¤º`,
+      title: "Contacto externo aprobado",
+      content: `El contacto externo "${approved.name}" fue aprobado`,
       refId: approved.id
     });
   }
@@ -235,14 +237,14 @@ export async function approveExternalContact(input: z.infer<typeof externalConta
 export async function rejectExternalContact(input: z.infer<typeof externalContactReviewSchema>) {
   const prisma = await getTenantPrisma();
   const session = await requireSession();
-  if (!isManager(session.user.role)) throw new Error("ä»…Administrarå‘˜å¯å®¡æ ¸è”ç³»äºº");
+  if (!isManager(session.user.role)) throw new Error("Solo el Administrador puede rechazar contactos");
   const data = externalContactReviewSchema.parse(input);
   const current = await prisma.externalContact.findUnique({
     where: { id: data.id },
     select: { id: true, name: true, status: true, createdById: true }
   });
-  if (!current) throw new Error("è”ç³»äººä¸å­˜åœ¨");
-  if (current.status !== "PENDING_REVIEW") throw new Error("è¯¥è”ç³»äººå½“å‰ä¸åœ¨å¾…å®¡æ ¸Estado");
+  if (!current) throw new Error("El contacto no existe");
+  if (current.status !== "PENDING_REVIEW") throw new Error("El contacto no esta pendiente de revision");
 
   const rejected = await prisma.externalContact.update({
     where: { id: data.id },
@@ -263,8 +265,8 @@ export async function rejectExternalContact(input: z.infer<typeof externalContac
   });
   if (current.createdById !== session.user.id) {
     await notifyRequester(current.createdById, {
-      title: "é€šè®¯å½•è”ç³»äººæœªAprobar",
-      content: `å¤–éƒ¨è”ç³»äººã€Œ${rejected.name}ã€æœªAprobarå®¡æ ¸${data.note ? `ï¼š${data.note}` : ""}`,
+      title: "Contacto externo no aprobado",
+      content: `El contacto externo "${rejected.name}" no fue aprobado${data.note ? `: ${data.note}` : ""}`,
       refId: rejected.id
     });
   }
@@ -288,5 +290,3 @@ export async function archiveExternalContact(id: string) {
   });
   revalidatePath("/contacts");
 }
-
-

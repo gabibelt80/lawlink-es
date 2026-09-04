@@ -34,7 +34,7 @@ function requireApprover(role: string) {
   }
 }
 
-/** Genera tÃ­tulo automÃ¡tico segÃºn {cliente} y {contraparte} {causa} */
+/** Genera titulo automÃ¡tico segÃºn {cliente} y {contraparte} {causa} */
 function generateTitle(
   clientName: string | null,
   opposingNames: string[],
@@ -95,7 +95,7 @@ function formatConflictQuery(q: IntakeConflictQuery) {
     OPPOSING_PARTY: "Contraparte",
     THIRD_PARTY: "Tercero"
   };
-  return `${roleLabel[q.role]} Â«${q.name || q.idNumber}Â»`;
+  return `${roleLabel[q.role]} "${q.name || q.idNumber}"`;
 }
 
 function buildExpectedConflictQueries(intake: IntakeConflictGateInput) {
@@ -140,12 +140,12 @@ function getCheckedConflictQueries(payload: Prisma.JsonValue) {
 function assertConflictReviewAllowsConversion(intake: IntakeConflictGateInput) {
   const expectedQueries = buildExpectedConflictQueries(intake);
   if (expectedQueries.length === 0) {
-    throw new Error("Complete primero el cliente o la contraparte y luego ejecute la bÃºsqueda de conflictos");
+    throw new Error("Complete primero el cliente o la contraparte y luego ejecute la busqueda de conflictos");
   }
 
   const latestCheck = intake.conflictChecks[0];
   if (!latestCheck) {
-    throw new Error("Antes de convertir a caso formal debe ejecutar la bÃºsqueda de conflictos");
+    throw new Error("Antes de convertir a caso formal debe ejecutar la busqueda de conflictos");
   }
 
   const checkedKeys = new Set(
@@ -154,30 +154,30 @@ function assertConflictReviewAllowsConversion(intake: IntakeConflictGateInput) {
   const missingQueries = expectedQueries.filter((q) => !checkedKeys.has(conflictQueryKey(q)));
   if (missingQueries.length > 0) {
     throw new Error(
-      `Las partes de la admisiÃ³n cambiaron, ejecute nuevamente la bÃºsqueda de conflictos. Faltan: ${missingQueries
+      `Las partes de la admision cambiaron, ejecute nuevamente la busqueda de conflictos. Faltan: ${missingQueries
         .map(formatConflictQuery)
         .join(", ")}`
     );
   }
 
   if (latestCheck.conclusion === "PENDING") {
-    throw new Error("La bÃºsqueda de conflictos no tiene conclusiÃ³n, marque si se puede aceptar");
+    throw new Error("La busqueda de conflictos no tiene conclusion, marque si se puede aceptar");
   }
   if (latestCheck.conclusion === "NEED_INFO") {
-    throw new Error("La conclusiÃ³n de la bÃºsqueda de conflictos es informaciÃ³n insuficiente, no se puede convertir a caso formal");
+    throw new Error("La conclusion de la busqueda de conflictos es informacioninsuficiente, no se puede convertir a caso formal");
   }
   if (latestCheck.conclusion === "SAME_SUBJECT") {
     throw new Error("Se confirmÃ³ que existe conflicto de intereses, no se puede convertir directamente a caso formal");
   }
   if (latestCheck.conclusion !== "DIFFERENT") {
-    throw new Error("ConclusiÃ³n de conflicto anÃ³mala, ejecute nuevamente la bÃºsqueda");
+    throw new Error("conclusion de conflicto anomala, ejecute nuevamente la busqueda");
   }
 
   const hasHighRiskHit = latestCheck.hits.some(
     (h) => h.severity === "HIGH" || h.severity === "BLOCKING"
   );
   if (hasHighRiskHit && !latestCheck.note?.trim()) {
-    throw new Error("Existen coincidencias de alto riesgo o bloqueantes, escriba el motivo de exclusiÃ³n o el consentimiento por escrito en las notas de la conclusiÃ³n");
+    throw new Error("Existen coincidencias de alto riesgo o bloqueantes, escriba el motivo de exclusion o el consentimiento por escrito en las notas de la conclusion");
   }
 }
 
@@ -249,7 +249,7 @@ export async function listIntakes(input: Partial<IntakeListQuery> = {}) {
 export async function getIntakeById(id: string) {
   const prisma = await getTenantPrisma();
   const session = await requireSession();
-  // VerificaciÃ³n de permisos: los managers ven todo, otros solo lo propio
+  // Verificacion de permisos: los managers ven todo, otros solo lo propio
   if (session.user.role !== "ADMIN" && session.user.role !== "PRINCIPAL_LAWYER") {
     const owned = await prisma.intake.findFirst({
       where: {
@@ -262,7 +262,7 @@ export async function getIntakeById(id: string) {
       },
       select: { id: true }
     });
-    if (!owned) throw new Error("Registro de admisiÃ³n no encontrado");
+    if (!owned) throw new Error("Registro de admision no encontrado");
   }
   const intake = await prisma.intake.findUnique({
     where: { id },
@@ -465,8 +465,8 @@ export async function createIntake(input: IntakeCreateInput) {
   await notifyRoleApprovers({
     roles: ["ADMIN", "PRINCIPAL_LAWYER"],
     excludeUserId: session.user.id,
-    title: "Nueva aprobaciÃ³n de caso pendiente",
-    content: `${session.user.name ?? "Un usuario"} enviÃ³ una aprobaciÃ³n de caso: ${created.title}`,
+    title: "Nueva aprobacion de caso pendiente",
+    content: `${session.user.name ?? "Un usuario"} envio una aprobacion de caso: ${created.title}`,
     href: `/intakes/${created.id}`,
     refType: "Intake",
     refId: created.id,
@@ -542,8 +542,8 @@ export async function resubmitIntake(id: string) {
     where: { id },
     select: { status: true, title: true, createdById: true, ownerUserId: true }
   });
-  if (!intake) throw new Error("AdmisiÃ³n no encontrada");
-  if (intake.status !== "NEEDS_REVISION") throw new Error("Solo el estado Pendiente de correcciÃ³n puede reenviarse");
+  if (!intake) throw new Error("admision no encontrada");
+  if (intake.status !== "NEEDS_REVISION") throw new Error("Solo el estado Pendiente de correccionpuede reenviarse");
 
   await prisma.intake.update({
     where: { id },
@@ -564,8 +564,8 @@ export async function resubmitIntake(id: string) {
   await notifyRoleApprovers({
     roles: ["ADMIN", "PRINCIPAL_LAWYER"],
     excludeUserId: session.user.id,
-    title: "AprobaciÃ³n de caso reenviada",
-    content: `${session.user.name ?? "Un usuario"} reenviÃ³ la aprobaciÃ³n: ${intake.title}`,
+    title: "aprobacion de caso reenviada",
+    content: `${session.user.name ?? "Un usuario"} reenvio la aprobacion: ${intake.title}`,
     href: `/intakes/${id}`,
     refType: "Intake",
     refId: id,
@@ -600,8 +600,8 @@ export async function convertIntakeToMatter(intakeId: string) {
       documents: { select: { id: true } }
     }
   });
-  if (!intake) throw new Error("AdmisiÃ³n no encontrada");
-  if (intake.status === "CONVERTED") throw new Error("Esta admisiÃ³n ya fue convertida");
+  if (!intake) throw new Error("admision no encontrada");
+  if (intake.status === "CONVERTED") throw new Error("Esta admision ya fue convertida");
   assertConflictReviewAllowsConversion(intake);
 
   const { generateInternalCode, generateFirmCaseNo } = await import("@/server/matters/code-generator");
@@ -685,7 +685,7 @@ export async function convertIntakeToMatter(intakeId: string) {
           contactName: intake.contactName,
           enterpriseSocialCode: intake.client.type === "INDIVIDUAL" ? null : intake.client.idNumber,
           enterpriseName: intake.client.type === "INDIVIDUAL" ? null : intake.client.name,
-          notes: "Incorporado automÃ¡ticamente desde la admisiÃ³n"
+          notes: "Incorporado automÃ¡ticamente desde la admision"
         },
         select: { id: true }
       });
@@ -754,7 +754,7 @@ export async function convertIntakeToMatter(intakeId: string) {
     if (intake.feeAmount && intake.feeType) {
       const feeTypeLabel: Record<string, string> = {
         FIXED: "Honorario fijo",
-        CONTINGENCY: "RepresentaciÃ³n de riesgo"
+        CONTINGENCY: "Representacion de riesgo"
       };
       await tx.billing.create({
         data: {
@@ -783,7 +783,7 @@ export async function convertIntakeToMatter(intakeId: string) {
       data: {
         matterId: m.id,
         eventType: "MATTER_CREATED",
-        title: "Caso creado (desde admisiÃ³n)",
+        title: "Caso creado (desde admision)",
         occurredAt: new Date()
       }
     });

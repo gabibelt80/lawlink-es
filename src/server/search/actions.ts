@@ -25,6 +25,7 @@ export interface GlobalSearchResult {
 }
 
 export async function globalSearch(query: string): Promise<GlobalSearchResult> {
+  const prisma = await getTenantPrisma();
   const session = await requireSession();
   if (!query || query.trim().length < 1) {
     return { matters: [], clients: [], intakes: [], documents: [] };
@@ -94,7 +95,7 @@ export async function globalSearch(query: string): Promise<GlobalSearchResult> {
     matters: matters.map((m) => ({
       id: m.id,
       title: m.title,
-      subtitle: `${m.internalCode} Â· ${m.status}`,
+      subtitle: `${m.internalCode} - ${m.status}`,
       href: matterHref(m),
       type: "matter" as const,
     })),
@@ -121,5 +122,3 @@ export async function globalSearch(query: string): Promise<GlobalSearchResult> {
     })),
   };
 }
-
-

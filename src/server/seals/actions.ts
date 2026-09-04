@@ -34,8 +34,18 @@ function assertPdfDocument(file: { name?: string | null; type?: string | null; m
   }
 }
 
-// Número de secuencia SEAL-YYYY-NNNN
+async function resolveTenantUserId(email: string): Promise<string | null> {
+  const prisma = await getTenantPrisma();
+  const user = await prisma.user.findUnique({
+    where: { email },
+    select: { id: true }
+  });
+  return user?.id ?? null;
+}
+
+// Numero de secuencia SEAL-YYYY-NNNN
 async function generateSealCode(): Promise<string> {
+  const prisma = await getTenantPrisma();
   const year = new Date().getFullYear();
   const key = `seal-counter-${year}`;
   const next = await prisma.$transaction(
@@ -55,8 +65,9 @@ async function generateSealCode(): Promise<string> {
   return `SEAL-${year}-${String(next).padStart(4, "0")}`;
 }
 
-// Permisos - Quién puede aprobar cada tipo de sello
+// Permisos - Quien puede aprobar cada tipo de sello
 async function getFirmLegalRepUserId(): Promise<string | null> {
+  const prisma = await getTenantPrisma();
   const s = await prisma.systemSetting.findUnique({ where: { key: FIRM_LEGAL_REP_KEY } });
   const v = (s?.value as { value?: string })?.value;
   return typeof v === "string" && v.length > 0 ? v : null;
@@ -66,6 +77,7 @@ async function canApproveSealType(
   sealType: SealType,
   user: { id: string; role: string }
 ): Promise<boolean> {
+  const prisma = await getTenantPrisma();
   if (user.role === "ADMIN") return true;
   const cfg = await prisma.sealTypeConfig.findUnique({ where: { type: sealType } });
   if (!cfg || !cfg.enabled) return false;
@@ -118,6 +130,7 @@ export async function listSealRequests(input?: z.input<typeof sealListFilterSche
 }
 
 async function pickApprovableSealTypes(user: { id: string; role: string }): Promise<SealType[]> {
+  const prisma = await getTenantPrisma();
   if (user.role === "ADMIN") {
     return ["OFFICIAL_SEAL", "CONTRACT_SEAL", "FINANCE_SEAL", "LEGAL_REP_SEAL", "CONTRACT_REVIEW_SEAL"];
   }
@@ -132,6 +145,7 @@ async function pickApprovableSealTypes(user: { id: string; role: string }): Prom
 }
 
 async function getSealApprovalRecipientIds(sealType: SealType): Promise<string[]> {
+  const prisma = await getTenantPrisma();
   const admins = await prisma.user.findMany({
     where: { active: true, role: "ADMIN" },
     select: { id: true }
@@ -175,8 +189,8 @@ async function notifySealApprovalRequested(input: {
   await notifyDirectApprovers({
     userIds,
     excludeUserId: input.requesterId,
-    title: "Nueva solicitud de sello pendiente de aprobación",
-    content: `${input.requesterName ?? "Un usuario"} envió una solicitud de sello: ${input.code} · ${input.documentTitle} · ${input.purpose}`,
+    title: "Nueva solicitud de sello pendiente de aprobacion",
+    content: `${input.requesterName ?? "Un usuario"} envio una solicitud de sello: ${input.code} - ${input.documentTitle} - ${input.purpose}`,
     href: `/approvals/seals?id=${input.sealRequestId}`,
     refType: "SealRequest",
     refId: input.sealRequestId,
@@ -249,13 +263,12 @@ export async function getSealStats() {
     waitingStampCount
   };
 }
-
 // Nueva solicitud - FormData (incluye archivo draftDoc)
 export async function createSealRequest(formData: FormData) {
   const prisma = await getTenantPrisma();
   const session = await requireSession();
 if (!session.user.id) {
-    throw new Error("Usuario no válido");
+    throw new Error("Usuario no valido");
 }
 
   const raw = {
@@ -716,11 +729,4 @@ export async function cancelSealRequest(input: z.infer<typeof sealCancelSchema>)
   revalidatePath("/approvals/seals");
   if (seal.matterId) await revalidateMatter(seal.matterId);
   return { ok: true };
-}
-async function resolveTenantUserId(email: string): Promise<string | null> {
-  const user = await prisma.user.findUnique({
-    where: { email },
-    select: { id: true }
-  });
-  return user?.id ?? null;
 }

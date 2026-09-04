@@ -15,7 +15,7 @@ const noteCreateSchema = z.object({
   channel: noteChannelSchema.default("OTHER"),
   withWhom: z.string().max(80).optional().or(z.literal("")),
   occurredAt: z.coerce.date().default(() => new Date()),
-  content: z.string().min(1, "å†…å®¹ä¸èƒ½ä¸ºç©º").max(5000),
+  content: z.string().min(1, "El contenido no puede estar vacio").max(5000),
   tags: z.array(z.string().max(20)).default([])
 });
 
@@ -63,9 +63,9 @@ export async function updateNote(input: NoteUpdateInput) {
   const data = noteUpdateSchema.parse(input);
 
   const existing = await prisma.note.findUnique({ where: { id: data.id } });
-  if (!existing) throw new Error("æ²Ÿé€šè®°å½•ä¸å­˜åœ¨");
+  if (!existing) throw new Error("La nota no existe");
   if (existing.authorId !== session.user.id && session.user.role !== "ADMIN") {
-    throw new Error("åªèƒ½Editarè‡ªå·±çš„æ²Ÿé€šè®°å½•");
+    throw new Error("Solo puede editar sus propias notas");
   }
   await assertMatterWritable(existing.matterId);
 
@@ -97,7 +97,7 @@ export async function deleteNote(id: string) {
   const existing = await prisma.note.findUnique({ where: { id } });
   if (!existing) return { ok: false };
   if (existing.authorId !== session.user.id && session.user.role !== "ADMIN") {
-    throw new Error("åªèƒ½Eliminarè‡ªå·±çš„æ²Ÿé€šè®°å½•");
+    throw new Error("Solo puede eliminar sus propias notas");
   }
   await assertMatterWritable(existing.matterId);
 
@@ -127,5 +127,3 @@ export async function listNotes(matterId: string) {
     include: { author: { select: { id: true, name: true } } }
   });
 }
-
-

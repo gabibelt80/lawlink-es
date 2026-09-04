@@ -111,14 +111,14 @@ export async function listMatters(input: Partial<MatterListQuery> = {}) {
             }
           }
         },
-        // v0.8.1: å¡ç‰‡åŒ–éœ€è¦å‰å‡ ä½å¯¹æ–¹/ç¬¬ä¸‰äºº
+        // Datos de contraparte/tercero para tarjetas
         parties: {
           where: { role: { in: ["OPPOSING_PARTY", "THIRD_PARTY"] } },
           orderBy: [{ role: "asc" }, { ordinal: "asc" }],
           take: 3,
           select: { id: true, name: true, role: true, standing: true }
         },
-        // v0.16: æ˜¯å¦æœ‰å½’æ¡£ç”³è¯·å¾…AprobaciÃ³n
+        // Si hay solicitud de archivo pendiente
         archiveRecords: {
           where: { status: "PENDING_REVIEW" },
           take: 1,
@@ -172,7 +172,7 @@ export async function listMatters(input: Partial<MatterListQuery> = {}) {
   return { items, total, page: query.page, pageSize: query.pageSize };
 }
 
-// v0.32: ç¨‹åºçº§åŸºæœ¬ä¿¡æ¯Editar
+// v0.32: Editar informacion basica del procedimiento
 export async function updateProcedureInfo(input: {
   procedureId: string;
   jurisdiction?: string;
@@ -214,7 +214,7 @@ export async function updateProcedureInfo(input: {
     where: { id: input.procedureId },
     select: { matterId: true, type: true }
   });
-  if (!proc) throw new Error("ç¨‹åºä¸å­˜åœ¨");
+  if (!proc) throw new Error("El procedimiento no existe");
   await assertCanAccessMatter(session.user.id, session.user.role, proc.matterId);
   await assertMatterWritable(proc.matterId);
   assertAgencyAllowedForProcedure(input.handlingAgency, proc.type);
@@ -225,10 +225,10 @@ export async function updateProcedureInfo(input: {
   const updatedPartyRows = normalizeUpdatedParties(input.updatedParties ?? []);
   const newPartyRows = normalizeNewProcedureParties(input.newProcedureParties ?? []);
   if ((input.updatedParties?.length ?? 0) !== updatedPartyRows.length) {
-    throw new Error("å·²æœ‰å½“äº‹äººä¿¡æ¯ä¸å®Œæ•´");
+    throw new Error("Hay informacion incompleta de partes");
   }
   if ((input.newProcedureParties?.length ?? 0) !== newPartyRows.length) {
-    throw new Error("æ–°å¢žç¨‹åºå½“äº‹äººä¿¡æ¯ä¸å®Œæ•´");
+    throw new Error("Informacion incompleta de nuevas partes");
   }
 
   if (partyRows || updatedPartyRows.length > 0) {
@@ -269,7 +269,7 @@ export async function updateProcedureInfo(input: {
       ) ?? false) ||
       clientIds.some((clientId) => !validClientIds.has(clientId))
     ) {
-      throw new Error("å­˜åœ¨ä¸å±žäºŽæœ¬æ¡ˆçš„å½“äº‹äºº");
+      throw new Error("Existen partes que no pertenecen a este caso");
     }
   }
 
@@ -315,7 +315,7 @@ export async function updateProcedureInfo(input: {
             where: { id: partyId, matterId: proc.matterId },
             select: { id: true }
           });
-          if (!existingParty) throw new Error("å­˜åœ¨ä¸å±žäºŽæœ¬æ¡ˆçš„å½“äº‹äºº");
+          if (!existingParty) throw new Error("Existen partes que no pertenecen a este caso");
           await tx.party.update({
             where: { id: existingParty.id },
             data: {
@@ -436,7 +436,7 @@ async function ensureClientParty(
     where: { id: clientId },
     select: { id: true, name: true, type: true, idNumber: true }
   });
-  if (!client) throw new Error("Clienteä¸å­˜åœ¨");
+  if (!client) throw new Error("El cliente no existe");
 
   const existing = await tx.party.findFirst({
     where: {
@@ -464,7 +464,7 @@ async function ensureClientParty(
       idNumber: partyType === "NATURAL_PERSON" ? client.idNumber : null,
       enterpriseSocialCode: partyType === "NATURAL_PERSON" ? null : client.idNumber,
       enterpriseName: partyType === "NATURAL_PERSON" ? null : client.name,
-      notes: "ç”±Casoå…³è”Clienteè‡ªåŠ¨è¡¥å…¥"
+      notes: "Agregado automaticamente desde cliente vinculado"
     },
     select: { id: true }
   });
@@ -550,13 +550,13 @@ function normalizeNewProcedureParties(rows: NewProcedurePartyInput[]) {
     );
 }
 
-// v0.32: å…³è”Caso â€”â€” Buscar / å…³è” / è§£é™¤
+// v0.32: Casos vinculados - Buscar / vincular / desvincular
 export async function searchMattersForLink(matterId: string, q: string) {
   const prisma = await getTenantPrisma();
   const session = await requireSession();
   await assertCanAssociateMatter(session.user.id, matterId);
   const query = q.trim();
-  // å·²å…³è”çš„ï¼ˆä¸¤ä¸ªæ–¹å‘ï¼‰æŽ’é™¤
+  // Excluir ya vinculados
   const links = await prisma.matterLink.findMany({
     where: { OR: [{ matterId }, { relatedMatterId: matterId }] },
     select: { matterId: true, relatedMatterId: true }
@@ -592,7 +592,7 @@ export async function addMatterLink(matterId: string, relatedMatterId: string) {
   const session = await requireSession();
   await assertCanAssociateMatter(session.user.id, matterId);
   await assertCanAssociateMatter(session.user.id, relatedMatterId);
-  if (matterId === relatedMatterId) throw new Error("ä¸èƒ½å…³è”åˆ°è‡ªèº«");
+  if (matterId === relatedMatterId) throw new Error("No se puede vincular a si mismo");
   await prisma.matterLink.upsert({
     where: { matterId_relatedMatterId: { matterId, relatedMatterId } },
     create: { matterId, relatedMatterId },
@@ -613,7 +613,6 @@ export async function removeMatterLink(matterId: string, relatedMatterId: string
   const session = await requireSession();
   await assertCanAssociateMatter(session.user.id, matterId);
   await assertCanAssociateMatter(session.user.id, relatedMatterId);
-  // ä¸¤ä¸ªæ–¹å‘éƒ½åˆ ï¼ˆæ— è®ºå½“åˆè°å…³è”è°ï¼‰
   await prisma.matterLink.deleteMany({
     where: {
       OR: [
@@ -687,7 +686,6 @@ export async function getMatterById(id: string) {
   }
   return matter;
 }
-
 export async function createMatter(input: MatterCreateInput) {
   const prisma = await getTenantPrisma();
   const session = await requireSession();
@@ -725,21 +723,21 @@ export async function createMatter(input: MatterCreateInput) {
 
         primaryClientId,
 
-        // ä¸»åŠžAbogadoé»˜è®¤æ˜¯Crearè€…
+        // El abogado a cargo es el creador por defecto
         members: {
           create: { userId: session.user.id, role: "LEAD" }
         },
 
-        // å¤šClienteå…³è”è¡¨
+        // Tabla de multiples clientes
         clientLinks: {
           create: data.clientIds.map((cid, idx) => ({
             clientId: cid,
             isPrimary: idx === 0,
-            label: idx === 0 ? "ä¸»è¦å§”æ‰˜æ–¹" : `å§”æ‰˜æ–¹ ${idx + 1}`
+            label: idx === 0 ? "Cliente principal" : `Cliente ${idx + 1}`
           }))
         },
 
-        // å½“äº‹äºº
+        // Partes
         parties: {
           create: data.parties.map((p) =>
             emptyToNull({
@@ -759,7 +757,7 @@ export async function createMatter(input: MatterCreateInput) {
           )
         },
 
-        // é¦–ç¨‹åº
+        // Primer procedimiento
         procedures: {
           create: {
             type: data.firstProcedure.type,
@@ -777,20 +775,19 @@ export async function createMatter(input: MatterCreateInput) {
       }
     });
 
-    // TimelineEvent: CasoCrear
+    // TimelineEvent: Caso creado
     await tx.timelineEvent.create({
       data: {
         matterId: matter.id,
         eventType: "MATTER_CREATED",
-        title: "Casoå·²Crear",
+        title: "Caso creado",
         occurredAt: new Date()
       }
     });
 
-    // v0.8: é»˜è®¤å·å®—
+    // Carpetas por defecto
     await seedDefaultFolders(tx, matter.id, data.category);
 
-    // æ ‡è®° otherClientIds é¿å…è¢« lint è¯¯åˆ¤æœªç”¨
     void otherClientIds;
 
     return matter;
@@ -809,10 +806,8 @@ export async function createMatter(input: MatterCreateInput) {
 }
 
 /**
- * v0.5: ActualizarCasoå›¢é˜Ÿã€‚
- * - ä»…å½“å‰ä¸»åŠžAbogadoå¯Accionesï¼›AdministrarRolåªè´Ÿè´£AprobaciÃ³nï¼Œä¸å› Rolæ”¾å¼€ä»–äººCasoå¤„ç†æƒ
- * - ownerId æ”¹å˜æ—¶åŒæ­¥æ›¿æ¢ MatterMember ä¸­çš„ LEAD
- * - coLeadIds å’Œ assistantIds è¦†ç›–å¼Actualizarå¯¹åº”Rolï¼ˆä¸å½±å“ä¸»åŠžè‡ªåŠ¨ LEADï¼‰
+ * v0.5: Actualizar equipo del Caso.
+ * - Solo el abogado a cargo actual puede hacer cambios.
  */
 export async function updateMatterTeam(input: {
   matterId: string;
@@ -826,18 +821,16 @@ export async function updateMatterTeam(input: {
     where: { id: input.matterId, deletedAt: null },
     select: { id: true, ownerId: true }
   });
-  if (!matter) throw new Error("Casoä¸å­˜åœ¨");
+  if (!matter) throw new Error("El Caso no existe");
   await assertMatterWritable(input.matterId);
-  await assertCanOwnMatter(session.user.id, input.matterId, "åªæœ‰å½“å‰ä¸»åŠžAbogadoå¯ä»¥ä¿®æ”¹æ‰¿åŠžå›¢é˜Ÿ");
+  await assertCanOwnMatter(session.user.id, input.matterId, "Solo el abogado a cargo puede modificar el equipo");
 
-  // æ ¡éªŒï¼šcoLeadIds / assistantIds ä¸èƒ½y ownerId é‡å 
   const co = input.coLeadIds.filter((id) => id !== input.ownerId);
   const ass = input.assistantIds.filter(
     (id) => id !== input.ownerId && !co.includes(id)
   );
 
   await prisma.$transaction(async (tx) => {
-    // Actualizar Matter.ownerId
     if (matter.ownerId !== input.ownerId) {
       await tx.matter.update({
         where: { id: input.matterId },
@@ -845,7 +838,7 @@ export async function updateMatterTeam(input: {
       });
     }
 
-    // é‡å»º MatterMemberï¼šå…ˆEliminarVer todosï¼Œå†æŒ‰æ–°ç»“æž„æ’å…¥
+    // Reconstruir MatterMember
     await tx.matterMember.deleteMany({ where: { matterId: input.matterId } });
 
     const rows = [
@@ -872,12 +865,11 @@ export async function updateMatterTeam(input: {
     detail: { ownerId: input.ownerId, coLeads: co.length, assistants: ass.length }
   });
 
-  // v0.43 Ã­tems4ï¼šå†™å…¥CasoåŠ¨æ€æ—¶é—´çº¿
   await prisma.timelineEvent.create({
     data: {
       matterId: input.matterId,
       eventType: "TEAM_CHANGED",
-      title: "ActualizaråŠžæ¡ˆå›¢é˜Ÿ",
+      title: "Equipo actualizado",
       occurredAt: new Date(),
       refType: "Matter",
       refId: input.matterId
@@ -888,7 +880,7 @@ export async function updateMatterTeam(input: {
   return { ok: true };
 }
 
-// v0.27: EditarCasoåŸºæœ¬ä¿¡æ¯ï¼ˆæ”¶æ¡ˆFecha readonlyï¼ŒEstadoèµ° lifecycleï¼‰
+// v0.27: Editar informacion basica del Caso
 export async function updateMatterBasicInfo(input: MatterUpdateBasicInput) {
   const prisma = await getTenantPrisma();
   const session = await requireSession();
@@ -903,9 +895,9 @@ export async function updateMatterBasicInfo(input: MatterUpdateBasicInput) {
       category: true
     }
   });
-  if (!matter) throw new Error("Casoä¸å­˜åœ¨");
+  if (!matter) throw new Error("El Caso no existe");
   await assertMatterWritable(data.id);
-  await assertCanLeadMatter(session.user.id, data.id, "åªæœ‰Casoä¸»åŠž/ååŠžå¯ä»¥EditarCasoåŸºæœ¬ä¿¡æ¯");
+  await assertCanLeadMatter(session.user.id, data.id, "Solo el responsable/co-responsable puede editar");
   await assertCauseAllowedForMatter(data.id, data.causeId);
 
   await prisma.matter.update({
@@ -938,7 +930,7 @@ export async function softDeleteMatter(id: string) {
   const prisma = await getTenantPrisma();
   const session = await requireSession();
   await assertMatterWritable(id);
-  await assertCanOwnMatter(session.user.id, id, "åªæœ‰å½“å‰ä¸»åŠžAbogadoå¯ä»¥EliminarCaso");
+  await assertCanOwnMatter(session.user.id, id, "Solo el abogado a cargo puede eliminar el Caso");
 
   await prisma.matter.update({
     where: { id },
@@ -955,5 +947,3 @@ export async function softDeleteMatter(id: string) {
   revalidatePath("/matters");
   return { ok: true };
 }
-
-

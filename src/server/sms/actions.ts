@@ -23,9 +23,9 @@ import {
 } from "./schemas";
 import { revalidateMatter } from "@/server/matters/route";
 
-// â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”
-// è§£æžå¹¶Guardarï¼ˆæ”¯æŒæ‰¹é‡ï¼‰
-// â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”
+// ────────────────────────────────────────────────────────────────────────────────
+// Analizar y Guardar (soporta lotes)
+// ────────────────────────────────────────────────────────────────────────────────
 
 async function findMatchingMatter(caseNumbers: string[]): Promise<string | null> {
   if (caseNumbers.length === 0) return null;
@@ -81,7 +81,7 @@ function normalizeStoredParsed(rawText: string, parsedJson: Prisma.JsonValue): P
   };
 }
 
-// v0.48: å¾…äººå·¥Estadoå†—ä½™åˆ° SmsMessage.needsManualAction ä¾› SQL è¿‡æ»¤
+// v0.48: Estado pendiente de acción manual redundante en SmsMessage.needsManualAction para filtrado SQL
 function needsManualFromResults(results: ParsedSms["attachmentResults"]) {
   return results.some((r) => r.status === "LOGIN_REQUIRED" || r.status === "SKIPPED_NO_MATTER");
 }
@@ -98,7 +98,7 @@ function skippedNoMatterResults(parsed: ParsedSms): ParsedSms["attachmentResults
   return parsed.urls.map((url) => ({
     url,
     status: "SKIPPED_NO_MATTER",
-    message: "è¯·å…ˆå…³è”Casoï¼Œå†æå–é€è¾¾Adjunto",
+    message: "Por favor asociá primero el Caso, después extraé el Adjunto",
     checkedAt: new Date().toISOString()
   }));
 }
@@ -123,7 +123,7 @@ async function tryExtractAttachments({
     return parsed.urls.map((url) => ({
       url,
       status: "FAILED" as const,
-      message: err instanceof Error ? err.message : "Adjuntoæå–Error",
+      message: err instanceof Error ? err.message : "Error al extraer Adjunto",
       checkedAt: new Date().toISOString()
     }));
   }
@@ -135,7 +135,7 @@ export async function parseAndSaveSms(input: z.infer<typeof smsParseAndSaveSchem
   const data = smsParseAndSaveSchema.parse(input);
 
   const messages = data.batch ? splitSmsBatch(data.rawText) : [data.rawText.trim()];
-  if (messages.length === 0) throw new Error("æ²¡æœ‰å¯è§£æžçš„å†…å®¹");
+  if (messages.length === 0) throw new Error("No hay contenido analizable");
 
   const createdIds: string[] = [];
 
@@ -183,7 +183,7 @@ export async function parseAndSaveSms(input: z.infer<typeof smsParseAndSaveSchem
       }
     }
 
-    // Notificacioneså…³è”Casoçš„è´Ÿè´£äºº
+    // Notificaciones al responsable del Caso asociado
     if (matchedMatterId) {
       const matter = await prisma.matter.findUnique({
         where: { id: matchedMatterId },
@@ -193,8 +193,8 @@ export async function parseAndSaveSms(input: z.infer<typeof smsParseAndSaveSchem
         await createNotification({
           userId: matter.ownerId,
           type: "SMS_ARRIVAL",
-          title: "æ”¶åˆ°æ–°æ³•é™¢SMS",
-          content: `Casoæ”¶åˆ°æ–°çš„æ³•é™¢SMSï¼Œç±»åž‹ï¼š${parsed.smsType ?? "Desconocido"}`,
+          title: "Nuevo SMS del juzgado recibido",
+          content: `El Caso recibió un nuevo SMS del juzgado, tipo: ${parsed.smsType ?? "Desconocido"}`,
           href: "/inbox",
           refType: "SmsMessage",
           refId: created.id
@@ -230,9 +230,9 @@ export async function extractSmsAttachments(input: z.infer<typeof smsIdSchema>) 
       matchedMatterId: true
     }
   });
-  if (!sms) throw new Error("SMSä¸å­˜åœ¨");
+  if (!sms) throw new Error("El SMS no existe");
   if (sms.receivedById !== session.user.id && !sms.matchedMatterId) {
-    throw new Error("æ— æƒå¤„ç†è¿™æ¡SMS");
+    throw new Error("No tenés permiso para procesar este SMS");
   }
   if (!sms.matchedMatterId) {
     const parsed = normalizeStoredParsed(sms.rawText, sms.parsedJson);
@@ -254,7 +254,7 @@ export async function extractSmsAttachments(input: z.infer<typeof smsIdSchema>) 
 
   await assertCanAccessMatter(session.user.id, session.user.role, sms.matchedMatterId);
   const parsed = normalizeStoredParsed(sms.rawText, sms.parsedJson);
-  if (parsed.urls.length === 0) throw new Error("SMSä¸­æ²¡æœ‰å¯æå–çš„Enlace");
+  if (parsed.urls.length === 0) throw new Error("No hay Enlaces extraíbles en el SMS");
 
   const attachmentResults = await tryExtractAttachments({
     smsId: sms.id,
@@ -288,9 +288,9 @@ export async function extractSmsAttachments(input: z.infer<typeof smsIdSchema>) 
   return { ok: true, count: attachmentResults.length, attachmentResults };
 }
 
-// â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”
-// åˆ—è¡¨
-// â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”
+// ────────────────────────────────────────────────────────────────────────────────
+// Listado
+// ────────────────────────────────────────────────────────────────────────────────
 
 export async function listSmsMessages(input?: z.input<typeof smsListFilterSchema>) {
   const prisma = await getTenantPrisma();
@@ -348,9 +348,9 @@ export async function getSmsMessage(id: string) {
   });
 }
 
-// â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”
-// æ‰‹åŠ¨æŒ‡æ´¾ Matter
-// â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”
+// ────────────────────────────────────────────────────────────────────────────────
+// Asignación manual de Matter
+// ────────────────────────────────────────────────────────────────────────────────
 
 export async function matchSmsToMatter(input: z.infer<typeof smsMatchToMatterSchema>) {
   const prisma = await getTenantPrisma();
@@ -381,9 +381,9 @@ export async function matchSmsToMatter(input: z.infer<typeof smsMatchToMatterSch
   return { ok: true };
 }
 
-// â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”
-// ä¸€é”®ç”Ÿæˆ Hearing
-// â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”
+// ────────────────────────────────────────────────────────────────────────────────
+// Generar Audiencia con un clic
+// ────────────────────────────────────────────────────────────────────────────────
 
 export async function generateHearingFromSms(input: z.infer<typeof smsGenerateHearingSchema>) {
   const prisma = await getTenantPrisma();
@@ -394,7 +394,7 @@ export async function generateHearingFromSms(input: z.infer<typeof smsGenerateHe
     where: { id: data.procedureId },
     select: { id: true, matterId: true }
   });
-  if (!proc) throw new Error("ç¨‹åºä¸å­˜åœ¨");
+  if (!proc) throw new Error("El procedimiento no existe");
   await assertCanAccessMatter(session.user.id, session.user.role, proc.matterId);
   await assertMatterWritable(proc.matterId);
 
@@ -431,9 +431,9 @@ export async function generateHearingFromSms(input: z.infer<typeof smsGenerateHe
   return { ok: true, hearingId: hearing.id };
 }
 
-// â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”
-// ä¸€é”®ç”Ÿæˆ Deadline
-// â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”
+// ────────────────────────────────────────────────────────────────────────────────
+// Generar Vencimiento con un clic
+// ────────────────────────────────────────────────────────────────────────────────
 
 export async function generateDeadlineFromSms(input: z.infer<typeof smsGenerateDeadlineSchema>) {
   const prisma = await getTenantPrisma();
@@ -444,7 +444,7 @@ export async function generateDeadlineFromSms(input: z.infer<typeof smsGenerateD
     where: { id: data.procedureId },
     select: { id: true, matterId: true }
   });
-  if (!proc) throw new Error("ç¨‹åºä¸å­˜åœ¨");
+  if (!proc) throw new Error("El procedimiento no existe");
   await assertCanAccessMatter(session.user.id, session.user.role, proc.matterId);
   await assertMatterWritable(proc.matterId);
 
@@ -481,9 +481,9 @@ export async function generateDeadlineFromSms(input: z.infer<typeof smsGenerateD
   return { ok: true, deadlineId: deadline.id };
 }
 
-// â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”
-// æ ‡è®°å·²å¤„ç†
-// â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”
+// ────────────────────────────────────────────────────────────────────────────────
+// Marcar como procesado
+// ────────────────────────────────────────────────────────────────────────────────
 
 export async function markSmsProcessed(input: z.infer<typeof smsIdSchema>) {
   const prisma = await getTenantPrisma();
@@ -515,9 +515,9 @@ export async function deleteSms(input: z.infer<typeof smsIdSchema>) {
     where: { id: data.id },
     select: { receivedById: true }
   });
-  if (!sms) throw new Error("SMSä¸å­˜åœ¨");
+  if (!sms) throw new Error("El SMS no existe");
   if (sms.receivedById !== session.user.id && session.user.role !== "ADMIN") {
-    throw new Error("ä»…Recibidoäººæˆ–Administrarå‘˜å¯Eliminar");
+    throw new Error("Solo el Receptor o un Administrador pueden Eliminar");
   }
 
   await prisma.smsMessage.delete({ where: { id: data.id } });
@@ -533,7 +533,7 @@ export async function deleteSms(input: z.infer<typeof smsIdSchema>) {
   return { ok: true };
 }
 
-// æŠŠè§£æžå‡ºçš„å­—ç¬¦ä¸²Fechaå°½é‡è½¬ JS Dateï¼ˆUI é¢„å¡«ç”¨ï¼‰
+// Convertir la cadena de Fecha analizada a JS Date en lo posible (para precarga en UI)
 export async function parseDateString(s: string) {
   const prisma = await getTenantPrisma();
   await requireSession();
@@ -542,9 +542,9 @@ export async function parseDateString(s: string) {
 }
 
 /**
- * v0.51: ç«‹æ¡ˆ/å—ç†SMSè§£æžå‡ºçš„æ¡ˆå·å›žå¡«åˆ°ç¨‹åºï¼ˆRecibidoç®±é—­çŽ¯ï¼‰ã€‚
- * åªå…è®¸å›žå¡«SMSé‡ŒçœŸå®žè§£æžå‡ºçš„æ¡ˆå·ï¼›åªå¡«ç©ºæ¡ˆå·çš„ç¨‹åºï¼Œå·²æœ‰æ¡ˆå·ä¸è¦†ç›–
- * ï¼ˆæ›´æ­£èµ°ç¨‹åºä¿¡æ¯Editarï¼Œç•™ç—•æ¸…æ™°ï¼‰ã€‚
+ * v0.51: Rellenar el número de caso analizado del SMS de radicación/recepción al procedimiento (cierre del ciclo en Bandeja de entrada).
+ * Solo se permite rellenar números de caso realmente analizados del SMS; solo se completan procedimientos con número de caso vacío, los existentes no se pisan
+ * (la corrección se hace en Editar información del procedimiento, con registro claro).
  */
 export async function backfillCaseNumberFromSms(
   input: z.infer<typeof smsBackfillCaseNumberSchema>
@@ -557,14 +557,14 @@ export async function backfillCaseNumberFromSms(
     where: { id: data.smsId },
     select: { id: true, rawText: true, parsedJson: true, matchedMatterId: true }
   });
-  if (!sms) throw new Error("SMSä¸å­˜åœ¨");
-  if (!sms.matchedMatterId) throw new Error("è¯·å…ˆå…³è”Caso");
+  if (!sms) throw new Error("El SMS no existe");
+  if (!sms.matchedMatterId) throw new Error("Asociá primero el Caso");
   await assertCanAssociateMatter(session.user.id, sms.matchedMatterId);
   await assertMatterWritable(sms.matchedMatterId);
 
   const parsed = normalizeStoredParsed(sms.rawText, sms.parsedJson);
   if (!parsed.caseNumbers.includes(data.caseNumber)) {
-    throw new Error("åªèƒ½å›žå¡«æœ¬æ¡SMSè§£æžå‡ºçš„æ¡ˆå·");
+    throw new Error("Solo se puede rellenar el número de caso analizado de este SMS");
   }
 
   const procedure = await prisma.matterProcedure.findUnique({
@@ -572,13 +572,13 @@ export async function backfillCaseNumberFromSms(
     select: { id: true, matterId: true, caseNumber: true, type: true, customLabel: true }
   });
   if (!procedure || procedure.matterId !== sms.matchedMatterId) {
-    throw new Error("ç¨‹åºySMSå…³è”çš„Casoä¸Coincidencia");
+    throw new Error("El procedimiento y el Caso asociado al SMS no Coinciden");
   }
   if (procedure.caseNumber === data.caseNumber) {
     return { ok: true, unchanged: true };
   }
   if (procedure.caseNumber) {
-    throw new Error(`è¯¥ç¨‹åºå·²æœ‰æ¡ˆå· ${procedure.caseNumber}ï¼Œå¦‚éœ€æ›´æ­£è¯·åœ¨ç¨‹åºä¿¡æ¯ä¸­ä¿®æ”¹`);
+    throw new Error(`Este procedimiento ya tiene el número de caso ${procedure.caseNumber}, si necesitás corregirlo modificalo en la información del procedimiento`);
   }
 
   await prisma.matterProcedure.update({
@@ -590,7 +590,7 @@ export async function backfillCaseNumberFromSms(
     data: {
       matterId: sms.matchedMatterId,
       eventType: "PROCEDURE_UPDATED",
-      title: `æ¡ˆå·å›žå¡«ï¼š${data.caseNumber}ï¼ˆæ¥è‡ªæ³•é™¢SMSï¼‰`,
+      title: `Número de caso completado: ${data.caseNumber} (desde SMS del juzgado)`,
       occurredAt: new Date(),
       refType: "MatterProcedure",
       refId: procedure.id
@@ -609,5 +609,3 @@ export async function backfillCaseNumberFromSms(
   await revalidateMatter(sms.matchedMatterId);
   return { ok: true, unchanged: false };
 }
-
-

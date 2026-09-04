@@ -1,9 +1,9 @@
 ﻿"use server";
 
 /**
- * v0.28: è‡ªå®šä¹‰å­—æ®µï¼ˆJSON åˆ—æ–¹æ¡ˆï¼‰
- * - å­—æ®µå®šä¹‰å­˜ CustomFieldDef è¡¨ï¼ŒAdministraré™ ADMIN
- * - å­—æ®µå€¼å­˜äºŽå®žä½“çš„ customValues JSONï¼ˆæœ¬æœŸè½åœ° MATTERï¼‰
+ * v0.28: Campos personalizados (esquema JSON)
+ * - Definiciones en CustomFieldDef, administracion limitada a ADMIN
+ * - Valores en el JSON customValues de la entidad
  */
 import { randomUUID } from "crypto";
 import { revalidatePath } from "next/cache";
@@ -41,7 +41,7 @@ async function requireAdmin() {
   return session;
 }
 
-/** åˆ—å‡ºæŸå®žä½“çš„å­—æ®µå®šä¹‰ï¼ˆadmin è§†å›¾å«DeshabilitarÃ­temsï¼›onlyEnabled=true ç”¨äºŽè¡¨å•æ¸²æŸ“ï¼‰ */
+/** Lista definiciones de campos de una entidad */
 export async function listCustomFieldDefs(
   entityType: CustomFieldEntity,
   onlyEnabled = false,
@@ -61,7 +61,7 @@ export async function createCustomFieldDef(
   const session = await requireAdmin();
   const data = defCreateSchema.parse(input);
   if (data.fieldType === "SELECT" && data.options.length === 0) {
-    throw new Error("ä¸‹æ‹‰ç±»åž‹è‡³å°‘éœ€è¦ä¸€ä¸ªé€‰Ã­temså€¼");
+    throw new Error("El tipo desplegable necesita al menos una opcion");
   }
   const max = await prisma.customFieldDef.aggregate({
     where: { entityType: data.entityType },
@@ -100,7 +100,7 @@ export async function updateCustomFieldDef(
     rest.options &&
     rest.options.length === 0
   ) {
-    throw new Error("ä¸‹æ‹‰ç±»åž‹è‡³å°‘éœ€è¦ä¸€ä¸ªé€‰Ã­temså€¼");
+    throw new Error("El tipo desplegable necesita al menos una opcion");
   }
   await prisma.customFieldDef.update({
     where: { id },
@@ -141,7 +141,7 @@ export async function deleteCustomFieldDef(id: string) {
   return { ok: true as const };
 }
 
-/** GuardarCasoçš„è‡ªå®šä¹‰å­—æ®µå€¼ */
+/** Guarda valores de campos personalizados del Caso */
 export async function saveMatterCustomValues(
   matterId: string,
   values: Record<string, string>,
@@ -152,10 +152,10 @@ export async function saveMatterCustomValues(
   await assertCanLeadMatter(
     session.user.id,
     matterId,
-    "ä»…Casoä¸»åŠž/ååŠžå¯Editar",
+    "Solo el responsable/co-responsable puede editar",
   );
 
-  // ä»…ä¿ç•™å½“å‰å·²å¯ç”¨å­—æ®µå®šä¹‰çš„é”®ï¼Œé¿å…è„æ•°æ®
+  // Solo conserva claves de campos habilitados
   const defs = await prisma.customFieldDef.findMany({
     where: { entityType: "MATTER", enabled: true },
     select: { key: true, label: true, required: true },
@@ -165,7 +165,7 @@ export async function saveMatterCustomValues(
     const v = values[d.key];
     if (typeof v === "string" && v.trim() !== "") clean[d.key] = v.trim();
     if (d.required && !clean[d.key]) {
-      throw new Error(`ã€Œ${d.label}ã€ä¸ºå¿…å¡«Ã­tems`);
+      throw new Error(`"${d.label}" es obligatorio`);
     }
   }
 
@@ -182,5 +182,3 @@ export async function saveMatterCustomValues(
   await revalidateMatter(matterId);
   return { ok: true as const };
 }
-
-

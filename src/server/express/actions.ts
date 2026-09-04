@@ -77,6 +77,7 @@ export async function getExpress(id: string) {
 }
 
 async function assertCanAccessExpressRecord(userId: string, id: string) {
+  const prisma = await getTenantPrisma();
   const record = await prisma.expressTracking.findUnique({
     where: { id },
     select: { id: true, matterId: true, createdById: true }

@@ -16,9 +16,9 @@ import {
 } from "./schemas";
 import { revalidateMatter } from "@/server/matters/route";
 
-/** åˆ¤æ–­å½“å‰ç”¨æˆ·æ˜¯å¦èƒ½Editarè¯¥Casoçš„å·å®—ç»“æž„ï¼ˆä»…æœ¬æ¡ˆ LEAD / CO_LEADï¼‰ */
+/** Verifica si el usuario puede editar la estructura de carpetas del Caso */
 async function requireFolderEditor(matterId: string, session: { user: { id: string; role: string } }) {
-  await assertCanLeadMatter(session.user.id, matterId, "ä»…Casoä¸»åŠž/ååŠžå¯Administrarå·å®—");
+  await assertCanLeadMatter(session.user.id, matterId, "Solo el responsable/co-responsable puede administrar carpetas");
 }
 
 export async function listFoldersByMatter(matterId: string) {
@@ -41,7 +41,7 @@ export async function createFolder(input: z.infer<typeof folderCreateSchema>) {
   await requireFolderEditor(data.matterId, session);
   await assertMatterWritable(data.matterId);
 
-  // è®¡ç®— orderIndexï¼ˆè¿½åŠ åˆ°æœ«å°¾ï¼‰
+  // Calcula orderIndex (agrega al final)
   const last = await prisma.documentFolder.findFirst({
     where: { matterId: data.matterId },
     orderBy: { orderIndex: "desc" },
@@ -61,7 +61,7 @@ export async function createFolder(input: z.infer<typeof folderCreateSchema>) {
     });
   } catch (e) {
     if (e instanceof Prisma.PrismaClientKnownRequestError && e.code === "P2002") {
-      throw new Error(`å·²æœ‰åŒåå·å®—ã€Œ${data.name.trim()}ã€`);
+      throw new Error(`Ya existe una carpeta llamada "${data.name.trim()}"`);
     }
     throw e;
   }
@@ -87,7 +87,7 @@ export async function renameFolder(input: z.infer<typeof folderRenameSchema>) {
     where: { id: data.id },
     select: { id: true, matterId: true }
   });
-  if (!folder) throw new Error("å·å®—ä¸å­˜åœ¨");
+  if (!folder) throw new Error("La carpeta no existe");
   await requireFolderEditor(folder.matterId, session);
   await assertMatterWritable(folder.matterId);
 
@@ -98,7 +98,7 @@ export async function renameFolder(input: z.infer<typeof folderRenameSchema>) {
     });
   } catch (e) {
     if (e instanceof Prisma.PrismaClientKnownRequestError && e.code === "P2002") {
-      throw new Error(`å·²æœ‰åŒåå·å®—ã€Œ${data.name.trim()}ã€`);
+      throw new Error(`Ya existe una carpeta llamada "${data.name.trim()}"`);
     }
     throw e;
   }
@@ -124,12 +124,12 @@ export async function deleteFolder(input: z.infer<typeof folderDeleteSchema>) {
     where: { id: data.id },
     select: { id: true, matterId: true, isDefault: true, _count: { select: { documents: true } } }
   });
-  if (!folder) throw new Error("å·å®—ä¸å­˜åœ¨");
-  if (folder.isDefault) throw new Error("é»˜è®¤å·å®—ä¸å¯Eliminarï¼Œåªèƒ½æ”¹å");
+  if (!folder) throw new Error("La carpeta no existe");
+  if (folder.isDefault) throw new Error("La carpeta por defecto no se puede eliminar, solo renombrar");
   await requireFolderEditor(folder.matterId, session);
   await assertMatterWritable(folder.matterId);
 
-  // å·å®—å†…çš„æ–‡æ¡£ä¸åˆ ï¼Œç§»åˆ°"æ•£ä»¶"ï¼ˆfolderId = nullï¼‰
+  // Los documentos dentro de la carpeta no se eliminan, se mueven a "sueltos" (folderId = null)
   await prisma.$transaction([
     prisma.document.updateMany({
       where: { folderId: data.id },
@@ -179,16 +179,16 @@ export async function moveDocumentToFolder(input: z.infer<typeof moveDocumentToF
     where: { id: data.documentId },
     select: { id: true, matterId: true }
   });
-  if (!doc || !doc.matterId) throw new Error("æ–‡æ¡£ä¸å­˜åœ¨æˆ–æœªå½’å±žCaso");
+  if (!doc || !doc.matterId) throw new Error("El documento no existe o no pertenece a un Caso");
 
-  // æ ¡éªŒç›®æ ‡å·å®—yæ–‡æ¡£åŒCaso
+  // Verifica que carpeta destino y documento sean del mismo Caso
   if (data.folderId) {
     const folder = await prisma.documentFolder.findUnique({
       where: { id: data.folderId },
       select: { matterId: true }
     });
     if (!folder || folder.matterId !== doc.matterId) {
-      throw new Error("ç›®æ ‡å·å®—yæ–‡æ¡£ä¸å±žäºŽåŒä¸€Caso");
+      throw new Error("La carpeta destino y el documento no pertenecen al mismo Caso");
     }
   }
   await requireFolderEditor(doc.matterId, session);
@@ -210,5 +210,3 @@ export async function moveDocumentToFolder(input: z.infer<typeof moveDocumentToF
   await revalidateMatter(doc.matterId);
   return { ok: true };
 }
-
-

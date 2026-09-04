@@ -22,12 +22,12 @@ import {
 async function requireManager() {
   const session = await requireSession();
   if (session.user.role !== "ADMIN" && session.user.role !== "PRINCIPAL_LAWYER") {
-    throw new Error("ä»…Administrarå‘˜ / ä¸»ä»»Abogadoå¯æ‰¹é‡å¯¼å…¥Caso");
+    throw new Error("Solo el Administrador / Abogado Principal puede importar casos");
   }
   return session;
 }
 
-/** Excel å•pesosæ ¼å€¼ â†’ å­—ç¬¦ä¸²ï¼ˆFechaç»Ÿä¸€æ ¼å¼åŒ–ä¸º YYYY-MM-DDï¼‰ */
+/** Convierte valor de celda Excel a string */
 function cellToString(value: ExcelJS.CellValue): string {
   if (value === null || value === undefined) return "";
   if (value instanceof Date) {
@@ -37,7 +37,6 @@ function cellToString(value: ExcelJS.CellValue): string {
     return `${y}-${m}-${d}`;
   }
   if (typeof value === "object") {
-    // å¯Œæ–‡æœ¬ / å…¬å¼ç»“æžœ
     const obj = value as { result?: unknown; text?: unknown; richText?: { text: string }[] };
     if (obj.richText) return obj.richText.map((r) => r.text).join("");
     if (obj.text !== undefined) return String(obj.text);
@@ -47,16 +46,15 @@ function cellToString(value: ExcelJS.CellValue): string {
   return String(value).trim();
 }
 
-/** è§£æžä¸Šä¼ çš„ xlsx â†’ [{ rowNo, raw }]ï¼ŒrowNo ä¸º Excel è¡Œå·ï¼ˆå«è¡¨å¤´ï¼Œä»Ž 2 èµ·ï¼‰ */
+/** Lee el xlsx subido y devuelve filas */
 async function readSheet(file: File): Promise<{ rowNo: number; raw: RawRow }[]> {
   const buf = Buffer.from(await file.arrayBuffer());
   const wb = new ExcelJS.Workbook();
   await wb.xlsx.load(buf as unknown as ArrayBuffer);
   const sheet = wb.worksheets[0];
-  if (!sheet) throw new Error("æ–‡ä»¶ä¸­æ²¡æœ‰å·¥ä½œè¡¨");
+  if (!sheet) throw new Error("El archivo no tiene hoja de trabajo");
 
-  // è¡¨å¤´ â†’ åˆ—ç´¢å¼•ï¼ˆåŽ»æŽ‰å¿…å¡«æ˜Ÿå·ï¼ŒCoincidencia IMPORT_COLUMNS.headerï¼‰
-  const headerByIndex = new Map<number, string>(); // colIndex â†’ field key
+  const headerByIndex = new Map<number, string>();
   const headerRow = sheet.getRow(1);
   headerRow.eachCell((cell, colNumber) => {
     const text = cellToString(cell.value).replace(/\*$/, "").trim();
@@ -64,7 +62,7 @@ async function readSheet(file: File): Promise<{ rowNo: number; raw: RawRow }[]> 
     if (col) headerByIndex.set(colNumber, col.key);
   });
   if (headerByIndex.size === 0) {
-    throw new Error("æœªè¯†åˆ«åˆ°è¡¨å¤´ï¼Œè¯·ä½¿ç”¨ä¸‹è½½çš„æ¨¡æ¿å¡«å†™");
+    throw new Error("No se reconocieron los encabezados, use la plantilla descargada");
   }
 
   const rows: { rowNo: number; raw: RawRow }[] = [];
@@ -96,18 +94,18 @@ export interface ImportPreview {
   validCount: number;
 }
 
-/** è§£æž + æ ¡éªŒï¼ˆä¸å†™åº“ï¼‰ï¼ŒVolveré¢„è§ˆè¡¨ */
+/** Parsea y valida (sin escribir en la base) */
 export async function parseMatterImportAction(formData: FormData): Promise<ImportPreview> {
+  const prisma = await getTenantPrisma();
   await requireManager();
   const file = formData.get("file");
-  if (!(file instanceof File)) throw new Error("ç¼ºå°‘æ–‡ä»¶");
+  if (!(file instanceof File)) throw new Error("Falta el archivo");
 
   const parsed = await readSheet(file);
   if (parsed.length === 0) {
-    throw new Error("æœªè¯»å–åˆ°æ•°æ®è¡Œï¼ˆè¯·åœ¨æ¨¡æ¿ç¬¬ 2 è¡Œèµ·å¡«å†™ï¼Œå¹¶Eliminarç¤ºä¾‹è¡Œï¼‰");
+    throw new Error("No se leyeron filas de datos. Complete desde la fila 2 de la plantilla");
   }
 
-  // é¢„å–ä¸»åŠžAbogadoEmailï¼Œç”¨äºŽæ ¡éªŒ
   const emails = [
     ...new Set(parsed.map((p) => (p.raw.ownerEmail ?? "").trim().toLowerCase()).filter(Boolean))
   ];
@@ -120,7 +118,7 @@ export async function parseMatterImportAction(formData: FormData): Promise<Impor
     const { errors, normalized } = validateRow(raw);
     const errs = [...errors];
     if (normalized?.ownerEmail && !knownEmails.has(normalized.ownerEmail.toLowerCase())) {
-      errs.push(`ä¸»åŠžAbogadoEmailã€Œ${normalized.ownerEmail}ã€æœªCoincidenciaåˆ°ç”¨æˆ·`);
+      errs.push(`El email del abogado a cargo "${normalized.ownerEmail}" no coincide con ningun usuario`);
     }
     return { rowNo, raw, errors: errs, valid: errs.length === 0 };
   });
@@ -133,20 +131,22 @@ export async function parseMatterImportAction(formData: FormData): Promise<Impor
   };
 }
 
-/** è½åº“å•è¡Œï¼šfind-or-create Cliente â†’ å»ºCaso(+ç¼–å·+ä¸»åŠž+å½“äº‹äºº+é¦–ç¨‹åº+å·å®—) */
+/** Crea un Caso desde fila normalizada */
 async function createOneMatter(n: NormalizedRow, currentUserId: string) {
-  // ä¸»åŠžAbogado
+  const prisma = await getTenantPrisma();
+
+  // Abogado a cargo
   let ownerId = currentUserId;
   if (n.ownerEmail) {
     const lawyer = await prisma.user.findFirst({
       where: { email: { equals: n.ownerEmail } },
       select: { id: true }
     });
-    if (!lawyer) throw new Error(`ä¸»åŠžAbogadoEmailã€Œ${n.ownerEmail}ã€æœªCoincidenciaåˆ°ç”¨æˆ·`);
+    if (!lawyer) throw new Error(`El email del abogado a cargo "${n.ownerEmail}" no coincide con ningun usuario`);
     ownerId = lawyer.id;
   }
 
-  // Causaï¼šç²¾ç¡®CoincidenciaCausaåº“ï¼Œå¦åˆ™ä½œä¸ºè‡ªç”±æ–‡æœ¬
+  // Causa: coincidencia exacta o texto libre
   let causeId: string | null = null;
   let causeFreeText: string | null = null;
   let causeDowngradeReason: string | null = null;
@@ -159,12 +159,7 @@ async function createOneMatter(n: NormalizedRow, currentUserId: string) {
     else causeFreeText = n.causeText;
   }
 
-  // v1.2ï¼šå¯¼å…¥æ›¾æ˜¯å”¯ä¸€ç»•è¿‡Causaæ ¡éªŒçš„å†™å…¥è·¯å¾„ï¼Œèƒ½é€ å‡ºç•Œé¢Crearä¸å‡ºæ¥çš„ç»„åˆ
-  // ï¼ˆå¦‚åŠ³åŠ¨ä»²è£CasoæŒ‚å©šå§»å®¶åº­ç±»Causaï¼‰ã€‚æ ¡éªŒåŸºå‡†yCrearCasoä¸€è‡´ï¼šç±»åˆ« + é¦–ç¨‹åºç±»åž‹ã€‚
-  //
-  // ä¸åˆè§„æ—¶é™çº§ä¸ºè‡ªç”±æ–‡æœ¬ã€ä¸æ•´è¡ŒErrorï¼šå¯¼å…¥æ˜¯åŽ†å²æ•°æ®è¿ç§»å·¥å…·ï¼ŒåŽ†å²CasoæŒ‰å½“æ—¶
-  // è§„åˆ™ç«‹çš„Causaæœªå¿…ç¬¦åˆçŽ°è¡ŒèŒƒå›´ï¼Œä¸ºä¸€ä¸ªCausaæŠŠæ•´æ¡CasoæŒ¡åœ¨é—¨å¤–ä»£ä»·è¿‡å¤§ã€‚
-  // è‡ªç”±æ–‡æœ¬å­—æ®µæœ¬å°±ä¸å‚yè”åŠ¨æ ¡éªŒï¼Œä¿¡æ¯ä¸ä¸¢ï¼Œé™çº§æƒ…å†µåœ¨å¯¼å…¥ç»“æžœé‡Œé€è¡Œåˆ—å‡ºã€‚
+  // Validacion de causa
   if (causeId) {
     try {
       await assertCauseAllowedForSelection({
@@ -173,7 +168,7 @@ async function createOneMatter(n: NormalizedRow, currentUserId: string) {
         procedureType: firstProcedureTypeFor(n.category)
       });
     } catch (e) {
-      causeDowngradeReason = e instanceof Error ? e.message : "CausayCasoç±»åˆ«ä¸Coincidencia";
+      causeDowngradeReason = e instanceof Error ? e.message : "La causa no coincide con la categoria del caso";
       causeFreeText = n.causeText ?? null;
       causeId = null;
     }
@@ -182,7 +177,7 @@ async function createOneMatter(n: NormalizedRow, currentUserId: string) {
   const internalCode = await generateInternalCode(n.category);
   const firmCaseNo = await generateFirmCaseNo(n.category);
 
-  // find-or-create Clienteï¼ˆNombre + è¯ä»¶å·ï¼‰
+  // find-or-create Cliente
   const existingClient = await prisma.client.findFirst({
     where: { name: n.clientName, idNumber: n.clientIdNumber, deletedAt: null },
     select: { id: true }
@@ -246,9 +241,8 @@ async function createOneMatter(n: NormalizedRow, currentUserId: string) {
         archivedAt: n.status === "ARCHIVED" ? new Date() : null,
         primaryClientId: clientId,
         members: { create: { userId: ownerId, role: "LEAD" } },
-        clientLinks: { create: { clientId, isPrimary: true, label: "ä¸»è¦å§”æ‰˜æ–¹" } },
+        clientLinks: { create: { clientId, isPrimary: true, label: "Cliente principal" } },
         parties: { create: [clientParty, opposingParty] },
-        // åŠžç†ä¸­æŒ‰ç±»åˆ«è‡ªåŠ¨ç”Ÿæˆé¦–ç¨‹åºï¼ˆyæ”¶æ¡ˆè½¬åŒ–ä¸€è‡´ï¼‰ï¼›Cerrar caso/å½’æ¡£ä¸å»º
         ...(n.status === "IN_PROGRESS"
           ? {
               procedures: {
@@ -271,7 +265,7 @@ async function createOneMatter(n: NormalizedRow, currentUserId: string) {
       data: {
         matterId: matter.id,
         eventType: "MATTER_CREATED",
-        title: "Casoå·²Crearï¼ˆæ‰¹é‡å¯¼å…¥ï¼‰",
+        title: "Caso creado (importacion masiva)",
         occurredAt: new Date()
       }
     });
@@ -289,13 +283,12 @@ export interface ImportResult {
     internalCode: string;
     firmCaseNo: string | null;
     title: string;
-    /** CausayCasoç±»åˆ«ä¸Coincidenciaã€å·²é™çº§ä¸ºè‡ªç”±æ–‡æœ¬ï¼›éœ€äº‹åŽäººå·¥æ ¸å¯¹ */
     causeDowngradeReason?: string;
   }[];
   failed: { rowNo: number; error: string }[];
 }
 
-/** Confirmarå¯¼å…¥ï¼šé€è¡Œäº‹åŠ¡ã€Errorä¸é˜»æ–­ï¼ŒVolveræˆåŠŸ/Erroræ¸…å• */
+/** Confirma importacion: fila por fila, los errores no detienen el proceso */
 export async function commitMatterImportAction(input: {
   rows: { rowNo: number; raw: RawRow }[];
 }): Promise<ImportResult> {
@@ -306,7 +299,7 @@ export async function commitMatterImportAction(input: {
   for (const { rowNo, raw } of input.rows) {
     try {
       const { errors, normalized } = validateRow(raw);
-      if (!normalized) throw new Error(errors.join("ï¼›") || "è¡Œæ ¡éªŒError");
+      if (!normalized) throw new Error(errors.join("; ") || "Error de validacion de fila");
       const m = await createOneMatter(normalized, session.user.id);
       succeeded.push({
         rowNo,
@@ -316,7 +309,7 @@ export async function commitMatterImportAction(input: {
         ...(m.causeDowngradeReason ? { causeDowngradeReason: m.causeDowngradeReason } : {})
       });
     } catch (e) {
-      failed.push({ rowNo, error: e instanceof Error ? e.message : "å¯¼å…¥Error" });
+      failed.push({ rowNo, error: e instanceof Error ? e.message : "Error de importacion" });
     }
   }
 
@@ -334,5 +327,3 @@ export async function commitMatterImportAction(input: {
   revalidatePath("/matters");
   return { succeeded, failed };
 }
-
-

@@ -25,8 +25,8 @@ const documentCategorySchema = z.enum([
 const MAX_FILE_SIZE = 20 * 1024 * 1024; // 20MB
 
 /**
- * ä¸Šä¼ ææ–™ã€‚å‰ç«¯Aprobar Server Action ä¼  FormDataï¼Œå« fileï¼ˆFileï¼‰ã€metadataã€‚
- * åŠ å¯†åˆ†æ”¯ï¼šencrypted=true æ—¶æŠŠæ–‡ä»¶ç”¨ AES-256-GCM åŠ å¯†åŽå†™ç›˜ã€‚
+ * Sube material. El front envia FormData con file y metadata.
+ * Si encrypted=true, el archivo se cifra con AES-256-GCM antes de guardar.
  */
 export async function uploadDocument(formData: FormData) {
   const prisma = await getTenantPrisma();
@@ -45,13 +45,13 @@ export async function uploadDocument(formData: FormData) {
   const sourcePartyRaw = formData.get("sourceParty");
   const file = formData.get("file");
 
-  if (!(file instanceof File)) throw new Error("ç¼ºå°‘æ–‡ä»¶");
+  if (!(file instanceof File)) throw new Error("Falta el archivo");
 
   const matterId = typeof matterIdRaw === "string" && matterIdRaw ? matterIdRaw : null;
   const intakeId = typeof intakeIdRaw === "string" && intakeIdRaw ? intakeIdRaw : null;
-  if (!matterId && !intakeId) throw new Error("matterId æˆ– intakeId è‡³å°‘éœ€è¦ä¸€ä¸ª");
+  if (!matterId && !intakeId) throw new Error("matterId o intakeId son obligatorios");
 
-  if (typeof name !== "string" || !name.trim()) throw new Error("ææ–™Nombreå¿…å¡«");
+  if (typeof name !== "string" || !name.trim()) throw new Error("El nombre del material es obligatorio");
   const parsedCategory = documentCategorySchema.parse(category || "OTHER");
   const tags =
     typeof tagsRaw === "string" && tagsRaw
@@ -63,14 +63,14 @@ export async function uploadDocument(formData: FormData) {
   const folderId = typeof folderIdRaw === "string" && folderIdRaw ? folderIdRaw : null;
   const stageId = typeof stageIdRaw === "string" && stageIdRaw ? stageIdRaw : null;
 
-  // æ ¡éªŒå½’å±žå¯¹è±¡å­˜åœ¨
+  // Verifica que el objeto de pertenencia exista
   let folderName: string | null = null;
   if (matterId) {
     const matter = await prisma.matter.findUnique({
       where: { id: matterId, deletedAt: null },
       select: { id: true, status: true }
     });
-    if (!matter) throw new Error("Casoä¸å­˜åœ¨");
+    if (!matter) throw new Error("El Caso no existe");
     await assertCanAccessMatter(session.user.id, session.user.role, matterId);
 
     if (folderId) {
@@ -79,26 +79,25 @@ export async function uploadDocument(formData: FormData) {
         select: { matterId: true, name: true }
       });
       if (!folder || folder.matterId !== matterId) {
-        throw new Error("ç›®æ ‡å·å®—yCasoä¸Coincidencia");
+        throw new Error("La carpeta destino y el Caso no coinciden");
       }
       folderName = folder.name;
     }
 
-    // v0.48: å½’å±žçŽ¯èŠ‚å¿…é¡»å±žäºŽæœ¬Casoï¼ˆä¸”y procedureId ä¸€è‡´æ—¶æ‰å¯ä¿¡ï¼‰
+    // v0.48: La etapa debe pertenecer al mismo Caso
     if (stageId) {
       const stage = await prisma.matterStage.findUnique({
         where: { id: stageId },
         select: { procedureId: true, procedure: { select: { matterId: true } } }
       });
       if (!stage || stage.procedure.matterId !== matterId) {
-        throw new Error("å½’å±žçŽ¯èŠ‚yCasoä¸Coincidencia");
+        throw new Error("La etapa y el Caso no coinciden");
       }
       if (typeof procedureId === "string" && procedureId && stage.procedureId !== procedureId) {
-        throw new Error("å½’å±žçŽ¯èŠ‚yç¨‹åºä¸Coincidencia");
+        throw new Error("La etapa y el procedimiento no coinciden");
       }
     }
 
-    // å½’æ¡£åŽä»…å…è®¸è¡¥ä¼ åˆ° ARCHIVE å·å®—ï¼ˆCerrar caso / å½’æ¡£ï¼‰ï¼Œç”± guard åˆ¤å®š
     await assertDocumentWritable(matterId, { kind: "upload", folderName });
   }
   if (intakeId) {
@@ -106,8 +105,8 @@ export async function uploadDocument(formData: FormData) {
       where: { id: intakeId },
       select: { id: true, status: true, createdById: true, ownerUserId: true, coUserIds: true }
     });
-    if (!intake) throw new Error("æ”¶æ¡ˆè®°å½•ä¸å­˜åœ¨");
-    if (intake.status === "DECLINED") throw new Error("å·²æ‹’ç»çš„æ”¶æ¡ˆä¸å¯ä¸Šä¼ ææ–™");
+    if (!intake) throw new Error("La admision no existe");
+    if (intake.status === "DECLINED") throw new Error("No se puede subir material a una admision rechazada");
     const uid = session.user.id;
     if (
       !isManager(session.user.role) &&
@@ -115,7 +114,7 @@ export async function uploadDocument(formData: FormData) {
       intake.ownerUserId !== uid &&
       !intake.coUserIds.includes(uid)
     ) {
-      throw new Error("æ— æƒå‘è¯¥æ”¶æ¡ˆä¸Šä¼ ææ–™");
+      throw new Error("Sin permiso para subir material a esta admision");
     }
   }
 
@@ -179,13 +178,13 @@ export async function uploadDocument(formData: FormData) {
     detail: { matterId, intakeId, name, encrypted, size: file.size }
   });
 
-  // v0.43 Ã­tems4ï¼šå†™å…¥CasoåŠ¨æ€æ—¶é—´çº¿ï¼ˆä»…Casoæ–‡æ¡£ï¼‰
+  // v0.43: escribe en la linea de tiempo del Caso
   if (matterId) {
     await prisma.timelineEvent.create({
       data: {
         matterId,
         eventType: "DOCUMENT_UPLOADED",
-        title: `ä¸Šä¼ ææ–™ï¼š${name.trim()}`,
+        title: `Subida de material: ${name.trim()}`,
         occurredAt: new Date(),
         refType: "Document",
         refId: created.id
@@ -207,17 +206,17 @@ export async function deleteDocument(id: string) {
   if (doc.matterId) {
     await assertDocumentWritable(doc.matterId, { kind: "modify" });
     if (doc.uploadedById !== session.user.id) {
-      await assertCanLeadMatter(session.user.id, doc.matterId, "åªèƒ½Eliminarè‡ªå·±ä¸Šä¼ çš„ææ–™ï¼Œæˆ–ç”±æœ¬æ¡ˆä¸»åŠž/ååŠžEliminar");
+      await assertCanLeadMatter(session.user.id, doc.matterId, "Solo puede eliminar el material que subio, o el responsable/co-responsable");
     }
   } else if (
     doc.uploadedById !== session.user.id &&
     session.user.role !== "ADMIN" &&
     session.user.role !== "PRINCIPAL_LAWYER"
   ) {
-    throw new Error("åªèƒ½Eliminarè‡ªå·±ä¸Šä¼ çš„ææ–™");
+    throw new Error("Solo puede eliminar el material que subio");
   }
 
-  // è½¯Eliminarï¼ˆä¿ç•™æ–‡ä»¶ä»¥å¤‡å®¡è®¡ï¼‰ï¼Œå¦‚éœ€ç‰©ç†Eliminarèµ°å•ç‹¬è„šæœ¬
+  // Eliminacion logica (conserva archivo para auditoria)
   await prisma.document.update({
     where: { id },
     data: { deletedAt: new Date() }
@@ -240,7 +239,7 @@ export async function hardDeleteDocument(id: string) {
   const prisma = await getTenantPrisma();
   const session = await requireSession();
   if (session.user.role !== "ADMIN") {
-    throw new Error("ä»… ADMIN å¯å½»åº•Eliminarææ–™");
+    throw new Error("Solo el Administrador puede eliminar definitivamente");
   }
   const doc = await prisma.document.findUnique({ where: { id } });
   if (!doc) return { ok: false };
@@ -301,18 +300,18 @@ export async function listAllDocuments(input: Partial<z.infer<typeof docListQuer
   });
 }
 
-// ============ v0.10: æ–‡ä¹¦AprobaciÃ³næµç¨‹ ============
+// ============ v0.10: Flujo de aprobacion de documentos ============
 
 export async function submitDocumentForReview(id: string) {
   const prisma = await getTenantPrisma();
   const session = await requireSession();
   const doc = await prisma.document.findUnique({ where: { id, deletedAt: null } });
-  if (!doc) throw new Error("ææ–™ä¸å­˜åœ¨");
+  if (!doc) throw new Error("El material no existe");
   if (doc.matterId) {
     await assertCanAccessMatter(session.user.id, session.user.role, doc.matterId);
     await assertDocumentWritable(doc.matterId, { kind: "modify" });
   }
-  if (doc.status !== "DRAFT") throw new Error("åªæœ‰è‰ç¨¿Estadoçš„ææ–™æ‰èƒ½Enviarå®¡æ ¸");
+  if (doc.status !== "DRAFT") throw new Error("Solo los materiales en borrador pueden enviarse a revision");
 
   await prisma.document.update({
     where: { id },
@@ -335,11 +334,11 @@ export async function approveDocument(id: string) {
   const prisma = await getTenantPrisma();
   const session = await requireSession();
   if (!isManager(session.user.role)) {
-    throw new Error("ä»…Administrarå‘˜æˆ–ä¸»åŠžAbogadoå¯AprobaciÃ³næ–‡ä¹¦");
+    throw new Error("Solo el Administrador o Abogado Principal puede aprobar documentos");
   }
   const doc = await prisma.document.findUnique({ where: { id, deletedAt: null } });
-  if (!doc) throw new Error("ææ–™ä¸å­˜åœ¨");
-  if (doc.status !== "PENDING_REVIEW") throw new Error("ææ–™ä¸åœ¨å¾…å®¡æ ¸Estado");
+  if (!doc) throw new Error("El material no existe");
+  if (doc.status !== "PENDING_REVIEW") throw new Error("El material no esta en revision");
 
   await prisma.document.update({
     where: { id },
@@ -366,11 +365,11 @@ export async function rejectDocument(id: string, reason?: string) {
   const prisma = await getTenantPrisma();
   const session = await requireSession();
   if (!isManager(session.user.role)) {
-    throw new Error("ä»…Administrarå‘˜æˆ–ä¸»åŠžAbogadoå¯Rechazaræ–‡ä¹¦");
+    throw new Error("Solo el Administrador o Abogado Principal puede rechazar documentos");
   }
   const doc = await prisma.document.findUnique({ where: { id, deletedAt: null } });
-  if (!doc) throw new Error("ææ–™ä¸å­˜åœ¨");
-  if (doc.status !== "PENDING_REVIEW") throw new Error("ææ–™ä¸åœ¨å¾…å®¡æ ¸Estado");
+  if (!doc) throw new Error("El material no existe");
+  if (doc.status !== "PENDING_REVIEW") throw new Error("El material no esta en revision");
 
   await prisma.document.update({
     where: { id },
@@ -397,10 +396,10 @@ export async function fileDocument(id: string) {
   const prisma = await getTenantPrisma();
   const session = await requireSession();
   const doc = await prisma.document.findUnique({ where: { id, deletedAt: null } });
-  if (!doc) throw new Error("ææ–™ä¸å­˜åœ¨");
+  if (!doc) throw new Error("El material no existe");
   if (doc.matterId)
     await assertCanAccessMatter(session.user.id, session.user.role, doc.matterId);
-  if (doc.status !== "APPROVED") throw new Error("åªæœ‰å·²AprobaciÃ³nçš„ææ–™æ‰èƒ½å½’æ¡£");
+  if (doc.status !== "APPROVED") throw new Error("Solo los materiales aprobados pueden archivarse");
 
   await prisma.document.update({
     where: { id },
@@ -418,5 +417,3 @@ export async function fileDocument(id: string) {
   if (doc.matterId) await revalidateMatter(doc.matterId);
   return { ok: true };
 }
-
-

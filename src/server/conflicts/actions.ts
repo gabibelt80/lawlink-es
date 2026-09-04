@@ -8,6 +8,14 @@ import { audit } from "@/server/audit";
 import { matterAssociationFilter } from "@/lib/permissions";
 import { runConflictCheck, type MatterInfoForHit, type QueryItem } from "./algorithm";
 
+async function resolveTenantUserId(email: string, prisma: any): Promise<string | null> {
+  const user = await prisma.user.findUnique({
+    where: { email },
+    select: { id: true }
+  });
+  return user?.id ?? null;
+}
+
 function hitKey(hit: { targetId: string; matchedField: string; matchedValue: string }) {
   return `${hit.targetId}|${hit.matchedField}|${hit.matchedValue}`;
 }
@@ -23,6 +31,7 @@ function serializeMatterInfo(info: MatterInfoForHit | undefined, canViewMatter: 
 }
 
 async function getOpenableMatterIds(userId: string, matterIds: string[]) {
+  const prisma = await getTenantPrisma();
   const uniqueIds = Array.from(new Set(matterIds));
   if (uniqueIds.length === 0) return new Set<string>();
 
@@ -40,7 +49,6 @@ async function getOpenableMatterIds(userId: string, matterIds: string[]) {
 
 const queryItemSchema = z
   .object({
-    // v0.4: Rolå¯é€‰ï¼ˆé¡¶æ å¿«æŸ¥ä¸éœ€è¦ï¼‰ï¼Œserver ç«¯é»˜è®¤ OPPOSING_PARTY
     role: z
       .enum([
         "CLIENT_PARTY",
@@ -56,7 +64,7 @@ const queryItemSchema = z
     idNumber: z.string().max(50).optional().or(z.literal(""))
   })
   .refine((q) => (q.name && q.name.trim()) || (q.idNumber && q.idNumber.trim()), {
-    message: "Nombre y apellidoæˆ–è¯ä»¶å·è‡³å°‘å¡«å†™ä¸€Ã­tems"
+    message: "Nombre o numero de documento: al menos uno es obligatorio"
   });
 
 const runCheckSchema = z.object({
@@ -65,8 +73,8 @@ const runCheckSchema = z.object({
 });
 
 /**
- * è·‘ä¸€æ¬¡å†²çªæ£€ç´¢å¹¶è½åº“ã€‚
- * å¦‚æžœ intakeId åœ¨ï¼Œåˆ™æŠŠ ConflictCheck æŒ‚åœ¨è¯¥ Intake ä¸Šï¼›å¦åˆ™å•ç‹¬å­˜ï¼ˆtargetType=Intake ä¸ºç©ºï¼‰ã€‚
+ * Ejecuta una busqueda de conflictos y guarda el resultado.
+ * Si intakeId existe, vincula el ConflictCheck a esa Intake.
  */
 export async function runCheckAndSave(input: z.infer<typeof runCheckSchema>) {
   const prisma = await getTenantPrisma();
@@ -74,7 +82,6 @@ export async function runCheckAndSave(input: z.infer<typeof runCheckSchema>) {
   const tenantUserId = await resolveTenantUserId(session.user.email, prisma);
   const data = runCheckSchema.parse(input);
 
-  // æ¸…ç† queryï¼ˆv0.4: å…è®¸ name ä¸ºç©ºï¼Œç”± idNumber å…œåº•ï¼›role ç¼ºçœè§†ä¸º OPPOSING_PARTYï¼‰
   const queries: QueryItem[] = data.queries.map((q) => ({
     role: q.role ?? "OPPOSING_PARTY",
     name: (q.name ?? "").trim(),
@@ -100,7 +107,7 @@ export async function runCheckAndSave(input: z.infer<typeof runCheckSchema>) {
       conclusion: noHits ? "DIFFERENT" : "PENDING",
       decidedById: noHits ? tenantUserId : null,
       decidedAt: noHits ? new Date() : null,
-      note: noHits ? "Sistemaè‡ªåŠ¨æ ‡è®°ï¼šæœªå‘½ä¸­åŽ†å²Casoå†²çªã€‚" : null,
+      note: noHits ? "Sistema: sin coincidencias con casos existentes." : null,
       hits: {
         create: result.hits.map((h) => ({
           hitType: h.hitType,
@@ -186,11 +193,3 @@ export async function setConflictConclusion(input: z.infer<typeof conclusionSche
   }
   return { ok: true };
 }
-async function resolveTenantUserId(email: string, prisma: any): Promise<string | null> {
-  const user = await prisma.user.findUnique({
-    where: { email },
-    select: { id: true }
-  });
-  return user?.id ?? null;
-}
-

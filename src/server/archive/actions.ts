@@ -23,13 +23,13 @@ import { matterHref } from "@/lib/matters/route";
 import { revalidateMatter } from "@/server/matters/route";
 
 /**
- * v0.9.4 å½’æ¡£ï¼šå®Œæ•´æµç¨‹
- *   1. æƒé™ï¼šæœ¬æ¡ˆä¸»åŠž / ååŠžEnviarï¼ŒADMIN AprobaciÃ³n
- *   2. æ ¡éªŒ checklist ç¼ºå¿…å¡«Ã­tems â†’ è‹¥æœ‰ä¸”æœª forceWithMissing åˆ™æ‹’ç»
- *   3. ç”Ÿæˆ archiveNo
- *   4. æ¸²æŸ“å·å®—å°çš® â†’ å…¥ ARCHIVE å·å®—
- *   5. æ¸²æŸ“å·å®—ç›®å½•ï¼ˆå«å·²ç”Ÿæˆçš„å°çš®è‡ªèº«å¯é€‰ä¸å…¥ç›®å½•ï¼‰
- *   6. Crear ArchiveRecord
+ * v0.9.4 Archivo: flujo completo
+ *   1. Permisos: responsable/co-responsable envia, ADMIN aprueba
+ *   2. Verifica checklist de items obligatorios
+ *   3. Genera numero de archivo
+ *   4. Renderiza portada del expediente
+ *   5. Renderiza indice del expediente
+ *   6. Crea ArchiveRecord
  *   7. Matter status=ARCHIVED + archivedAt + closedAt
  *   8. TimelineEvent + audit
  */
@@ -57,19 +57,18 @@ export async function archiveMatter(input: ArchiveSubmitInput) {
   });
   if (!matter) throw new Error("El Caso no existe");
   if (matter.status === "ARCHIVED")
-    throw new Error("El Caso ya estÃ¡ archivado");
+    throw new Error("El Caso ya esta archivado");
 
-  // checklist ç¼ºÃ­temsæ ¡éªŒ
+  // Verificacion de items obligatorios del checklist
   const checklist = checklistForCategory(matter.category);
   const { missingRequired } = evaluateChecklist(checklist, data.checklist);
   if (missingRequired.length > 0 && !data.forceWithMissing) {
     throw new Error(
-      `La lista de archivo tiene ${missingRequired.length} campos obligatorios faltantes: ${missingRequired.map((x) => x.label).join(", ")}. Si confirmÃ¡s el archivo forzado, marcÃ¡ "Archivo forzado".`,
+      `La lista de archivo tiene ${missingRequired.length} campos obligatorios faltantes: ${missingRequired.map((x) => x.label).join(", ")}. Si confirmas el archivo forzado, marca "Archivo forzado".`,
     );
   }
   const missingItems = missingRequired.map((x) => x.id);
 
-  // æ¸²æŸ“å¿…é¡»åœ¨äº‹åŠ¡å¤–ï¼ˆæ¶‰yæ–‡ä»¶Sistema + åŠ å¯†ï¼‰ã€‚å…ˆæ¸²æŸ“å†äº‹åŠ¡é‡Œå»ºè®°å½•ã€‚
   const now = new Date();
   const archiveNo = await nextArchiveNo(prisma, matter.category, now);
 
@@ -103,7 +102,7 @@ export async function archiveMatter(input: ArchiveSubmitInput) {
       excludeDocIds: [coverDocId],
     });
   } catch (err) {
-    // å°çš®å·²è½åº“ï¼›ç›®å½•Erroræ—¶å›žæ»šå°çš®æ–‡æ¡£ï¼ˆæ ‡è®°è½¯åˆ ï¼‰ã€‚Abogadoé‡è¯•å¯é‡æ–°ç”Ÿæˆã€‚
+    // Si falla el indice, se elimina la portada ya creada
     await prisma.document
       .update({
         where: { id: coverDocId },
@@ -111,7 +110,7 @@ export async function archiveMatter(input: ArchiveSubmitInput) {
       })
       .catch(() => null);
     throw new Error(
-      `Error al renderizar el Ã­ndice del expediente: ${err instanceof Error ? err.message : String(err)}`,
+      `Error al renderizar el indice del expediente: ${err instanceof Error ? err.message : String(err)}`,
     );
   }
 
@@ -140,8 +139,8 @@ export async function archiveMatter(input: ArchiveSubmitInput) {
       data: {
         matterId: matter.id,
         eventType: "MATTER_ARCHIVE_REQUESTED",
-        title: `Se enviÃ³ la solicitud de archivo (${archiveNo}, pendiente de aprobaciÃ³n)`,
-        content: `Modo de cierre: ${CLOSED_REASON_CN[data.closedReason]}ã€‚${data.summary}`,
+        title: `Se envio la solicitud de archivo (${archiveNo}, pendiente de aprobacion)`,
+        content: `Modo de cierre: ${CLOSED_REASON_CN[data.closedReason]}. ${data.summary}`,
         occurredAt: now,
       },
     });
@@ -167,7 +166,7 @@ export async function archiveMatter(input: ArchiveSubmitInput) {
 }
 
 /**
- * v0.16: Administrarå‘˜AprobaciÃ³nAprobarå½’æ¡£ç”³è¯·ï¼ˆPENDING_REVIEW â†’ APPROVEDï¼‰
+ * v0.16: Administrador aprueba solicitud de archivo (PENDING_REVIEW a APPROVED)
  */
 export async function approveArchiveRecord(input: {
   archiveId: string;
@@ -221,14 +220,14 @@ export async function approveArchiveRecord(input: {
         eventType: "MATTER_ARCHIVED",
         title: `El Caso ha sido archivado (${record.archiveNo})`,
         content: input.note?.trim()
-          ? `AprobaciÃ³n del Administrador: ${input.note.trim()}`
-          : "AprobaciÃ³n del Administrador aprobada",
+          ? `Aprobacion del Administrador: ${input.note.trim()}`
+          : "Aprobacion del Administrador aprobada",
         occurredAt: now,
       },
     });
   });
 
-  // v0.18: Notificacionesç”³è¯·äºº
+  // Notificar al solicitante
   if (record.archivedById && record.archivedById !== session.user.id) {
     const matter = await prisma.matter.findUnique({
       where: { id: record.matterId },
@@ -239,7 +238,7 @@ export async function approveArchiveRecord(input: {
       type: "ARCHIVE_APPROVED",
       priority: "NORMAL",
       title: `La solicitud de archivo fue aprobada (${record.archiveNo})`,
-      content: `La solicitud de archivo del Caso ${matter?.internalCode ?? record.matterId}Â·${matter?.title ?? ""} fue aprobada por el Administrador.`,
+      content: `La solicitud de archivo del Caso ${matter?.internalCode ?? record.matterId} - ${matter?.title ?? ""} fue aprobada por el Administrador.`,
       href: matterHref({
         id: record.matterId,
         internalCode: matter?.internalCode ?? null,
@@ -264,7 +263,7 @@ export async function approveArchiveRecord(input: {
 }
 
 /**
- * v0.16: Administrarå‘˜Rechazarå½’æ¡£ç”³è¯·
+ * v0.16: Administrador rechaza solicitud de archivo
  */
 export async function rejectArchiveRecord(input: {
   archiveId: string;
@@ -277,7 +276,7 @@ export async function rejectArchiveRecord(input: {
       "Solo el Administrador puede rechazar la solicitud de archivo",
     );
   }
-  if (!input.note.trim()) throw new Error("Ingresa¡ el motivo del rechazo");
+  if (!input.note.trim()) throw new Error("Ingresa el motivo del rechazo");
 
   const record = await prisma.archiveRecord.findUnique({
     where: { id: input.archiveId },
@@ -303,7 +302,7 @@ export async function rejectArchiveRecord(input: {
     },
   });
 
-  // v0.18: Notificacionesç”³è¯·äºº
+  // Notificar al solicitante
   if (record.archivedById && record.archivedById !== session.user.id) {
     const matter = await prisma.matter.findUnique({
       where: { id: record.matterId },
@@ -314,7 +313,7 @@ export async function rejectArchiveRecord(input: {
       type: "ARCHIVE_REJECTED",
       priority: "HIGH",
       title: `La solicitud de archivo fue rechazada (${record.archiveNo})`,
-      content: `La solicitud de archivo del Caso ${matter?.internalCode ?? record.matterId}Â·${matter?.title ?? ""} fue rechazada. Motivo: ${input.note.trim()}`,
+      content: `La solicitud de archivo del Caso ${matter?.internalCode ?? record.matterId} - ${matter?.title ?? ""} fue rechazada. Motivo: ${input.note.trim()}`,
       href: matterHref({
         id: record.matterId,
         internalCode: matter?.internalCode ?? null,
@@ -342,7 +341,7 @@ export async function rejectArchiveRecord(input: {
 }
 
 /**
- * èŽ·å–Casoçš„å½’æ¡£å‡†å¤‡æ•°æ®ï¼šå½“å‰ checklist æ¨¡æ¿ + å·²æœ‰ ArchiveRecordï¼ˆè‹¥æœ‰ï¼‰
+ * Obtiene datos de preparacion de archivo del Caso
  */
 export async function getArchivePrepData(matterId: string) {
   const prisma = await getTenantPrisma();
@@ -350,7 +349,7 @@ export async function getArchivePrepData(matterId: string) {
   await assertCanLeadMatter(
     session.user.id,
     matterId,
-    "ä»…Casoä¸»åŠž/ååŠžå¯ä»¥å‡†å¤‡å½’æ¡£",
+    "Solo el responsable/co-responsable puede preparar el archivo",
   );
   const matter = await prisma.matter.findUnique({
     where: { id: matterId },
@@ -381,18 +380,16 @@ export async function getArchivePrepData(matterId: string) {
       },
     },
   });
-  if (!matter) throw new Error("Casoä¸å­˜åœ¨");
+  if (!matter) throw new Error("El Caso no existe");
 
   const checklist = checklistForCategory(matter.category);
 
-  // v0.11: å–æœ€è¿‘ä¸€æ¬¡Cerrar casoäº‹ä»¶çš„ content ä½œä¸ºé¢„å¡«å°ç»“
   const lastCloseEvent = await prisma.timelineEvent.findFirst({
     where: { matterId, eventType: "MATTER_CLOSED" },
     orderBy: { occurredAt: "desc" },
     select: { content: true },
   });
 
-  // v0.17: å·²ä¸Šä¼ å¹¶å…³è”åˆ° checklist item çš„ææ–™ï¼ˆç”¨äºŽå‘å¯¼è‡ªåŠ¨å‹¾é€‰ï¼‰
   const linkedDocs = await prisma.document.findMany({
     where: {
       matterId,
@@ -408,7 +405,6 @@ export async function getArchivePrepData(matterId: string) {
     orderBy: { createdAt: "desc" },
   });
 
-  // itemId â†’ å…³è”ææ–™åˆ—è¡¨ï¼ˆä¿ç•™Ver todosï¼ŒUI å±•ç¤ºé¦–æ¡ + ä½™æ•°ï¼‰
   const docsByItem: Record<string, { id: string; name: string }[]> = {};
   for (const d of linkedDocs) {
     const key = d.archiveChecklistItemId!;
@@ -424,7 +420,7 @@ export async function getArchivePrepData(matterId: string) {
 }
 
 /**
- * å·²å½’æ¡£Casoåˆ—è¡¨ï¼ˆ/archive Totalè§ˆé¡µï¼‰â€”â€” ä»… status=APPROVED
+ * Lista de casos archivados (solo status=APPROVED)
  */
 export async function listArchivedMatters() {
   const prisma = await getTenantPrisma();
@@ -457,14 +453,13 @@ export async function listArchivedMatters() {
 }
 
 /**
- * v0.17: å¾…AprobaciÃ³nå½’æ¡£ç”³è¯·åˆ—è¡¨ï¼ˆä»… ADMINï¼‰
- * /archive å¾…AprobaciÃ³n tab ä½¿ç”¨
+ * Lista de solicitudes de archivo pendientes (solo ADMIN)
  */
 export async function listPendingArchiveRecords() {
   const prisma = await getTenantPrisma();
   const session = await requireSession();
   if (session.user.role !== "ADMIN") {
-    throw new Error("ä»…Administrarå‘˜å¯Verå¾…AprobaciÃ³nå½’æ¡£");
+    throw new Error("Solo el Administrador puede ver solicitudes pendientes");
   }
   return prisma.archiveRecord.findMany({
     where: { status: "PENDING_REVIEW" },
@@ -496,8 +491,7 @@ export async function listPendingArchiveRecords() {
 }
 
 /**
- * v0.18: Abogadoç«¯æŸ¥è¯¢è‡ªå·±çš„Rechazadoå½’æ¡£ç”³è¯·
- * ç”¨äºŽ"æˆ‘çš„Rechazadoå½’æ¡£"å…¥å£æˆ–Casoè¯¦æƒ…é¡µ banner
+ * Abogado consulta sus solicitudes rechazadas
  */
 export async function listRejectedArchiveRecords() {
   const prisma = await getTenantPrisma();
@@ -530,8 +524,7 @@ export async function listRejectedArchiveRecords() {
 }
 
 /**
- * v0.18: èŽ·å–Casoæœ€æ–°ä¸€æ¡ ArchiveRecordï¼ˆæ— è®ºEstadoï¼‰
- * Casoè¯¦æƒ…é¡µå±•ç¤º"å½’æ¡£ä¸­/Rechazado"Estado banner ç”¨
+ * Obtiene el ultimo ArchiveRecord del Caso (sin importar estado)
  */
 export async function getLatestArchiveRecord(matterId: string) {
   const prisma = await getTenantPrisma();
@@ -553,10 +546,7 @@ export async function getLatestArchiveRecord(matterId: string) {
 }
 
 /**
- * v0.20: æ‰¹é‡AprobaciÃ³n â€”â€” Aprobar
- *
- * å•æ¡ç‹¬ç«‹å¤„ç†ï¼ˆä¸å¼ºæ±‚åŽŸå­ï¼‰ï¼Œé€æ¡å¤ç”¨ approveArchiveRecord çš„äº‹åŠ¡ã€‚
- * Volver { succeeded, failed }ï¼Œfailed å«ErrorMotivoï¼Œå‰ç«¯å±•ç¤ºéƒ¨åˆ†Errorçš„æƒ…å†µã€‚
+ * v0.20: Aprobacion por lotes - Aprobar
  */
 export async function batchApproveArchiveRecords(input: {
   archiveIds: string[];
@@ -567,10 +557,10 @@ export async function batchApproveArchiveRecords(input: {
 }> {
   const session = await requireSession();
   if (session.user.role !== "ADMIN") {
-    throw new Error("åªæœ‰Administrarå‘˜å¯ä»¥AprobaciÃ³nå½’æ¡£ç”³è¯·");
+    throw new Error("Solo el Administrador puede aprobar solicitudes de archivo");
   }
-  if (!input.archiveIds.length) throw new Error("æœªé€‰æ‹©ä»»ä½•å½’æ¡£ç”³è¯·");
-  if (input.archiveIds.length > 100) throw new Error("å•æ¬¡æ‰¹é‡ä¸è¶…è¿‡ 100 æ¡");
+  if (!input.archiveIds.length) throw new Error("No seleccionaste ninguna solicitud");
+  if (input.archiveIds.length > 100) throw new Error("Maximo 100 solicitudes por lote");
 
   const succeeded: string[] = [];
   const failed: { id: string; error: string }[] = [];
@@ -581,7 +571,7 @@ export async function batchApproveArchiveRecords(input: {
     } catch (err) {
       failed.push({
         id,
-        error: err instanceof Error ? err.message : "Desconocidoé”™è¯¯",
+        error: err instanceof Error ? err.message : "Error desconocido",
       });
     }
   }
@@ -600,7 +590,7 @@ export async function batchApproveArchiveRecords(input: {
 }
 
 /**
- * v0.20: æ‰¹é‡AprobaciÃ³n â€”â€” Rechazarï¼ˆç»Ÿä¸€Motivoï¼‰
+ * v0.20: Rechazo por lotes (motivo unico)
  */
 export async function batchRejectArchiveRecords(input: {
   archiveIds: string[];
@@ -611,11 +601,11 @@ export async function batchRejectArchiveRecords(input: {
 }> {
   const session = await requireSession();
   if (session.user.role !== "ADMIN") {
-    throw new Error("åªæœ‰Administrarå‘˜å¯ä»¥Rechazarå½’æ¡£ç”³è¯·");
+    throw new Error("Solo el Administrador puede rechazar solicitudes de archivo");
   }
-  if (!input.archiveIds.length) throw new Error("æœªé€‰æ‹©ä»»ä½•å½’æ¡£ç”³è¯·");
-  if (input.archiveIds.length > 100) throw new Error("å•æ¬¡æ‰¹é‡ä¸è¶…è¿‡ 100 æ¡");
-  if (!input.note.trim()) throw new Error("è¯·å¡«å†™RechazarMotivo");
+  if (!input.archiveIds.length) throw new Error("No seleccionaste ninguna solicitud");
+  if (input.archiveIds.length > 100) throw new Error("Maximo 100 solicitudes por lote");
+  if (!input.note.trim()) throw new Error("Ingresa el motivo del rechazo");
 
   const succeeded: string[] = [];
   const failed: { id: string; error: string }[] = [];
@@ -626,7 +616,7 @@ export async function batchRejectArchiveRecords(input: {
     } catch (err) {
       failed.push({
         id,
-        error: err instanceof Error ? err.message : "Desconocidoé”™è¯¯",
+        error: err instanceof Error ? err.message : "Error desconocido",
       });
     }
   }
@@ -644,5 +634,3 @@ export async function batchRejectArchiveRecords(input: {
   });
   return { succeeded, failed };
 }
-
-

@@ -8,8 +8,8 @@ import { assertCanAccessMatter } from "@/lib/permissions";
 const procedureIdSchema = z.object({ procedureId: z.string().cuid() });
 
 /**
- * v0.49ï¼šåˆ—å‡ºé€‚ç”¨äºŽæŒ‡å®šç¨‹åºçš„æ³•å®šPlazoè§„åˆ™ï¼ˆæŒ‰ç¨‹åºç±»åž‹ + Casoç±»åˆ«è¿‡æ»¤ï¼‰ã€‚
- * ç”ŸæˆPlazoæœ¬èº«ä»èµ° addDeadlineï¼ˆå•ä¸€Enviarè·¯å¾„ï¼Œæƒé™æ ¡éªŒä¸é‡å¤å®žçŽ°ï¼‰ã€‚
+ * v0.49: Lista reglas de plazos legales aplicables al procedimiento indicado
+ * (filtrado por tipo de procedimiento + categoria del Caso).
  */
 export async function listDeadlineRulesForProcedure(input: { procedureId: string }) {
   const prisma = await getTenantPrisma();
@@ -24,7 +24,7 @@ export async function listDeadlineRulesForProcedure(input: { procedureId: string
       matter: { select: { category: true } }
     }
   });
-  if (!procedure) throw new Error("ç¨‹åºä¸å­˜åœ¨");
+  if (!procedure) throw new Error("El procedimiento no existe");
   await assertCanAccessMatter(session.user.id, session.user.role, procedure.matterId);
 
   return prisma.deadlineRule.findMany({
@@ -62,5 +62,3 @@ export async function listDeadlineRulesForProcedure(input: { procedureId: string
     }
   });
 }
-
-

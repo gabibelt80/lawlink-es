@@ -24,7 +24,7 @@ export type TemplateUpdateInput = z.infer<typeof templateUpdateSchema>;
 
 async function requireAdmin() {
   const session = await requireSession();
-  if (session.user.role !== "ADMIN") throw new Error("Solo el administrador puede ejecutar esta acciÃ³n");
+  if (session.user.role !== "ADMIN") throw new Error("Solo el administrador puede ejecutar esta accion");
   return session;
 }
 
