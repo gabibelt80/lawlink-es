@@ -88,7 +88,7 @@ export function SealsView({
     [toApprove],
   );
   const firmTabLabel =
-    currentUser.role === "FINANCE" ? "Aprobación de Finanzas" : "Aprobación del estudio";
+    currentUser.role === "FINANCE" ? "Aprobacion de Finanzas" : "Aprobacion del estudio";
   const rows =
     tab === "allMine"
       ? mine
@@ -105,9 +105,9 @@ export function SealsView({
       {/* Zona de título */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl">Aprobación · Uso de sellos</h1>
+          <h1 className="text-2xl">Aprobacion · Uso de sellos</h1>
           <p className="mt-0.5 text-[11px] text-muted-foreground">
-            En el futuro se podrán expandir otros tipos de aprobación como
+            En el futuro se podran expandir otros tipos de Aprobacion como
             revisión de documentos
           </p>
         </div>
@@ -127,7 +127,7 @@ export function SealsView({
         />
         <KpiCard
           icon={<AlertOctagon className="h-3.5 w-3.5" />}
-          label="Pendiente de aprobación"
+          label="Pendiente de aprobacion"
           value={stats.pendingApprovalCount}
           accent="rgb(180 130 0)"
         />
@@ -147,7 +147,7 @@ export function SealsView({
             <Count n={mine.length} />
           </TabBtn>
           <TabBtn active={tab === "pending"} onClick={() => setTab("pending")}>
-            Pendiente de aprobación
+            Pendiente de aprobacion
             <Count n={minePending.length} hot={minePending.length > 0} />
           </TabBtn>
           <TabBtn
@@ -162,7 +162,7 @@ export function SealsView({
               active={tab === "toApprove"}
               onClick={() => setTab("toApprove")}
             >
-              Pendientes de mi aprobación
+              Pendientes de mi aprobacion
               <Count n={toApprove.length} hot={toApprove.length > 0} />
             </TabBtn>
           )}
@@ -300,9 +300,9 @@ function Count({ n, hot }: { n: number; hot?: boolean }) {
 }
 
 function emptyText(tab: Tab, firmTabLabel: string) {
-  if (tab === "pending") return "No hay solicitudes pendientes de aprobación";
+  if (tab === "pending") return "No hay solicitudes pendientes de aprobacion";
   if (tab === "processed") return "No hay solicitudes aprobadas";
-  if (tab === "toApprove") return "No hay solicitudes pendientes de tu aprobación";
+  if (tab === "toApprove") return "No hay solicitudes pendientes de tu aprobacion";
   if (tab === "firm") return `No hay registros de ${firmTabLabel}`;
   return "Aún no tenés solicitudes de sello";
 }
