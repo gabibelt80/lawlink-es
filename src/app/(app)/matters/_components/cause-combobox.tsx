@@ -26,14 +26,6 @@ type Props = {
   triggerClassName?: string;
 };
 
-/**
- * Selector en cascada de causas
- * - Carga todas las causas de la categoría de una vez
- * - Elimina el primer nivel, la cascada comienza desde el segundo: nivel 2 / nivel 3 / nivel 4, expansión progresiva (la siguiente columna aparece al elegir la anterior)
- * - Un clic selecciona: si tiene hijos → expande la siguiente columna; si no tiene hijos (hoja) → selecciona directamente. Dos clics alcanzan causas comunes de tercer nivel.
- * - Anchos de columna reducidos, el panel crece según la cantidad de columnas, evita ocupar toda la página al abrir
- * - Nombres largos truncados, hover muestra el nombre completo
- */
 export function CauseCombobox({
   value,
   onChange,
@@ -63,29 +55,25 @@ export function CauseCombobox({
   }, [category, procedureType]);
   const previousCauseScopeKey = useRef(causeScopeKey);
 
-  // Al abrir carga todo
   function handleOpen(o: boolean) {
     setOpen(o);
-    if (o && allNodes.length === 0) {
-      startTransition(async () => {
-        const data = await searchCauses({
-          category,
-          procedureType,
-          limit: 2000,
-        });
-        setAllNodes(data);
-      });
-    }
     if (o) {
-      // Restablecer estado seleccionado (evitar residuos de la vez anterior)
       setPickedL2(null);
       setPickedL3(null);
       setSearchInput("");
+      if (allNodes.length === 0) {
+        startTransition(async () => {
+          const data = await searchCauses({
+            category,
+            procedureType,
+            limit: 2000,
+          });
+          setAllNodes(data);
+        });
+      }
     }
   }
 
-  // Solo restablecer cuando cambia realmente el rango de causas seleccionables.
-  // Cambios de instancia (primera a segunda instancia) comparten el mismo rango, no deben limpiar la causa ya elegida por el usuario.
   useEffect(() => {
     if (previousCauseScopeKey.current === causeScopeKey) return;
     previousCauseScopeKey.current = causeScopeKey;
@@ -94,10 +82,8 @@ export function CauseCombobox({
       onChange("", "");
       setSelectedName("");
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [causeScopeKey]);
 
-  // Sincronizar nombre seleccionado / ruta l2
   useEffect(() => {
     if (value && allNodes.length > 0) {
       const found = allNodes.find((o) => o.id === value);
@@ -107,11 +93,12 @@ export function CauseCombobox({
     }
   }, [value, allNodes]);
 
-  // Eliminar primer nivel: el segundo nivel se muestra plano como primera columna
-  const l2Nodes = useMemo(
-    () => allNodes.filter((n) => n.level === 2),
-    [allNodes],
-  );
+  const l2Nodes = useMemo(() => {
+    const level2 = allNodes.filter((n) => n.level === 2);
+    if (level2.length > 0) return level2;
+    return allNodes.filter((n) => n.level === 1);
+  }, [allNodes]);
+
   const l3Nodes = useMemo(
     () =>
       pickedL2
@@ -127,13 +114,12 @@ export function CauseCombobox({
     [allNodes, pickedL3],
   );
 
-  // Filtro de búsqueda (difusa entre niveles)
   const searchMatched = useMemo(() => {
     const q = searchInput.trim();
     if (!q) return null;
     const lower = q.toLowerCase();
     return allNodes
-      .filter((n) => n.level >= 3 && n.name.toLowerCase().includes(lower))
+      .filter((n) => n.level >= 1 && n.name.toLowerCase().includes(lower))
       .slice(0, 60);
   }, [allNodes, searchInput]);
 
@@ -141,13 +127,11 @@ export function CauseCombobox({
     return allNodes.some((x) => x.parentId === n.id);
   }
 
-  // Elegir una causa: cualquier nivel se puede seleccionar directamente.
-  // Si tiene hijos → selecciona y expande la siguiente columna (se puede seguir o detenerse); si es hoja → selecciona y cierra.
   function selectNode(node: Node, level: number) {
     onChange(node.id, node.name);
     setSelectedName(node.name);
     if (hasChildren(node)) {
-      if (level === 2) {
+      if (level === 1 || level === 2) {
         setPickedL2(node.id);
         setPickedL3(null);
       } else if (level === 3) {
@@ -158,7 +142,6 @@ export function CauseCombobox({
     }
   }
 
-  // Resultado de búsqueda: selecciona y cierra
   function pickNode(node: Node) {
     onChange(node.id, node.name);
     setSelectedName(node.name);
@@ -195,11 +178,10 @@ export function CauseCombobox({
         portalled={false}
         className="w-auto max-w-[92vw] p-0"
       >
-        {/* Barra de búsqueda */}
         <div className="border-b border-border p-2">
           <div className="relative w-[240px]">
             <Input
-              placeholder="Buscar causa o explorar por niveles"
+              placeholder="Buscar causa"
               value={searchInput}
               onChange={(e) => setSearchInput(e.target.value)}
               className="h-8 pr-7 text-xs"
@@ -219,10 +201,9 @@ export function CauseCombobox({
         {isPending ? (
           <div className="flex w-[240px] items-center justify-center py-10 text-xs text-muted-foreground">
             <Loader2 className="h-3.5 w-3.5 animate-spin" />
-            <span className="ml-2">Cargando catálogo de causas...</span>
+            <span className="ml-2">Cargando catalogo de causas...</span>
           </div>
         ) : searchMatched ? (
-          // Modo búsqueda: resultados planos con ruta
           <div className="max-h-[360px] w-[320px] overflow-y-auto p-1">
             {searchMatched.length === 0 ? (
               <p className="py-6 text-center text-xs text-muted-foreground">
@@ -246,34 +227,39 @@ export function CauseCombobox({
             )}
           </div>
         ) : (
-          // Modo cascada: expansión progresiva (la siguiente columna aparece al elegir la anterior)
-          // Un clic en cualquier nivel selecciona; si tiene hijos expande la siguiente columna, se puede continuar o detenerse
           <div className="flex divide-x divide-border">
-            <Column
-              title="Nivel 2"
-              items={l2Nodes}
-              activeId={pickedL2}
-              hasChildren={hasChildren}
-              onPick={(n) => selectNode(n, 2)}
-            />
-            {pickedL2 && (
+            {l2Nodes.length > 0 && (
               <Column
-                title="Nivel 3"
+                title="Categoria"
+                items={l2Nodes}
+                activeId={pickedL2}
+                hasChildren={hasChildren}
+                onPick={(n) => selectNode(n, n.level)}
+              />
+            )}
+            {pickedL2 && l3Nodes.length > 0 && (
+              <Column
+                title="Subcategoria"
                 items={l3Nodes}
                 activeId={pickedL3}
-                empty="Sin nivel 3 bajo este nivel 2"
+                empty="Sin subcategorias"
                 hasChildren={hasChildren}
                 onPick={(n) => selectNode(n, 3)}
               />
             )}
             {pickedL3 && l4Nodes.length > 0 && (
               <Column
-                title="Nivel 4"
+                title="Detalle"
                 items={l4Nodes}
                 activeId={null}
                 hasChildren={() => false}
                 onPick={(n) => selectNode(n, 4)}
               />
+            )}
+            {l2Nodes.length === 0 && !isPending && (
+              <p className="w-[240px] px-4 py-6 text-center text-xs text-muted-foreground">
+                No hay causas cargadas para esta categoria
+              </p>
             )}
           </div>
         )}

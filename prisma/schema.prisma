@@ -24,14 +24,14 @@ enum UserRole {
 }
 
 enum MatterCategory {
-  CIVIL_COMMERCIAL // 民商诉讼
-  LABOR_ARBITRATION // v0.34 劳动仲裁
-  COMMERCIAL_ARBITRATION // v0.34 商事仲裁
-  CRIMINAL // 刑事诉讼
-  ADMINISTRATIVE // 行政诉讼
-  NON_LITIGATION // 非诉项目
-  LEGAL_COUNSEL // 常年顾问
-  SPECIAL_PROJECT // 法律专项
+  CIVIL_COMMERCIAL // Litigio civil y comercial
+  LABOR_ARBITRATION // Arbitraje laboral
+  COMMERCIAL_ARBITRATION // Arbitraje comercial
+  CRIMINAL // Litigio penal
+  ADMINISTRATIVE // Litigio administrativo
+  NON_LITIGATION // Proyecto no contencioso
+  LEGAL_COUNSEL // Asesoria permanente
+  SPECIAL_PROJECT // Proyecto legal especial
 }
 
 enum MatterStatus {
@@ -122,7 +122,7 @@ enum DocumentStatus {
 }
 
 enum ProcedureType {
-  // 审判通用
+  // Proceso judicial comun
   FIRST_INSTANCE
   SECOND_INSTANCE
   RETRIAL_REVIEW
@@ -130,26 +130,27 @@ enum ProcedureType {
   REMAND_FIRST
   REMAND_SECOND
   PROSECUTORIAL_SUPERVISION
-  // 仲裁
+  // Arbitraje
   COMMERCIAL_ARBITRATION
   LABOR_ARBITRATION
   ARBITRATION_SET_ASIDE
   ARBITRATION_ENFORCEMENT_REVIEW
-  // 执行
+  // Ejecucion
   ENFORCEMENT
   ENFORCEMENT_OBJECTION
-  // 刑事
+  // Penal
   INVESTIGATION
   PROSECUTION_REVIEW
   DEATH_PENALTY_REVIEW
   CRIMINAL_ENFORCEMENT
   COMMUTATION_PAROLE_REVIEW
-  // 行政
+  // Administrativo
   ADMIN_RECONSIDERATION
   ADMIN_NON_LITIGATION_ENFORCEMENT
-  // 非诉
+  ADMIN_PRE_LITIGATION
+  // No contencioso
   NON_LITIGATION_PHASE
-  // 兜底
+  // Personalizado
   CUSTOM
 }
 

@@ -18,15 +18,15 @@ import type {
 } from "@prisma/client";
 
 export const clientTypeLabel: Record<ClientType, string> = {
-  INDIVIDUAL: "Persona fÃ­sica",
+  INDIVIDUAL: "Persona fisica",
   COMPANY: "Empresa",
-  ORGANIZATION: "Otra organizaciÃ³n"
+  ORGANIZATION: "Otra organizacion"
 };
 
-// v0.39: Estado de cooperaciÃ³n del cliente
+// v0.39: Estado de cooperacion del cliente
 export const cooperationStatusLabel: Record<ClientCooperationStatus, string> = {
   POTENTIAL: "Potencial",
-  NEGOTIATING: "En negociaciÃ³n",
+  NEGOTIATING: "En negociacion",
   SIGNED: "Firmado",
   TERMINATED: "Terminado"
 };
@@ -48,15 +48,15 @@ export const GENDER_OPTIONS: ClientGender[] = ["MALE", "FEMALE"];
 
 // v0.30: Tipo de sujeto de la parte. Persona fÃ­sica completa DNI, los demÃ¡s completan cÃ³digo de crÃ©dito social unificado.
 export const partyTypeLabel: Record<PartyType, string> = {
-  NATURAL_PERSON: "Persona fÃ­sica",
+  NATURAL_PERSON: "Persona fisica",
   COMPANY: "Empresa",
   PARTNERSHIP: "Sociedad colectiva",
   INDIVIDUAL_BUSINESS: "Empresario individual",
-  INSTITUTION: "InstituciÃ³n pÃºblica",
-  SOCIAL_ORG: "OrganizaciÃ³n social",
-  GOVERNMENT: "Ã“rgano gubernamental",
-  OTHER_ORG: "Otra organizaciÃ³n",
-  ORGANIZATION: "Otra organizaciÃ³n" // Compatibilidad con datos antiguos
+  INSTITUTION: "Institucion publica",
+  SOCIAL_ORG: "Organizacion social",
+  GOVERNMENT: "Organo gubernamental",
+  OTHER_ORG: "Otra organizacion",
+  ORGANIZATION: "Otra organizacion" // Compatibilidad con datos antiguos
 };
 
 // Orden de tipos de sujeto en el desplegable de ingreso (sin el antiguo ORGANIZATION)
@@ -71,7 +71,7 @@ export const PARTY_TYPE_OPTIONS: PartyType[] = [
   "OTHER_ORG"
 ];
 
-// v0.30: Requiere inscripciÃ³n en el colegio de abogados
+// v0.30: Requiere inscripcion en el colegio de abogados
 export const barFilingLabel: Record<BarFilingType, string> = {
   NONE: "No",
   COLLECTIVE: "SÃ­, caso colectivo",
@@ -88,8 +88,8 @@ export const BAR_FILING_OPTIONS: BarFilingType[] = [
   "OTHER"
 ];
 
-// v0.31: La categorÃ­a del caso se divide en tres tipos segÃºn la naturaleza del negocio â€” determina la estructura del formulario de admisiÃ³n
-// litigation: litigio/arbitraje (Civil/Comercial/Penal/Administrativo); project: no contencioso/proyectos; counsel: consultorÃ­a
+// v0.31: La categorÃ­a del caso se divide en tres tipos segÃºn la naturaleza del negocio â€” determina la estructura del formulario de admision
+// litigation: litigio/arbitraje (Civil/Comercial/Penal/Administrativo); project: no contencioso/proyectos; counsel: consultoria
 export type CategoryKind = "litigation" | "project" | "counsel";
 
 export function matterCategoryKind(c: MatterCategory): CategoryKind {
@@ -102,29 +102,29 @@ export function matterCategoryKind(c: MatterCategory): CategoryKind {
 // Tipos de negocio no contencioso / proyectos (se pueden ajustar)
 export const PROJECT_BUSINESS_TYPES: string[] = [
   "Debida diligencia",
-  "RevisiÃ³n / redacciÃ³n de contratos",
-  "InversiÃ³n y financiamiento",
+  "Revision / redaccion de contratos",
+  "Inversion y financiamiento",
   "Fusiones y adquisiciones",
-  "ReestructuraciÃ³n y salida a bolsa",
-  "Quiebra y liquidaciÃ³n",
+  "Reestructuracion y salida a bolsa",
+  "Quiebra y liquidacion",
   "Propiedad intelectual",
   "Sistema de cumplimiento",
   "Licitaciones",
-  "Permiso / AprobaciÃ³n administrativa",
+  "Permiso / Aprobacion administrativa",
   "Otros"
 ];
 
-// Tipos de consultorÃ­a
-export const COUNSEL_TYPES: string[] = ["AsesorÃ­a legal permanente", "AsesorÃ­a legal para proyectos"];
+// Tipos de consultoria
+export const COUNSEL_TYPES: string[] = ["Asesoria legal permanente", "Asesoria legal para proyectos"];
 
 export const matterCategoryLabel: Record<MatterCategory, string> = {
   CIVIL_COMMERCIAL: "Litigio civil y comercial",
   LABOR_ARBITRATION: "Arbitraje laboral",
   COMMERCIAL_ARBITRATION: "Arbitraje comercial",
   CRIMINAL: "Litigio penal",
-  ADMINISTRATIVE: "Litigio administrativo",
+  ADMINISTRATIVE: "Etapa administrativo",
   NON_LITIGATION: "Proyecto no contencioso",
-  LEGAL_COUNSEL: "AsesorÃ­a permanente",
+  LEGAL_COUNSEL: "Asesoria permanente",
   SPECIAL_PROJECT: "Proyecto legal especial"
 };
 
@@ -139,7 +139,7 @@ export const matterCategoryColor: Record<MatterCategory, string> = {
   SPECIAL_PROJECT: "#60A5FA"
 };
 
-// v0.17: Letra de icono de categorÃ­a de caso (para mostrar antes del tÃ­tulo en tarjetas de lista)
+// v0.17: Letra de icono de categoria de caso (para mostrar antes del titulo en tarjetas de lista)
 export const matterCategoryShort: Record<MatterCategory, string> = {
   CIVIL_COMMERCIAL: "C",
   LABOR_ARBITRATION: "L",
@@ -148,7 +148,7 @@ export const matterCategoryShort: Record<MatterCategory, string> = {
   ADMINISTRATIVE: "D",
   NON_LITIGATION: "N",
   LEGAL_COUNSEL: "G",
-  SPECIAL_PROJECT: "E"
+  SPECIAL_PROJECT: "S"
 };
 
 export const matterStatusLabel: Record<MatterStatus, string> = {
@@ -161,10 +161,10 @@ export const matterStatusLabel: Record<MatterStatus, string> = {
 
 export const intakeStatusLabel: Record<IntakeStatus, string> = {
   INTAKE: "Consultado",
-  PENDING_CONFIRMATION: "Pendiente de confirmaciÃ³n",
+  PENDING_CONFIRMATION: "Pendiente de confirmacion",
   CONVERTED: "Convertido",
   DECLINED: "Rechazado",
-  NEEDS_REVISION: "Pendiente de correcciÃ³n"
+  NEEDS_REVISION: "Pendiente de correccion"
 };
 
 export const userRoleLabel: Record<UserRole, string> = {
@@ -185,9 +185,9 @@ export const litigationStandingLabel: Record<LitigationStanding, string> = {
   COUNTERCLAIM_DEFENDANT: "Demandado reconvencional",
   APPELLANT: "Apelante",
   APPELLEE: "Apelado",
-  RETRIAL_APPLICANT: "Solicitante de revisiÃ³n",
-  RETRIAL_RESPONDENT: "Demandado en revisiÃ³n",
-  ENFORCEMENT_APPLICANT: "Solicitante de ejecuciÃ³n",
+  RETRIAL_APPLICANT: "Solicitante de revision",
+  RETRIAL_RESPONDENT: "Demandado en revision",
+  ENFORCEMENT_APPLICANT: "Solicitante de ejecucion",
   EXECUTED_PERSON: "Ejecutado",
   CRIMINAL_DEFENDANT: "Imputado penal",
   CRIMINAL_VICTIM: "VÃ­ctima",
@@ -197,39 +197,40 @@ export const litigationStandingLabel: Record<LitigationStanding, string> = {
   ARBITRATION_RESPONDENT: "Demandado arbitral",
   ADMIN_PLAINTIFF: "Demandante administrativo",
   ADMIN_DEFENDANT: "Demandado administrativo",
-  ADMIN_RECONSIDERATION_APPLICANT: "Solicitante de reconsideraciÃ³n",
-  ADMIN_RECONSIDERATION_RESPONDENT: "Demandado en reconsideraciÃ³n",
+  ADMIN_RECONSIDERATION_APPLICANT: "Solicitante de reconsideracion",
+  ADMIN_RECONSIDERATION_RESPONDENT: "Demandado en reconsideracion",
   NON_LITIGATION_PARTY: "Parte del proyecto"
 };
 
 export const procedureTypeLabel: Record<ProcedureType, string> = {
   FIRST_INSTANCE: "Primera instancia",
   SECOND_INSTANCE: "Segunda instancia",
-  RETRIAL_REVIEW: "RevisiÃ³n de nuevo juicio",
+  RETRIAL_REVIEW: "Revision de nuevo juicio",
   RETRIAL: "Nuevo juicio",
-  REMAND_FIRST: "ReenvÃ­o a primera instancia",
-  REMAND_SECOND: "ReenvÃ­o a segunda instancia",
-  PROSECUTORIAL_SUPERVISION: "SupervisiÃ³n fiscal",
+  REMAND_FIRST: "Reenvio a primera instancia",
+  REMAND_SECOND: "Reenvio a segunda instancia",
+  PROSECUTORIAL_SUPERVISION: "Supervision fiscal",
   COMMERCIAL_ARBITRATION: "Arbitraje comercial",
   LABOR_ARBITRATION: "Arbitraje laboral",
-  ARBITRATION_SET_ASIDE: "AnulaciÃ³n de laudo arbitral",
-  ARBITRATION_ENFORCEMENT_REVIEW: "RevisiÃ³n de ejecuciÃ³n de laudo",
-  ENFORCEMENT: "EjecuciÃ³n forzosa",
-  ENFORCEMENT_OBJECTION: "Incidente de ejecuciÃ³n",
-  INVESTIGATION: "InvestigaciÃ³n",
-  PROSECUTION_REVIEW: "RevisiÃ³n de acusaciÃ³n",
-  DEATH_PENALTY_REVIEW: "RevisiÃ³n de pena de muerte",
-  CRIMINAL_ENFORCEMENT: "EjecuciÃ³n penal",
-  COMMUTATION_PAROLE_REVIEW: "RevisiÃ³n de conmutaciÃ³n / libertad condicional",
-  ADMIN_RECONSIDERATION: "ReconsideraciÃ³n administrativa",
-  ADMIN_NON_LITIGATION_ENFORCEMENT: "EjecuciÃ³n administrativa no contenciosa",
+  ARBITRATION_SET_ASIDE: "Anulacion de laudo arbitral",
+  ARBITRATION_ENFORCEMENT_REVIEW: "Revision de ejecucion de laudo",
+  ENFORCEMENT: "Ejecucion forzosa",
+  ENFORCEMENT_OBJECTION: "Incidente de ejecucion",
+  INVESTIGATION: "Investigacion",
+  PROSECUTION_REVIEW: "Revision de acusacion",
+  DEATH_PENALTY_REVIEW: "Revision de pena de muerte",
+  CRIMINAL_ENFORCEMENT: "Ejecucion penal",
+  COMMUTATION_PAROLE_REVIEW: "Revision de conmutacion / libertad condicional",
+  ADMIN_RECONSIDERATION: "Reconsideracion administrativa",
+  ADMIN_PRE_LITIGATION: "Reclamo administrativo previo",
+  ADMIN_NON_LITIGATION_ENFORCEMENT: "Ejecucion administrativa no contenciosa",
   NON_LITIGATION_PHASE: "Etapa no contenciosa",
   CUSTOM: "Personalizado"
 };
 
 export const feeTypeLabel: Record<FeeType, string> = {
   FIXED: "Honorario fijo",
-  CONTINGENCY: "RepresentaciÃ³n de riesgo",
+  CONTINGENCY: "Representacion de riesgo",
   TIMED: "Honorario por hora"
 };
 
@@ -248,8 +249,8 @@ export const invoiceRequestStatusColor: Record<InvoiceRequestStatus, string> = {
 };
 
 /**
- * SegÃºn el tipo de procedimiento + posiciÃ³n (nuestra o contraria) devuelve las posiciones procesales disponibles.
- * Se usa en el formulario de admisiÃ³n / ingreso de partes en el detalle del caso.
+ * SegÃºn el tipo de procedimiento + posicion (nuestra o contraria) devuelve las posiciones procesales disponibles.
+ * Se usa en el formulario de admision / ingreso de partes en el detalle del caso.
  */
 export function procedureToStandingOptions(
   proc: ProcedureType | null | undefined,

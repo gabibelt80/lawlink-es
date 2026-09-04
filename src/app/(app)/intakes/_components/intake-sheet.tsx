@@ -1047,9 +1047,9 @@ export function IntakeSheet({
               {/* 诉讼/仲裁：案情信息（并入基本信息）*/}
               {kind === "litigation" && (
                 <>
-                {/* tramite actual | Causa | 管辖地 | 争议解决机构 */}
+                {/* Instancia actual | Causa | Jurisdiccion | Organo */}
                 <div className="grid grid-cols-1 gap-4 lg:grid-cols-4">
-                  <Field label="tramite actual" required error={errors.firstProcedureType?.message}>
+                  <Field label="Instancia actual" required error={errors.firstProcedureType?.message}>
                     <Select
                       value={firstProcedureType ?? ""}
                       onValueChange={(v) => handleProcedureChange(v as ProcedureType)}
@@ -1068,15 +1068,15 @@ export function IntakeSheet({
                   </Field>
                   <Field
                     label="Causa"
-                    required
-                    hint={!firstProcedureType ? "Primero selecciona el tramite / instancia" : undefined}
+                    required={firstProcedureType !== "ADMIN_PRE_LITIGATION"}
+                    hint={!firstProcedureType ? "Primero selecciona la instancia" : firstProcedureType === "ADMIN_PRE_LITIGATION" ? "No se requiere causa en etapa administrativa previa" : undefined}
                   >
                     <CauseCombobox
                       category={category}
                       procedureType={firstProcedureType}
                       value={watch("causeId") || ""}
                       disabled={!firstProcedureType}
-                      placeholder={firstProcedureType ? "Hace clic para seleccionar" : "Primero selecciona el tramite actual"}
+                      placeholder={firstProcedureType ? "Hace clic para seleccionar" : "Primero selecciona la instancia"}
                       onChange={(id, name) => {
                         setValue("causeId", id, { shouldDirty: true });
                         setCauseName(name);
