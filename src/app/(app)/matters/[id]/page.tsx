@@ -172,18 +172,24 @@ export default async function MatterDetailPage({ params }: PageProps) {
   const currentMatterMember = session?.user.id
     ? matter.members.find((member) => member.userId === session.user.id)
     : null;
+  const isManager = session?.user.role === "ADMIN" || session?.user.role === "PRINCIPAL_LAWYER";
   const canAssociateThisMatter = Boolean(
-    session?.user.id &&
+    isManager ||
+    (session?.user.id &&
       (matter.ownerId === session.user.id ||
-        currentMatterMember)
+        currentMatterMember))
   );
   const canLeadThisMatter = Boolean(
-    session?.user.id &&
+    isManager ||
+    (session?.user.id &&
       (matter.ownerId === session.user.id ||
         currentMatterMember?.role === "LEAD" ||
-        currentMatterMember?.role === "CO_LEAD")
+        currentMatterMember?.role === "CO_LEAD"))
   );
-  const canOwnThisMatter = Boolean(session?.user.id && matter.ownerId === session.user.id);
+  const canOwnThisMatter = Boolean(
+    isManager ||
+    (session?.user.id && matter.ownerId === session.user.id)
+  );
 
   const folderDocuments = documents.map((d) => ({
     id: d.id,

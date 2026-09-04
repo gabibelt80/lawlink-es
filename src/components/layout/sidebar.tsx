@@ -26,7 +26,8 @@ export function Sidebar({ firm }: { firm: FirmBrand }) {
 /** Contenido de navegación — compartido entre barra lateral de escritorio y Sheet móvil */
 export function NavContent({ firm }: { firm: FirmBrand }) {
   const pathname = usePathname();
-  const isSystemAdmin = false;
+  const { data: session } = useSession();
+  const isSystemAdmin = session?.user?.role === "SYSTEM_ADMIN";
 
   const navItems = isSystemAdmin
     ? [...primaryNav, { label: "Administración", href: "/admin", icon: LayoutDashboard }]
