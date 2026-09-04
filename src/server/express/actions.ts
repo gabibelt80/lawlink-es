@@ -24,6 +24,7 @@ import { revalidateMatter } from "@/server/matters/route";
 // Listado / Consulta
 
 export async function listExpress(input?: z.input<typeof expressListFilterSchema>) {
+  const prisma = await getTenantPrisma();
   const session = await requireSession();
   const filter = expressListFilterSchema.parse(input ?? {});
 
@@ -63,6 +64,7 @@ export async function listExpress(input?: z.input<typeof expressListFilterSchema
 }
 
 export async function getExpress(id: string) {
+  const prisma = await getTenantPrisma();
   const session = await requireSession();
   await assertCanAccessExpressRecord(session.user.id, id);
   return prisma.expressTracking.findUnique({
@@ -91,6 +93,7 @@ async function assertCanAccessExpressRecord(userId: string, id: string) {
 // Crear + primera consulta
 
 export async function createExpress(input: z.infer<typeof expressCreateSchema>) {
+  const prisma = await getTenantPrisma();
   const session = await requireSession();
   const data = expressCreateSchema.parse(input);
 
@@ -154,6 +157,7 @@ export async function createExpress(input: z.infer<typeof expressCreateSchema>) 
 // Actualizar seguimiento
 
 export async function refreshExpress(input: z.infer<typeof expressIdSchema>) {
+  const prisma = await getTenantPrisma();
   const session = await requireSession();
   const data = expressIdSchema.parse(input);
 
@@ -192,6 +196,7 @@ export async function refreshExpress(input: z.infer<typeof expressIdSchema>) {
 }
 
 export async function deleteExpress(input: z.infer<typeof expressIdSchema>) {
+  const prisma = await getTenantPrisma();
   const session = await requireSession();
   const data = expressIdSchema.parse(input);
 
@@ -222,11 +227,13 @@ async function requireAdmin() {
 }
 
 export async function getExpressSettingsPublic() {
+  const prisma = await getTenantPrisma();
   await requireAdmin();
   return readPublicExpressSettings();
 }
 
 export async function saveExpressSettingsAction(input: z.infer<typeof expressSettingsSaveSchema>) {
+  const prisma = await getTenantPrisma();
   const session = await requireAdmin();
   const data = expressSettingsSaveSchema.parse(input);
 

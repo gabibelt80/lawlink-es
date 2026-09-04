@@ -20,6 +20,7 @@ import {
 import { revalidateMatter } from "@/server/matters/route";
 
 export async function listTemplates(input?: z.input<typeof templateListFilterSchema>) {
+  const prisma = await getTenantPrisma();
   await requireSession();
   const filter = templateListFilterSchema.parse(input ?? {});
 
@@ -52,6 +53,7 @@ export async function listTemplates(input?: z.input<typeof templateListFilterSch
 }
 
 export async function getTemplate(id: string) {
+  const prisma = await getTenantPrisma();
   await requireSession();
   return prisma.documentTemplate.findUnique({
     where: { id },
@@ -63,6 +65,7 @@ export async function getTemplate(id: string) {
 }
 
 export async function toggleTemplate(input: z.infer<typeof templateToggleSchema>) {
+  const prisma = await getTenantPrisma();
   const session = await requireSession();
   if (session.user.role !== "ADMIN") {
     throw new Error("ä»…Administrarå‘˜å¯å¯ç”¨/Deshabilitaræ¨¡æ¿");
@@ -95,6 +98,7 @@ export async function toggleTemplate(input: z.infer<typeof templateToggleSchema>
  *   5. Volveræ–° documentIdï¼ŒUI æ‹¿åŽ»ä¸‹è½½
  */
 export async function renderTemplate(input: z.infer<typeof templateRenderSchema>) {
+  const prisma = await getTenantPrisma();
   const session = await requireSession();
   const data = templateRenderSchema.parse(input);
 

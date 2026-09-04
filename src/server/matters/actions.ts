@@ -41,8 +41,8 @@ function emptyToNull<T extends Record<string, unknown>>(obj: T): T {
 }
 
 export async function listMatters(input: Partial<MatterListQuery> = {}) {
-  const session = await requireSession();
   const prisma = await getTenantPrisma();
+  const session = await requireSession();
   const query = matterListQuerySchema.parse(input);
 
   const whereParts: Prisma.MatterWhereInput[] = [
@@ -208,6 +208,7 @@ export async function updateProcedureInfo(input: {
     standings: LitigationStanding[];
   }[];
 }) {
+  const prisma = await getTenantPrisma();
   const session = await requireSession();
   const proc = await prisma.matterProcedure.findUnique({
     where: { id: input.procedureId },
@@ -551,6 +552,7 @@ function normalizeNewProcedureParties(rows: NewProcedurePartyInput[]) {
 
 // v0.32: å…³è”Caso â€”â€” Buscar / å…³è” / è§£é™¤
 export async function searchMattersForLink(matterId: string, q: string) {
+  const prisma = await getTenantPrisma();
   const session = await requireSession();
   await assertCanAssociateMatter(session.user.id, matterId);
   const query = q.trim();
@@ -586,6 +588,7 @@ export async function searchMattersForLink(matterId: string, q: string) {
 }
 
 export async function addMatterLink(matterId: string, relatedMatterId: string) {
+  const prisma = await getTenantPrisma();
   const session = await requireSession();
   await assertCanAssociateMatter(session.user.id, matterId);
   await assertCanAssociateMatter(session.user.id, relatedMatterId);
@@ -606,6 +609,7 @@ export async function addMatterLink(matterId: string, relatedMatterId: string) {
 }
 
 export async function removeMatterLink(matterId: string, relatedMatterId: string) {
+  const prisma = await getTenantPrisma();
   const session = await requireSession();
   await assertCanAssociateMatter(session.user.id, matterId);
   await assertCanAssociateMatter(session.user.id, relatedMatterId);
@@ -629,6 +633,7 @@ export async function removeMatterLink(matterId: string, relatedMatterId: string
 }
 
 export async function getMatterById(id: string) {
+  const prisma = await getTenantPrisma();
   const session = await requireSession();
   await assertCanAccessMatter(session.user.id, session.user.role, id);
   const matter = await prisma.matter.findFirst({
@@ -684,6 +689,7 @@ export async function getMatterById(id: string) {
 }
 
 export async function createMatter(input: MatterCreateInput) {
+  const prisma = await getTenantPrisma();
   const session = await requireSession();
   const data = matterCreateSchema.parse(input);
   assertAgencyAllowedForProcedure(data.firstProcedure.handlingAgency, data.firstProcedure.type);
@@ -814,6 +820,7 @@ export async function updateMatterTeam(input: {
   coLeadIds: string[];
   assistantIds: string[];
 }) {
+  const prisma = await getTenantPrisma();
   const session = await requireSession();
   const matter = await prisma.matter.findUnique({
     where: { id: input.matterId, deletedAt: null },
@@ -883,6 +890,7 @@ export async function updateMatterTeam(input: {
 
 // v0.27: EditarCasoåŸºæœ¬ä¿¡æ¯ï¼ˆæ”¶æ¡ˆFecha readonlyï¼ŒEstadoèµ° lifecycleï¼‰
 export async function updateMatterBasicInfo(input: MatterUpdateBasicInput) {
+  const prisma = await getTenantPrisma();
   const session = await requireSession();
   const data = matterUpdateBasicSchema.parse(input);
 
@@ -927,6 +935,7 @@ export async function updateMatterBasicInfo(input: MatterUpdateBasicInput) {
 }
 
 export async function softDeleteMatter(id: string) {
+  const prisma = await getTenantPrisma();
   const session = await requireSession();
   await assertMatterWritable(id);
   await assertCanOwnMatter(session.user.id, id, "åªæœ‰å½“å‰ä¸»åŠžAbogadoå¯ä»¥EliminarCaso");

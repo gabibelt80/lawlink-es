@@ -69,6 +69,7 @@ const runCheckSchema = z.object({
  * å¦‚æžœ intakeId åœ¨ï¼Œåˆ™æŠŠ ConflictCheck æŒ‚åœ¨è¯¥ Intake ä¸Šï¼›å¦åˆ™å•ç‹¬å­˜ï¼ˆtargetType=Intake ä¸ºç©ºï¼‰ã€‚
  */
 export async function runCheckAndSave(input: z.infer<typeof runCheckSchema>) {
+  const prisma = await getTenantPrisma();
   const session = await requireSession();
   const tenantUserId = await resolveTenantUserId(session.user.email, prisma);
   const data = runCheckSchema.parse(input);
@@ -156,6 +157,7 @@ const conclusionSchema = z.object({
 });
 
 export async function setConflictConclusion(input: z.infer<typeof conclusionSchema>) {
+  const prisma = await getTenantPrisma();
   const session = await requireSession();
   const tenantUserId = await resolveTenantUserId(session.user.email, prisma);
   const data = conclusionSchema.parse(input);

@@ -28,8 +28,8 @@ function emptyToNull<T extends Record<string, unknown>>(obj: T): T {
 }
 
 export async function listClients(input: Partial<ClientListQuery> = {}) {
-  const session = await requireSession();
   const prisma = await getTenantPrisma();
+  const session = await requireSession();
   const query = clientListQuerySchema.parse(input);
 
   const where: Prisma.ClientWhereInput = {
@@ -67,8 +67,8 @@ export async function listClients(input: Partial<ClientListQuery> = {}) {
 }
 
 export async function getClientById(id: string) {
-  const session = await requireSession();
   const prisma = await getTenantPrisma();
+  const session = await requireSession();
   // Control de permisos: manager/finance ven todo, los demÃ¡s necesitan casos asociados
   if (!isManager(session.user.role) && session.user.role !== "FINANCE") {
     const accessible = await prisma.client.findFirst({
@@ -114,8 +114,8 @@ export async function getClientById(id: string) {
 
 // v0.37: Resumen financiero del cliente â€” agrega contratos/por cobrar/cobrado de todos los casos del cliente
 export async function getClientFinanceSummary(clientId: string) {
-  const session = await requireSession();
   const prisma = await getTenantPrisma();
+  const session = await requireSession();
   // Permisos: igual que getClientById
   if (!isManager(session.user.role) && session.user.role !== "FINANCE") {
     const accessible = await prisma.client.findFirst({
@@ -174,8 +174,8 @@ export async function getClientFinanceSummary(clientId: string) {
 }
 
 export async function createClient(input: ClientCreateInput) {
-  const session = await requireSession();
   const prisma = await getTenantPrisma();
+  const session = await requireSession();
   const data = clientCreateSchema.parse(input);
 
   const internalCode = await generateClientCode();
@@ -226,8 +226,8 @@ export async function createClient(input: ClientCreateInput) {
 }
 
 export async function updateClient(input: ClientUpdateInput) {
-  const session = await requireSession();
   const prisma = await getTenantPrisma();
+  const session = await requireSession();
   if (!isManager(session.user.role)) {
     throw new Error(
       "Solo el Administrador o el Abogado Principal puede editar la informaciÃ³n del cliente",
@@ -275,8 +275,8 @@ export async function updateClient(input: ClientUpdateInput) {
 }
 
 export async function softDeleteClient(id: string) {
-  const session = await requireSession();
   const prisma = await getTenantPrisma();
+  const session = await requireSession();
   if (
     session.user.role !== "ADMIN" &&
     session.user.role !== "PRINCIPAL_LAWYER"
@@ -304,8 +304,8 @@ export async function softDeleteClient(id: string) {
 
 // Acciones de contacto separadas (para editar rÃ¡pidamente contactos desde la pÃ¡gina de detalle, sin reescribir todo el cliente)
 export async function addContact(clientId: string, input: ContactInput) {
-  const session = await requireSession();
   const prisma = await getTenantPrisma();
+  const session = await requireSession();
   if (!isManager(session.user.role)) {
     throw new Error(
       "Solo el Administrador o el Abogado Principal puede editar contactos",
@@ -327,8 +327,8 @@ export async function addContact(clientId: string, input: ContactInput) {
 }
 
 export async function deleteContact(id: string) {
-  const session = await requireSession();
   const prisma = await getTenantPrisma();
+  const session = await requireSession();
   if (!isManager(session.user.role)) {
     throw new Error(
       "Solo el Administrador o el Abogado Principal puede eliminar contactos",

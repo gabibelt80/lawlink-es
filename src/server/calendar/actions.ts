@@ -21,8 +21,8 @@ async function resolveTenantUserId(email: string, prisma: any): Promise<string |
  * v0.50: Obtiene (o genera) el token de suscripción al calendario del usuario actual.
  */
 export async function getCalendarToken() {
-  const session = await requireSession();
   const prisma = await getTenantPrisma();
+  const session = await requireSession();
 
   const tenantUserId = await resolveTenantUserId(session.user.email, prisma);
   if (!tenantUserId) throw new Error("Usuario no encontrado");
@@ -48,8 +48,8 @@ export async function getCalendarToken() {
 }
 
 export async function regenerateCalendarToken() {
-  const session = await requireSession();
   const prisma = await getTenantPrisma();
+  const session = await requireSession();
   const tenantUserId = await resolveTenantUserId(session.user.email, prisma);
   if (!tenantUserId) throw new Error("Usuario no encontrado");
 

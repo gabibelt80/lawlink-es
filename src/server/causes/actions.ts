@@ -128,8 +128,8 @@ export async function searchCauses(params: {
 }
 
 export async function getCauseById(id: string) {
-  await requireSession();
   const prisma = await getTenantPrisma();
+  await requireSession();
   const c = await prisma.causeOfAction.findUnique({
     where: { id },
     select: { ...CAUSE_SELECT, category: true }
@@ -139,8 +139,8 @@ export async function getCauseById(id: string) {
 }
 
 export async function listCauseL2(category: MatterCategory) {
-  await requireSession();
   const prisma = await getTenantPrisma();
+  await requireSession();
   return prisma.causeOfAction.findMany({
     where: { category, active: true, level: 2 },
     orderBy: { code: "asc" },

@@ -20,6 +20,7 @@ export async function registerFirm(input: {
   userEmail: string;
   password: string;
 }) {
+  const prisma = await getTenantPrisma();
   const slug = slugify(input.firmName);
 
   // Verificar que no exista

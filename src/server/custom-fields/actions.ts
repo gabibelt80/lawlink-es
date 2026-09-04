@@ -46,6 +46,7 @@ export async function listCustomFieldDefs(
   entityType: CustomFieldEntity,
   onlyEnabled = false,
 ) {
+  const prisma = await getTenantPrisma();
   await requireSession();
   return prisma.customFieldDef.findMany({
     where: { entityType, ...(onlyEnabled ? { enabled: true } : {}) },
@@ -56,6 +57,7 @@ export async function listCustomFieldDefs(
 export async function createCustomFieldDef(
   input: z.input<typeof defCreateSchema>,
 ) {
+  const prisma = await getTenantPrisma();
   const session = await requireAdmin();
   const data = defCreateSchema.parse(input);
   if (data.fieldType === "SELECT" && data.options.length === 0) {
@@ -90,6 +92,7 @@ export async function createCustomFieldDef(
 export async function updateCustomFieldDef(
   input: z.input<typeof defUpdateSchema>,
 ) {
+  const prisma = await getTenantPrisma();
   await requireAdmin();
   const { id, ...rest } = defUpdateSchema.parse(input);
   if (
@@ -118,6 +121,7 @@ export async function updateCustomFieldDef(
 }
 
 export async function toggleCustomFieldDef(id: string, enabled: boolean) {
+  const prisma = await getTenantPrisma();
   await requireAdmin();
   await prisma.customFieldDef.update({ where: { id }, data: { enabled } });
   revalidatePath("/settings/custom-fields");
@@ -125,6 +129,7 @@ export async function toggleCustomFieldDef(id: string, enabled: boolean) {
 }
 
 export async function deleteCustomFieldDef(id: string) {
+  const prisma = await getTenantPrisma();
   await requireAdmin();
   await prisma.customFieldDef.delete({ where: { id } });
   await audit({
@@ -141,6 +146,7 @@ export async function saveMatterCustomValues(
   matterId: string,
   values: Record<string, string>,
 ) {
+  const prisma = await getTenantPrisma();
   const session = await requireSession();
   await assertMatterWritable(matterId);
   await assertCanLeadMatter(

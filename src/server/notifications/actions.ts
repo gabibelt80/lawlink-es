@@ -4,6 +4,7 @@ import { getTenantPrisma } from "@/lib/tenant-prisma";
 import { requireSession } from "@/lib/auth/session";
 
 export async function getNotifications(params?: { unreadOnly?: boolean; limit?: number }) {
+  const prisma = await getTenantPrisma();
   const session = await requireSession();
   const limit = params?.limit ?? 30;
 
@@ -18,6 +19,7 @@ export async function getNotifications(params?: { unreadOnly?: boolean; limit?: 
 }
 
 export async function getUnreadCount() {
+  const prisma = await getTenantPrisma();
   const session = await requireSession();
   return prisma.notification.count({
     where: { userId: session.user.id, read: false },
@@ -25,6 +27,7 @@ export async function getUnreadCount() {
 }
 
 export async function markNotificationRead(id: string) {
+  const prisma = await getTenantPrisma();
   const session = await requireSession();
   const notif = await prisma.notification.findFirst({
     where: { id, userId: session.user.id },
@@ -38,6 +41,7 @@ export async function markNotificationRead(id: string) {
 }
 
 export async function markAllNotificationsRead() {
+  const prisma = await getTenantPrisma();
   const session = await requireSession();
   await prisma.notification.updateMany({
     where: { userId: session.user.id, read: false },

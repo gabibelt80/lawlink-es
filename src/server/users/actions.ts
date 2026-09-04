@@ -57,8 +57,8 @@ async function requireAdmin() {
 }
 
 export async function listUsers() {
-  await requireAdmin();
   const prisma = await getTenantPrisma();
+  await requireAdmin();
   return prisma.user.findMany({
     orderBy: [{ active: "desc" }, { role: "asc" }, { createdAt: "asc" }],
     select: {
@@ -76,8 +76,8 @@ export async function listUsers() {
 }
 
 export async function listActiveColleagues() {
-  await requireSession();
   const prisma = await getTenantPrisma();
+  await requireSession();
   return prisma.user.findMany({
     where: { active: true },
     orderBy: [{ role: "asc" }, { name: "asc" }],
@@ -86,8 +86,8 @@ export async function listActiveColleagues() {
 }
 
 export async function createUser(input: UserCreateInput) {
-  const session = await requireAdmin();
   const prisma = await getTenantPrisma();
+  const session = await requireAdmin();
   const data = userCreateSchema.parse(input);
 
   const existing = await prisma.user.findUnique({ where: { email: data.email } });
@@ -121,8 +121,8 @@ export async function createUser(input: UserCreateInput) {
 }
 
 export async function updateUserRole(input: UserUpdateRoleInput) {
-  const session = await requireAdmin();
   const prisma = await getTenantPrisma();
+  const session = await requireAdmin();
   const data = userUpdateRoleSchema.parse(input);
   if (data.id === session.user.id) {
     throw new Error("No podes modificar tu propio rol");
@@ -146,8 +146,8 @@ export async function updateUserRole(input: UserUpdateRoleInput) {
 }
 
 export async function toggleUserActive(id: string) {
-  const session = await requireAdmin();
   const prisma = await getTenantPrisma();
+  const session = await requireAdmin();
   if (id === session.user.id) {
     throw new Error("No podes deshabilitarte a vos mismo");
   }
@@ -171,8 +171,8 @@ export async function toggleUserActive(id: string) {
 }
 
 export async function resetUserPassword(input: ResetPasswordInput) {
-  const session = await requireAdmin();
   const prisma = await getTenantPrisma();
+  const session = await requireAdmin();
   const data = resetPasswordSchema.parse(input);
 
   const passwordHash = await bcrypt.hash(data.newPassword, 12);
@@ -192,8 +192,8 @@ export async function resetUserPassword(input: ResetPasswordInput) {
 }
 
 export async function changeMyPassword(input: ChangeMyPasswordInput) {
-  const session = await requireSession();
   const prisma = await getTenantPrisma();
+  const session = await requireSession();
   const data = changeMyPasswordSchema.parse(input);
 
   const me = await prisma.user.findUnique({
@@ -223,8 +223,8 @@ export async function changeMyPassword(input: ChangeMyPasswordInput) {
 
 const AVATAR_MAX_CHARS = 256 * 1024;
 export async function saveMyAvatar(input: { avatar: string | null }) {
-  const session = await requireSession();
   const prisma = await getTenantPrisma();
+  const session = await requireSession();
   let avatar = input.avatar;
   if (typeof avatar === "string" && avatar.length > 0) {
     if (!/^data:image\/(png|jpeg|jpg|webp|svg\+xml);base64,/.test(avatar)) {

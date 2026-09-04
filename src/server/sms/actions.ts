@@ -130,6 +130,7 @@ async function tryExtractAttachments({
 }
 
 export async function parseAndSaveSms(input: z.infer<typeof smsParseAndSaveSchema>) {
+  const prisma = await getTenantPrisma();
   const session = await requireSession();
   const data = smsParseAndSaveSchema.parse(input);
 
@@ -215,6 +216,7 @@ export async function parseAndSaveSms(input: z.infer<typeof smsParseAndSaveSchem
 }
 
 export async function extractSmsAttachments(input: z.infer<typeof smsIdSchema>) {
+  const prisma = await getTenantPrisma();
   const session = await requireSession();
   const data = smsIdSchema.parse(input);
 
@@ -291,6 +293,7 @@ export async function extractSmsAttachments(input: z.infer<typeof smsIdSchema>) 
 // â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”
 
 export async function listSmsMessages(input?: z.input<typeof smsListFilterSchema>) {
+  const prisma = await getTenantPrisma();
   const session = await requireSession();
   const filter = smsListFilterSchema.parse(input ?? {});
 
@@ -323,6 +326,7 @@ export async function listSmsMessages(input?: z.input<typeof smsListFilterSchema
 }
 
 export async function getSmsMessage(id: string) {
+  const prisma = await getTenantPrisma();
   await requireSession();
   return prisma.smsMessage.findUnique({
     where: { id },
@@ -349,6 +353,7 @@ export async function getSmsMessage(id: string) {
 // â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”
 
 export async function matchSmsToMatter(input: z.infer<typeof smsMatchToMatterSchema>) {
+  const prisma = await getTenantPrisma();
   const session = await requireSession();
   const data = smsMatchToMatterSchema.parse(input);
   if (data.matterId) {
@@ -381,6 +386,7 @@ export async function matchSmsToMatter(input: z.infer<typeof smsMatchToMatterSch
 // â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”
 
 export async function generateHearingFromSms(input: z.infer<typeof smsGenerateHearingSchema>) {
+  const prisma = await getTenantPrisma();
   const session = await requireSession();
   const data = smsGenerateHearingSchema.parse(input);
 
@@ -430,6 +436,7 @@ export async function generateHearingFromSms(input: z.infer<typeof smsGenerateHe
 // â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”
 
 export async function generateDeadlineFromSms(input: z.infer<typeof smsGenerateDeadlineSchema>) {
+  const prisma = await getTenantPrisma();
   const session = await requireSession();
   const data = smsGenerateDeadlineSchema.parse(input);
 
@@ -479,6 +486,7 @@ export async function generateDeadlineFromSms(input: z.infer<typeof smsGenerateD
 // â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”
 
 export async function markSmsProcessed(input: z.infer<typeof smsIdSchema>) {
+  const prisma = await getTenantPrisma();
   const session = await requireSession();
   const data = smsIdSchema.parse(input);
 
@@ -499,6 +507,7 @@ export async function markSmsProcessed(input: z.infer<typeof smsIdSchema>) {
 }
 
 export async function deleteSms(input: z.infer<typeof smsIdSchema>) {
+  const prisma = await getTenantPrisma();
   const session = await requireSession();
   const data = smsIdSchema.parse(input);
 
@@ -526,6 +535,7 @@ export async function deleteSms(input: z.infer<typeof smsIdSchema>) {
 
 // æŠŠè§£æžå‡ºçš„å­—ç¬¦ä¸²Fechaå°½é‡è½¬ JS Dateï¼ˆUI é¢„å¡«ç”¨ï¼‰
 export async function parseDateString(s: string) {
+  const prisma = await getTenantPrisma();
   await requireSession();
   const d = toDate(s);
   return d ? d.toISOString() : null;
@@ -539,6 +549,7 @@ export async function parseDateString(s: string) {
 export async function backfillCaseNumberFromSms(
   input: z.infer<typeof smsBackfillCaseNumberSchema>
 ) {
+  const prisma = await getTenantPrisma();
   const session = await requireSession();
   const data = smsBackfillCaseNumberSchema.parse(input);
 

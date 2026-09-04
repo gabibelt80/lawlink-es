@@ -60,6 +60,7 @@ const createSchema = z.object({
 });
 
 export async function createInvoiceRequest(input: z.infer<typeof createSchema>) {
+  const prisma = await getTenantPrisma();
   const session = await requireSession();
   const data = createSchema.parse(input);
   await assertCanAssociateMatter(session.user.id, data.matterId);
@@ -110,6 +111,7 @@ export async function createInvoiceRequest(input: z.infer<typeof createSchema>) 
 }
 
 export async function listInvoiceRequests(filter?: { status?: "PENDING" | "ISSUED" | "REJECTED" | "APPROVED" }) {
+  const prisma = await getTenantPrisma();
   const session = await requireSession();
   const where: Prisma.InvoiceRequestWhereInput = {
     ...invoiceRequestVisibilityWhere(session.user.id, session.user.role),
@@ -146,6 +148,7 @@ export async function listInvoiceRequests(filter?: { status?: "PENDING" | "ISSUE
 }
 
 export async function listInvoiceRequestsByMatter(matterId: string) {
+  const prisma = await getTenantPrisma();
   const session = await requireSession();
   await assertCanAccessMatter(session.user.id, session.user.role, matterId);
   const rows = await prisma.invoiceRequest.findMany({
@@ -170,6 +173,7 @@ export async function listInvoiceRequestsByMatter(matterId: string) {
  * contractScan ä»…ä¿ç•™å…¼å®¹æ—§æ•°æ®æµï¼›ç”³è¯·ä¾æ®åº”ç”±ç”³è¯·äººä¸Šä¼ åˆ° evidenceDocIdsã€‚
  */
 export async function approveInvoiceRequest(formData: FormData) {
+  const prisma = await getTenantPrisma();
   const session = await requireSession();
   requireFinanceOrApprover(session.user.role);
 
@@ -297,6 +301,7 @@ const rejectSchema = z.object({
 });
 
 export async function rejectInvoiceRequest(input: z.infer<typeof rejectSchema>) {
+  const prisma = await getTenantPrisma();
   const session = await requireSession();
   requireFinanceOrApprover(session.user.role);
   const data = rejectSchema.parse(input);
@@ -333,6 +338,7 @@ export async function rejectInvoiceRequest(input: z.infer<typeof rejectSchema>) 
 
 /** Finanzasé¡µ KPIï¼šæœ¬æœˆå·²å¼€ç¥¨åˆè®¡ */
 export async function getInvoiceStats() {
+  const prisma = await getTenantPrisma();
   const session = await requireSession();
   const now = new Date();
   const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);

@@ -40,8 +40,8 @@ const announcementUpdateSchema = announcementCreateSchema.extend({
 export async function listAnnouncements({
   includeArchived = false,
 }: { includeArchived?: boolean } = {}) {
-  await requireSession();
   const prisma = await getTenantPrisma();
+  await requireSession();
   return prisma.announcement.findMany({
     where: includeArchived ? {} : { archivedAt: null },
     orderBy: [{ pinned: "desc" }, { publishedAt: "desc" }],
@@ -52,8 +52,8 @@ export async function listAnnouncements({
 }
 
 export async function listActiveBanners() {
-  await requireSession();
   const prisma = await getTenantPrisma();
+  await requireSession();
   const now = new Date();
   const banners = await prisma.announcement.findMany({
     where: {
@@ -71,8 +71,8 @@ export async function listActiveBanners() {
 export async function createAnnouncement(
   input: z.infer<typeof announcementCreateSchema>,
 ) {
-  const session = await requireSession();
   const prisma = await getTenantPrisma();
+  const session = await requireSession();
   assertCanManage(session.user.role);
   const data = announcementCreateSchema.parse(input);
 
@@ -106,8 +106,8 @@ export async function createAnnouncement(
 export async function updateAnnouncement(
   input: z.infer<typeof announcementUpdateSchema>,
 ) {
-  const session = await requireSession();
   const prisma = await getTenantPrisma();
+  const session = await requireSession();;
   assertCanManage(session.user.role);
   const data = announcementUpdateSchema.parse(input);
 
@@ -139,8 +139,8 @@ export async function updateAnnouncement(
 }
 
 export async function archiveAnnouncement(id: string) {
-  const session = await requireSession();
   const prisma = await getTenantPrisma();
+  const session = await requireSession();
   assertCanManage(session.user.role);
 
   const tenantUserId = await resolveTenantUserId(session.user.email, prisma);

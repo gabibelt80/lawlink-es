@@ -29,6 +29,7 @@ async function requireAdmin() {
 }
 
 export async function listStageTemplates() {
+  const prisma = await getTenantPrisma();
   await requireAdmin();
   return prisma.stageTemplate.findMany({
     orderBy: { procedureType: "asc" }
@@ -36,6 +37,7 @@ export async function listStageTemplates() {
 }
 
 export async function upsertStageTemplate(input: TemplateUpdateInput) {
+  const prisma = await getTenantPrisma();
   const session = await requireAdmin();
   const data = templateUpdateSchema.parse(input);
   const id = `default-${data.procedureType}`;
@@ -77,6 +79,7 @@ const auditQuerySchema = z.object({
 export type AuditQuery = z.infer<typeof auditQuerySchema>;
 
 export async function listAuditLogs(input: Partial<AuditQuery> = {}) {
+  const prisma = await getTenantPrisma();
   await requireAdmin();
   const query = auditQuerySchema.parse(input);
   const since = new Date(Date.now() - query.days * 24 * 60 * 60 * 1000);

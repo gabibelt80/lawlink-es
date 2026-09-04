@@ -29,6 +29,7 @@ const MAX_FILE_SIZE = 20 * 1024 * 1024; // 20MB
  * åŠ å¯†åˆ†æ”¯ï¼šencrypted=true æ—¶æŠŠæ–‡ä»¶ç”¨ AES-256-GCM åŠ å¯†åŽå†™ç›˜ã€‚
  */
 export async function uploadDocument(formData: FormData) {
+  const prisma = await getTenantPrisma();
   const session = await requireSession();
 
   const matterIdRaw = formData.get("matterId");
@@ -198,6 +199,7 @@ export async function uploadDocument(formData: FormData) {
 }
 
 export async function deleteDocument(id: string) {
+  const prisma = await getTenantPrisma();
   const session = await requireSession();
   const doc = await prisma.document.findUnique({ where: { id } });
   if (!doc) return { ok: false };
@@ -235,6 +237,7 @@ export async function deleteDocument(id: string) {
 }
 
 export async function hardDeleteDocument(id: string) {
+  const prisma = await getTenantPrisma();
   const session = await requireSession();
   if (session.user.role !== "ADMIN") {
     throw new Error("ä»… ADMIN å¯å½»åº•Eliminarææ–™");
@@ -267,6 +270,7 @@ const docListQuerySchema = z.object({
 });
 
 export async function listAllDocuments(input: Partial<z.infer<typeof docListQuerySchema>> = {}) {
+  const prisma = await getTenantPrisma();
   const session = await requireSession();
   const query = docListQuerySchema.parse(input);
 
@@ -300,6 +304,7 @@ export async function listAllDocuments(input: Partial<z.infer<typeof docListQuer
 // ============ v0.10: æ–‡ä¹¦AprobaciÃ³næµç¨‹ ============
 
 export async function submitDocumentForReview(id: string) {
+  const prisma = await getTenantPrisma();
   const session = await requireSession();
   const doc = await prisma.document.findUnique({ where: { id, deletedAt: null } });
   if (!doc) throw new Error("ææ–™ä¸å­˜åœ¨");
@@ -327,6 +332,7 @@ export async function submitDocumentForReview(id: string) {
 }
 
 export async function approveDocument(id: string) {
+  const prisma = await getTenantPrisma();
   const session = await requireSession();
   if (!isManager(session.user.role)) {
     throw new Error("ä»…Administrarå‘˜æˆ–ä¸»åŠžAbogadoå¯AprobaciÃ³næ–‡ä¹¦");
@@ -357,6 +363,7 @@ export async function approveDocument(id: string) {
 }
 
 export async function rejectDocument(id: string, reason?: string) {
+  const prisma = await getTenantPrisma();
   const session = await requireSession();
   if (!isManager(session.user.role)) {
     throw new Error("ä»…Administrarå‘˜æˆ–ä¸»åŠžAbogadoå¯Rechazaræ–‡ä¹¦");
@@ -387,6 +394,7 @@ export async function rejectDocument(id: string, reason?: string) {
 }
 
 export async function fileDocument(id: string) {
+  const prisma = await getTenantPrisma();
   const session = await requireSession();
   const doc = await prisma.document.findUnique({ where: { id, deletedAt: null } });
   if (!doc) throw new Error("ææ–™ä¸å­˜åœ¨");

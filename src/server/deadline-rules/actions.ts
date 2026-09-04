@@ -12,6 +12,7 @@ const procedureIdSchema = z.object({ procedureId: z.string().cuid() });
  * ç”ŸæˆPlazoæœ¬èº«ä»èµ° addDeadlineï¼ˆå•ä¸€Enviarè·¯å¾„ï¼Œæƒé™æ ¡éªŒä¸é‡å¤å®žçŽ°ï¼‰ã€‚
  */
 export async function listDeadlineRulesForProcedure(input: { procedureId: string }) {
+  const prisma = await getTenantPrisma();
   const session = await requireSession();
   const { procedureId } = procedureIdSchema.parse(input);
 

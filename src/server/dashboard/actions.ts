@@ -57,6 +57,7 @@ export type HeroData = {
 // ============ KPIs ============
 
 export async function getDashboardKpis(): Promise<KpiItem[]> {
+  const prisma = await getTenantPrisma();
   const session = await requireSession();
   const userId = session.user.id;
   const role = session.user.role;
@@ -138,6 +139,7 @@ export async function getDashboardKpis(): Promise<KpiItem[]> {
 // ============ Revenue Trend ============
 
 export async function getDashboardRevenueTrend(months = 6) {
+  const prisma = await getTenantPrisma();
   const session = await requireSession();
   const visFilter = matterVisibilityFilter(session.user.id, session.user.role);
   const now = new Date();
@@ -185,6 +187,7 @@ export async function getDashboardRevenueTrend(months = 6) {
 // ============ Category Distribution ============
 
 export async function getDashboardCategoryDistribution() {
+  const prisma = await getTenantPrisma();
   const session = await requireSession();
   const visFilter = matterVisibilityFilter(session.user.id, session.user.role);
 
@@ -215,6 +218,7 @@ export async function getDashboardCategoryDistribution() {
 // ============ Schedule ============
 
 export async function getDashboardSchedule(): Promise<ScheduleItem[]> {
+  const prisma = await getTenantPrisma();
   const session = await requireSession();
   const visFilter = matterVisibilityFilter(session.user.id, session.user.role);
 
@@ -337,6 +341,7 @@ export async function getDashboardSchedule(): Promise<ScheduleItem[]> {
 // ============ Hero Data ============
 
 export async function getDashboardHeroData(): Promise<HeroData> {
+  const prisma = await getTenantPrisma();
   const session = await requireSession();
   const userId = session.user.id;
   const role = session.user.role;

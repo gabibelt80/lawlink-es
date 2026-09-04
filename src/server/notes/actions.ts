@@ -27,6 +27,7 @@ export type NoteCreateInput = z.infer<typeof noteCreateSchema>;
 export type NoteUpdateInput = z.infer<typeof noteUpdateSchema>;
 
 export async function createNote(input: NoteCreateInput) {
+  const prisma = await getTenantPrisma();
   const session = await requireSession();
   const data = noteCreateSchema.parse(input);
   await assertCanAccessMatter(session.user.id, session.user.role, data.matterId);
@@ -57,6 +58,7 @@ export async function createNote(input: NoteCreateInput) {
 }
 
 export async function updateNote(input: NoteUpdateInput) {
+  const prisma = await getTenantPrisma();
   const session = await requireSession();
   const data = noteUpdateSchema.parse(input);
 
@@ -90,6 +92,7 @@ export async function updateNote(input: NoteUpdateInput) {
 }
 
 export async function deleteNote(id: string) {
+  const prisma = await getTenantPrisma();
   const session = await requireSession();
   const existing = await prisma.note.findUnique({ where: { id } });
   if (!existing) return { ok: false };
@@ -115,6 +118,7 @@ export async function deleteNote(id: string) {
 }
 
 export async function listNotes(matterId: string) {
+  const prisma = await getTenantPrisma();
   const session = await requireSession();
   await assertCanAccessMatter(session.user.id, session.user.role, matterId);
   return prisma.note.findMany({

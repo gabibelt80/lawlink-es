@@ -78,6 +78,7 @@ async function canApproveSealType(
 
 // Listado
 export async function listSealRequests(input?: z.input<typeof sealListFilterSchema>) {
+  const prisma = await getTenantPrisma();
   const session = await requireSession();
   const filter = sealListFilterSchema.parse(input ?? {});
   const where: Prisma.SealRequestWhereInput = {};
@@ -184,6 +185,7 @@ async function notifySealApprovalRequested(input: {
 }
 
 export async function getSealApprovalCapabilities() {
+  const prisma = await getTenantPrisma();
   const session = await requireSession();
   const approvableTypes = await pickApprovableSealTypes(session.user);
   return {
@@ -196,6 +198,7 @@ export async function getSealApprovalCapabilities() {
 }
 
 export async function getSealRequest(id: string) {
+  const prisma = await getTenantPrisma();
   await requireSession();
   return prisma.sealRequest.findUnique({
     where: { id },
@@ -212,11 +215,13 @@ export async function getSealRequest(id: string) {
 }
 
 export async function listSealTypeConfigs() {
+  const prisma = await getTenantPrisma();
   await requireSession();
   return prisma.sealTypeConfig.findMany({ orderBy: { type: "asc" } });
 }
 
 export async function getSealStats() {
+  const prisma = await getTenantPrisma();
   const session = await requireSession();
   const now = new Date();
   const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
@@ -247,6 +252,7 @@ export async function getSealStats() {
 
 // Nueva solicitud - FormData (incluye archivo draftDoc)
 export async function createSealRequest(formData: FormData) {
+  const prisma = await getTenantPrisma();
   const session = await requireSession();
 if (!session.user.id) {
     throw new Error("Usuario no válido");
@@ -505,6 +511,7 @@ if (!session.user.id) {
 
 // Aprobar
 export async function approveSealRequest(input: z.infer<typeof sealApproveSchema>) {
+  const prisma = await getTenantPrisma();
   const session = await requireSession();
   const data = sealApproveSchema.parse(input);
 
@@ -553,6 +560,7 @@ export async function approveSealRequest(input: z.infer<typeof sealApproveSchema
 
 // Rechazar
 export async function rejectSealRequest(input: z.infer<typeof sealRejectSchema>) {
+  const prisma = await getTenantPrisma();
   const session = await requireSession();
   const data = sealRejectSchema.parse(input);
 
@@ -602,6 +610,7 @@ export async function rejectSealRequest(input: z.infer<typeof sealRejectSchema>)
 
 // Completar sellado (FormData: stampedDoc obligatorio)
 export async function stampSealRequest(formData: FormData) {
+  const prisma = await getTenantPrisma();
   const session = await requireSession();
 
   const id = formData.get("id");
@@ -676,6 +685,7 @@ export async function stampSealRequest(formData: FormData) {
 
 // Cancelar (solo pendiente + solo solicitante/administrador)
 export async function cancelSealRequest(input: z.infer<typeof sealCancelSchema>) {
+  const prisma = await getTenantPrisma();
   const session = await requireSession();
   const data = sealCancelSchema.parse(input);
 

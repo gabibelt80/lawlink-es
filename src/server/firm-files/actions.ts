@@ -114,6 +114,7 @@ export async function listFirmFiles(input: {
 }
 
 export async function getFirmFileVersionHistory(input: { id: string }) {
+  const prisma = await getTenantPrisma();
   await requireSession();
   // æ²¿ç€ supersedes é“¾å‘æ—§ç‰ˆæ·±æŒ–ï¼ˆç†è®ºæ˜¯æ ‘ï¼Œä¸šåŠ¡ä¸Šå•é“¾ï¼‰
   type Node = {
@@ -246,6 +247,7 @@ export async function updateFirmFile(input: {
   tags?: string[];
   category?: FirmFileCategory;
 }) {
+  const prisma = await getTenantPrisma();
   const session = await requireUploader();
   const existing = await prisma.firmFile.findUnique({
     where: { id: input.id },
@@ -275,6 +277,7 @@ export async function updateFirmFile(input: {
 }
 
 export async function deleteFirmFile(input: { id: string }) {
+  const prisma = await getTenantPrisma();
   const session = await requireUploader();
   await prisma.firmFile.update({
     where: { id: input.id },

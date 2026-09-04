@@ -34,6 +34,7 @@ import { revalidateMatter } from "@/server/matters/route";
  *   8. TimelineEvent + audit
  */
 export async function archiveMatter(input: ArchiveSubmitInput) {
+  const prisma = await getTenantPrisma();
   const session = await requireSession();
   const data = archiveSubmitSchema.parse(input);
 
@@ -172,6 +173,7 @@ export async function approveArchiveRecord(input: {
   archiveId: string;
   note?: string;
 }) {
+  const prisma = await getTenantPrisma();
   const session = await requireSession();
   if (session.user.role !== "ADMIN") {
     throw new Error(
@@ -268,13 +270,14 @@ export async function rejectArchiveRecord(input: {
   archiveId: string;
   note: string;
 }) {
+  const prisma = await getTenantPrisma();
   const session = await requireSession();
   if (session.user.role !== "ADMIN") {
     throw new Error(
       "Solo el Administrador puede rechazar la solicitud de archivo",
     );
   }
-  if (!input.note.trim()) throw new Error("IngresÃ¡ el motivo del rechazo");
+  if (!input.note.trim()) throw new Error("Ingresa¡ el motivo del rechazo");
 
   const record = await prisma.archiveRecord.findUnique({
     where: { id: input.archiveId },
@@ -342,6 +345,7 @@ export async function rejectArchiveRecord(input: {
  * èŽ·å–Casoçš„å½’æ¡£å‡†å¤‡æ•°æ®ï¼šå½“å‰ checklist æ¨¡æ¿ + å·²æœ‰ ArchiveRecordï¼ˆè‹¥æœ‰ï¼‰
  */
 export async function getArchivePrepData(matterId: string) {
+  const prisma = await getTenantPrisma();
   const session = await requireSession();
   await assertCanLeadMatter(
     session.user.id,
@@ -423,6 +427,7 @@ export async function getArchivePrepData(matterId: string) {
  * å·²å½’æ¡£Casoåˆ—è¡¨ï¼ˆ/archive Totalè§ˆé¡µï¼‰â€”â€” ä»… status=APPROVED
  */
 export async function listArchivedMatters() {
+  const prisma = await getTenantPrisma();
   await requireSession();
   return prisma.archiveRecord.findMany({
     where: { status: "APPROVED" },
@@ -456,6 +461,7 @@ export async function listArchivedMatters() {
  * /archive å¾…AprobaciÃ³n tab ä½¿ç”¨
  */
 export async function listPendingArchiveRecords() {
+  const prisma = await getTenantPrisma();
   const session = await requireSession();
   if (session.user.role !== "ADMIN") {
     throw new Error("ä»…Administrarå‘˜å¯Verå¾…AprobaciÃ³nå½’æ¡£");
@@ -494,6 +500,7 @@ export async function listPendingArchiveRecords() {
  * ç”¨äºŽ"æˆ‘çš„Rechazadoå½’æ¡£"å…¥å£æˆ–Casoè¯¦æƒ…é¡µ banner
  */
 export async function listRejectedArchiveRecords() {
+  const prisma = await getTenantPrisma();
   const session = await requireSession();
   return prisma.archiveRecord.findMany({
     where: {
@@ -527,6 +534,7 @@ export async function listRejectedArchiveRecords() {
  * Casoè¯¦æƒ…é¡µå±•ç¤º"å½’æ¡£ä¸­/Rechazado"Estado banner ç”¨
  */
 export async function getLatestArchiveRecord(matterId: string) {
+  const prisma = await getTenantPrisma();
   await requireSession();
   return prisma.archiveRecord.findFirst({
     where: { matterId },

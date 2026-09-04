@@ -22,6 +22,7 @@ async function requireFolderEditor(matterId: string, session: { user: { id: stri
 }
 
 export async function listFoldersByMatter(matterId: string) {
+  const prisma = await getTenantPrisma();
   const session = await requireSession();
   await assertCanAccessMatter(session.user.id, session.user.role, matterId);
   return prisma.documentFolder.findMany({
@@ -34,6 +35,7 @@ export async function listFoldersByMatter(matterId: string) {
 }
 
 export async function createFolder(input: z.infer<typeof folderCreateSchema>) {
+  const prisma = await getTenantPrisma();
   const session = await requireSession();
   const data = folderCreateSchema.parse(input);
   await requireFolderEditor(data.matterId, session);
@@ -77,6 +79,7 @@ export async function createFolder(input: z.infer<typeof folderCreateSchema>) {
 }
 
 export async function renameFolder(input: z.infer<typeof folderRenameSchema>) {
+  const prisma = await getTenantPrisma();
   const session = await requireSession();
   const data = folderRenameSchema.parse(input);
 
@@ -113,6 +116,7 @@ export async function renameFolder(input: z.infer<typeof folderRenameSchema>) {
 }
 
 export async function deleteFolder(input: z.infer<typeof folderDeleteSchema>) {
+  const prisma = await getTenantPrisma();
   const session = await requireSession();
   const data = folderDeleteSchema.parse(input);
 
@@ -147,6 +151,7 @@ export async function deleteFolder(input: z.infer<typeof folderDeleteSchema>) {
 }
 
 export async function reorderFolders(input: z.infer<typeof folderReorderSchema>) {
+  const prisma = await getTenantPrisma();
   const session = await requireSession();
   const data = folderReorderSchema.parse(input);
   await requireFolderEditor(data.matterId, session);
@@ -166,6 +171,7 @@ export async function reorderFolders(input: z.infer<typeof folderReorderSchema>)
 }
 
 export async function moveDocumentToFolder(input: z.infer<typeof moveDocumentToFolderSchema>) {
+  const prisma = await getTenantPrisma();
   const session = await requireSession();
   const data = moveDocumentToFolderSchema.parse(input);
 

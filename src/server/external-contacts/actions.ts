@@ -115,6 +115,7 @@ async function assertCanModify(id: string, sessionUserId: string, role: string) 
 }
 
 export async function createExternalContact(input: z.infer<typeof externalContactSchema>) {
+  const prisma = await getTenantPrisma();
   const session = await requireSession();
   const data = externalContactSchema.parse(input);
   // v1.0: å®¡æ ¸æµé»˜è®¤Cerrarï¼ˆå°æ‰€ä¿¡ä»»çŽ¯å¢ƒï¼Œæ–°å¢žç›´æŽ¥Aprobarï¼‰ï¼›å¯åœ¨ConfiguraciÃ³né‡Œæ‰“å¼€
@@ -161,6 +162,7 @@ export async function createExternalContact(input: z.infer<typeof externalContac
 }
 
 export async function updateExternalContact(input: z.infer<typeof externalContactUpdateSchema>) {
+  const prisma = await getTenantPrisma();
   const session = await requireSession();
   const data = externalContactUpdateSchema.parse(input);
   await assertCanModify(data.id, session.user.id, session.user.role);
@@ -191,6 +193,7 @@ export async function updateExternalContact(input: z.infer<typeof externalContac
 }
 
 export async function approveExternalContact(input: z.infer<typeof externalContactReviewSchema>) {
+  const prisma = await getTenantPrisma();
   const session = await requireSession();
   if (!isManager(session.user.role)) throw new Error("ä»…Administrarå‘˜å¯å®¡æ ¸è”ç³»äºº");
   const data = externalContactReviewSchema.parse(input);
@@ -230,6 +233,7 @@ export async function approveExternalContact(input: z.infer<typeof externalConta
 }
 
 export async function rejectExternalContact(input: z.infer<typeof externalContactReviewSchema>) {
+  const prisma = await getTenantPrisma();
   const session = await requireSession();
   if (!isManager(session.user.role)) throw new Error("ä»…Administrarå‘˜å¯å®¡æ ¸è”ç³»äºº");
   const data = externalContactReviewSchema.parse(input);
@@ -269,6 +273,7 @@ export async function rejectExternalContact(input: z.infer<typeof externalContac
 }
 
 export async function archiveExternalContact(id: string) {
+  const prisma = await getTenantPrisma();
   const session = await requireSession();
   await assertCanModify(id, session.user.id, session.user.role);
   await prisma.externalContact.update({

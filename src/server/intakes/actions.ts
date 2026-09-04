@@ -182,6 +182,7 @@ function assertConflictReviewAllowsConversion(intake: IntakeConflictGateInput) {
 }
 
 export async function listIntakes(input: Partial<IntakeListQuery> = {}) {
+  const prisma = await getTenantPrisma();
   const session = await requireSession();
   const query = intakeListQuerySchema.parse(input);
 
@@ -246,6 +247,7 @@ export async function listIntakes(input: Partial<IntakeListQuery> = {}) {
 }
 
 export async function getIntakeById(id: string) {
+  const prisma = await getTenantPrisma();
   const session = await requireSession();
   // VerificaciÃ³n de permisos: los managers ven todo, otros solo lo propio
   if (session.user.role !== "ADMIN" && session.user.role !== "PRINCIPAL_LAWYER") {
@@ -293,6 +295,7 @@ export async function getIntakeById(id: string) {
 }
 
 export async function createIntake(input: IntakeCreateInput) {
+  const prisma = await getTenantPrisma();
   const session = await requireSession();
   const data = intakeCreateSchema.parse(input);
   assertAgencyAllowedForProcedure(data.firstAgency, data.firstProcedureType);
@@ -476,6 +479,7 @@ export async function createIntake(input: IntakeCreateInput) {
 }
 
 export async function declineIntake(input: DeclineIntakeInput) {
+  const prisma = await getTenantPrisma();
   const session = await requireSession();
   requireApprover(session.user.role);
   const data = declineIntakeSchema.parse(input);
@@ -503,6 +507,7 @@ export async function declineIntake(input: DeclineIntakeInput) {
 }
 
 export async function markIntakeNeedsRevision(input: { id: string; reason: string }) {
+  const prisma = await getTenantPrisma();
   const session = await requireSession();
   requireApprover(session.user.role);
   if (!input.reason.trim()) throw new Error("Complete el motivo de correcciÃ³n");
@@ -530,6 +535,7 @@ export async function markIntakeNeedsRevision(input: { id: string; reason: strin
 }
 
 export async function resubmitIntake(id: string) {
+  const prisma = await getTenantPrisma();
   const session = await requireSession();
 
   const intake = await prisma.intake.findUnique({
@@ -573,6 +579,7 @@ export async function resubmitIntake(id: string) {
 }
 
 export async function convertIntakeToMatter(intakeId: string) {
+  const prisma = await getTenantPrisma();
   const session = await requireSession();
   requireApprover(session.user.role);
   const intake = await prisma.intake.findUnique({

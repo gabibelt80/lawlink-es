@@ -38,6 +38,7 @@ function emptyToNull<T extends Record<string, unknown>>(obj: T): T {
 // ============ Procedure ============
 
 export async function addProcedure(input: ProcedureCreateInput) {
+  const prisma = await getTenantPrisma();
   const session = await requireSession();
   const data = procedureCreateSchema.parse(input);
   await assertCanAccessMatter(session.user.id, session.user.role, data.matterId);
@@ -93,6 +94,7 @@ export async function addProcedure(input: ProcedureCreateInput) {
 }
 
 export async function updateProcedure(input: ProcedureUpdateInput) {
+  const prisma = await getTenantPrisma();
   const session = await requireSession();
   const data = procedureUpdateSchema.parse(input);
   const { id, ...rest } = data;
@@ -133,6 +135,7 @@ export async function updateProcedure(input: ProcedureUpdateInput) {
 }
 
 export async function deleteProcedure(id: string) {
+  const prisma = await getTenantPrisma();
   const session = await requireSession();
   const procedure = await prisma.matterProcedure.findUnique({ where: { id } });
   if (!procedure) return { ok: false };
@@ -276,10 +279,12 @@ async function materializeProcedureStage(
 }
 
 export async function createProcedureStage(input: ProcedureStageCreateInput) {
+  const prisma = await getTenantPrisma();
   return materializeProcedureStage(input, { allowExisting: false });
 }
 
 export async function ensureProcedureStage(input: ProcedureStageCreateInput) {
+  const prisma = await getTenantPrisma();
   return materializeProcedureStage(input, { allowExisting: true });
 }
 
@@ -312,6 +317,7 @@ function nextStageOrder(
 }
 
 export async function removeProcedureStage(input: ProcedureStageRemoveInput) {
+  const prisma = await getTenantPrisma();
   const session = await requireSession();
   const data = procedureStageRemoveSchema.parse(input);
 
@@ -411,6 +417,7 @@ export async function removeProcedureStage(input: ProcedureStageRemoveInput) {
 // ============ Deadline ============
 
 export async function addDeadline(input: DeadlineCreateInput) {
+  const prisma = await getTenantPrisma();
   const session = await requireSession();
   const data = deadlineCreateSchema.parse(input);
 
@@ -464,6 +471,7 @@ export async function addDeadline(input: DeadlineCreateInput) {
 }
 
 export async function toggleDeadlineCompleted(id: string) {
+  const prisma = await getTenantPrisma();
   const session = await requireSession();
   const current = await prisma.deadline.findUnique({
     where: { id },
@@ -494,6 +502,7 @@ export async function toggleDeadlineCompleted(id: string) {
 }
 
 export async function deleteDeadline(id: string) {
+  const prisma = await getTenantPrisma();
   const session = await requireSession();
   const current = await prisma.deadline.findUnique({
     where: { id },
@@ -517,6 +526,7 @@ export async function deleteDeadline(id: string) {
 // ============ Hearing ============
 
 export async function addHearing(input: HearingCreateInput) {
+  const prisma = await getTenantPrisma();
   const session = await requireSession();
   const data = hearingCreateSchema.parse(input);
 
@@ -573,6 +583,7 @@ export async function addHearing(input: HearingCreateInput) {
 }
 
 export async function deleteHearing(id: string) {
+  const prisma = await getTenantPrisma();
   const session = await requireSession();
   const current = await prisma.hearing.findUnique({
     where: { id },
@@ -599,6 +610,7 @@ export async function addProcedureMemo(input: {
   procedureId: string;
   content: string;
 }) {
+  const prisma = await getTenantPrisma();
   const session = await requireSession();
   const content = input.content.trim();
   if (!content) throw new Error("å¤‡å¿˜å†…å®¹ä¸èƒ½ä¸ºç©º");
@@ -624,6 +636,7 @@ export async function addProcedureMemo(input: {
 }
 
 export async function toggleProcedureMemo(id: string) {
+  const prisma = await getTenantPrisma();
   const session = await requireSession();
   const current = await prisma.procedureMemo.findUnique({
     where: { id },
@@ -643,6 +656,7 @@ export async function toggleProcedureMemo(id: string) {
 }
 
 export async function deleteProcedureMemo(id: string) {
+  const prisma = await getTenantPrisma();
   const session = await requireSession();
   const current = await prisma.procedureMemo.findUnique({
     where: { id },

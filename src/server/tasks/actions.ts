@@ -27,6 +27,7 @@ export type TaskCreateInput = z.infer<typeof taskCreateSchema>;
 export type TaskUpdateInput = z.infer<typeof taskUpdateSchema>;
 
 export async function createTask(input: TaskCreateInput) {
+  const prisma = await getTenantPrisma();
   const session = await requireSession();
   const data = taskCreateSchema.parse(input);
   await assertCanAssociateMatter(session.user.id, data.matterId);
@@ -82,6 +83,7 @@ export async function createTask(input: TaskCreateInput) {
 }
 
 export async function updateTask(input: TaskUpdateInput) {
+  const prisma = await getTenantPrisma();
   const session = await requireSession();
   const data = taskUpdateSchema.parse(input);
   await assertCanAssociateMatter(session.user.id, data.matterId);
@@ -112,6 +114,7 @@ export async function updateTask(input: TaskUpdateInput) {
 }
 
 export async function toggleTaskCompleted(id: string) {
+  const prisma = await getTenantPrisma();
   const session = await requireSession();
   const current = await prisma.task.findUnique({ where: { id } });
   if (!current) return { ok: false };
@@ -139,6 +142,7 @@ export async function toggleTaskCompleted(id: string) {
 }
 
 export async function deleteTask(id: string) {
+  const prisma = await getTenantPrisma();
   const session = await requireSession();
   const current = await prisma.task.findUnique({ where: { id } });
   if (!current) return { ok: false };
