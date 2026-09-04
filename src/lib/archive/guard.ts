@@ -1,18 +1,18 @@
 ﻿/**
- * v0.9.4 å½’æ¡£åªè¯»é—¨ç¦
+ * v0.9.4 Guardia de solo lectura para archivo
  *
- * ç­–ç•¥ï¼ˆç”¨æˆ·é€‰æ‹©"ä¸­"ï¼‰ï¼š
- *   - Caso status === "ARCHIVED" åŽï¼šä¸šåŠ¡å†™Accioneså…¨ç¦
- *   - ä¾‹å¤–ï¼šè¡¥ä¼ ææ–™åˆ° ARCHIVE å·å®—ï¼ˆCerrar caso/å½’æ¡£ï¼‰å…è®¸
+ * Estrategia (elegida por el usuario):
+ *   - Despues de que el estado del caso sea "ARCHIVED": todas las acciones de escritura estan prohibidas
+ *   - Excepcion: subir materiales a la carpeta ARCHIVE (Cerrar caso/Archivo) esta permitido
  *
- * è°ƒç”¨æ–¹å¼ï¼ˆæ¯ä¸ªå†™Acciones server action å…¥å£ï¼‰ï¼š
+ * Modo de uso (entrada de cada server action de escritura):
  *   await assertMatterWritable(matterId);
  *
- * æ–‡æ¡£ä¸Šä¼  / Eliminar éœ€è¦ isArchiveFolder() é…åˆæ”¾è¡Œ ARCHIVE å·å®—ã€‚
+ * Subir / Eliminar documentos requiere isArchiveFolder() para permitir la carpeta ARCHIVE.
  */
 import { requireSession } from "@/lib/auth/session";
 import { matterAssociationFilter } from "@/lib/permissions";
-import { prisma } from "@/lib/prisma";
+import { getTenantPrisma } from "@/lib/tenant-prisma";
 
 type WritableGuardOptions = {
   allowedIfArchivedReason?: string;
@@ -24,6 +24,7 @@ async function findWritableMatter(
   opts?: Pick<WritableGuardOptions, "allowFinanceRole">
 ) {
   const session = await requireSession();
+  const prisma = await getTenantPrisma();
   const allowByFinanceRole = opts?.allowFinanceRole && session.user.role === "FINANCE";
   return prisma.matter.findFirst({
     where: {
@@ -36,7 +37,7 @@ async function findWritableMatter(
 }
 
 /**
- * å·²å½’æ¡£Casoè§†ä¸ºåªè¯»ã€‚æŠ›é”™ï¼ˆä¸­æ–‡ï¼‰ç”± UI catch æ˜¾ç¤º toastã€‚
+ * Caso archivado se considera solo lectura. El error lo muestra la UI como toast.
  */
 export async function assertMatterWritable(
   matterId: string | null | undefined,
@@ -44,20 +45,20 @@ export async function assertMatterWritable(
 ): Promise<void> {
   if (!matterId) return;
   const matter = await findWritableMatter(matterId, opts);
-  if (!matter) throw new Error("Casoä¸å­˜åœ¨æˆ–æ— æƒå¤„ç†");
+  if (!matter) throw new Error("Caso no existe o sin permiso para procesar");
   if (matter.status === "ARCHIVED") {
     const detail = opts?.allowedIfArchivedReason
-      ? `ï¼ˆ${opts.allowedIfArchivedReason}é™¤å¤–ï¼‰`
+      ? `(${opts.allowedIfArchivedReason} excepto)`
       : "";
-    throw new Error(`Casoå·²å½’æ¡£ï¼Œç¦æ­¢ä¿®æ”¹${detail}`);
+    throw new Error(`Caso archivado, prohibido modificar${detail}`);
   }
 }
 
 /**
- * åˆ¤å®š folder æ˜¯å¦ä¸º ARCHIVE å·å®—ï¼ˆCerrar caso / å½’æ¡£ï¼‰ï¼Œç”¨äºŽä¸Šä¼ ææ–™é—¨ç¦æ”¾è¡Œã€‚
- * å‘½ä¸­æ¡ä»¶ï¼šname å‘½ä¸­ ["Cerrar caso", "å½’æ¡£"] ä¹‹ä¸€ï¼ˆy default-folders.ts ä¸€è‡´ï¼‰ã€‚
+ * Determina si la carpeta es ARCHIVE (Cerrar caso / Archivo), usado para permitir subir materiales.
+ * Condicion: name coincide con ["Cerrar caso", "Archivo"] (consistente con default-folders.ts).
  */
-const ARCHIVE_FOLDER_NAMES = new Set(["Cerrar caso", "å½’æ¡£"]);
+const ARCHIVE_FOLDER_NAMES = new Set(["Cerrar caso", "Archivo"]);
 
 export function isArchiveFolderName(name: string | null | undefined): boolean {
   if (!name) return false;
@@ -65,7 +66,8 @@ export function isArchiveFolderName(name: string | null | undefined): boolean {
 }
 
 /**
- * æ–‡æ¡£Accionesé—¨ç¦ï¼šå½’æ¡£åŽåªå…è®¸ä¸Šä¼ åˆ° ARCHIVE å·å®—ã€‚Eliminar/é‡å‘½å/ç§»åŠ¨ä¸€å¾‹ç¦æ­¢ã€‚
+ * Guardia para documentos: despues del archivo solo se permite subir a la carpeta ARCHIVE.
+ * Eliminar/renombrar/mover queda prohibido.
  */
 export async function assertDocumentWritable(
   matterId: string | null | undefined,
@@ -73,14 +75,13 @@ export async function assertDocumentWritable(
 ): Promise<void> {
   if (!matterId) return;
   const matter = await findWritableMatter(matterId, opts);
-  if (!matter) throw new Error("Casoä¸å­˜åœ¨æˆ–æ— æƒå¤„ç†");
+  if (!matter) throw new Error("Caso no existe o sin permiso para procesar");
   if (matter.status !== "ARCHIVED") return;
 
   if (opts.kind === "modify") {
-    throw new Error("Casoå·²å½’æ¡£ï¼Œææ–™ä¸å¯ä¿®æ”¹æˆ–Eliminar");
+    throw new Error("Caso archivado, el material no se puede modificar o eliminar");
   }
   if (opts.kind === "upload" && !isArchiveFolderName(opts.folderName)) {
-    throw new Error("Casoå·²å½’æ¡£ï¼Œä»…å…è®¸è¡¥ä¼ ææ–™åˆ°ã€ŒCerrar casoã€æˆ–ã€Œå½’æ¡£ã€å·å®—");
+    throw new Error("Caso archivado, solo se permite subir materiales a la carpeta \"Cerrar caso\" o \"Archivo\"");
   }
 }
-

@@ -5,12 +5,13 @@ import { requireSession } from "@/lib/auth/session";
 import { audit } from "@/server/audit";
 import {
   saveAiSettings as saveSettings,
-  readPublicAiSettings
+  readPublicAiSettings,
+  getAiSettings as readAiSettings
 } from "@/lib/ai/settings";
 import { aiChat, AiNotConfiguredError } from "@/lib/ai/client";
 
 const saveSchema = z.object({
-  apiKey: z.string().optional().or(z.literal("")), // ç•™ç©º = ä¿ç•™åŽŸå€¼
+  apiKey: z.string().optional().or(z.literal("")),
   baseUrl: z.string().url().optional().or(z.literal("")),
   textModel: z.string().max(80).optional().or(z.literal("")),
   visionModel: z.string().max(80).optional().or(z.literal(""))
@@ -21,7 +22,7 @@ const clearSchema = z.object({ confirm: z.literal(true) });
 async function requireAdmin() {
   const session = await requireSession();
   if (session.user.role !== "ADMIN") {
-    throw new Error("ä»…Administrarå‘˜å¯ä¿®æ”¹ AI é…ç½®");
+    throw new Error("Solo Administrador puede modificar la configuración de IA");
   }
   return session;
 }
@@ -29,6 +30,11 @@ async function requireAdmin() {
 export async function getAiSettingsPublic() {
   await requireAdmin();
   return readPublicAiSettings();
+}
+
+export async function getAiSettings() {
+  await requireAdmin();
+  return readAiSettings();
 }
 
 export async function saveAiSettingsAction(input: z.infer<typeof saveSchema>) {
@@ -73,7 +79,7 @@ export async function clearAiKeyAction(input: z.infer<typeof clearSchema>) {
   return { ok: true };
 }
 
-/** æµ‹è¯•è¿žæŽ¥ï¼šå‘ä¸€ä¸ª pingï¼ŒéªŒè¯ base_url + key + text_model å¯ç”¨ */
+/** Test de conexión: envía un ping y verifica base_url + key + text_model */
 export async function testAiConnection() {
   await requireAdmin();
   try {
@@ -94,9 +100,7 @@ export async function testAiConnection() {
     }
     return {
       ok: false,
-      message: e instanceof Error ? e.message : "Desconocidoé”™è¯¯"
+      message: e instanceof Error ? e.message : "Error desconocido"
     };
   }
 }
-
-

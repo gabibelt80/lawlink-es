@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState, useTransition } from "react";
 import { toast } from "sonner";
+import { RoadmapPanel } from "./roadmap-panel";
 import type { ClientType, Prisma } from "@prisma/client";
 import {
   CalendarClock,
@@ -35,7 +36,7 @@ import { ApprovalsPanel } from "./approvals-panel";
 import type { SealContractItem, ExpressItem } from "./info-extras";
 import { AddProcedureSheet } from "./procedure-forms";
 import { deleteProcedure } from "@/server/procedures/actions";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { CustomFieldsPanel } from "./custom-fields-panel";
 import { LifecycleActions } from "./lifecycle-actions";
 import { ArchiveStatusBanner } from "./archive-status-banner";
@@ -151,7 +152,10 @@ export function MatterDetailTabs({
   expresses,
   latestArchive,
   customFieldDefs,
-  preservationCases
+  preservationCases,
+  hearings,
+  deadlines,
+  timelineEvents
 }: {
   matter: MatterPayload;
   finance: FinancePayload;
@@ -185,7 +189,12 @@ export function MatterDetailTabs({
     required: boolean;
   }[];
   preservationCases: WorkflowPreservationCase[];
+  hearings: any[];
+  deadlines: any[];
+  timelineEvents: any[];
 }) {
+  const searchParams = useSearchParams();
+  const urlStage = searchParams.get("stage");
   const [selectedProcId, setSelectedProcId] = useState<string | null>(null);
   const [addProcOpen, setAddProcOpen] = useState(false);
   const [matterEditorOpen, setMatterEditorOpen] = useState(false);
@@ -327,6 +336,35 @@ export function MatterDetailTabs({
 
       <div className="grid grid-cols-1 gap-4 xl:grid-cols-[minmax(0,1fr)_320px] 2xl:grid-cols-[minmax(0,1fr)_340px]">
         <div className="min-w-0 space-y-4">
+          <RoadmapPanel
+            matter={{
+              id: matter.id,
+              title: matter.title,
+              status: matter.status,
+              claimAmount: matter.claimAmount ?? null,
+              primaryClient: matter.primaryClient ? { name: matter.primaryClient.name } : null,
+              parties: matter.parties.map((p) => ({
+                id: p.id,
+                name: p.name,
+                role: p.role,
+                partyType: p.partyType,
+                idNumber: p.idNumber,
+              })),
+            }}
+            procedures={engagedProcedures.map((p) => ({
+              id: p.id,
+              type: p.type,
+              customLabel: p.customLabel,
+              caseNumber: p.caseNumber,
+              handlingAgency: p.handlingAgency,
+              status: p.status,
+            }))}
+            documents={documents}
+            hearings={hearings}
+            deadlines={deadlines}
+            timelineEvents={timelineEvents}
+          />
+
           <ProcedureChainBar
             procedures={engagedProcedures}
             currentProcedure={currentProcedure}
@@ -345,6 +383,7 @@ export function MatterDetailTabs({
               title: matter.title,
               category: matter.category
             }}
+            initialStageKey={urlStage}
             procedure={currentProcedure}
             documents={procDocs}
             preservationCases={preservationCases}

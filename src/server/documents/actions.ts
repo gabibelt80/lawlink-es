@@ -206,7 +206,7 @@ export async function deleteDocument(id: string) {
   if (doc.matterId) {
     await assertDocumentWritable(doc.matterId, { kind: "modify" });
     if (doc.uploadedById !== session.user.id) {
-      await assertCanLeadMatter(session.user.id, doc.matterId, "Solo puede eliminar el material que subio, o el responsable/co-responsable");
+      await assertCanLeadMatter(session.user.id, session.user.role, doc.matterId, "Solo puede eliminar el material que subio, o el responsable/co-responsable");
     }
   } else if (
     doc.uploadedById !== session.user.id &&

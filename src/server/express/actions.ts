@@ -107,7 +107,7 @@ export async function createExpress(input: z.infer<typeof expressCreateSchema>) 
       select: { id: true }
     });
     if (!m) throw new Error("El caso asociado no existe");
-    await assertCanAssociateMatter(session.user.id, data.matterId);
+    await assertCanAssociateMatter(session.user.id, session.user.role, data.matterId);
     await assertMatterWritable(data.matterId);
   }
 

@@ -30,7 +30,7 @@ export async function closeMatter(input: CloseMatterInput) {
   const session = await requireSession();
   const data = closeMatterSchema.parse(input);
   await assertMatterWritable(data.id);
-  await assertCanLeadMatter(session.user.id, data.id, "ä»…Casoä¸»åŠž/ååŠžå¯ä»¥Cerrar caso");
+  await assertCanLeadMatter(session.user.id, session.user.role, data.id, "ä»…Casoä¸»åŠž/ååŠžå¯ä»¥Cerrar caso");
 
   await prisma.$transaction(async (tx) => {
     await tx.matter.update({
@@ -78,7 +78,7 @@ export async function reopenMatter(id: string) {
   const matter = await prisma.matter.findUnique({ where: { id }, select: { status: true } });
   if (!matter) throw new Error("Casoä¸å­˜åœ¨");
   await assertMatterWritable(id);
-  await assertCanLeadMatter(session.user.id, id, "ä»…Casoä¸»åŠž/ååŠžå¯ä»¥é‡æ–°å¼€æ”¾Caso");
+  await assertCanLeadMatter(session.user.id, session.user.role, id, "ä»…Casoä¸»åŠž/ååŠžå¯ä»¥é‡æ–°å¼€æ”¾Caso");
   if (matter.status === "ARCHIVED") {
     throw new Error("å·²å½’æ¡£Casoä¸èƒ½é‡æ–°å¼€æ”¾");
   }
@@ -120,7 +120,7 @@ export async function holdMatter(input: HoldMatterInput) {
   const session = await requireSession();
   const data = holdMatterSchema.parse(input);
   await assertMatterWritable(data.id);
-  await assertCanLeadMatter(session.user.id, data.id, "ä»…Casoä¸»åŠž/ååŠžå¯ä»¥æš‚åœCaso");
+  await assertCanLeadMatter(session.user.id, session.user.role, data.id, "ä»…Casoä¸»åŠž/ååŠžå¯ä»¥æš‚åœCaso");
 
   await prisma.$transaction(async (tx) => {
     await tx.matter.update({

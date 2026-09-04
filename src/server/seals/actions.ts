@@ -292,7 +292,7 @@ if (!session.user.id) {
   const draftFile = formData.get("draftDoc");
 
   if (data.matterId) {
-    await assertCanAssociateMatter(session.user.id, data.matterId);
+    await assertCanAssociateMatter(session.user.id, session.user.role, data.matterId);
     await assertMatterWritable(data.matterId);
     const m = await prisma.matter.findUnique({
       where: { id: data.matterId },

@@ -103,7 +103,7 @@ export async function renderTemplate(input: z.infer<typeof templateRenderSchema>
   const data = templateRenderSchema.parse(input);
 
   await assertMatterWritable(data.matterId);
-  await assertCanLeadMatter(session.user.id, data.matterId, "Solo el responsable/co-responsable puede generar documentos");
+  await assertCanLeadMatter(session.user.id, session.user.role, data.matterId, "Solo el responsable/co-responsable puede generar documentos");
 
   // Obtiene plantilla + docxBlob
   const tmpl = await prisma.documentTemplate.findUnique({

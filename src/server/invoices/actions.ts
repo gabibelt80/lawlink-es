@@ -63,10 +63,10 @@ export async function createInvoiceRequest(input: z.infer<typeof createSchema>) 
   const prisma = await getTenantPrisma();
   const session = await requireSession();
   const data = createSchema.parse(input);
-  await assertCanAssociateMatter(session.user.id, data.matterId);
+  await assertCanAssociateMatter(session.user.id, session.user.role, data.matterId);
   await assertMatterWritable(data.matterId);
 
-  await assertCanLeadMatter(session.user.id, data.matterId, "Solo el responsable/co-responsable puede solicitar factura");
+  await assertCanLeadMatter(session.user.id, session.user.role, data.matterId, "Solo el responsable/co-responsable puede solicitar factura");
 
   const created = await prisma.invoiceRequest.create({
     data: {

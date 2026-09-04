@@ -18,7 +18,7 @@ import { revalidateMatter } from "@/server/matters/route";
 
 /** Verifica si el usuario puede editar la estructura de carpetas del Caso */
 async function requireFolderEditor(matterId: string, session: { user: { id: string; role: string } }) {
-  await assertCanLeadMatter(session.user.id, matterId, "Solo el responsable/co-responsable puede administrar carpetas");
+  await assertCanLeadMatter(session.user.id, session.user.role, matterId, "Solo el responsable/co-responsable puede administrar carpetas");
 }
 
 export async function listFoldersByMatter(matterId: string) {

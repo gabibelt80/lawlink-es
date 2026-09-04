@@ -5,6 +5,7 @@ import { LitigationStanding, PartyRole, PartyType, Prisma } from "@prisma/client
 import { getTenantPrisma } from "@/lib/tenant-prisma";
 import { requireSession } from "@/lib/auth/session";
 import { audit } from "@/server/audit";
+import { generateCaseJson } from "./case-json";
 import { assertMatterWritable } from "@/lib/archive/guard";
 import { serializeDecimals } from "@/lib/decimal";
 import {
@@ -111,14 +112,12 @@ export async function listMatters(input: Partial<MatterListQuery> = {}) {
             }
           }
         },
-        // Datos de contraparte/tercero para tarjetas
         parties: {
           where: { role: { in: ["OPPOSING_PARTY", "THIRD_PARTY"] } },
           orderBy: [{ role: "asc" }, { ordinal: "asc" }],
           take: 3,
           select: { id: true, name: true, role: true, standing: true }
         },
-        // Si hay solicitud de archivo pendiente
         archiveRecords: {
           where: { status: "PENDING_REVIEW" },
           take: 1,
@@ -395,6 +394,7 @@ export async function updateProcedureInfo(input: {
     detail: { matterId: proc.matterId }
   });
   await revalidateMatter(proc.matterId);
+  await generateCaseJson(proc.matterId);
 }
 
 type NewProcedurePartyInput = {
@@ -549,14 +549,12 @@ function normalizeNewProcedureParties(rows: NewProcedurePartyInput[]) {
           : row.enterpriseSocialCode)
     );
 }
-
 // v0.32: Casos vinculados - Buscar / vincular / desvincular
 export async function searchMattersForLink(matterId: string, q: string) {
   const prisma = await getTenantPrisma();
   const session = await requireSession();
-  await assertCanAssociateMatter(session.user.id, matterId);
+  await assertCanAssociateMatter(session.user.id, session.user.role, matterId);
   const query = q.trim();
-  // Excluir ya vinculados
   const links = await prisma.matterLink.findMany({
     where: { OR: [{ matterId }, { relatedMatterId: matterId }] },
     select: { matterId: true, relatedMatterId: true }
@@ -590,8 +588,8 @@ export async function searchMattersForLink(matterId: string, q: string) {
 export async function addMatterLink(matterId: string, relatedMatterId: string) {
   const prisma = await getTenantPrisma();
   const session = await requireSession();
-  await assertCanAssociateMatter(session.user.id, matterId);
-  await assertCanAssociateMatter(session.user.id, relatedMatterId);
+  await assertCanAssociateMatter(session.user.id, session.user.role, matterId);
+  await assertCanAssociateMatter(session.user.id, session.user.role, relatedMatterId);
   if (matterId === relatedMatterId) throw new Error("No se puede vincular a si mismo");
   await prisma.matterLink.upsert({
     where: { matterId_relatedMatterId: { matterId, relatedMatterId } },
@@ -611,8 +609,8 @@ export async function addMatterLink(matterId: string, relatedMatterId: string) {
 export async function removeMatterLink(matterId: string, relatedMatterId: string) {
   const prisma = await getTenantPrisma();
   const session = await requireSession();
-  await assertCanAssociateMatter(session.user.id, matterId);
-  await assertCanAssociateMatter(session.user.id, relatedMatterId);
+  await assertCanAssociateMatter(session.user.id, session.user.role, matterId);
+  await assertCanAssociateMatter(session.user.id, session.user.role, relatedMatterId);
   await prisma.matterLink.deleteMany({
     where: {
       OR: [
@@ -683,9 +681,11 @@ export async function getMatterById(id: string) {
       targetType: "Matter",
       targetId: id
     });
+    await generateCaseJson(matter.id);
   }
   return matter;
 }
+
 export async function createMatter(input: MatterCreateInput) {
   const prisma = await getTenantPrisma();
   const session = await requireSession();
@@ -723,12 +723,10 @@ export async function createMatter(input: MatterCreateInput) {
 
         primaryClientId,
 
-        // El abogado a cargo es el creador por defecto
         members: {
           create: { userId: session.user.id, role: "LEAD" }
         },
 
-        // Tabla de multiples clientes
         clientLinks: {
           create: data.clientIds.map((cid, idx) => ({
             clientId: cid,
@@ -737,7 +735,6 @@ export async function createMatter(input: MatterCreateInput) {
           }))
         },
 
-        // Partes
         parties: {
           create: data.parties.map((p) =>
             emptyToNull({
@@ -757,7 +754,6 @@ export async function createMatter(input: MatterCreateInput) {
           )
         },
 
-        // Primer procedimiento
         procedures: {
           create: {
             type: data.firstProcedure.type,
@@ -775,7 +771,6 @@ export async function createMatter(input: MatterCreateInput) {
       }
     });
 
-    // TimelineEvent: Caso creado
     await tx.timelineEvent.create({
       data: {
         matterId: matter.id,
@@ -785,7 +780,6 @@ export async function createMatter(input: MatterCreateInput) {
       }
     });
 
-    // Carpetas por defecto
     await seedDefaultFolders(tx, matter.id, data.category);
 
     void otherClientIds;
@@ -802,6 +796,7 @@ export async function createMatter(input: MatterCreateInput) {
   });
 
   revalidatePath("/matters");
+  await generateCaseJson(created.id);
   return { ok: true, id: created.id, internalCode: created.internalCode };
 }
 
@@ -823,7 +818,7 @@ export async function updateMatterTeam(input: {
   });
   if (!matter) throw new Error("El Caso no existe");
   await assertMatterWritable(input.matterId);
-  await assertCanOwnMatter(session.user.id, input.matterId, "Solo el abogado a cargo puede modificar el equipo");
+  await assertCanOwnMatter(session.user.id, session.user.role, input.matterId, "Solo el abogado a cargo puede modificar el equipo");
 
   const co = input.coLeadIds.filter((id) => id !== input.ownerId);
   const ass = input.assistantIds.filter(
@@ -838,7 +833,6 @@ export async function updateMatterTeam(input: {
       });
     }
 
-    // Reconstruir MatterMember
     await tx.matterMember.deleteMany({ where: { matterId: input.matterId } });
 
     const rows = [
@@ -877,6 +871,7 @@ export async function updateMatterTeam(input: {
   });
 
   await revalidateMatter(input.matterId);
+  await generateCaseJson(input.matterId);
   return { ok: true };
 }
 
@@ -897,7 +892,7 @@ export async function updateMatterBasicInfo(input: MatterUpdateBasicInput) {
   });
   if (!matter) throw new Error("El Caso no existe");
   await assertMatterWritable(data.id);
-  await assertCanLeadMatter(session.user.id, data.id, "Solo el responsable/co-responsable puede editar");
+  await assertCanLeadMatter(session.user.id, session.user.role, data.id, "Solo el responsable/co-responsable puede editar");
   await assertCauseAllowedForMatter(data.id, data.causeId);
 
   await prisma.matter.update({
@@ -923,6 +918,7 @@ export async function updateMatterBasicInfo(input: MatterUpdateBasicInput) {
   });
 
   await revalidateMatter(data.id);
+  await generateCaseJson(data.id);
   return { ok: true };
 }
 
@@ -930,7 +926,7 @@ export async function softDeleteMatter(id: string) {
   const prisma = await getTenantPrisma();
   const session = await requireSession();
   await assertMatterWritable(id);
-  await assertCanOwnMatter(session.user.id, id, "Solo el abogado a cargo puede eliminar el Caso");
+  await assertCanOwnMatter(session.user.id, session.user.role, id, "Solo el abogado a cargo puede eliminar el Caso");
 
   await prisma.matter.update({
     where: { id },

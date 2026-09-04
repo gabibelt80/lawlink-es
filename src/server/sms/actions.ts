@@ -357,7 +357,7 @@ export async function matchSmsToMatter(input: z.infer<typeof smsMatchToMatterSch
   const session = await requireSession();
   const data = smsMatchToMatterSchema.parse(input);
   if (data.matterId) {
-    await assertCanAssociateMatter(session.user.id, data.matterId);
+    await assertCanAssociateMatter(session.user.id, session.user.role, data.matterId);
     await assertMatterWritable(data.matterId);
   }
 
@@ -559,7 +559,7 @@ export async function backfillCaseNumberFromSms(
   });
   if (!sms) throw new Error("El SMS no existe");
   if (!sms.matchedMatterId) throw new Error("Asociá primero el Caso");
-  await assertCanAssociateMatter(session.user.id, sms.matchedMatterId);
+  await assertCanAssociateMatter(session.user.id, session.user.role, sms.matchedMatterId);
   await assertMatterWritable(sms.matchedMatterId);
 
   const parsed = normalizeStoredParsed(sms.rawText, sms.parsedJson);

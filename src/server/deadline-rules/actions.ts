@@ -33,13 +33,13 @@ export async function listDeadlineRulesForProcedure(input: { procedureId: string
       AND: [
         {
           OR: [
-            { applicableProcedures: { isEmpty: true } },
+            { applicableProcedures: { equals: "[]" } },
             { applicableProcedures: { array_contains: procedure.type } }
           ]
         },
         {
           OR: [
-            { applicableCategories: { equals: [] } },
+            { applicableCategories: { equals: "[]" } },
             { applicableCategories: { array_contains: procedure.matter.category } }
           ]
         }

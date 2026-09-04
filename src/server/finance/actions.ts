@@ -73,7 +73,7 @@ export async function deleteBilling(id: string) {
     await assertMatterWritable(billing.matterId, { allowFinanceRole: true });
   } else {
     await assertMatterWritable(billing.matterId);
-    await assertCanLeadMatter(session.user.id, billing.matterId, "Solo el titular/co-titular del caso o Finanzas puede eliminar contratos");
+    await assertCanLeadMatter(session.user.id, session.user.role, billing.matterId, "Solo el titular/co-titular del caso o Finanzas puede eliminar contratos");
   }
 
   await prisma.billing.delete({ where: { id } });
@@ -218,7 +218,7 @@ export async function setCommissionPlan(input: CommissionPlanSetInput) {
   const session = await requireSession();
   const data = commissionPlanSetSchema.parse(input);
   await assertMatterWritable(data.matterId);
-  await assertCanLeadMatter(session.user.id, data.matterId, "Solo el titular/co-titular del caso puede configurar el plan de comisiones");
+  await assertCanLeadMatter(session.user.id, session.user.role, data.matterId, "Solo el titular/co-titular del caso puede configurar el plan de comisiones");
 
   await prisma.$transaction([
     prisma.commissionPlan.deleteMany({ where: { matterId: data.matterId } }),
@@ -425,7 +425,7 @@ export async function createInvoiceRequest(input: {
   const prisma = await getTenantPrisma();
   const session = await requireSession();
   if (input.matterId) {
-    await assertCanAssociateMatter(session.user.id, input.matterId);
+    await assertCanAssociateMatter(session.user.id, session.user.role, input.matterId);
   } else {
     if (!isManager(session.user.role) && session.user.role !== "FINANCE") {
       throw new Error("La facturacion sin caso asociado solo puede iniciarla Finanzas / Administrador / Abogado principal");

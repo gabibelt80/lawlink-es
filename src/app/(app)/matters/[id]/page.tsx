@@ -21,8 +21,6 @@ type PageProps = {
 export default async function MatterDetailPage({ params }: PageProps) {
   const { id: param } = await params;
 
-  // 路由键是 internalCode（`LL-2026-CC-0001`），但历史书签、Notificacionesy审计日志里
-  // 存的是 cuid 地址，两者都要认；命中 cuid 时在鉴权Aprobar后再跳规范地址。
   const prisma = await getTenantPrisma();
   const route = await resolveMatterRoute(param);
   if (!route) notFound();
@@ -51,7 +49,10 @@ export default async function MatterDetailPage({ params }: PageProps) {
     expresses,
     latestArchive,
     customFieldDefs,
-    preservationCases
+    preservationCases,
+    hearings,
+    deadlines,
+    timelineEvents
   ] = await Promise.all([
     getMatterFinance(matter.id),
     prisma.user.findMany({
@@ -67,13 +68,11 @@ export default async function MatterDetailPage({ params }: PageProps) {
         procedure: { select: { id: true, type: true, customLabel: true } }
       }
     }),
-    // v0.8: 卷宗
     prisma.documentFolder.findMany({
       where: { matterId: matter.id },
       orderBy: [{ orderIndex: "asc" }, { createdAt: "asc" }],
       select: { id: true, name: true, orderIndex: true, isDefault: true }
     }),
-    // v0.8: 适用本Caso类别的模板
     prisma.documentTemplate.findMany({
       where: {
         enabled: true,
@@ -94,7 +93,6 @@ export default async function MatterDetailPage({ params }: PageProps) {
       }
     }),
     listActiveColleagues(),
-    // v0.11: Caso下用印申请关联的合同Adjunto（待盖章稿 + 盖章后扫描件）
     prisma.sealRequest.findMany({
       where: { matterId: matter.id },
       orderBy: { createdAt: "desc" },
@@ -108,7 +106,6 @@ export default async function MatterDetailPage({ params }: PageProps) {
         stampedDoc: { select: { id: true, name: true, size: true, createdAt: true } }
       }
     }),
-    // v0.11: Caso下快递追踪
     prisma.expressTracking.findMany({
       where: { matterId: matter.id },
       orderBy: { createdAt: "desc" },
@@ -123,9 +120,7 @@ export default async function MatterDetailPage({ params }: PageProps) {
         createdAt: true
       }
     }),
-    // v0.18: 最新归档申请Estado（用于显示"归档中"/"Rechazado" banner）
     getLatestArchiveRecord(matter.id),
-    // v0.28: Caso自定义字段定义（启用ítems）
     prisma.customFieldDef.findMany({
       where: { entityType: "MATTER", enabled: true },
       orderBy: [{ order: "asc" }, { createdAt: "asc" }],
@@ -149,13 +144,30 @@ export default async function MatterDetailPage({ params }: PageProps) {
           }
         }
       }
+    }),
+    prisma.hearing.findMany({
+      where: { procedure: { matterId: matter.id } },
+      orderBy: { startsAt: "desc" },
+      include: {
+        procedure: { select: { id: true, type: true, customLabel: true } }
+      }
+    }),
+    prisma.deadline.findMany({
+      where: { procedure: { matterId: matter.id } },
+      orderBy: { dueAt: "desc" },
+      include: {
+        procedure: { select: { id: true, type: true, customLabel: true } }
+      }
+    }),
+    prisma.timelineEvent.findMany({
+      where: { matterId: matter.id },
+      orderBy: { occurredAt: "desc" },
+      select: { id: true, eventType: true, title: true, occurredAt: true }
     })
   ]);
 
-  // getMatterFinance 已在 action 出口统一序列化 Decimal
   const finance = financeRaw;
 
-  // v0.22: 本案 AI 审查Total览（聚合 ReviewRecord）
   const reviewSummary = await getMatterReviewSummary(matter.id);
   const currentMatterMember = session?.user.id
     ? matter.members.find((member) => member.userId === session.user.id)
@@ -173,7 +185,6 @@ export default async function MatterDetailPage({ params }: PageProps) {
   );
   const canOwnThisMatter = Boolean(session?.user.id && matter.ownerId === session.user.id);
 
-  // v0.8: 卷宗对应文档（含 templateId 标识）
   const folderDocuments = documents.map((d) => ({
     id: d.id,
     name: d.name,
@@ -217,6 +228,9 @@ export default async function MatterDetailPage({ params }: PageProps) {
         latestArchive={latestArchive}
         customFieldDefs={customFieldDefs}
         preservationCases={preservationCasesForClient}
+        hearings={hearings}
+        deadlines={deadlines}
+        timelineEvents={timelineEvents}
       />
     </div>
   );

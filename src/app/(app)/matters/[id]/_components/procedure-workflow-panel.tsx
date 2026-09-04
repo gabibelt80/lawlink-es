@@ -3,7 +3,9 @@
 import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
+import { WritingPickerDialog } from "./writing-picker-dialog";
 import { toast } from "sonner";
+import { WritingEditor } from "./writing-editor";
 import {
   AlertTriangle,
   CalendarClock,
@@ -19,10 +21,12 @@ import {
   ListChecks,
   Loader2,
   Minus,
+  Pencil,
   Plus,
   Scale,
   Shield,
   Sparkles,
+  Trash2,
   Upload
 } from "lucide-react";
 import type {
@@ -158,6 +162,7 @@ type WorkflowDocument = {
   path: string;
   tags: string[];
   stageId: string | null;
+  content?: string | null;
 };
 
 type WorkflowMatter = {
@@ -652,7 +657,8 @@ export function ProcedureWorkflowPanel({
   templates,
   users,
   canManage,
-  matterInfoNode
+  matterInfoNode,
+  initialStageKey
 }: {
   matter: WorkflowMatter;
   procedure: WorkflowProcedure | null;
@@ -663,9 +669,10 @@ export function ProcedureWorkflowPanel({
   users: UserOption[];
   canManage: boolean;
   matterInfoNode?: React.ReactNode;
+  initialStageKey?: string | null;
 }) {
   const router = useRouter();
-  const [selectedKey, setSelectedKey] = useState<string | null>(null);
+  const [selectedKey, setSelectedKey] = useState<string | null>(initialStageKey ?? null);
   const [templateOpen, setTemplateOpen] = useState(false);
   const [taskStage, setTaskStage] = useState<WorkflowStage | null>(null);
   const [stageCreateOpen, setStageCreateOpen] = useState(false);
@@ -675,6 +682,12 @@ export function ProcedureWorkflowPanel({
     () => buildWorkflowStages(procedure, preservationCases),
     [procedure, preservationCases]
   );
+
+  useEffect(() => {
+    if (initialStageKey) {
+      setSelectedKey(initialStageKey);
+    }
+  }, [initialStageKey]);
   const workflowItems: WorkflowItem[] = matterInfoNode ? [MATTER_INFO_ITEM, ...stages] : stages;
   const defaultKey = workflowItems[0]?.key ?? null;
   const selectedItem =
@@ -835,6 +848,7 @@ export function ProcedureWorkflowPanel({
         templates={templates}
       />
       {taskStage && (
+	  
         <TaskQuickDialog
           open={!!taskStage}
           onOpenChange={(open) => !open && setTaskStage(null)}
@@ -1384,10 +1398,12 @@ function StageMaterialsPanel({
   const fileRef = useRef<HTMLInputElement>(null);
   const [open, setOpen] = useState(false);
   const [picked, setPicked] = useState<File | null>(null);
+  const [editingDoc, setEditingDoc] = useState<WorkflowDocument | null>(null);
   const [customName, setCustomName] = useState("");
   const [sourceParty, setSourceParty] = useState("");
   const [category, setCategory] = useState<DocumentCategory>(defaultCategoryForStage(stageName));
   const [isPending, startTransition] = useTransition();
+  const [writingOpen, setWritingOpen] = useState(false);
   const stageTag = stageMaterialTag(stageName);
   const sourceOptions = useMemo(() => buildSourceOptions(procedure), [procedure]);
 
@@ -1452,11 +1468,17 @@ function StageMaterialsPanel({
             <Button
               variant="outline"
               size="sm"
-              onClick={openUploadDialog}
-              className="h-7 gap-1 px-2 text-[11px]"
+              onClick={() => {
+                setEditingDoc(null);
+                setWritingOpen(false);
+                setTimeout(() => {
+                  setWritingOpen(true);
+                }, 100);
+              }}
+              className="h-7 gap-1 px-2 text-[11px] text-primary hover:text-primary"
             >
-              <Upload className="h-3 w-3" />
-              Subir
+              <FileText className="h-3 w-3" />
+              Desde biblioteca
             </Button>
             {onOpenTemplate && (
               <Button
@@ -1518,17 +1540,40 @@ function StageMaterialsPanel({
                   </div>
                 </div>
                 <div className="flex shrink-0 items-center gap-1 opacity-0 transition-opacity group-hover:opacity-100">
-                  {pUrl && (
-                    <a
-                      href={pUrl}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="p-1 text-muted-foreground hover:text-primary"
-                      title="Vista previa"
-                    >
-                      <Eye className="h-3.5 w-3.5" />
-                    </a>
-                  )}
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      setWritingOpen(false);
+                      try {
+                        const { getDocumentContent } = await import("@/server/writings/actions");
+                        const result = await getDocumentContent(doc.id);
+                        setEditingDoc({ ...doc, content: result.content });
+                      } catch (err) {
+                        toast.error("Error al cargar", { description: err instanceof Error ? err.message : "" });
+                      }
+                    }}
+                    className="p-1 text-muted-foreground hover:text-primary"
+                    title="Editar"
+                  >
+                    <Pencil className="h-3.5 w-3.5" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      setWritingOpen(false);
+                      try {
+                        const { getDocumentContent } = await import("@/server/writings/actions");
+                        const result = await getDocumentContent(doc.id);
+                        setEditingDoc({ ...doc, content: result.content });
+                      } catch (err) {
+                        toast.error("Error al cargar", { description: err instanceof Error ? err.message : "" });
+                      }
+                    }}
+                    className="p-1 text-muted-foreground hover:text-primary"
+                    title="Ver documento"
+                  >
+                    <Eye className="h-3.5 w-3.5" />
+                  </button>
                   <a
                     href={`/api/documents/${doc.id}/download`}
                     target="_blank"
@@ -1538,6 +1583,24 @@ function StageMaterialsPanel({
                   >
                     <Download className="h-3.5 w-3.5" />
                   </a>
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      if (!confirm(`¿Eliminar "${doc.name}"?`)) return;
+                      try {
+                        const { deleteDocument } = await import("@/server/documents/actions");
+                        await deleteDocument(doc.id);
+                        toast.success("Documento eliminado");
+                        router.refresh();
+                      } catch (err) {
+                        toast.error("Error al eliminar", { description: err instanceof Error ? err.message : "" });
+                      }
+                    }}
+                    className="p-1 text-muted-foreground hover:text-destructive"
+                    title="Eliminar"
+                  >
+                    <Trash2 className="h-3.5 w-3.5" />
+                  </button>
                 </div>
               </li>
             );
@@ -1626,6 +1689,48 @@ function StageMaterialsPanel({
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {editingDoc && (
+        <WritingEditor
+          open={true}
+          onClose={() => setEditingDoc(null)}
+          title={editingDoc.name}
+          content={editingDoc.content ?? ""}
+          onSave={(title, content) => {
+            startTransition(async () => {
+              try {
+                const { updateDocumentContent } = await import("@/server/writings/actions");
+                await updateDocumentContent({
+                  documentId: editingDoc.id,
+                  name: title,
+                  content,
+                });
+                toast.success("Documento actualizado");
+                setEditingDoc(null);
+                router.refresh();
+              } catch (err) {
+                toast.error("Error al actualizar", { description: err instanceof Error ? err.message : "" });
+              }
+            });
+          }}
+          isPending={isPending}
+        />
+      )}
+
+      <WritingPickerDialog
+        open={writingOpen}
+        onOpenChange={(open) => {
+          setWritingOpen(open);
+          if (!open) {
+            setEditingDoc(null);
+          }
+        }}
+        matterId={matterId}
+        procedureId={procedure.id}
+        stageId={stage.id}
+        stageName={stageName}
+        onSaved={() => router.refresh()}
+      />
     </section>
   );
 }

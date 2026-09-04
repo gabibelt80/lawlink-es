@@ -30,7 +30,7 @@ export async function createTask(input: TaskCreateInput) {
   const prisma = await getTenantPrisma();
   const session = await requireSession();
   const data = taskCreateSchema.parse(input);
-  await assertCanAssociateMatter(session.user.id, data.matterId);
+  await assertCanAssociateMatter(session.user.id, session.user.role, data.matterId);
   await assertMatterWritable(data.matterId);
 
   const created = await prisma.task.create({
@@ -86,7 +86,7 @@ export async function updateTask(input: TaskUpdateInput) {
   const prisma = await getTenantPrisma();
   const session = await requireSession();
   const data = taskUpdateSchema.parse(input);
-  await assertCanAssociateMatter(session.user.id, data.matterId);
+  await assertCanAssociateMatter(session.user.id, session.user.role, data.matterId);
   await assertMatterWritable(data.matterId);
   const { id, matterId, ...rest } = data;
 
@@ -118,7 +118,7 @@ export async function toggleTaskCompleted(id: string) {
   const session = await requireSession();
   const current = await prisma.task.findUnique({ where: { id } });
   if (!current) return { ok: false };
-  await assertCanAssociateMatter(session.user.id, current.matterId);
+  await assertCanAssociateMatter(session.user.id, session.user.role, current.matterId);
   await assertMatterWritable(current.matterId);
 
   const next = !current.completed;
@@ -146,7 +146,7 @@ export async function deleteTask(id: string) {
   const session = await requireSession();
   const current = await prisma.task.findUnique({ where: { id } });
   if (!current) return { ok: false };
-  await assertCanAssociateMatter(session.user.id, current.matterId);
+  await assertCanAssociateMatter(session.user.id, session.user.role, current.matterId);
   await assertMatterWritable(current.matterId);
 
   await prisma.task.delete({ where: { id } });

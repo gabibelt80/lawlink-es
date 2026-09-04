@@ -613,6 +613,8 @@ model Matter {
 
   // v0.28: Valores de campos personalizados ({ [CustomFieldDef.key]: string })
   customValues Json @default("{}")
+  // v1.0: Ruta al JSON maestro del caso
+  jsonPath String?
 
   deletedAt DateTime?
   createdAt DateTime  @default(now())

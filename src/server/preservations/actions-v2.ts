@@ -109,7 +109,7 @@ export async function createPreservationCase(input: z.infer<typeof caseCreateSch
   if (data.matterId) {
     const m = await prisma.matter.findUnique({ where: { id: data.matterId } });
     if (!m) throw new Error("å…³è”Casoä¸å­˜åœ¨");
-    await assertCanAssociateMatter(session.user.id, data.matterId);
+    await assertCanAssociateMatter(session.user.id, session.user.role, data.matterId);
     await assertMatterWritable(data.matterId);
   }
 
@@ -167,7 +167,7 @@ export async function updatePreservationCase(input: z.infer<typeof caseUpdateSch
   const existing = await assertCanAccessPreservationCase(session.user.id, id);
   if (existing.matterId) await assertMatterWritable(existing.matterId);
   if (matterId) {
-    await assertCanAssociateMatter(session.user.id, matterId);
+    await assertCanAssociateMatter(session.user.id, session.user.role, matterId);
     await assertMatterWritable(matterId);
   }
 
