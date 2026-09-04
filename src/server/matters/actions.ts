@@ -42,6 +42,7 @@ function emptyToNull<T extends Record<string, unknown>>(obj: T): T {
 
 export async function listMatters(input: Partial<MatterListQuery> = {}) {
   const session = await requireSession();
+  const prisma = await getTenantPrisma();
   const query = matterListQuerySchema.parse(input);
 
   const whereParts: Prisma.MatterWhereInput[] = [

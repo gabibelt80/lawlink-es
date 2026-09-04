@@ -1,7 +1,7 @@
 ﻿"use server";
 
 import { z } from "zod";
-import { prisma } from "@/lib/prisma";
+import { getTenantPrisma } from "@/lib/tenant-prisma";
 import { requireSession } from "@/lib/auth/session";
 import { assertCanAccessMatter } from "@/lib/permissions";
 

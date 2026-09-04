@@ -1,6 +1,7 @@
 ﻿"use server";
 
 import bcrypt from "bcryptjs";
+import { getTenantPrismaSync } from "@/lib/tenant-prisma";
 import { prisma, createTenantSchema, migrateTenantSchema, dropTenantSchema } from "@/lib/tenant";
 
 function slugify(text: string): string {
@@ -33,13 +34,17 @@ export async function createFirmAction(input: {
   // 2. Migrar schema
   await migrateTenantSchema(slug);
 
-  // 3. Crear estudio
+  // 3. Crear estudio en base central
   const passwordHash = await bcrypt.hash(input.password, 12);
-  await prisma.firm.create({
+  const firm = await prisma.firm.create({
     data: {
       name: input.firmName,
       slug,
       email: input.firmEmail,
+      plan: "trial",
+      planExpiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 dias de trial
+      maxUsers: 5,
+      maxBranch: 1,
       users: {
         create: {
           name: input.userName,
@@ -47,6 +52,27 @@ export async function createFirmAction(input: {
           passwordHash,
         },
       },
+    },
+    include: { users: true },
+  });
+
+  // 4. Crear usuario en el tenant schema
+  const tenantPrisma = getTenantPrismaSync(slug);
+  await tenantPrisma.user.create({
+    data: {
+      id: firm.users[0].id,
+      name: input.userName,
+      email: input.userEmail,
+      passwordHash,
+      role: "ADMIN",
+    },
+  });
+
+  // 5. Crear datos iniciales del tenant (opcional, como SystemSetting)
+  await tenantPrisma.systemSetting.create({
+    data: {
+      key: "firmProfile",
+      value: { firmName: input.firmName, firmEmail: input.firmEmail },
     },
   });
 

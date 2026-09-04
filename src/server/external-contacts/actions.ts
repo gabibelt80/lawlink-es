@@ -9,7 +9,7 @@
  * æƒé™ï¼šæ‰€æœ‰Iniciar sesiÃ³nç”¨æˆ·å¯çœ‹å·²Aprobarè”ç³»äººï¼Œå¯æ–°å»ºï¼›æ™®é€šæˆå‘˜æ–°å»ºåŽéœ€Administrarå±‚å®¡æ ¸ã€‚
  */
 import { z } from "zod";
-import { prisma } from "@/lib/prisma";
+import { getTenantPrisma } from "@/lib/tenant-prisma";
 import { revalidatePath } from "next/cache";
 import { requireSession } from "@/lib/auth/session";
 import { audit } from "@/server/audit";

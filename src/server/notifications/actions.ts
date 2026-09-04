@@ -1,6 +1,6 @@
 ﻿"use server";
 
-import { prisma } from "@/lib/prisma";
+import { getTenantPrisma } from "@/lib/tenant-prisma";
 import { requireSession } from "@/lib/auth/session";
 
 export async function getNotifications(params?: { unreadOnly?: boolean; limit?: number }) {

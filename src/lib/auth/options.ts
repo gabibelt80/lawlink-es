@@ -3,8 +3,7 @@ import CredentialsProvider from "next-auth/providers/credentials";
 import bcrypt from "bcryptjs";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
-import { getTenantPrisma } from "@/lib/tenant";
-import { audit } from "@/server/audit";
+import { getTenantPrismaSync } from "@/lib/tenant-prisma";
 
 const credentialsSchema = z.object({
   email: z.string().email(),
@@ -12,22 +11,21 @@ const credentialsSchema = z.object({
 });
 
 export const authOptions: NextAuthOptions = {
-  session: { strategy: "jwt", maxAge: 12 * 60 * 60 }, // 12h
+  session: { strategy: "jwt", maxAge: 12 * 60 * 60 },
   pages: {
     signIn: "/login"
   },
   providers: [
     CredentialsProvider({
-      name: "Email y contraseÃ±a",
+      name: "Email y contrasena",
       credentials: {
         email: { label: "Email", type: "email" },
-        password: { label: "ContraseÃ±a", type: "password" }
+        password: { label: "Contrasena", type: "password" }
       },
       async authorize(credentials) {
         const parsed = credentialsSchema.safeParse(credentials);
         if (!parsed.success) return null;
 
-        // Buscar en el schema central
         const firmUser = await prisma.firmUser.findUnique({
           where: { email: parsed.data.email },
           include: { firm: true }
@@ -38,7 +36,6 @@ export const authOptions: NextAuthOptions = {
         const matches = await bcrypt.compare(parsed.data.password, firmUser.passwordHash);
         if (!matches) return null;
 
-        // Admin del sistema (firmId = null)
         if (firmUser.firmId === null) {
           prisma.firmUser.update({
             where: { id: firmUser.id },
@@ -57,7 +54,6 @@ export const authOptions: NextAuthOptions = {
           };
         }
 
-        // Usuario de estudio
         if (!firmUser.firm || !firmUser.firm.active) return null;
 
         prisma.firmUser.update({
@@ -65,8 +61,7 @@ export const authOptions: NextAuthOptions = {
           data: { lastLoginAt: new Date() }
         }).catch(() => {});
 
-        // Actualizar lastLoginAt en el tenant
-        const tenantPrisma = getTenantPrisma(firmUser.firm.slug);
+        const tenantPrisma = getTenantPrismaSync(firmUser.firm.slug);
         tenantPrisma.user.updateMany({
           where: { email: firmUser.email },
           data: { lastLoginAt: new Date() }
@@ -102,19 +97,11 @@ export const authOptions: NextAuthOptions = {
         session.user.id = token.id as string;
         session.user.role = token.role as string;
         session.user.avatar = token.avatar as string | null;
-        session.user.firmId = token.firmId as string;
+        session.user.firmId = token.firmId as string | null;
         session.user.firmSlug = token.firmSlug as string;
         session.user.firmName = token.firmName as string;
       }
       return session;
-    }
-  },
-  events: {
-    async signIn({ user }) {
-      // No auditar en schema central para evitar complejidad
-    },
-    async signOut({ token }) {
-      // No auditar en schema central
     }
   }
 };

@@ -8,7 +8,7 @@
  * ç‰ˆæœ¬ï¼šsupersededById Enlaceæ—§â†’æ–°ï¼›åˆ—è¡¨é»˜è®¤åªæ˜¾ç¤º"æœ€æ–°"ã€‚
  * Buscarï¼šILIKE name + description + tags å¤šå­—æ®µæ¨¡ç³ŠCoincidenciaï¼ˆä¸ç”¨ tsvectorï¼‰ã€‚
  */
-import { prisma } from "@/lib/prisma";
+import { getTenantPrisma } from "@/lib/tenant-prisma";
 import { requireSession } from "@/lib/auth/session";
 import { storage } from "@/lib/storage";
 import { sha256 } from "@/lib/storage/crypto";

@@ -98,7 +98,7 @@ export function AdminView({ firms }: { firms: FirmRow[] }) {
   }
 
   function handleDelete(firmId: string, firmName: string) {
-    if (!confirm(`¿Eliminar el estudio «${firmName}»? Esta acción es irreversible.`)) return;
+    if (!confirm(`¿Eliminar el estudio «${firmName}»? Esta accion es irreversible.`)) return;
     startTransition(async () => {
       try {
         await deleteFirmAction({ firmId });
@@ -276,7 +276,7 @@ export function AdminView({ firms }: { firms: FirmRow[] }) {
           <form onSubmit={handleCreate} className="space-y-3">
             <div className="space-y-1.5">
               <Label className="text-xs">Nombre del estudio</Label>
-              <Input name="firmName" required placeholder="Ej.: Estudio Pérez & Asociados" />
+              <Input name="firmName" required placeholder="Ej.: Estudio Perez & Asociados" />
             </div>
             <div className="space-y-1.5">
               <Label className="text-xs">Email del estudio</Label>
@@ -292,7 +292,7 @@ export function AdminView({ firms }: { firms: FirmRow[] }) {
             </div>
             <div className="space-y-1.5">
               <Label className="text-xs">Contraseña temporal</Label>
-              <Input name="password" type="password" required placeholder="Mínimo 8 caracteres" />
+              <Input name="password" type="password" required placeholder="Minimo 8 caracteres" />
             </div>
             <DialogFooter>
               <Button type="button" variant="outline" onClick={() => setCreateOpen(false)} disabled={isPending}>
