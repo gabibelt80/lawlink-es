@@ -293,6 +293,7 @@ export function AuditView({
           )}
         </div>
       </div>
+
       {/* Lista */}
       <div className="rounded-lg border border-border bg-card overflow-hidden">
         <table className="w-full text-xs">

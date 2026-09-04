@@ -40,30 +40,29 @@ import {
   isNationalAgency
 } from "@/lib/china-regions";
 
-// v0.45: 程序类型到「XX信息」的映射（覆盖所有程序类型）
 const PROC_INFO_LABEL: Record<string, string> = {
-  FIRST_INSTANCE: "一审信息",
-  SECOND_INSTANCE: "二审信息",
-  RETRIAL_REVIEW: "再审审查信息",
-  RETRIAL: "再审信息",
-  REMAND_FIRST: "重审一审信息",
-  REMAND_SECOND: "重审二审信息",
-  PROSECUTORIAL_SUPERVISION: "检察监督信息",
-  COMMERCIAL_ARBITRATION: "商事仲裁信息",
-  LABOR_ARBITRATION: "劳动仲裁信息",
-  ARBITRATION_SET_ASIDE: "撤销仲裁裁决信息",
-  ARBITRATION_ENFORCEMENT_REVIEW: "不予执行仲裁审查信息",
-  ENFORCEMENT: "强制执行信息",
-  ENFORCEMENT_OBJECTION: "执行异议信息",
-  INVESTIGATION: "侦查信息",
-  PROSECUTION_REVIEW: "审查起诉信息",
-  DEATH_PENALTY_REVIEW: "死刑复核信息",
-  CRIMINAL_ENFORCEMENT: "刑罚执行信息",
-  COMMUTATION_PAROLE_REVIEW: "减刑假释审查信息",
-  ADMIN_RECONSIDERATION: "Administrativo复议信息",
-  ADMIN_NON_LITIGATION_ENFORCEMENT: "非诉Administrativo执行信息",
-  NON_LITIGATION_PHASE: "非诉阶段信息",
-  CUSTOM: "程序信息"
+  FIRST_INSTANCE: "Primera instancia",
+  SECOND_INSTANCE: "Segunda instancia",
+  RETRIAL_REVIEW: "Revision de reenvio",
+  RETRIAL: "Reenvio",
+  REMAND_FIRST: "Primera instancia de reenvio",
+  REMAND_SECOND: "Segunda instancia de reenvio",
+  PROSECUTORIAL_SUPERVISION: "Supervision fiscal",
+  COMMERCIAL_ARBITRATION: "Arbitraje comercial",
+  LABOR_ARBITRATION: "Arbitraje laboral",
+  ARBITRATION_SET_ASIDE: "Nulidad de laudo arbitral",
+  ARBITRATION_ENFORCEMENT_REVIEW: "Revision de no ejecucion de laudo",
+  ENFORCEMENT: "Ejecucion forzosa",
+  ENFORCEMENT_OBJECTION: "Objecion de ejecucion",
+  INVESTIGATION: "Investigacion",
+  PROSECUTION_REVIEW: "Revision de acusacion",
+  DEATH_PENALTY_REVIEW: "Revision de pena de muerte",
+  CRIMINAL_ENFORCEMENT: "Ejecucion penal",
+  COMMUTATION_PAROLE_REVIEW: "Revision de conmutacion y libertad condicional",
+  ADMIN_RECONSIDERATION: "Reconsideracion administrativa",
+  ADMIN_NON_LITIGATION_ENFORCEMENT: "Ejecucion administrativa no contenciosa",
+  NON_LITIGATION_PHASE: "Fase no contenciosa",
+  CUSTOM: "Informacion del procedimiento"
 };
 
 type Proc = {
@@ -133,12 +132,12 @@ type PartyEditDraft = {
 
 const PARTY_ROLE_LABEL: Record<PartyRole, string> = {
   CLIENT_PARTY: "Cliente",
-  OPPOSING_PARTY: "相对方",
-  THIRD_PARTY: "第三人",
-  CO_LITIGANT: "共同诉讼人",
-  AGENT: "代理人",
-  WITNESS: "证人",
-  OTHER: "其他"
+  OPPOSING_PARTY: "Contraparte",
+  THIRD_PARTY: "Tercero",
+  CO_LITIGANT: "Colitigante",
+  AGENT: "Apoderado",
+  WITNESS: "Testigo",
+  OTHER: "Otro"
 };
 
 const PARTY_ROLE_OPTIONS: PartyRole[] = [
@@ -159,15 +158,15 @@ const PARTY_TYPE_OPTIONS: PartyType[] = [
 ];
 
 const PROCEDURE_OUTCOME_LABEL: Record<ProcedureOutcome, string> = {
-  WON: "胜诉",
-  PARTIAL_WON: "部分胜诉",
-  LOST: "败诉",
-  MEDIATED: "调解",
-  WITHDRAWN: "Retirar",
-  DISMISSED: "Rechazar",
+  WON: "Favorable",
+  PARTIAL_WON: "Parcialmente favorable",
+  LOST: "Desfavorable",
+  MEDIATED: "Mediado",
+  WITHDRAWN: "Desistido",
+  DISMISSED: "Rechazado",
   COMPLETED: "Completado",
-  TRANSFERRED: "移送",
-  OTHER: "其他"
+  TRANSFERRED: "Transferido",
+  OTHER: "Otro"
 };
 
 const editorControlClass =
@@ -214,7 +213,6 @@ function partyToEditDraft(party: PartyLite): PartyEditDraft {
   };
 }
 
-// 按程序类型Aceptar「主审法官」的称谓
 const ARBITRATION: ProcedureType[] = [
   "COMMERCIAL_ARBITRATION",
   "LABOR_ARBITRATION",
@@ -229,13 +227,13 @@ const EXECUTION: ProcedureType[] = [
 ];
 
 function roleLabels(type: ProcedureType): { judge: string } {
-  if (ARBITRATION.includes(type)) return { judge: "首席仲裁员" };
-  if (EXECUTION.includes(type)) return { judge: "执行法官" };
-  return { judge: "主审法官" };
+  if (ARBITRATION.includes(type)) return { judge: "Arbitro presidente" };
+  if (EXECUTION.includes(type)) return { judge: "Juez de ejecucion" };
+  return { judge: "Juez principal" };
 }
 
 function requestLabel(type: ProcedureType) {
-  return ARBITRATION.includes(type) ? "仲裁请求" : "诉讼请求";
+  return ARBITRATION.includes(type) ? "Pretension arbitral" : "Pretension procesal";
 }
 
 const dash = (v: string | null | undefined) => v?.trim() || "—";
@@ -406,18 +404,18 @@ export function ProcedureInfoPanel({
     <section className="rounded-lg border border-border bg-card">
       <div className="overflow-hidden rounded-lg">
         <InfoRow>
-          <Pair label="立案时间">{p.acceptedAt ? formatDate(p.acceptedAt) : "—"}</Pair>
-          <Pair label="案号">
+          <Pair label="Fecha de radicacion">{p.acceptedAt ? formatDate(p.acceptedAt) : "—"}</Pair>
+          <Pair label="Numero de caso">
             <span className="font-mono tabular">{dash(p.caseNumber)}</span>
           </Pair>
         </InfoRow>
         <InfoRow>
-          <Pair label="管辖地">{dash(p.jurisdiction)}</Pair>
-          <Pair label="管辖机构">{dash(p.handlingAgency)}</Pair>
+          <Pair label="Jurisdiccion">{dash(p.jurisdiction)}</Pair>
+          <Pair label="Organo jurisdiccional">{dash(p.handlingAgency)}</Pair>
         </InfoRow>
         <InfoRow>
           <Pair label={judge}>{dash(p.presidingJudge)}</Pair>
-          <Pair label="联系方式">
+          <Pair label="Contacto">
             <span className="font-mono tabular">{dash(p.presidingJudgeContact)}</span>
           </Pair>
         </InfoRow>
@@ -427,8 +425,8 @@ export function ProcedureInfoPanel({
           </Pair>
         </InfoRow>
         <InfoRow>
-          <Pair label="裁决时间">{p.concludedAt ? formatDate(p.concludedAt) : "—"}</Pair>
-          <Pair label="裁决结果">{outcomeText(p)}</Pair>
+          <Pair label="Fecha de conclusion">{p.concludedAt ? formatDate(p.concludedAt) : "—"}</Pair>
+          <Pair label="Resultado">{outcomeText(p)}</Pair>
         </InfoRow>
       </div>
       <ProcedureInfoEditor
@@ -489,12 +487,12 @@ export function ProcedurePartiesCard({
 }) {
   const partyRows = buildProcedurePartyRows(procedure.type, procedure.procedureParties, parties);
   const groups = [
-    { key: "client", title: "委托方", rows: partyRows.filter((row) => row.party.role === "CLIENT_PARTY") },
-    { key: "opposing", title: "对方当事人", rows: partyRows.filter((row) => row.party.role === "OPPOSING_PARTY") },
-    { key: "third", title: "第三人", rows: partyRows.filter((row) => row.party.role === "THIRD_PARTY") },
+    { key: "client", title: "Cliente", rows: partyRows.filter((row) => row.party.role === "CLIENT_PARTY") },
+    { key: "opposing", title: "Contraparte", rows: partyRows.filter((row) => row.party.role === "OPPOSING_PARTY") },
+    { key: "third", title: "Tercero", rows: partyRows.filter((row) => row.party.role === "THIRD_PARTY") },
     {
       key: "other",
-      title: "其他当事人",
+      title: "Otros",
       rows: partyRows.filter(
         (row) => !["CLIENT_PARTY", "OPPOSING_PARTY", "THIRD_PARTY"].includes(row.party.role)
       )
@@ -506,7 +504,7 @@ export function ProcedurePartiesCard({
       <header className="flex items-center justify-between border-b border-border px-4 py-2">
         <span className="flex items-center gap-1.5 text-[13px] font-medium">
           <Users className="h-3.5 w-3.5 text-primary" strokeWidth={1.8} />
-          当事人
+          Partes
           <span className="ml-1 font-mono text-[11px] text-muted-foreground tabular">
             {partyRows.length}
           </span>
@@ -526,7 +524,7 @@ export function ProcedurePartiesCard({
       </header>
       <div className="space-y-3 px-4 py-3">
         {groups.length === 0 ? (
-          <p className="py-4 text-center text-xs text-muted-foreground">暂无Caso当事人</p>
+          <p className="py-4 text-center text-xs text-muted-foreground">Sin partes del caso</p>
         ) : (
           groups.map((group) => (
             <div key={group.key} className="space-y-2">
@@ -630,17 +628,17 @@ function ProcedurePartyBlock({
   const idValue = isOrg ? party.enterpriseSocialCode : party.idNumber;
   const typeLabel = partyTypeLabel[party.partyType];
   const contactItems = [
-    party.contactName ? `联系人：${party.contactName}` : "",
-    party.phone ? `电话：${party.phone}` : "",
-    party.address ? `地址：${party.address}` : ""
+    party.contactName ? `Contacto: ${party.contactName}` : "",
+    party.phone ? `Telefono: ${party.phone}` : "",
+    party.address ? `Direccion: ${party.address}` : ""
   ].filter(Boolean);
   const avatar = party.name.trim().charAt(0) || "—";
   const identityText = [
     typeLabel,
-    idValue ? `${isOrg ? "信用代码" : "证件号码"}：${idValue}` : "",
-    isOrg && party.legalRep ? `法定代表人：${party.legalRep}` : ""
+    idValue ? `${isOrg ? "Codigo de credito" : "Numero de documento"}: ${idValue}` : "",
+    isOrg && party.legalRep ? `Representante legal: ${party.legalRep}` : ""
   ].filter(Boolean).join(" · ");
-  const contactText = contactItems.length > 0 ? contactItems.join(" · ") : "暂无联系人、电话或地址";
+  const contactText = contactItems.length > 0 ? contactItems.join(" · ") : "Sin contacto, telefono o direccion";
   const titleText = [party.name, identityText, contactText].filter(Boolean).join("\n");
 
   return (
@@ -663,13 +661,13 @@ function ProcedurePartyBlock({
           </span>
           {idValue && (
             <PartyDetailChip
-              label={isOrg ? "信用代码" : "证件号码"}
+              label={isOrg ? "Codigo de credito" : "Numero de documento"}
               value={idValue}
               mono
             />
           )}
           {isOrg && party.legalRep && (
-            <PartyDetailChip label="法定代表人" value={party.legalRep} />
+            <PartyDetailChip label="Representante legal" value={party.legalRep} />
           )}
         </div>
         <div className="truncate text-[11px] leading-4 text-muted-foreground">
@@ -678,7 +676,7 @@ function ProcedurePartyBlock({
       </div>
       <div className="flex shrink-0 flex-wrap justify-end gap-1 self-center">
         <StandingName standing={primaryStanding}>
-          {primaryStanding ? litigationStandingLabel[primaryStanding] : "未Configuración地位"}
+          {primaryStanding ? litigationStandingLabel[primaryStanding] : "Sin posicion"}
         </StandingName>
         {otherStandings.map((standing) => (
           <StandingName key={standing} standing={standing}>
@@ -837,19 +835,19 @@ function EditDialog({
   function addNewProcedureParty() {
     const name = newPartyForm.name.trim();
     if (!name) {
-      toast.error("请填写当事人Nombre");
+      toast.error("Complete el nombre de la parte");
       return;
     }
     if (newPartyForm.standings.length === 0) {
-      toast.error("请选择程序地位");
+      toast.error("Seleccione la posicion procesal");
       return;
     }
     if (newPartyForm.partyType === "NATURAL_PERSON" && !newPartyForm.idNumber.trim()) {
-      toast.error("请填写证件号");
+      toast.error("Complete el numero de documento");
       return;
     }
     if (newPartyForm.partyType !== "NATURAL_PERSON" && !newPartyForm.enterpriseSocialCode.trim()) {
-      toast.error("请填写统一社会信用代码");
+      toast.error("Complete el codigo de credito social");
       return;
     }
     setNewProcedureParties((rows) => [
@@ -877,12 +875,12 @@ function EditDialog({
 
   function save() {
     if (newProcedureParties.some((party) => party.standings.length === 0)) {
-      toast.error("新增当事人需至少选择一个程序地位");
+      toast.error("La nueva parte necesita al menos una posicion procesal");
       return;
     }
     if (!isAgencyAllowedForProcedure(form.handlingAgency, proc.type)) {
-      toast.error("商事仲裁程序不能选择法院作为管辖机构", {
-        description: "撤裁、强制执行、不予执行审查etc.后续程序仍可选择法院。"
+      toast.error("El arbitraje comercial no puede elegir tribunal como organo", {
+        description: "Nulidad, ejecucion forzosa y revision posterior pueden elegir tribunal."
       });
       return;
     }
@@ -919,10 +917,10 @@ function EditDialog({
             standings
           }))
         });
-        toast.success("已Guardar");
+        toast.success("Guardado");
         onSaved();
       } catch (err) {
-        toast.error("GuardarError", { description: err instanceof Error ? err.message : "" });
+        toast.error("Error al guardar", { description: err instanceof Error ? err.message : "" });
       }
     });
   }
@@ -931,25 +929,25 @@ function EditDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="flex max-h-[86vh] w-[92vw] max-w-[720px] flex-col gap-0 overflow-hidden bg-[#EEF2F6] p-0">
         <DialogHeader className="border-b border-border bg-card px-5 py-4">
-          <DialogTitle>Editar{PROC_INFO_LABEL[proc.type] ?? "程序信息"}</DialogTitle>
+          <DialogTitle>Editar {PROC_INFO_LABEL[proc.type] ?? "Informacion del procedimiento"}</DialogTitle>
         </DialogHeader>
         <div className="max-h-[calc(86vh-116px)] space-y-4 overflow-y-auto bg-[#EEF2F6] px-5 py-4">
           <section className={editorSectionClass}>
-            <EditorSectionTitle>程序基础信息</EditorSectionTitle>
+            <EditorSectionTitle>Informacion basica del procedimiento</EditorSectionTitle>
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-              <FieldRow label="管辖地（省/市/区县）">
+              <FieldRow label="Jurisdiccion (provincia/ciudad/distrito)">
                 <JurisdictionSelect
                   value={form.jurisdiction}
                   onChange={handleJurisdictionChange}
                   triggerClassName={editorControlClass}
                 />
               </FieldRow>
-              <FieldRow label="管辖机构">
+              <FieldRow label="Organo jurisdiccional">
                 <Input
                   list={`proc-agency-${proc.id}`}
                   value={form.handlingAgency}
                   onChange={(e) => handleHandlingAgencyChange(e.target.value)}
-                  placeholder="如：最高人民法院 / 广州市días河区人民法院"
+                  placeholder="Ej.: Tribunal Superior / Juzgado Civil Nro 1"
                   className={editorControlClass}
                 />
                 <datalist id={`proc-agency-${proc.id}`}>
@@ -958,17 +956,17 @@ function EditDialog({
                   ))}
                 </datalist>
               </FieldRow>
-              <FieldRow label="案号">
+              <FieldRow label="Numero de caso">
                 <Input
                   value={form.caseNumber}
                   onChange={(e) => set("caseNumber", e.target.value)}
                   className={cn(editorControlClass, "font-mono")}
                 />
               </FieldRow>
-              <FieldRow label="我方地位">
+              <FieldRow label="Nuestra posicion">
                 <Select value={form.ourStanding} onValueChange={(v) => set("ourStanding", v)}>
                   <SelectTrigger className={editorControlClass}>
-                    <SelectValue placeholder="选择我方地位" />
+                    <SelectValue placeholder="Seleccionar nuestra posicion" />
                   </SelectTrigger>
                   <SelectContent>
                     {standingOptions.map((s) => (
@@ -986,14 +984,14 @@ function EditDialog({
                   className={editorControlClass}
                 />
               </FieldRow>
-              <FieldRow label={`${judge}联系方式`}>
+              <FieldRow label={`${judge} - Contacto`}>
                 <Input
                   value={form.presidingJudgeContact}
                   onChange={(e) => set("presidingJudgeContact", e.target.value)}
                   className={cn(editorControlClass, "font-mono")}
                 />
               </FieldRow>
-              <FieldRow label="立案时间">
+              <FieldRow label="Fecha de radicacion">
                 <Input
                   type="date"
                   value={form.acceptedAt}
@@ -1001,7 +999,7 @@ function EditDialog({
                   className={editorControlClass}
                 />
               </FieldRow>
-              <FieldRow label="裁决 / Cerrar caso时间">
+              <FieldRow label="Fecha de conclusion">
                 <Input
                   type="date"
                   value={form.concludedAt}
@@ -1014,7 +1012,7 @@ function EditDialog({
 
           <section className={editorSectionClass}>
             <div className="flex items-center justify-between gap-3">
-              <EditorSectionTitle>程序当事人</EditorSectionTitle>
+              <EditorSectionTitle>Partes del procedimiento</EditorSectionTitle>
               <Button
                 type="button"
                 variant="outline"
@@ -1027,12 +1025,12 @@ function EditDialog({
                 ) : (
                   <Plus className="h-3.5 w-3.5" />
                 )}
-                {showNewPartyForm ? "收起" : "Agregar"}
+                {showNewPartyForm ? "Cerrar" : "Agregar"}
               </Button>
             </div>
             {parties.length === 0 ? (
               <div className="rounded-md border border-border px-3 py-2 text-xs text-muted-foreground">
-                暂无Caso当事人
+                Sin partes del caso
               </div>
             ) : (
               <div className="max-h-[440px] overflow-y-auto rounded-md border border-[#D9E0EA] bg-white">
@@ -1069,7 +1067,7 @@ function EditDialog({
                       </div>
                       <div className="rounded-md border border-[#E2E7EF] bg-[#F6F8FB] p-2">
                         <div className="mb-2 text-[11px] font-medium text-muted-foreground">
-                          主体基础信息
+                          Informacion basica del sujeto
                         </div>
                         <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
                           <FieldRow label="Nombre">
@@ -1079,7 +1077,7 @@ function EditDialog({
                               className={editorControlClass}
                             />
                           </FieldRow>
-                          <FieldRow label="当事人Rol">
+                          <FieldRow label="Rol de la parte">
                             <Select
                               value={draft.role}
                               onValueChange={(v) => setPartyEditValue(party.id, "role", v as PartyRole)}
@@ -1096,7 +1094,7 @@ function EditDialog({
                               </SelectContent>
                             </Select>
                           </FieldRow>
-                          <FieldRow label="主体类型">
+                          <FieldRow label="Tipo de sujeto">
                             <Select
                               value={draft.partyType}
                               onValueChange={(v) => setPartyEditValue(party.id, "partyType", v as PartyType)}
@@ -1113,7 +1111,7 @@ function EditDialog({
                               </SelectContent>
                             </Select>
                           </FieldRow>
-                          <FieldRow label={isOrg ? "统一社会信用代码" : "证件号码"}>
+                          <FieldRow label={isOrg ? "Codigo de credito social" : "Numero de documento"}>
                             <Input
                               className={cn(editorControlClass, "font-mono")}
                               value={isOrg ? draft.enterpriseSocialCode : draft.idNumber}
@@ -1127,7 +1125,7 @@ function EditDialog({
                             />
                           </FieldRow>
                           {isOrg && (
-                            <FieldRow label="法定代表人">
+                            <FieldRow label="Representante legal">
                               <Input
                                 value={draft.legalRep}
                                 onChange={(e) => setPartyEditValue(party.id, "legalRep", e.target.value)}
@@ -1135,14 +1133,14 @@ function EditDialog({
                               />
                             </FieldRow>
                           )}
-                          <FieldRow label="联系人">
+                          <FieldRow label="Contacto">
                             <Input
                               value={draft.contactName}
                               onChange={(e) => setPartyEditValue(party.id, "contactName", e.target.value)}
                               className={editorControlClass}
                             />
                           </FieldRow>
-                          <FieldRow label="联系方式">
+                          <FieldRow label="Telefono">
                             <Input
                               className={cn(editorControlClass, "font-mono")}
                               value={draft.phone}
@@ -1150,7 +1148,7 @@ function EditDialog({
                             />
                           </FieldRow>
                           <div className="sm:col-span-2">
-                            <FieldRow label="地址">
+                            <FieldRow label="Direccion">
                               <Input
                                 value={draft.address}
                                 onChange={(e) => setPartyEditValue(party.id, "address", e.target.value)}
@@ -1189,7 +1187,7 @@ function EditDialog({
                           )
                         }
                         className="ml-auto rounded p-0.5 text-muted-foreground hover:text-destructive"
-                        title="移除"
+                        title="Eliminar"
                       >
                         <X className="h-3.5 w-3.5" />
                       </button>
@@ -1221,7 +1219,7 @@ function EditDialog({
                     list={`new-procedure-party-${proc.id}`}
                     value={newPartyForm.name}
                     onChange={(e) => handleNewPartyNameChange(e.target.value)}
-                    placeholder="新增当事人Nombre"
+                    placeholder="Nombre de la nueva parte"
                     className={cn(editorControlClass, "h-8 text-xs")}
                   />
                   <datalist id={`new-procedure-party-${proc.id}`}>
@@ -1272,8 +1270,8 @@ function EditDialog({
                     }
                     placeholder={
                       newPartyForm.partyType === "NATURAL_PERSON"
-                        ? "证件号"
-                        : "统一社会信用代码"
+                        ? "Numero de documento"
+                        : "Codigo de credito social"
                     }
                     className={cn(editorControlClass, "h-8 text-xs")}
                   />
@@ -1283,7 +1281,7 @@ function EditDialog({
                     onClick={addNewProcedureParty}
                     className="h-8 px-2 text-xs"
                   >
-                    ConfirmarAgregar
+                    Agregar
                   </Button>
                 </div>
                 <div className="mt-2 flex flex-wrap gap-x-3 gap-y-2">

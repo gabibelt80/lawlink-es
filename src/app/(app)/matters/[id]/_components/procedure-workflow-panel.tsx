@@ -228,14 +228,13 @@ type WorkflowStage = {
   removable: boolean;
   status: WorkflowStageStatus;
   tasks: WorkflowTask[];
-  /** v1.1 UI（方案 E）：导航徽标——Tarea数 / 临期倒计时 / 开庭Fecha */
   badge: { text: string; hot: boolean } | null;
 };
 
 type MatterInfoWorkflowItem = {
   key: "matter-info";
   id: null;
-  name: "信息Total览";
+  name: "Vista general";
   kind: "matter_info";
   status: "active";
   tasks: [];
@@ -258,376 +257,376 @@ type StageGuide = {
 const MATTER_INFO_ITEM: MatterInfoWorkflowItem = {
   key: "matter-info",
   id: null,
-  name: "信息Total览",
+  name: "Vista general",
   kind: "matter_info",
   status: "active",
   tasks: []
 };
 
 const PRESERVATION_ACTIONS = [
-  "财产Preservación申请书",
-  "财产线索清单",
-  "担保书/保函",
-  "网络查控申请书",
-  "Preservación费缴费凭证",
-  "续封申请书",
-  "解除Preservación申请书",
-  "Preservación复议申请书"
+  "Solicitud de preservacion de bienes",
+  "Lista de pistas de bienes",
+  "Carta de garantia / poliza",
+  "Solicitud de investigacion en red",
+  "Comprobante de pago de preservacion",
+  "Solicitud de renovacion de embargo",
+  "Solicitud de levantamiento de preservacion",
+  "Solicitud de reconsideracion de preservacion"
 ];
 
 const DEFAULT_STAGE_GUIDE: StageGuide = {
-  summary: "记录本阶段的Tarea、文件和沟通结果，作为当前程序的工作留痕。",
-  checklistTitle: "本环节事ítems",
-  checklist: ["明确阶段目标和交付物", "记录当事人或法院沟通要点", "归集本阶段形成的材料"],
-  actions: ["阶段工作底稿", "补充说明"],
+  summary: "Registra las tareas, documentos y resultados de comunicacion de esta etapa como constancia de trabajo del procedimiento actual.",
+  checklistTitle: "Items de esta etapa",
+  checklist: ["Definir objetivos y entregables de la etapa", "Registrar puntos clave de comunicacion con partes o tribunal", "Recopilar materiales generados en esta etapa"],
+  actions: ["Documento de trabajo de la etapa", "Nota complementaria"],
   deadlineCategories: [],
   materialCategories: [],
-  materialPattern: /阶段|说明|记录|底稿|工作/,
+  materialPattern: /etapa|nota|registro|documento|trabajo/,
   defaultCategory: "PROCEDURE"
 };
 
 const STAGE_GUIDES: { keys: string[]; guide: StageGuide }[] = [
   {
-    keys: ["代理授权", "委托手续"],
+    keys: ["Autorizacion", "Poder"],
     guide: {
-      summary: "办理代理合同、授权文件、律所手续、风险告知、Gastos到账和材料交接留痕。",
-      checklistTitle: "委托手续",
+      summary: "Gestionar contrato de mandato, documentos de autorizacion, tramites del estudio, aviso de riesgos, cobro de honorarios y entrega de materiales.",
+      checklistTitle: "Tramites de mandato",
       checklist: [
-        "核对委托人身份和签章主体",
-        "签署委托代理合同、授权委托书、所函",
-        "完成风险告知、工作联系函和材料交接留痕",
-        "ConfirmarAbogado费到账、Factura和原件移交记录"
+        "Verificar identidad del cliente y firmante",
+        "Firmar contrato de mandato, poder y carta del estudio",
+        "Completar aviso de riesgos, carta de contacto y entrega de materiales",
+        "Confirmar pago de honorarios, factura y entrega de originales"
       ],
-      actions: ["委托代理合同", "授权委托书", "律所函", "风险告知书", "工作联系函", "证据原件交接单"],
+      actions: ["Contrato de mandato", "Poder", "Carta del estudio", "Aviso de riesgos", "Carta de contacto", "Acta de entrega de originales"],
       deadlineCategories: [],
       materialCategories: ["CONTRACT"],
-      materialPattern: /授权|委托|所函|律所函|风险告知|联系函|Factura|签收|交接/,
+      materialPattern: /poder|mandato|carta|riesgos|contacto|factura|entrega|originales/,
       defaultCategory: "CONTRACT"
     }
   },
   {
-    keys: ["财产Preservación"],
+    keys: ["Preservacion de bienes"],
     guide: {
-      summary: "围绕Preservación申请、担保、缴费、裁定、续封和解除组织材料。",
-      checklistTitle: "Preservación事ítems",
+      summary: "Organizar materiales de solicitud de preservacion, garantia, pago, resolucion, renovacion y levantamiento.",
+      checklistTitle: "Items de preservacion",
       checklist: [
-        "ConfirmarPreservación范围、财产线索和担保方式",
-        "EnviarPreservación申请、担保书/保函和财产线索",
-        "跟进缴费、裁定、查封冻结结果和首封情况",
-        "记录PreservaciónPlazo并提前安排续保或解除"
+        "Confirmar alcance de preservacion, pistas de bienes y tipo de garantia",
+        "Enviar solicitud de preservacion, carta de garantia y pistas de bienes",
+        "Seguir pago, resolucion, resultado de embargo y congelamiento",
+        "Registrar plazos de preservacion y programar renovacion o levantamiento"
       ],
       actions: PRESERVATION_ACTIONS,
       deadlineCategories: ["PRESERVATION"],
       materialCategories: [],
-      materialPattern: /Preservación|财产线索|担保|保函|查封|冻结|续封|续保|解除|裁定|协助执行/,
+      materialPattern: /preservacion|bienes|garantia|poliza|embargo|congelamiento|renovacion|levantamiento|resolucion|ejecucion/,
       defaultCategory: "PROCEDURE"
     }
   },
   {
-    keys: ["案情研判", "材料消化", "诉讼方案", "二审阅卷研判"],
+    keys: ["Analisis del caso", "Analisis de materiales", "Plan de litigio", "Revision de segunda instancia"],
     guide: {
-      summary: "消化基础材料，形成事实摘要、证据缺口、法律检索和诉讼代理方案。",
-      checklistTitle: "研判事ítems",
+      summary: "Analizar materiales base, formar resumen de hechos, brechas probatorias, busqueda juridica y plan de litigio.",
+      checklistTitle: "Items de analisis",
       checklist: [
-        "梳理Caso事实、法律关系、争议焦点",
-        "核对证据原件或扫描件，列出缺漏清单",
-        "完成法律法规、案例和司法观点检索",
-        "向当事人Confirmar关键事实和诉讼方案"
+        "Ordenar hechos del caso, relacion juridica y puntos controvertidos",
+        "Verificar originales o copias de evidencia, listar faltantes",
+        "Completar busqueda de normas, jurisprudencia y criterios judiciales",
+        "Confirmar con el cliente hechos clave y plan de litigio"
       ],
-      actions: ["Caso事实摘要", "法律关系图", "证据缺口清单", "法律检索Informe", "诉讼代理方案"],
+      actions: ["Resumen de hechos", "Mapa de relacion juridica", "Lista de brechas probatorias", "Informe de busqueda juridica", "Plan de litigio"],
       deadlineCategories: [],
       materialCategories: [],
-      materialPattern: /摘要|法律关系|检索|方案|证据缺口|材料清单|事实梳理/,
+      materialPattern: /resumen|relacion|busqueda|plan|brechas|lista|hechos/,
       defaultCategory: "OTHER"
     }
   },
   {
-    keys: ["执行立案"],
+    keys: ["Ejecucion"],
     guide: {
-      summary: "准备强制执行申请材料，Confirmar生效、履行Plazo和执行法院立案要求。",
-      checklistTitle: "执行立案事ítems",
+      summary: "Preparar materiales de ejecucion forzosa, confirmar vigencia, plazo de cumplimiento y requisitos del tribunal de ejecucion.",
+      checklistTitle: "Items de ejecucion",
       checklist: [
-        "Confirmar裁判文书已生效且履行Plazo届满",
-        "准备强制执行申请书、生效文书和身份材料",
-        "补齐申请人账户Confirmar书、送达地址Confirmar书和委托手续",
-        "立案后一周内跟进承办法官联系方式"
+        "Confirmar que la sentencia esta firme y el plazo de cumplimiento vencio",
+        "Preparar solicitud de ejecucion, sentencia firme y documentos de identidad",
+        "Completar confirmacion de cuenta del solicitante, domicilio y poder",
+        "Dentro de la semana siguiente al inicio, contactar al juez"
       ],
-      actions: ["强制执行申请书", "生效证明", "申请人账号Confirmar书", "送达地址Confirmar书", "执行立案材料清单"],
+      actions: ["Solicitud de ejecucion", "Certificado de firmeza", "Confirmacion de cuenta", "Confirmacion de domicilio", "Lista de materiales de ejecucion"],
       deadlineCategories: ["PERFORMANCE", "ENFORCEMENT"],
       materialCategories: [],
-      materialPattern: /执行申请|强制执行|生效|履行|账号Confirmar|送达地址/,
+      materialPattern: /ejecucion|forzosa|firmeza|cumplimiento|cuenta|domicilio/,
       defaultCategory: "PLEADING"
     }
   },
   {
-    keys: ["起诉立案", "仲裁立案"],
+    keys: ["Presentacion de demanda", "Arbitraje"],
     guide: {
-      summary: "完成起诉或仲裁申请材料、主体身份、管辖依据、证据目录、缴费和诉调跟进。",
-      checklistTitle: "立案事ítems",
+      summary: "Completar materiales de demanda o arbitraje, identidad, jurisdiccion, indice de evidencia, pago y seguimiento.",
+      checklistTitle: "Items de presentacion",
       checklist: [
-        "Confirmar请求标的、管辖法院或仲裁机构",
-        "整理起诉状/仲裁申请、身份材料、授权手续和证据目录",
-        "核对被告身份、送达信息、管辖材料和Preservación材料",
-        "跟进立案审查、诉调转立案和诉讼费/仲裁费缴纳"
+        "Confirmar objeto de la demanda, tribunal o institucion arbitral competente",
+        "Organizar demanda, identidad, poder e indice de evidencia",
+        "Verificar identidad del demandado, domicilio, jurisdiccion y preservacion",
+        "Seguir revision, mediacion previa y pago de tasas"
       ],
-      actions: ["民事起诉状", "仲裁申请书", "证据目录", "送达地址Confirmar书", "诉讼费缴费凭证", "立案材料清单"],
+      actions: ["Demanda civil", "Solicitud de arbitraje", "Indice de evidencia", "Confirmacion de domicilio", "Comprobante de pago", "Lista de materiales"],
       deadlineCategories: ["LIMITATION"],
       materialCategories: [],
-      materialPattern: /起诉|仲裁申请|立案|证据目录|送达地址|诉讼费|仲裁费|管辖材料/,
+      materialPattern: /demanda|arbitraje|presentacion|evidencia|domicilio|tasas|jurisdiccion/,
       defaultCategory: "PLEADING"
     }
   },
   {
-    keys: ["管辖异议", "管辖权异议"],
+    keys: ["Excepciones", "Jurisdiccion"],
     guide: {
-      summary: "处理对方管辖异议、答辩、裁定签收和异议上诉/答辩衔接。",
-      checklistTitle: "管辖事ítems",
+      summary: "Atender excepciones de jurisdiccion de la contraparte, contestacion, resolucion y apelacion.",
+      checklistTitle: "Items de jurisdiccion",
       checklist: [
-        "签收并研判对方管辖权异议理由",
-        "Enviar管辖权异议答辩意见y证据",
-        "跟进裁定结果并告知当事人",
-        "在上诉期内处理异议上诉或二审答辩"
+        "Recibir y analizar fundamentos de la excepcion",
+        "Enviar contestacion a la excepcion con evidencia",
+        "Seguir resolucion e informar al cliente",
+        "Dentro del plazo, apelar o contestar en segunda instancia"
       ],
-      actions: ["管辖权异议答辩意见", "管辖权异议申请书", "管辖异议上诉状", "管辖异议裁定签收记录"],
+      actions: ["Contestacion a excepcion", "Solicitud de excepcion", "Apelacion de excepcion", "Registro de resolucion"],
       deadlineCategories: ["APPEAL", "RESPONSE"],
       materialCategories: [],
-      materialPattern: /管辖|异议|移送|裁定|上诉/,
+      materialPattern: /jurisdiccion|excepcion|traslado|resolucion|apelacion/,
       defaultCategory: "PLEADING"
     }
   },
   {
-    keys: ["举证质证"],
+    keys: ["Pruebas y contrapruebas"],
     guide: {
-      summary: "围绕举证Plazo、补充证据、调查令、鉴定、证人出庭和对方证据质证组织工作。",
-      checklistTitle: "举证事ítems",
+      summary: "Organizar trabajo de plazos probatorios, evidencia complementaria, oficios, peritajes, testigos y contrapruebas.",
+      checklistTitle: "Items de prueba",
       checklist: [
-        "记录举证Notificaciones签收日并计算举证Plazo",
-        "复核全案材料，Confirmar补充证据和反驳证据",
-        "评估调查令、法院调查取证、鉴定和证人出庭申请",
-        "收到对方证据后y当事人核实真实性并形成质证意见"
+        "Registrar notificaciones y calcular plazos probatorios",
+        "Revisar todos los materiales, confirmar evidencia complementaria",
+        "Evaluar oficios, peritajes y testigos",
+        "Al recibir evidencia contraria, verificar autenticidad y preparar objeciones"
       ],
-      actions: ["证据目录", "补充证据清单", "质证意见", "调查取证申请书", "证人出庭申请书"],
+      actions: ["Indice de evidencia", "Lista de evidencia complementaria", "Objeciones", "Solicitud de oficio", "Solicitud de testigos"],
       deadlineCategories: ["EVIDENCE"],
       materialCategories: ["EVIDENCE"],
-      materialPattern: /证据|举证|质证|调查令|调查取证|证人|反驳证据/,
+      materialPattern: /evidencia|prueba|contraprueba|oficio|testigo|objecion/,
       defaultCategory: "EVIDENCE"
     }
   },
   {
-    keys: ["鉴定申请", "司法鉴定"],
+    keys: ["Peritaje", "Tasacion"],
     guide: {
-      summary: "判断是否申请鉴定、提出鉴定事ítems、异议、补充材料和专家辅助人安排。",
-      checklistTitle: "鉴定事ítems",
+      summary: "Decidir si solicitar peritaje, plantear puntos, objeciones, materiales complementarios y expertos.",
+      checklistTitle: "Items de peritaje",
       checklist: [
-        "Confirmar鉴定必要性、鉴定事ítems和证明目的",
-        "准备鉴定申请、样本材料和Gastos沟通",
-        "处理鉴定机构、鉴定材料和鉴定意见异议",
-        "需要时安排专家辅助人出庭"
+        "Confirmar necesidad del peritaje, puntos y objeto",
+        "Preparar solicitud, muestras y comunicacion de costos",
+        "Atender institucion pericial, materiales y objeciones al dictamen",
+        "Si es necesario, designar experto para audiencia"
       ],
-      actions: ["鉴定申请书", "鉴定材料清单", "鉴定异议书", "专家辅助人出庭申请书"],
+      actions: ["Solicitud de peritaje", "Lista de materiales periciales", "Objecion al dictamen", "Solicitud de experto"],
       deadlineCategories: ["EVIDENCE"],
       materialCategories: [],
-      materialPattern: /鉴定|专家|辅助人|样本|检材/,
+      materialPattern: /peritaje|experto|muestra|dictamen/,
       defaultCategory: "PROCEDURE"
     }
   },
   {
-    keys: ["庭前会议"],
+    keys: ["Audiencia preliminar"],
     guide: {
-      summary: "处理庭前会议Notificaciones、争点归纳、证据交换、程序事ítems和庭审安排。",
-      checklistTitle: "庭前会议事ítems",
+      summary: "Atender notificaciones de audiencia preliminar, fijacion de puntos controvertidos, intercambio de evidencia y programacion.",
+      checklistTitle: "Items de audiencia preliminar",
       checklist: [
-        "Confirmar庭前会议时间、地点、参加人员和会议目的",
-        "准备争议焦点、证据交换意见和程序性申请",
-        "记录法院或仲裁庭Confirmar的审理范围和举证安排",
-        "根据会议结果修订庭审提纲和证据组织方案"
+        "Confirmar fecha, lugar, participantes y objeto",
+        "Preparar puntos controvertidos, intercambio de evidencia y solicitudes",
+        "Registrar alcance y programacion de prueba",
+        "Ajustar esquema de audiencia y organizacion de evidencia"
       ],
-      actions: ["庭前会议提纲", "争议焦点清单", "证据交换意见", "程序事ítems申请书", "庭前会议记录"],
+      actions: ["Esquema de audiencia preliminar", "Lista de puntos controvertidos", "Opinion de intercambio", "Solicitudes procesales", "Acta"],
       deadlineCategories: ["EVIDENCE", "CUSTOM"],
       includeHearings: true,
       materialCategories: [],
-      materialPattern: /庭前会议|争议焦点|证据交换|程序事ítems|会议记录/,
+      materialPattern: /preliminar|puntos|intercambio|solicitudes|acta/,
       defaultCategory: "PROCEDURE"
     }
   },
   {
-    keys: ["模拟法庭"],
+    keys: ["Simulacro"],
     guide: {
-      summary: "围绕庭审争点、发问路径、攻防预案和Cliente出庭表现做正式开庭前演练。",
-      checklistTitle: "模拟事ítems",
+      summary: "Preparar puntos controvertidos, interrogatorio, estrategia y desempeno del cliente antes de la audiencia.",
+      checklistTitle: "Items de simulacro",
       checklist: [
-        "形成争点清单和证明责任分配表",
-        "准备我方发问、反问和对方可能追问清单",
-        "演练法庭调查、法庭辩论和最后陈述",
-        "记录演练暴露的问题并修订庭审提纲"
+        "Formar lista de puntos controvertidos y carga probatoria",
+        "Preparar interrogatorio propio y cruzado",
+        "Practicar debate y alegatos finales",
+        "Registrar problemas detectados y ajustar esquema"
       ],
-      actions: ["模拟法庭脚本", "争点攻防清单", "发问提纲", "Cliente庭前沟通记录", "庭审风险提示"],
+      actions: ["Guion de simulacro", "Lista de estrategia", "Interrogatorio", "Acta de reunion con cliente", "Aviso de riesgos"],
       deadlineCategories: [],
       materialCategories: [],
-      materialPattern: /模拟法庭|攻防|发问|反问|演练|庭审风险|庭前沟通/,
+      materialPattern: /simulacro|estrategia|interrogatorio|alegato|riesgo/,
       defaultCategory: "PROCEDURE"
     }
   },
   {
-    keys: ["开庭准备", "开庭/询问", "开庭审理"],
+    keys: ["Audiencia", "Vista de causa"],
     guide: {
-      summary: "围绕开庭Notificaciones、证据原件、庭审提纲、质证意见、发问提纲和Cliente庭前沟通做准备。",
-      checklistTitle: "庭前事ítems",
+      summary: "Preparar notificaciones de audiencia, evidencia original, esquema, objeciones, interrogatorio y reunion con cliente.",
+      checklistTitle: "Items previos a audiencia",
       checklist: [
-        "Confirmar开庭时间、地点、法庭和书记员联系方式",
-        "核对证据原件、对方证据和是否变更诉请",
-        "准备庭审提纲、发问提纲、质证意见和代理词提纲",
-        "向当事人交代出庭材料、庭审流程和注意事ítems"
+        "Confirmar fecha, lugar, tribunal y contacto del secretario",
+        "Verificar evidencia original, evidencia contraria y cambios de pretension",
+        "Preparar esquema de audiencia, interrogatorio, objeciones y alegatos",
+        "Instruir al cliente sobre materiales, procedimiento y precauciones"
       ],
-      actions: ["庭审提纲", "发问提纲", "质证意见", "代理词提纲", "庭前沟通记录"],
+      actions: ["Esquema de audiencia", "Interrogatorio", "Objeciones", "Borrador de alegatos", "Acta de reunion"],
       deadlineCategories: [],
       includeHearings: true,
       materialCategories: [],
-      materialPattern: /开庭|庭审|传票|发问|提纲|质证|原件|代理词/,
+      materialPattern: /audiencia|vista|citacion|interrogatorio|esquema|objecion|original|alegato/,
       defaultCategory: "PROCEDURE"
     }
   },
   {
-    keys: ["庭后工作", "庭后代理词", "庭后补充"],
+    keys: ["Post-audiencia", "Alegatos", "Complemento"],
     guide: {
-      summary: "庭后复盘并Enviar代理意见、补充材料，向Cliente汇报并持续跟进裁判进度。",
-      checklistTitle: "庭后事ítems",
+      summary: "Revisar y enviar alegatos, materiales complementarios, informar al cliente y seguir el resultado.",
+      checklistTitle: "Items post-audiencia",
       checklist: [
-        "庭后向当事人汇报庭审情况并留痕",
-        "Enviar代理词、质证意见、法律检索Informe或补充意见",
-        "按庭审要求核实事实、补交材料或移交证据原件",
-        "联系法官或书记员跟进裁判进度"
+        "Informar al cliente sobre la audiencia",
+        "Enviar alegatos, objeciones, busqueda juridica o complemento",
+        "Verificar hechos, complementar materiales o entregar originales",
+        "Contactar al juez o secretario para seguimiento"
       ],
-      actions: ["开庭Informe", "代理词", "庭后补充意见", "书面质证意见", "法律检索Informe"],
+      actions: ["Informe de audiencia", "Alegatos", "Complemento", "Objeciones escritas", "Informe juridico"],
       deadlineCategories: ["EVIDENCE", "CUSTOM"],
       materialCategories: [],
-      materialPattern: /代理词|庭后|补充意见|开庭Informe|质证意见|检索Informe|笔录/,
+      materialPattern: /alegato|post|complemento|informe|objecion|acta/,
       defaultCategory: "PLEADING"
     }
   },
   {
-    keys: ["裁判/上诉", "裁判签收", "二审裁判", "仲裁裁决", "执行Cerrar caso"],
+    keys: ["Sentencia", "Recepcion de sentencia", "Segunda instancia", "Laudo", "Cierre"],
     guide: {
-      summary: "签收裁判或裁决文书，计算上诉期/履行期，处理生效、退费、履行和后续程序提示。",
-      checklistTitle: "裁判事ítems",
+      summary: "Recibir sentencia o laudo, calcular plazos de apelacion, atender firmeza, reembolso, cumplimiento y proximos pasos.",
+      checklistTitle: "Items de sentencia",
       checklist: [
-        "记录裁判文书签收日并计算上诉期或撤裁Plazo",
-        "向当事人汇报裁判结果并Confirmar是否上诉、撤裁或履行",
-        "处理文书更正、生效证明、诉讼费退费和Preservación解除",
-        "跟进对方履行并提示需要另行新建执行程序的情形"
+        "Registrar recepcion y calcular plazo de apelacion o nulidad",
+        "Informar al cliente y confirmar apelacion, nulidad o cumplimiento",
+        "Atender correccion, firmeza, reembolso de tasas y levantamiento de preservacion",
+        "Seguir cumplimiento e indicar necesidad de nueva ejecucion"
       ],
-      actions: ["裁判结果Informe", "上诉期告知函", "Cerrar casoInforme", "生效证明申请", "履行衔接清单"],
+      actions: ["Informe de sentencia", "Aviso de plazo de apelacion", "Informe de cierre", "Solicitud de firmeza", "Lista de cumplimiento"],
       deadlineCategories: ["APPEAL", "PERFORMANCE", "ARBITRATION_SET_ASIDE", "ENFORCEMENT"],
       materialCategories: ["JUDGMENT"],
-      materialPattern: /判决|裁定|裁决|调解书|上诉|生效|履行|退费|Cerrar caso|后续程序/,
+      materialPattern: /sentencia|resolucion|laudo|apelacion|firmeza|cumplimiento|reembolso|cierre|proximo/,
       defaultCategory: "JUDGMENT"
     }
   },
   {
-    keys: ["Caso归档"],
+    keys: ["Archivo del caso"],
     guide: {
-      summary: "完成Cerrar casoInforme、材料完整性核对、原件退还、Gastos结清和归档申请。",
-      checklistTitle: "归档事ítems",
+      summary: "Completar informe de cierre, verificacion de integridad, devolucion de originales, liquidacion y solicitud de archivo.",
+      checklistTitle: "Items de archivo",
       checklist: [
-        "Confirmar裁判、裁决、调解或执行结果已形成最终留痕",
-        "核对委托手续、程序材料、证据材料和往来记录是否完整",
-        "完成Cerrar casoInforme、Cliente交接、原件退还和Gastos结清",
-        "Enviar归档申请并处理补正意见"
+        "Confirmar resultado final de sentencia, laudo, acuerdo o ejecucion",
+        "Verificar integridad de mandato, materiales procesales, evidencia y comunicaciones",
+        "Completar informe de cierre, entrega al cliente, devolucion de originales y liquidacion",
+        "Enviar solicitud de archivo y atender observaciones"
       ],
-      actions: ["Cerrar casoInforme", "归档材料清单", "原件退还Confirmar书", "ClienteCerrar caso告知函", "归档申请"],
+      actions: ["Informe de cierre", "Lista de archivo", "Acta de devolucion", "Carta de cierre al cliente", "Solicitud de archivo"],
       deadlineCategories: [],
       materialCategories: ["PROCEDURE", "JUDGMENT"],
-      materialPattern: /归档|Cerrar casoInforme|原件退还|材料清单|Cerrar caso告知|Gastos结清/,
+      materialPattern: /archivo|cierre|devolucion|lista|liquidacion/,
       defaultCategory: "PROCEDURE"
     }
   },
   {
-    keys: ["上诉/应诉"],
+    keys: ["Apelacion", "Contestacion de apelacion"],
     guide: {
-      summary: "围绕上诉、二审应诉、补充证据、上诉费和二审庭询安排组织材料。",
-      checklistTitle: "二审事ítems",
+      summary: "Organizar materiales de apelacion, contestacion, evidencia complementaria, tasas y audiencia de segunda instancia.",
+      checklistTitle: "Items de segunda instancia",
       checklist: [
-        "签订二审委托手续并Confirmar上诉Plazo",
-        "递交上诉状或二审答辩意见、证据材料",
-        "Recordatorios并核对上诉费缴纳",
-        "梳理一审裁判争点和二审代理思路"
+        "Firmar mandato de segunda instancia y confirmar plazo de apelacion",
+        "Presentar apelacion o contestacion con evidencia",
+        "Programar y verificar pago de tasas de apelacion",
+        "Ordenar puntos controvertidos de primera instancia y plan de segunda"
       ],
-      actions: ["上诉状", "二审答辩状", "二审证据目录", "上诉费缴费凭证", "二审代理方案"],
+      actions: ["Apelacion", "Contestacion de segunda instancia", "Indice de evidencia", "Comprobante de pago", "Plan de segunda instancia"],
       deadlineCategories: ["APPEAL", "RESPONSE", "EVIDENCE"],
       materialCategories: [],
-      materialPattern: /上诉|二审|答辩|一审判决|裁定|上诉费|代理方案/,
+      materialPattern: /apelacion|segunda|contestacion|sentencia|tasas|plan/,
       defaultCategory: "PLEADING"
     }
   },
   {
-    keys: ["财产查控"],
+    keys: ["Investigacion de bienes"],
     guide: {
-      summary: "梳理并Enviar被执行人财产线索，跟进网络查控、处置方案和续保。",
-      checklistTitle: "查控事ítems",
+      summary: "Ordenar y enviar pistas de bienes del ejecutado, seguir investigacion patrimonial, plan de disposicion y renovacion.",
+      checklistTitle: "Items de investigacion",
       checklist: [
-        "梳理房产、车辆、银行账户、股权etc.财产线索",
-        "向执行法官Enviar财产线索和查控申请",
-        "跟进查封、冻结、扣押和评估拍卖进度",
-        "执行周期较长时同步检查已Preservación财产续保"
+        "Ordenar pistas de inmuebles, vehiculos, cuentas, acciones, etc.",
+        "Enviar pistas al juez de ejecucion",
+        "Seguir embargo, congelamiento, incautacion y remate",
+        "Verificar renovacion de preservaciones existentes"
       ],
-      actions: ["财产线索清单", "网络查控申请书", "追加被执行人申请书", "续封申请书"],
+      actions: ["Lista de pistas", "Solicitud de investigacion", "Solicitud de ampliacion", "Solicitud de renovacion"],
       deadlineCategories: ["ENFORCEMENT", "PRESERVATION"],
       materialCategories: [],
-      materialPattern: /查控|财产线索|冻结|查封|扣押|拍卖|追加被执行人|续封/,
+      materialPattern: /investigacion|pistas|embargo|congelamiento|remate|ampliacion|renovacion/,
       defaultCategory: "PROCEDURE"
     }
   },
   {
-    keys: ["异议/复议"],
+    keys: ["Objeciones", "Reconsideracion"],
     guide: {
-      summary: "处理执行异议、复议、不予执行或案外人异议相关材料和Plazo。",
-      checklistTitle: "异议事ítems",
+      summary: "Atender objeciones de ejecucion, reconsideracion, no ejecucion u objeciones de terceros.",
+      checklistTitle: "Items de objeciones",
       checklist: [
-        "Confirmar异议主体、异议对象和法定Plazo",
-        "准备执行异议申请或复议申请y证据",
-        "跟进听证、裁定和后续异议之诉衔接",
-        "向当事人汇报风险和Siguiente策略"
+        "Confirmar sujeto, objeto y plazo legal",
+        "Preparar solicitud de objecion o reconsideracion con evidencia",
+        "Seguir audiencia, resolucion y accion de objecion",
+        "Informar al cliente sobre riesgos y estrategia"
       ],
-      actions: ["执行异议申请书", "复议申请书", "不予执行申请书", "听证提纲"],
+      actions: ["Solicitud de objecion", "Reconsideracion", "No ejecucion", "Esquema de audiencia"],
       deadlineCategories: ["ENFORCEMENT", "CUSTOM"],
       materialCategories: [],
-      materialPattern: /执行异议|复议|不予执行|案外人|听证|异议之诉/,
+      materialPattern: /objecion|reconsideracion|no ejecucion|tercero|audiencia/,
       defaultCategory: "PLEADING"
     }
   },
   {
-    keys: ["执行和解"],
+    keys: ["Acuerdo de ejecucion"],
     guide: {
-      summary: "推动执行和解方案、ClienteConfirmar、协议签署、履行监督和恢复执行预案。",
-      checklistTitle: "和解事ítems",
+      summary: "Impulsar acuerdo de ejecucion, confirmacion del cliente, firma, supervision y plan de reanudacion.",
+      checklistTitle: "Items de acuerdo",
       checklist: [
-        "核实对方履行能力和和解条件",
-        "形成和解方案并取得Cliente书面Confirmar",
-        "签署执行和解协议并Enviar法院备案",
-        "跟进分期履行、违约处理和恢复执行"
+        "Verificar capacidad de cumplimiento y condiciones",
+        "Formar propuesta de acuerdo y obtener confirmacion escrita",
+        "Firmar acuerdo y registrarlo en el tribunal",
+        "Seguir cumplimiento, incumplimiento y reanudacion"
       ],
-      actions: ["执行和解方案", "调解/和解方案Confirmar函", "执行和解协议", "恢复执行申请书"],
+      actions: ["Propuesta de acuerdo", "Carta de confirmacion", "Acuerdo de ejecucion", "Solicitud de reanudacion"],
       deadlineCategories: ["PERFORMANCE", "ENFORCEMENT"],
       materialCategories: [],
-      materialPattern: /和解|调解|履行计划|恢复执行|Confirmar函/,
+      materialPattern: /acuerdo|mediacion|plan|cumplimiento|reanudacion|confirmacion/,
       defaultCategory: "PROCEDURE"
     }
   },
   {
-    keys: ["会见", "取保候审", "阅卷线索", "辩护意见"],
+    keys: ["Entrevista", "Excarcelacion", "Revision de expediente", "Defensa"],
     guide: {
-      summary: "Penal程序内按会见、取保、阅卷、线索核实和辩护意见组织工作。",
-      checklistTitle: "Penal事ítems",
+      summary: "Organizar trabajo de entrevista, excarcelacion, revision de expediente, verificacion y defensa en sede penal.",
+      checklistTitle: "Items penales",
       checklist: [
-        "核对委托手续、会见手续和办案机关要求",
-        "记录会见情况、阅卷要点和补充线索",
-        "评估取保候审、羁押必要性和证据风险",
-        "形成书面辩护意见或法律意见"
+        "Verificar mandato, autorizacion de entrevista y requisitos del tribunal",
+        "Registrar entrevista, revision de expediente y pistas complementarias",
+        "Evaluar excarcelacion, necesidad de prision preventiva y riesgos",
+        "Formar defensa escrita o dictamen juridico"
       ],
-      actions: ["会见笔录", "取保候审申请书", "阅卷笔录", "辩护意见", "法律意见书"],
+      actions: ["Acta de entrevista", "Solicitud de excarcelacion", "Acta de revision", "Defensa", "Dictamen juridico"],
       deadlineCategories: ["CUSTOM"],
       materialCategories: [],
-      materialPattern: /会见|取保|阅卷|辩护|羁押|法律意见/,
+      materialPattern: /entrevista|excarcelacion|revision|defensa|prision|dictamen/,
       defaultCategory: "PROCEDURE"
     }
   }
@@ -642,7 +641,7 @@ const DOCUMENT_CATEGORY_OPTIONS: DocumentCategory[] = [
   "OTHER"
 ];
 const SOURCE_MATERIAL_CATEGORIES: DocumentCategory[] = ["PLEADING", "EVIDENCE"];
-const COURT_PROCEDURE_SOURCE = "法院程序文件";
+const COURT_PROCEDURE_SOURCE = "Documentos del tribunal";
 
 export function ProcedureWorkflowPanel({
   matter,
@@ -687,22 +686,22 @@ export function ProcedureWorkflowPanel({
   function handleRemoveStage(stage: WorkflowStage) {
     const stageId = stage.id;
     if (!stageId) {
-      toast.info("该环节尚未写入流程，无需移除");
+      toast.info("Esta etapa aun no fue guardada");
       return;
     }
     if (!stage.removable) {
-      toast.warning("必备环节不能移除");
+      toast.warning("Las etapas obligatorias no se pueden eliminar");
       return;
     }
-    if (!confirm(`Aceptar从当前程序移除「${stage.name}」？已有Tarea或材料的环节将被隐藏（数据保留，可重新Agregar恢复）。`)) return;
+    if (!confirm(`Eliminar del procedimiento actual "${stage.name}"? Las etapas con tareas o materiales seran ocultadas (los datos se conservan).`)) return;
     startStageRemovalTransition(async () => {
       try {
         const res = await removeProcedureStage({ id: stageId });
-        toast.success(res.hidden ? "Etapa oculta，数据保留（重新Agregar同名环节可恢复）" : "Etapa eliminada");
+        toast.success(res.hidden ? "Etapa oculta, datos conservados" : "Etapa eliminada");
         setSelectedKey(null);
         router.refresh();
       } catch (err) {
-        toast.error("移除Error", { description: err instanceof Error ? err.message : "" });
+        toast.error("Error al eliminar", { description: err instanceof Error ? err.message : "" });
       }
     });
   }
@@ -713,16 +712,16 @@ export function ProcedureWorkflowPanel({
         <header className="border-b border-border px-4 py-3">
           <div className="flex items-center gap-2">
             <ListChecks className="h-4 w-4 text-primary" strokeWidth={1.8} />
-            <h2 className="text-[14px] font-medium">CasoPanel de trabajo</h2>
+            <h2 className="text-[14px] font-medium">Panel de trabajo del caso</h2>
           </div>
           <p className="mt-0.5 text-[11px] text-muted-foreground">
-            Agregar程序后可继续生成办案环节。
+            Agregar un procedimiento para generar las etapas de trabajo.
           </p>
         </header>
         <div className="space-y-3 p-4">
           {matterInfoNode}
           <div className="rounded-md border border-dashed border-border bg-muted/30 p-6 text-center text-sm text-muted-foreground">
-            暂无在办程序，Agregar程序后可生成程序Panel de trabajo。
+            Sin procedimientos en tramite. Agregar un procedimiento para generar el panel de trabajo.
           </div>
         </div>
       </section>
@@ -734,7 +733,7 @@ export function ProcedureWorkflowPanel({
       <div className="grid grid-cols-1 md:grid-cols-[168px_minmax(0,1fr)]">
         <nav className="border-b border-border bg-muted/35 p-1.5 md:border-b-0 md:border-r">
           <div className="mb-1.5 flex items-center justify-between gap-2 px-1 text-[10.5px] text-muted-foreground">
-            <span>环节进度</span>
+            <span>Progreso de etapas</span>
             <span className="font-mono tabular">
               {doneCount}/{stages.length}
             </span>
@@ -785,7 +784,7 @@ export function ProcedureWorkflowPanel({
               <span className="flex h-4 w-4 shrink-0 items-center justify-center rounded-full border border-primary/30 bg-primary/10 text-primary">
                 <Plus className="h-2.5 w-2.5" />
               </span>
-              <span className="min-w-0 flex-1 truncate">Agregar环节</span>
+              <span className="min-w-0 flex-1 truncate">Agregar etapa</span>
             </button>
           </div>
         </nav>
@@ -822,7 +821,7 @@ export function ProcedureWorkflowPanel({
               canManage={canManage}
             />
           ) : (
-            <p className="py-8 text-center text-xs text-muted-foreground">暂无工作环节</p>
+            <p className="py-8 text-center text-xs text-muted-foreground">Sin etapas de trabajo</p>
           )}
         </div>
       </div>
@@ -877,7 +876,6 @@ function NormalStageContent({
   onRemoveStage?: () => void;
   canManage: boolean;
 }) {
-  // v1.1 UI（方案 C/D）：本案数据（记录+材料）置顶，指导文字收折到底部
   const [deadlineOpen, setDeadlineOpen] = useState(false);
   const guide = stageGuideFor(stage.name);
   const relevantDeadlines = guide.deadlineCategories.length > 0
@@ -909,7 +907,7 @@ function NormalStageContent({
                   : "border-amber-500/30 bg-amber-500/10 text-amber-700"
               )}
             >
-              {nearestDue < 0 ? `Vencido ${-nearestDue} días` : nearestDue === 0 ? "Hoy到期" : `Restan ${nearestDue} días`}
+              {nearestDue < 0 ? `Vencido ${-nearestDue} dias` : nearestDue === 0 ? "Vence hoy" : `Restan ${nearestDue} dias`}
             </Badge>
           ) : (
             <StageStatusBadge status={stage.status} />
@@ -922,7 +920,7 @@ function NormalStageContent({
             onClick={onRemoveStage}
             className="h-7 px-2 text-[11px] text-muted-foreground"
           >
-            移除
+            Eliminar
           </Button>
         )}
       </div>
@@ -930,7 +928,7 @@ function NormalStageContent({
       <section className="rounded-md border border-border bg-background/60 p-3">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <SectionTitle icon={<CalendarClock className="h-3.5 w-3.5" />}>
-            本环节记录
+            Registros de esta etapa
             {recordCount > 0 && (
               <span className="ml-1 font-mono text-[10.5px] text-muted-foreground tabular">
                 {recordCount}
@@ -950,19 +948,19 @@ function NormalStageContent({
                 className="h-7 gap-1 px-2 text-[11px]"
               >
                 <Scale className="h-3 w-3" />
-                法定Plazo
+                Plazo legal
               </Button>
             </div>
           )}
         </div>
         {recordCount === 0 ? (
           <div className="flex flex-col items-center gap-2.5 py-5">
-            <p className="text-xs text-muted-foreground">本环节还没有Tarea或时间记录</p>
+            <p className="text-xs text-muted-foreground">Sin tareas ni registros de tiempo en esta etapa</p>
             {canManage && (
               <div className="flex items-center gap-2">
                 <Button size="sm" onClick={onAddTask} className="h-7 gap-1 px-2.5 text-[11px]">
                   <Plus className="h-3 w-3" />
-                  AgregarTarea
+                  Agregar tarea
                 </Button>
                 <Button
                   size="sm"
@@ -971,7 +969,7 @@ function NormalStageContent({
                   className="h-7 gap-1 px-2.5 text-[11px]"
                 >
                   <Scale className="h-3 w-3" />
-                  按法定Plazo生成
+                  Generar por plazo legal
                 </Button>
               </div>
             )}
@@ -1045,7 +1043,6 @@ function NormalStageContent({
   );
 }
 
-/** v1.1 UI（方案 D）：办案指引默认折叠——指导性内容对熟手是噪音，收成一行 */
 function StageGuideDisclosure({ guide }: { guide: StageGuide }) {
   const [open, setOpen] = useState(false);
   return (
@@ -1056,7 +1053,7 @@ function StageGuideDisclosure({ guide }: { guide: StageGuide }) {
         className="flex w-full items-center gap-1.5 text-left text-[11.5px] text-muted-foreground transition-colors hover:text-foreground"
       >
         {open ? <ChevronDown className="h-3 w-3 shrink-0" /> : <ChevronRight className="h-3 w-3 shrink-0" />}
-        <span className="font-medium text-foreground/75">办案指引</span>
+        <span className="font-medium text-foreground/75">Guia de trabajo</span>
         {!open && <span className="min-w-0 flex-1 truncate">{guide.summary}</span>}
       </button>
       {open && (
@@ -1071,7 +1068,7 @@ function StageGuideDisclosure({ guide }: { guide: StageGuide }) {
           </ul>
           {guide.actions.length > 0 && (
             <p className="text-[11px] leading-5 text-muted-foreground">
-              常用文书：{guide.actions.join("、")}（在「模板」弹窗内选用）
+              Documentos frecuentes: {guide.actions.join("、")} (disponibles en el dialogo de plantillas)
             </p>
           )}
         </div>
@@ -1125,10 +1122,10 @@ function PreservationWorkflowContent({
     startTransition(async () => {
       try {
         await liftProperty(propertyId);
-        toast.success("已解除Preservación");
+        toast.success("Preservacion levantada");
         router.refresh();
       } catch (err) {
-        toast.error("Operación fallida", { description: err instanceof Error ? err.message : "" });
+        toast.error("Operacion fallida", { description: err instanceof Error ? err.message : "" });
       }
     });
   }
@@ -1139,17 +1136,17 @@ function PreservationWorkflowContent({
         <div>
           <div className="flex items-center gap-2">
             <Shield className="h-4 w-4 text-primary" />
-            <h3 className="text-[15px] font-medium">财产Preservación</h3>
+            <h3 className="text-[15px] font-medium">Preservacion de bienes</h3>
             {expiringCount > 0 ? (
               <Badge variant="outline" className="border-amber-500/30 bg-amber-500/10 text-amber-700">
-                30días内到期 {expiringCount} ítems
+                Vence en 30 dias: {expiringCount} items
               </Badge>
             ) : (
-              <Badge variant="outline">专ítems工作包</Badge>
+              <Badge variant="outline">Paquete de trabajo especial</Badge>
             )}
           </div>
           <p className="mt-1 text-[11px] text-muted-foreground">
-            申请、担保、裁定、续封和解除统一归到当前程序。
+            Solicitudes, garantias, resoluciones, renovaciones y levantamientos unificados en el procedimiento actual.
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
@@ -1160,7 +1157,7 @@ function PreservationWorkflowContent({
               onClick={onRemoveStage}
               className="h-7 px-2 text-[11px] text-muted-foreground"
             >
-              移除
+              Eliminar
             </Button>
           )}
           {canManage && (
@@ -1171,7 +1168,7 @@ function PreservationWorkflowContent({
               </Button>
               <Button size="sm" onClick={() => setCreateOpen(true)} className="h-7 gap-1 px-2 text-[11px]">
                 <Plus className="h-3 w-3" />
-                新建Preservación
+                Nueva preservacion
               </Button>
             </>
           )}
@@ -1181,11 +1178,11 @@ function PreservationWorkflowContent({
       {cases.length === 0 ? (
         <div className="rounded-md border border-dashed border-border bg-background/60 px-4 py-8 text-center">
           <Shield className="mx-auto mb-2 h-6 w-6 text-muted-foreground/40" />
-          <p className="text-sm text-muted-foreground">该程序尚无财产Preservación记录</p>
+          <p className="text-sm text-muted-foreground">Sin registros de preservacion en este procedimiento</p>
           {canManage && (
             <Button size="sm" onClick={() => setCreateOpen(true)} className="mt-3 h-8 gap-1.5 text-xs">
               <Plus className="h-3.5 w-3.5" />
-              新建Preservación
+              Nueva preservacion
             </Button>
           )}
         </div>
@@ -1203,7 +1200,7 @@ function PreservationWorkflowContent({
                     )}
                   </div>
                   <div className="mt-0.5 text-[10.5px] text-muted-foreground">
-                    {item.guaranteeType ? GUARANTEE_TYPE_CN[item.guaranteeType] : "未填写担保方式"}
+                    {item.guaranteeType ? GUARANTEE_TYPE_CN[item.guaranteeType] : "Sin tipo de garantia"}
                     {item.owner?.name ? ` · ${item.owner.name}` : ""}
                   </div>
                 </div>
@@ -1215,14 +1212,14 @@ function PreservationWorkflowContent({
                     className="h-7 gap-1 px-2 text-[11px]"
                   >
                     <Plus className="h-3 w-3" />
-                    被Preservación人
+                    Persona preservada
                   </Button>
                 )}
               </div>
 
               <div className="space-y-3 p-3">
                 {item.targets.length === 0 ? (
-                  <p className="py-3 text-center text-xs text-muted-foreground">暂无被Preservación人</p>
+                  <p className="py-3 text-center text-xs text-muted-foreground">Sin personas preservadas</p>
                 ) : (
                   item.targets.map((target) => (
                     <div key={target.id} className="space-y-2">
@@ -1235,12 +1232,12 @@ function PreservationWorkflowContent({
                             onClick={() => setAddPropertyTargetId(target.id)}
                             className="ml-auto text-[11px] text-primary hover:underline"
                           >
-                            + Agregar财产
+                            + Agregar bien
                           </button>
                         )}
                       </div>
                       {target.properties.length === 0 ? (
-                        <p className="pl-6 text-[11px] text-muted-foreground">暂无财产</p>
+                        <p className="pl-6 text-[11px] text-muted-foreground">Sin bienes</p>
                       ) : (
                         <div className="space-y-1.5 pl-6">
                           {target.properties.map((property) => (
@@ -1272,7 +1269,7 @@ function PreservationWorkflowContent({
         onOpenTemplate={onOpenTemplate}
       />
 
-      <StageGuideDisclosure guide={stageGuideFor("财产Preservación")} />
+      <StageGuideDisclosure guide={stageGuideFor("Preservacion de bienes")} />
 
       <PreservationCaseDialog
         open={createOpen}
@@ -1356,10 +1353,10 @@ function PreservationPropertyRow({
       {canManage && isActive && (
         <>
           <button type="button" onClick={onRenew} className="shrink-0 text-primary hover:underline">
-            续保
+            Renovar
           </button>
           <button type="button" onClick={onLift} className="shrink-0 text-muted-foreground hover:text-foreground">
-            解除
+            Levantar
           </button>
         </>
       )}
@@ -1380,7 +1377,6 @@ function StageMaterialsPanel({
   stage: WorkflowStage;
   documents: WorkflowDocument[];
   canManage: boolean;
-  /** v1.1 UI（方案 D）：模板生成收口到材料区的单一入口 */
   onOpenTemplate?: () => void;
 }) {
   const router = useRouter();
@@ -1406,12 +1402,11 @@ function StageMaterialsPanel({
 
   function submitUpload() {
     if (!picked) {
-      toast.warning("请先选择文件");
+      toast.warning("Seleccione un archivo primero");
       return;
     }
     startTransition(async () => {
       try {
-        // v0.48: 材料按外键归属环节；虚拟环节先物化拿到真实 stageId
         let stageId = stage.id;
         if (!stageId) {
           const ensured = await ensureProcedureStage({
@@ -1434,11 +1429,11 @@ function StageMaterialsPanel({
           fd.set("sourceParty", sourceParty);
         }
         await uploadDocument(fd);
-        toast.success("阶段材料已上传");
+        toast.success("Material de etapa subido");
         setOpen(false);
         router.refresh();
       } catch (err) {
-        toast.error("上传Error", { description: err instanceof Error ? err.message : "" });
+        toast.error("Error al subir", { description: err instanceof Error ? err.message : "" });
       }
     });
   }
@@ -1447,7 +1442,7 @@ function StageMaterialsPanel({
     <section className="rounded-md border border-border bg-background/60 p-3">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <SectionTitle icon={<FileText className="h-3.5 w-3.5" />}>
-          阶段材料
+          Materiales de la etapa
           <span className="ml-1 font-mono text-[10.5px] text-muted-foreground tabular">
             {documents.length}
           </span>
@@ -1461,7 +1456,7 @@ function StageMaterialsPanel({
               className="h-7 gap-1 px-2 text-[11px]"
             >
               <Upload className="h-3 w-3" />
-              上传
+              Subir
             </Button>
             {onOpenTemplate && (
               <Button
@@ -1471,19 +1466,19 @@ function StageMaterialsPanel({
                 className="h-7 gap-1 px-2 text-[11px] text-primary hover:text-primary"
               >
                 <Sparkles className="h-3 w-3" />
-                从模板生成
+                Generar desde plantilla
               </Button>
             )}
           </div>
         )}
       </div>
       <p className="mt-1 text-[10.5px] text-muted-foreground">
-        上传后仍写入本程序材料数据，并自动标记为 {stageTag}。
+        Al subir, el material se agrega al procedimiento y se etiqueta como {stageTag}.
       </p>
 
       {documents.length === 0 ? (
         <div className="mt-3 rounded-md border border-dashed border-border bg-card/60 px-3 py-5 text-center">
-          <p className="text-xs text-muted-foreground">暂无该阶段材料</p>
+          <p className="text-xs text-muted-foreground">Sin materiales en esta etapa</p>
           {canManage && (
             <Button
               variant="outline"
@@ -1492,7 +1487,7 @@ function StageMaterialsPanel({
               className="mt-3 h-7 gap-1 px-2 text-[11px]"
             >
               <Upload className="h-3 w-3" />
-              上传材料
+              Subir material
             </Button>
           )}
         </div>
@@ -1529,7 +1524,7 @@ function StageMaterialsPanel({
                       target="_blank"
                       rel="noreferrer"
                       className="p-1 text-muted-foreground hover:text-primary"
-                      title="预览"
+                      title="Vista previa"
                     >
                       <Eye className="h-3.5 w-3.5" />
                     </a>
@@ -1539,7 +1534,7 @@ function StageMaterialsPanel({
                     target="_blank"
                     rel="noreferrer"
                     className="p-1 text-muted-foreground hover:text-primary"
-                    title="下载"
+                    title="Descargar"
                   >
                     <Download className="h-3.5 w-3.5" />
                   </a>
@@ -1553,14 +1548,14 @@ function StageMaterialsPanel({
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>上传阶段材料 · {stageName}</DialogTitle>
+            <DialogTitle>Subir material de etapa · {stageName}</DialogTitle>
             <DialogDescription className="text-xs">
-              文件将关联到当前程序，并自动归入 {stageTag}。
+              El archivo se asociara al procedimiento actual y se etiquetara como {stageTag}.
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-3">
             <div className="space-y-1.5">
-              <Label className="text-xs">材料类别 *</Label>
+              <Label className="text-xs">Categoria de material *</Label>
               <Select value={category} onValueChange={(value) => setCategory(value as DocumentCategory)}>
                 <SelectTrigger className="h-10 bg-background">
                   <SelectValue />
@@ -1577,16 +1572,16 @@ function StageMaterialsPanel({
 
             {SOURCE_MATERIAL_CATEGORIES.includes(category) && sourceOptions.length > 0 && (
               <div className="space-y-1.5">
-                <Label className="text-xs">归属/来源（可选）</Label>
+                <Label className="text-xs">Origen / fuente (opcional)</Label>
                 <Select
                   value={sourceParty || "__none__"}
                   onValueChange={(value) => setSourceParty(value === "__none__" ? "" : value)}
                 >
                   <SelectTrigger className="h-10 bg-background">
-                    <SelectValue placeholder="选择归属/来源" />
+                    <SelectValue placeholder="Seleccionar origen" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="__none__">不标注</SelectItem>
+                    <SelectItem value="__none__">Sin etiqueta</SelectItem>
                     {sourceOptions.map((item) => (
                       <SelectItem key={item} value={item}>
                         {item}
@@ -1598,7 +1593,7 @@ function StageMaterialsPanel({
             )}
 
             <div className="space-y-1.5">
-              <Label className="text-xs">文件 *</Label>
+              <Label className="text-xs">Archivo *</Label>
               <Input
                 ref={fileRef}
                 type="file"
@@ -1606,17 +1601,17 @@ function StageMaterialsPanel({
               />
               {picked && (
                 <p className="text-[10px] text-muted-foreground">
-                  已选 {picked.name}（{(picked.size / 1024).toFixed(0)} KB）
+                  Seleccionado: {picked.name} ({(picked.size / 1024).toFixed(0)} KB)
                 </p>
               )}
             </div>
 
             <div className="space-y-1.5">
-              <Label className="text-xs">显示名（可选）</Label>
+              <Label className="text-xs">Nombre visible (opcional)</Label>
               <Input
                 value={customName}
                 onChange={(event) => setCustomName(event.target.value)}
-                placeholder={`${stageName}材料`}
+                placeholder={`${stageName} material`}
               />
             </div>
           </div>
@@ -1626,7 +1621,7 @@ function StageMaterialsPanel({
             </Button>
             <Button onClick={submitUpload} disabled={isPending || !picked} className="gap-1.5">
               {isPending && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
-              上传
+              Subir
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -1658,7 +1653,7 @@ function TaskQuickDialog({
 
   function submit() {
     if (!title.trim()) {
-      toast.warning("请填写Tarea标题");
+      toast.warning("Complete el titulo de la tarea");
       return;
     }
     startTransition(async () => {
@@ -1683,11 +1678,11 @@ function TaskQuickDialog({
           assigneeId: "",
           stageId
         });
-        toast.success("Tarea已Agregar");
+        toast.success("Tarea agregada");
         onOpenChange(false);
         router.refresh();
       } catch (err) {
-        toast.error("AgregarError", { description: err instanceof Error ? err.message : "" });
+        toast.error("Error al agregar", { description: err instanceof Error ? err.message : "" });
       }
     });
   }
@@ -1696,23 +1691,23 @@ function TaskQuickDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-md">
         <DialogHeader>
-          <DialogTitle>AgregarTarea · {stage.name}</DialogTitle>
+          <DialogTitle>Agregar tarea · {stage.name}</DialogTitle>
         </DialogHeader>
         <div className="space-y-3">
           <div className="space-y-1.5">
-            <Label className="text-xs">Tarea标题 *</Label>
+            <Label className="text-xs">Titulo de la tarea *</Label>
             <Input
               value={title}
               onChange={(event) => setTitle(event.target.value)}
-              placeholder="如：准备财产线索 / Enviar续封申请"
+              placeholder="Ej.: preparar pistas de bienes / enviar solicitud de renovacion"
             />
           </div>
           <div className="space-y-1.5">
-            <Label className="text-xs">截止Fecha</Label>
+            <Label className="text-xs">Fecha limite</Label>
             <Input type="date" value={dueAt} onChange={(event) => setDueAt(event.target.value)} />
           </div>
           <div className="space-y-1.5">
-            <Label className="text-xs">说明</Label>
+            <Label className="text-xs">Descripcion</Label>
             <Textarea
               rows={3}
               value={description}
@@ -1786,11 +1781,11 @@ function StageCreateDialog({
 
   function submit() {
     if (!stageName) {
-      toast.warning("请填写环节Nombre");
+      toast.warning("Complete el nombre de la etapa");
       return;
     }
     if (duplicate) {
-      toast.warning("该环节已在列表中");
+      toast.warning("Esta etapa ya existe");
       return;
     }
     startTransition(async () => {
@@ -1804,12 +1799,12 @@ function StageCreateDialog({
           insertAfterStageId: insert.afterStageId,
           insertAfterStageName: insert.afterStageName
         });
-        toast.success("环节已Agregar");
+        toast.success("Etapa agregada");
         onCreated(created.id);
         onOpenChange(false);
         router.refresh();
       } catch (err) {
-        toast.error("AgregarError", { description: err instanceof Error ? err.message : "" });
+        toast.error("Error al agregar", { description: err instanceof Error ? err.message : "" });
       }
     });
   }
@@ -1818,31 +1813,31 @@ function StageCreateDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-lg">
         <DialogHeader>
-          <DialogTitle>Agregar环节</DialogTitle>
+          <DialogTitle>Agregar etapa</DialogTitle>
           <DialogDescription className="text-xs">
-            优先选择预设环节；确实覆盖不到时再使用自定义。
+            Priorice las etapas predefinidas; use personalizada solo si no hay cobertura.
           </DialogDescription>
         </DialogHeader>
         <div className="space-y-3">
           {!customMode ? (
             <div className="space-y-1.5">
-              <Label className="text-xs">预设环节 *</Label>
+              <Label className="text-xs">Etapa predefinida *</Label>
               {availablePresets.length > 0 ? (
                 <Select value={presetName} onValueChange={setPresetName}>
                   <SelectTrigger className="h-10 bg-background">
-                    <SelectValue placeholder="选择预设环节" />
+                    <SelectValue placeholder="Seleccionar etapa predefinida" />
                   </SelectTrigger>
                   <SelectContent>
                     {availablePresets.map((preset) => (
                       <SelectItem key={preset.name} value={preset.name}>
-                        {preset.name} · {preset.kind === "required" ? "必备" : "可选"}
+                        {preset.name} · {preset.kind === "required" ? "Obligatoria" : "Opcional"}
                       </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
               ) : (
                 <p className="rounded-md border border-dashed border-border px-3 py-3 text-xs text-muted-foreground">
-                  预设环节已Ver todos加入当前程序。
+                  Todas las etapas predefinidas ya fueron agregadas.
                 </p>
               )}
               {selectedPreset && (
@@ -1851,28 +1846,28 @@ function StageCreateDialog({
             </div>
           ) : (
             <div className="space-y-1.5">
-              <Label className="text-xs">自定义环节Nombre *</Label>
+              <Label className="text-xs">Nombre de etapa personalizada *</Label>
               <Input
                 value={customName}
                 onChange={(event) => setCustomName(event.target.value)}
-                placeholder="如：二次庭询 / 专家论证 / 履行谈判"
+                placeholder="Ej.: segunda audiencia / peritaje / negociacion"
               />
-              {duplicate && <p className="text-[10px] text-amber-600">该环节已在列表中</p>}
+              {duplicate && <p className="text-[10px] text-amber-600">Esta etapa ya existe</p>}
             </div>
           )}
 
           <div className="space-y-1.5">
-            <Label className="text-xs">插入位置</Label>
+            <Label className="text-xs">Posicion de insercion</Label>
             <Select value={insertTarget} onValueChange={setInsertTarget}>
               <SelectTrigger className="h-10 bg-background">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="START">放在最前</SelectItem>
-                <SelectItem value="END">放在最后</SelectItem>
+                <SelectItem value="START">Al inicio</SelectItem>
+                <SelectItem value="END">Al final</SelectItem>
                 {stages.map((stage) => (
                   <SelectItem key={stage.key} value={stage.id ? `AFTER_ID:${stage.id}` : `AFTER_NAME:${stage.name}`}>
-                    放在「{stage.name}」之后
+                    Despues de "{stage.name}"
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -1880,12 +1875,12 @@ function StageCreateDialog({
           </div>
 
           <div className="space-y-1.5">
-            <Label className="text-xs">说明（可选）</Label>
+            <Label className="text-xs">Descripcion (opcional)</Label>
             <Textarea
               rows={3}
               value={description}
               onChange={(event) => setDescription(event.target.value)}
-              placeholder={customMode ? "记录该环节的目标或注意事ítems" : selectedPreset?.description ?? ""}
+              placeholder={customMode ? "Registre el objetivo o precauciones de esta etapa" : selectedPreset?.description ?? ""}
             />
           </div>
           <button
@@ -1893,7 +1888,7 @@ function StageCreateDialog({
             onClick={() => setCustomMode((value) => !value)}
             className="text-[11px] text-primary hover:underline"
           >
-            {customMode ? "Volver预设环节" : "预设没有覆盖，Agregar自定义环节"}
+            {customMode ? "Volver a etapas predefinidas" : "Agregar etapa personalizada"}
           </button>
         </div>
         <DialogFooter>
@@ -1946,7 +1941,6 @@ function buildWorkflowStages(
   preservationCases: WorkflowPreservationCase[]
 ): WorkflowStage[] {
   if (!procedure) return [];
-  // v0.48: HIDDEN 环节不进Panel de trabajo（数据保留，可重新Agregar恢复）
   const visibleStages = procedure.stages.filter((stage) => stage.status !== "HIDDEN");
   const context = { procedure, preservationCases };
   const realStages: WorkflowStage[] = visibleStages.map((stage) => ({
@@ -1979,20 +1973,18 @@ function buildWorkflowStages(
         )
       }));
 
-  // 已有Preservación记录时必须能在Panel de trabajo看到"财产Preservación"环节——即使真实环节已物化且未包含它，
-  // 否则物化必备环节后Preservación数据会从Caso详情页消失
   if (
     preservationCases.length > 0 &&
-    !source.some((stage) => stage.name.includes("Preservación"))
+    !source.some((stage) => stage.name.includes("Preservacion"))
   ) {
     const insertAt = Math.min(2, source.length);
     const preservationStage = workflowStageFromName(
       procedure.type,
-      "财产Preservación",
+      "Preservacion de bienes",
       {
         key: "default-preservation",
         id: null,
-        status: statusForStage("财产Preservación", null, procedure, preservationCases),
+        status: statusForStage("Preservacion de bienes", null, procedure, preservationCases),
         tasks: []
       },
       context
@@ -2010,7 +2002,7 @@ function workflowStageFromName(
 ): WorkflowStage {
   const preset = stagePresetForName(procedureType, name);
   const presetKind = preset?.kind ?? "custom";
-  const kind: WorkflowStage["kind"] = name.includes("Preservación") ? "preservation" : "normal";
+  const kind: WorkflowStage["kind"] = name.includes("Preservacion") ? "preservation" : "normal";
   return {
     ...meta,
     name,
@@ -2026,7 +2018,6 @@ function shortDay(date: Date): string {
   return `${`${d.getMonth() + 1}`.padStart(2, "0")}-${`${d.getDate()}`.padStart(2, "0")}`;
 }
 
-/** 导航徽标：临期Plazo（含Tarea数）> 未完成Tarea数 > 开庭Fecha，无则不显示 */
 function stageBadge(
   name: string,
   kind: WorkflowStage["kind"],
@@ -2042,7 +2033,7 @@ function stageBadge(
     const nearest = Math.min(...active.map((p) => daysUntil(p.expiryDate)));
     return nearest <= 30
       ? { text: `${active.length} · ${nearest}d`, hot: true }
-      : { text: `${active.length} ítems`, hot: false };
+      : { text: `${active.length} items`, hot: false };
   }
 
   const openTasks = tasks.filter((t) => !t.completed).length;
@@ -2074,7 +2065,7 @@ function statusForStage(
   procedure: WorkflowProcedure,
   preservationCases: WorkflowPreservationCase[]
 ): WorkflowStageStatus {
-  if (name.includes("Preservación")) {
+  if (name.includes("Preservacion")) {
     const properties = preservationCases.flatMap((item) => item.targets.flatMap((target) => target.properties));
     const active = properties.filter((property) => property.status === "ACTIVE" || property.status === "RENEWED");
     if (active.some((property) => daysUntil(property.expiryDate) <= 30)) return "risk";
@@ -2087,17 +2078,17 @@ function statusForStage(
   if (tasks.some((task) => !task.completed && task.dueAt && daysUntil(task.dueAt) <= 3)) return "risk";
   if (tasks.length > 0 && tasks.every((task) => task.completed)) return "done";
   if (tasks.some((task) => !task.completed)) return "active";
-  if ((name.includes("立案") || name.includes("起诉")) && procedure.acceptedAt) return "done";
-  if (name.includes("开庭") && procedure.hearings.some((hearing) => daysUntil(hearing.startsAt) >= 0)) return "active";
+  if ((name.includes("Presentacion") || name.includes("demanda")) && procedure.acceptedAt) return "done";
+  if (name.includes("Audiencia") && procedure.hearings.some((hearing) => daysUntil(hearing.startsAt) >= 0)) return "active";
   if (
-    name.includes("举证") &&
+    name.includes("Pruebas") &&
     procedure.deadlines.some((deadline) => deadline.category === "EVIDENCE" && !deadline.completed && daysUntil(deadline.dueAt) <= 7)
   ) {
     return "risk";
   }
   if (
     procedure.status === "CONCLUDED" &&
-    (name.includes("裁判") || name.includes("裁决") || name.includes("Cerrar caso"))
+    (name.includes("Sentencia") || name.includes("Laudo") || name.includes("Archivo"))
   ) {
     return "done";
   }
@@ -2122,10 +2113,10 @@ function StageStatusIcon({ status, large = false }: { status: WorkflowStageStatu
 function StageStatusBadge({ status }: { status: WorkflowStageStatus }) {
   const map: Record<WorkflowStageStatus, { label: string; className: string }> = {
     done: { label: "Completado", className: "border-emerald-500/30 bg-emerald-500/10 text-emerald-700" },
-    active: { label: "进行中", className: "border-primary/30 bg-primary/10 text-primary" },
-    risk: { label: "临期/风险", className: "border-amber-500/30 bg-amber-500/10 text-amber-700" },
-    todo: { label: "待处理", className: "border-border bg-muted/40 text-muted-foreground" },
-    not_applicable: { label: "不适用", className: "border-border bg-muted/40 text-muted-foreground" }
+    active: { label: "En progreso", className: "border-primary/30 bg-primary/10 text-primary" },
+    risk: { label: "Riesgo", className: "border-amber-500/30 bg-amber-500/10 text-amber-700" },
+    todo: { label: "Pendiente", className: "border-border bg-muted/40 text-muted-foreground" },
+    not_applicable: { label: "No aplica", className: "border-border bg-muted/40 text-muted-foreground" }
   };
   const item = map[status];
   return <Badge variant="outline" className={item.className}>{item.label}</Badge>;
@@ -2171,14 +2162,13 @@ function stageGuideFor(stageName: string) {
 }
 
 function stageMaterialTag(stageName: string) {
-  return `阶段:${stageName}`;
+  return `etapa:${stageName}`;
 }
 
 function documentMatchesStage(
   document: WorkflowDocument,
   stage: { id: string | null; name: string }
 ) {
-  // v0.48: 外键归属优先——已明确归属某环节的材料不再按模式Coincidencia到其他环节
   if (document.stageId) return stage.id !== null && document.stageId === stage.id;
   if (document.tags?.includes(stageMaterialTag(stage.name))) return true;
   const guide = stageGuideFor(stage.name);
@@ -2221,49 +2211,49 @@ function iconForDocument(document: Pick<WorkflowDocument, "mimeType" | "name">) 
   const ext = document.name.split(".").pop()?.toLowerCase() ?? "";
 
   if (mime.startsWith("image/") || ["jpg", "jpeg", "png", "gif", "webp", "heic"].includes(ext)) {
-    return { src: "/file-icons/image.svg", alt: "图片文件" };
+    return { src: "/file-icons/image.svg", alt: "Imagen" };
   }
   if (mime.includes("pdf") || ext === "pdf") {
-    return { src: "/file-icons/pdf.svg", alt: "PDF 文件" };
+    return { src: "/file-icons/pdf.svg", alt: "PDF" };
   }
   if (mime.includes("word") || mime.includes("msword") || ["doc", "docx"].includes(ext)) {
-    return { src: "/file-icons/word.svg", alt: "Word 文件" };
+    return { src: "/file-icons/word.svg", alt: "Word" };
   }
   if (mime.includes("spreadsheet") || mime.includes("excel") || ["xls", "xlsx", "csv"].includes(ext)) {
-    return { src: "/file-icons/excel.svg", alt: "Excel 文件" };
+    return { src: "/file-icons/excel.svg", alt: "Excel" };
   }
   if (mime.includes("presentation") || mime.includes("powerpoint") || ["ppt", "pptx"].includes(ext)) {
-    return { src: "/file-icons/presentation.svg", alt: "演示文稿" };
+    return { src: "/file-icons/presentation.svg", alt: "Presentacion" };
   }
   if (mime.includes("json") || ext === "json") {
-    return { src: "/file-icons/json.svg", alt: "JSON 文件" };
+    return { src: "/file-icons/json.svg", alt: "JSON" };
   }
   if (
     mime.includes("xml") ||
     ["xml", "html", "htm", "css", "js", "jsx", "ts", "tsx", "java", "py", "go", "rb", "php", "sh", "yml", "yaml"].includes(ext)
   ) {
-    return { src: "/file-icons/code.svg", alt: "代码文件" };
+    return { src: "/file-icons/code.svg", alt: "Codigo" };
   }
   if (mime.startsWith("text/") || ["txt", "md", "rtf", "log"].includes(ext)) {
-    return { src: "/file-icons/text.svg", alt: "文本文件" };
+    return { src: "/file-icons/text.svg", alt: "Texto" };
   }
   if (mime.includes("zip") || mime.includes("rar") || ["zip", "rar", "7z", "tar", "gz"].includes(ext)) {
-    return { src: "/file-icons/archive.svg", alt: "压缩包" };
+    return { src: "/file-icons/archive.svg", alt: "Comprimido" };
   }
   if (mime.startsWith("audio/") || ["mp3", "wav", "m4a", "aac"].includes(ext)) {
-    return { src: "/file-icons/audio.svg", alt: "音频文件" };
+    return { src: "/file-icons/audio.svg", alt: "Audio" };
   }
   if (mime.startsWith("video/") || ["mp4", "mov", "avi", "mkv"].includes(ext)) {
-    return { src: "/file-icons/video.svg", alt: "视频文件" };
+    return { src: "/file-icons/video.svg", alt: "Video" };
   }
-  return { src: "/file-icons/generic.svg", alt: "文件" };
+  return { src: "/file-icons/generic.svg", alt: "Archivo" };
 }
 
 const documentCategoryLabel: Record<DocumentCategory, string> = {
-  EVIDENCE: "证据",
-  PLEADING: "诉辩文件",
-  PROCEDURE: "程序文件",
-  JUDGMENT: "裁决",
-  CONTRACT: "合同",
-  OTHER: "其他"
+  EVIDENCE: "Evidencia",
+  PLEADING: "Escritos",
+  PROCEDURE: "Documentos procesales",
+  JUDGMENT: "Sentencia",
+  CONTRACT: "Contrato",
+  OTHER: "Otro"
 };

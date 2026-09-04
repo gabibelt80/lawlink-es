@@ -978,7 +978,7 @@ export function IntakeSheet({
           className="flex flex-1 flex-col overflow-hidden"
         >
           <div className="flex-1 overflow-y-auto bg-[#e6ebf2] px-4 py-4">
-            <div className="mx-auto max-w-[888px] space-y-3.5 [&_button[role=combobox]]:h-[34px] [&_button[role=combobox]]:min-h-0 [&_button[role=combobox]]:rounded-sm [&_button[role=combobox]]:border-[#c6d0dd] [&_button[role=combobox]]:bg-white [&_button[role=combobox]]:text-[12.5px] [&_button[role=combobox]]:shadow-[var(--shadow-inset-deep)] [&_input]:h-[34px] [&_input]:min-h-0 [&_input]:rounded-sm [&_input]:border-[#c6d0dd] [&_input]:bg-white [&_input]:text-[12.5px] [&_textarea]:rounded-sm [&_textarea]:border-[#c6d0dd] [&_textarea]:bg-white [&_textarea]:text-[12.5px]">
+            <div className="mx-auto max-w-[888px] space-y-5 [&_button[role=combobox]]:h-[34px] [&_button[role=combobox]]:min-h-0 [&_button[role=combobox]]:rounded-sm [&_button[role=combobox]]:border-[#c6d0dd] [&_button[role=combobox]]:bg-white [&_button[role=combobox]]:text-[12.5px] [&_button[role=combobox]]:shadow-[var(--shadow-inset-deep)] [&_input]:h-[34px] [&_input]:min-h-0 [&_input]:rounded-sm [&_input]:border-[#c6d0dd] [&_input]:bg-white [&_input]:text-[12.5px] [&_textarea]:rounded-sm [&_textarea]:border-[#c6d0dd] [&_textarea]:bg-white [&_textarea]:text-[12.5px]">
             {Object.keys(errors).length > 0 && (
               <div
                 role="alert"
@@ -996,7 +996,7 @@ export function IntakeSheet({
             {/* ① Informacion basica（共用：类别 / 名称 / 收案 / 经办）*/}
             <Section title="① Información básica" required>
               {/* Categoría del caso | Fecha de admisión（与类别等宽）| Nombre del caso（剩余）*/}
-              <div className="grid grid-cols-1 gap-3 lg:grid-cols-[160px_160px_minmax(0,1fr)]">
+              <div className="grid grid-cols-1 gap-4 lg:grid-cols-[160px_160px_minmax(0,1fr)]">
                 <Field label="Categoría del caso" required>
                   <Select
                     value={category}
@@ -1047,15 +1047,15 @@ export function IntakeSheet({
               {/* 诉讼/仲裁：案情信息（并入基本信息）*/}
               {kind === "litigation" && (
                 <>
-                {/* Trámite actual | Causa | 管辖地 | 争议解决机构 */}
-                <div className="grid grid-cols-1 gap-3 lg:grid-cols-4">
-                  <Field label="Trámite actual" required error={errors.firstProcedureType?.message}>
+                {/* tramite actual | Causa | 管辖地 | 争议解决机构 */}
+                <div className="grid grid-cols-1 gap-4 lg:grid-cols-4">
+                  <Field label="tramite actual" required error={errors.firstProcedureType?.message}>
                     <Select
                       value={firstProcedureType ?? ""}
                       onValueChange={(v) => handleProcedureChange(v as ProcedureType)}
                     >
                       <SelectTrigger className="h-[34px] bg-white text-[12.5px]">
-                        <SelectValue placeholder="Seleccionar trámite actual" />
+                        <SelectValue placeholder="Seleccionar tramite actual" />
                       </SelectTrigger>
                       <SelectContent>
                         {procedureOptions.map((p) => (
@@ -1069,14 +1069,14 @@ export function IntakeSheet({
                   <Field
                     label="Causa"
                     required
-                    hint={!firstProcedureType ? "Primero seleccioná el trámite / instancia" : undefined}
+                    hint={!firstProcedureType ? "Primero selecciona el tramite / instancia" : undefined}
                   >
                     <CauseCombobox
                       category={category}
                       procedureType={firstProcedureType}
                       value={watch("causeId") || ""}
                       disabled={!firstProcedureType}
-                      placeholder={firstProcedureType ? "Hacé clic para seleccionar" : "Primero seleccioná el trámite actual"}
+                      placeholder={firstProcedureType ? "Hace clic para seleccionar" : "Primero selecciona el tramite actual"}
                       onChange={(id, name) => {
                         setValue("causeId", id, { shouldDirty: true });
                         setCauseName(name);
@@ -1111,7 +1111,7 @@ export function IntakeSheet({
                 </div>
 
                 {/* 标的额（1/4）| 标的描述（3/4）*/}
-                <div className="grid grid-cols-1 gap-3 lg:grid-cols-4">
+                <div className="grid grid-cols-1 gap-4 lg:grid-cols-4">
                   <Field label="Monto reclamado ($)" error={errors.claimAmount?.message}>
                     <Input
                       type="number"
@@ -1133,7 +1133,7 @@ export function IntakeSheet({
                 </div>
 
                 {/* 主办 | 协办 | 是否需向律协备案 | 是否反诉（各 1/4）*/}
-                <div className="grid grid-cols-1 gap-3 lg:grid-cols-4">
+                <div className="grid grid-cols-1 gap-4 lg:grid-cols-4">
                   {leadField()}
                   {coLeadField()}
                   {barFilingField()}
@@ -1145,7 +1145,7 @@ export function IntakeSheet({
             {/* 非诉/专项：项目信息（并入基本信息）*/}
             {kind === "project" && (
               <>
-                <div className="grid grid-cols-1 gap-3 lg:grid-cols-4">
+                <div className="grid grid-cols-1 gap-4 lg:grid-cols-4">
                   <Field label="Tipo de negocio">
                     <Select
                       value={watch("businessType") || ""}
@@ -1210,7 +1210,7 @@ export function IntakeSheet({
                     />
                   </Field>
                 </div>
-                <div className="grid grid-cols-1 gap-3 lg:grid-cols-4">
+                <div className="grid grid-cols-1 gap-4 lg:grid-cols-4">
                   <Field label="Alcance del servicio / Contenido" className="sm:col-span-3">
                     <Input
                       placeholder="Ej.: alcance de la debida diligencia, checklist de revisión de contratos, diseño de la estructura de la transacción…"
@@ -1232,7 +1232,7 @@ export function IntakeSheet({
             {/* 顾问：顾问信息（并入基本信息）*/}
             {kind === "counsel" && (
               <>
-                <div className="grid grid-cols-1 gap-3 lg:grid-cols-4">
+                <div className="grid grid-cols-1 gap-4 lg:grid-cols-4">
                   <Field label="Tipo de asesoría">
                     <Select
                       value={watch("counselType") || ""}
@@ -1453,7 +1453,7 @@ export function IntakeSheet({
               </div>
 
               {feeType === "CONTINGENCY" && (
-                <div className="grid grid-cols-1 gap-3 lg:grid-cols-[minmax(0,1fr)_minmax(12rem,0.55fr)]">
+                <div className="grid grid-cols-1 gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(12rem,0.55fr)]">
                   <Field label="Modalidad de honorario de éxito" required hint="Ej.: 15% al percibir el cobro; o escalas según el monto obtenido">
                     <Textarea
                       rows={2}
@@ -1602,7 +1602,7 @@ function Section({
 
   return (
     <section className="overflow-hidden rounded-md border border-[#cbd5e2] bg-[#f2f5f9] shadow-[var(--shadow-low),var(--shadow-inset)]">
-      <div className="flex items-center justify-between gap-3 px-4 pt-4">
+      <div className="flex items-center justify-between gap-3 px-5 pt-5">
         <h3 className="flex items-center gap-2 text-[12px]">
           <span className="h-3 w-[3px] rounded-full bg-primary" />
           <span className="text-[12px] font-semibold leading-5 text-muted-foreground">
@@ -1612,7 +1612,7 @@ function Section({
         </h3>
         {headerAction}
       </div>
-      <div className="space-y-3 p-4">{children}</div>
+      <div className="space-y-4 p-5">{children}</div>
     </section>
   );
 }
@@ -1633,7 +1633,7 @@ function Field({
   children: React.ReactNode;
 }) {
   return (
-    <div className={cn("space-y-1.5", className)}>
+    <div className={cn("space-y-2", className)}>
       <Label className="flex items-center gap-1 text-[12px] font-medium leading-4 text-muted-foreground">
         {label}
         {required && <span className="text-destructive">*</span>}

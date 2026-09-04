@@ -1,13 +1,13 @@
 ﻿/**
- * v0.20: å¾‹æ‰€æŠ¥è¡¨æ•°æ®èšåˆï¼ˆçº¯ read-onlyï¼Œæ—  use serverï¼‰
+ * v0.20: Reportes del bufete (solo lectura, sin use server)
  *
- * 4 ä¸ªå£å¾„ï¼ˆæ¥è‡ª PRD åŽç»­è§„åˆ’ï¼‰ï¼š
- *  - Casoé‡ï¼šæœ¬æœŸæ–°æ”¶ / åœ¨åŠž / å·²Cerrar caso / å·²å½’æ¡£
- *  - ç±»åˆ«åˆ†å¸ƒï¼šæŒ‰ MatterCategory
- *  - Abogadoäº§å‡ºï¼šæ¯ä¸ªAbogadoæ‰¿åŠžCasoæ•° / å·²Cerrar casoæ•° / æ”¶æ¬¾Monto
- *  - Clienteåº”æ”¶ï¼šæŒ‰Clienteèšåˆ åº”æ”¶ - å·²æ”¶
+ * 4 bloques de datos:
+ *  - KPIs: nuevos casos / en tramite / cerrados / archivados
+ *  - Distribucion por categoria (MatterCategory)
+ *  - Produccion por abogado: casos asignados / cerrados / cobros
+ *  - Cuentas por cobrar por cliente: pendiente - cobrado
  *
- * æ—¶é—´èŒƒå›´ï¼šè°ƒç”¨æ–¹ä¼  [start, end]ï¼ŒæŒ‰ Matter.createdAt è½å…¥æœ¬æœŸä¸ºã€Œæ–°æ”¶ã€ã€‚
+ * Rango de tiempo: [start, end], segun Matter.createdAt para "nuevos casos".
  */
 import { prisma } from "@/lib/prisma";
 import type { MatterCategory } from "@prisma/client";
@@ -24,22 +24,22 @@ export function periodPresets(now = new Date()): Record<"month" | "quarter" | "y
   const q = Math.floor(m / 3);
   return {
     month: {
-      label: `${y} å¹´ ${m + 1} æœˆ`,
+      label: `${y} - Mes ${m + 1}`,
       start: new Date(y, m, 1),
       end: new Date(y, m + 1, 1)
     },
     quarter: {
-      label: `${y} å¹´ Q${q + 1}`,
+      label: `${y} - Q${q + 1}`,
       start: new Date(y, q * 3, 1),
       end: new Date(y, q * 3 + 3, 1)
     },
     year: {
-      label: `${y} å¹´åº¦`,
+      label: `${y} - Anual`,
       start: new Date(y, 0, 1),
       end: new Date(y + 1, 0, 1)
     },
     lastYear: {
-      label: `${y - 1} å¹´åº¦`,
+      label: `${y - 1} - Anual`,
       start: new Date(y - 1, 0, 1),
       end: new Date(y, 0, 1)
     }
@@ -47,27 +47,27 @@ export function periodPresets(now = new Date()): Record<"month" | "quarter" | "y
 }
 
 /**
- * è§£æžè‡ªå®šä¹‰æ—¶é—´èŒƒå›´ï¼ˆå« startï¼Œä¸å« endï¼ŒåŠå¼€åŒºé—´ï¼‰ã€‚
- * - start/end å¿…é¡» yyyy-MM-ddï¼Œå¦åˆ™æŠ›é”™
+ * Analiza rango personalizado (incluye start, excluye end, intervalo semiabierto).
+ * - start/end deben ser yyyy-MM-dd, de lo contrario error
  * - end > start
- * - è·¨åº¦ â‰¤ 5 å¹´ï¼ˆé˜²æ­¢è¯¯è¾“å…¥å¹´ä»½å¯¼è‡´å…¨åº“æ‰«æï¼‰
+ * - Rango maximo 5 anios (evita escaneo completo por error de tipeo)
  */
 export function customPeriod(startStr: string, endStr: string): ReportPeriod {
   const re = /^\d{4}-\d{2}-\d{2}$/;
   if (!re.test(startStr) || !re.test(endStr)) {
-    throw new Error("Fechaæ ¼å¼ä¸åˆæ³•ï¼Œéœ€è¦ yyyy-MM-dd");
+    throw new Error("Formato de fecha invalido, se necesita yyyy-MM-dd");
   }
   const [sy, sm, sd] = startStr.split("-").map(Number);
   const [ey, em, ed] = endStr.split("-").map(Number);
   const start = new Date(sy, sm - 1, sd);
-  // end è§£é‡Šä¸º"å«å½“dÃ­as"ï¼Œè½¬åŠå¼€åŒºé—´éœ€ +1 dÃ­as
+  // end se interpreta como "incluye el dia", para intervalo semiabierto se suma 1 dia
   const end = new Date(ey, em - 1, ed + 1);
   if (end.getTime() <= start.getTime()) {
-    throw new Error("ç»“æŸFechaå¿…é¡»æ™šäºŽèµ·å§‹Fecha");
+    throw new Error("La fecha fin debe ser posterior a la fecha inicio");
   }
   const days = (end.getTime() - start.getTime()) / 86400_000;
   if (days > 5 * 366) {
-    throw new Error("è‡ªå®šä¹‰è·¨åº¦ä¸èƒ½è¶…è¿‡ 5 å¹´");
+    throw new Error("El rango personalizado no puede superar 5 anios");
   }
   return {
     label: `${startStr} ~ ${endStr}`,
@@ -81,7 +81,7 @@ export type ReportKpis = {
   inProgress: number;
   closed: number;
   archived: number;
-  archiveRate: number; // å·²å½’æ¡£ / å·²Cerrar casoï¼›0 æ—¶Volver 0
+  archiveRate: number; // archivados / cerrados; si es 0 devuelve 0
 };
 
 export type CategoryBreakdown = {
@@ -92,9 +92,9 @@ export type CategoryBreakdown = {
 export type LawyerOutput = {
   userId: string;
   name: string;
-  ownedCount: number; // owner = userId çš„Casoæ•°
+  ownedCount: number; // cantidad de casos donde owner = userId
   closedCount: number;
-  receivedAmount: number; // æ”¶æ¬¾Monto
+  receivedAmount: number; // monto cobrado
 };
 
 export type ClientReceivable = {
@@ -114,7 +114,7 @@ export type ReportData = {
 };
 
 export async function getReportData(period: ReportPeriod): Promise<ReportData> {
-  // KPI 1: æœ¬æœŸæ–°æ”¶ï¼ˆcreatedAt è½å…¥æœ¬æœŸï¼‰
+  // KPI 1: nuevos casos del periodo (createdAt dentro del periodo)
   const newIntake = await prisma.matter.count({
     where: {
       createdAt: { gte: period.start, lt: period.end },
@@ -122,12 +122,12 @@ export async function getReportData(period: ReportPeriod): Promise<ReportData> {
     }
   });
 
-  // KPI 2: åœ¨åŠžï¼ˆstatus = IN_PROGRESSï¼Œä¸è®ºä½•æ—¶å»ºçš„ï¼‰
+  // KPI 2: en tramite (status = IN_PROGRESS, sin importar fecha de creacion)
   const inProgress = await prisma.matter.count({
     where: { status: "IN_PROGRESS", deletedAt: null }
   });
 
-  // KPI 3: æœ¬æœŸå·²ç»“ï¼ˆclosedAt è½å…¥æœ¬æœŸï¼‰
+  // KPI 3: cerrados en el periodo (closedAt dentro del periodo)
   const closed = await prisma.matter.count({
     where: {
       closedAt: { gte: period.start, lt: period.end },
@@ -135,7 +135,7 @@ export async function getReportData(period: ReportPeriod): Promise<ReportData> {
     }
   });
 
-  // KPI 4: æœ¬æœŸå·²å½’æ¡£ï¼ˆarchivedAt è½å…¥æœ¬æœŸï¼‰
+  // KPI 4: archivados en el periodo (archivedAt dentro del periodo)
   const archived = await prisma.matter.count({
     where: {
       archivedAt: { gte: period.start, lt: period.end },
@@ -145,7 +145,7 @@ export async function getReportData(period: ReportPeriod): Promise<ReportData> {
 
   const archiveRate = closed > 0 ? archived / closed : 0;
 
-  // ç±»åˆ«åˆ†å¸ƒï¼ˆæŒ‰æœ¬æœŸæ–°æ”¶çš„Casoåˆ†ç±»ï¼‰
+  // Distribucion por categoria (por casos nuevos del periodo)
   const cats = await prisma.matter.groupBy({
     by: ["category"],
     where: {
@@ -159,7 +159,7 @@ export async function getReportData(period: ReportPeriod): Promise<ReportData> {
     count: c._count._all
   }));
 
-  // Abogadoäº§å‡ºï¼ˆæŒ‰ owner èšåˆï¼Œæœ¬æœŸæ–°æ”¶ + æœ¬æœŸå·²ç»“ + æœ¬æœŸæ”¶æ¬¾ï¼‰
+  // Produccion por abogado (agrupado por owner, nuevos + cerrados + cobros del periodo)
   const lawyerOwnedRaw = await prisma.matter.groupBy({
     by: ["ownerId"],
     where: {
@@ -177,7 +177,7 @@ export async function getReportData(period: ReportPeriod): Promise<ReportData> {
     _count: { _all: true }
   });
 
-  // Abogadoæœ¬æœŸæ”¶æ¬¾ï¼šFeeEntry.type=RECEIVED + occurredAt åœ¨æœ¬æœŸ + matter.ownerId
+  // Cobros del periodo por abogado: FeeEntry.type=RECEIVED + occurredAt en el periodo + matter.ownerId
   const feeReceivedRaw = await prisma.feeEntry.findMany({
     where: {
       type: "RECEIVED",
@@ -214,7 +214,7 @@ export async function getReportData(period: ReportPeriod): Promise<ReportData> {
     }))
     .sort((a, b) => b.receivedAmount - a.receivedAmount || b.ownedCount - a.ownedCount);
 
-  // Clienteåº”æ”¶ï¼šFeeEntry RECEIVABLE / RECEIVED æŒ‰ matter.primaryClient èšåˆ
+  // Cuentas por cobrar por cliente: FeeEntry RECEIVABLE / RECEIVED agrupado por matter.primaryClient
   const fees = await prisma.feeEntry.findMany({
     where: {
       type: { in: ["RECEIVABLE", "RECEIVED"] },
@@ -256,5 +256,3 @@ export async function getReportData(period: ReportPeriod): Promise<ReportData> {
     byClientReceivable
   };
 }
-
-

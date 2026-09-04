@@ -88,7 +88,7 @@ const TABS: { key: Tab; label: string; icon: typeof Clock }[] = [
 
 const ALL_STATUS_FILTERS: { value: string; label: string }[] = [
   { value: "ALL", label: "Ver todos los estados" },
-  { value: "active", label: "En trámite" },
+  { value: "active", label: "En tramite" },
   { value: "closed", label: "Cerrado" },
   { value: "archived", label: "Archivado" },
 ];

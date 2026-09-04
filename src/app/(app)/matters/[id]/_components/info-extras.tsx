@@ -85,7 +85,7 @@ export function ContractsCard({
       if (sr.stampedDoc) {
         arr.push({
           kind: "stamped",
-          label: "Escaneo después del sello",
+          label: "Escaneo despues del sello",
           doc: sr.stampedDoc,
           sealCode: sr.code,
         });
@@ -133,7 +133,7 @@ export function ContractsCard({
                 <div className="font-mono text-[10px] tabular text-muted-foreground">
                   {r.sealCode ? `${r.sealCode} · ` : ""}
                   {r.doc.size ? `${(r.doc.size / 1024).toFixed(0)} KB · ` : ""}
-                  {new Date(r.doc.createdAt).toLocaleDateString("zh-CN")}
+                  {new Date(r.doc.createdAt).toLocaleDateString("es-AR")}
                 </div>
               </div>
               <a
@@ -177,7 +177,7 @@ export function ExpressMiniCard({
       <header className="flex items-center justify-between border-b border-border px-4 py-2">
         <span className="flex items-center gap-1.5 text-[13px] font-medium">
           <Package className="h-3.5 w-3.5 text-primary" strokeWidth={1.8} />
-          Registro de envíos
+          Registro de envios
           <span className="ml-1 font-mono text-[11px] text-muted-foreground tabular">
             {expresses.length}
           </span>
@@ -203,7 +203,7 @@ export function ExpressMiniCard({
       </header>
       {expresses.length === 0 ? (
         <p className="py-6 text-center text-xs text-muted-foreground">
-          No hay registros de envíos
+          No hay registros de envios
         </p>
       ) : (
         <ul className="space-y-1.5">
@@ -235,8 +235,8 @@ export function ExpressMiniCard({
                 </div>
                 <div className="font-mono text-[10px] tabular text-muted-foreground">
                   {e.lastUpdateAt
-                    ? new Date(e.lastUpdateAt).toLocaleDateString("zh-CN")
-                    : new Date(e.createdAt).toLocaleDateString("zh-CN")}
+                    ? new Date(e.lastUpdateAt).toLocaleDateString("es-AR")
+                    : new Date(e.createdAt).toLocaleDateString("es-AR")}
                 </div>
               </div>
             </li>
@@ -256,11 +256,11 @@ export function ExpressMiniCard({
 }
 
 /**
- * v0.27: Agregar快递记录 dialog
+ * v0.27: Dialogo para agregar registro de envio
  *
- * - 单号：可手动输入 / 上传单号照片 OCR 自动填
- * - 用途必填；方向默认 OUTBOUND；matter 已绑定
- * - Enviar后调 createExpress（内部自动 detectCompany + trackExpress 拉取首条轨迹）
+ * - Numero: manual o por foto OCR
+ * - Proposito obligatorio; direccion por defecto OUTBOUND; matter vinculado
+ * - Al enviar llama a createExpress (internamente detecta empresa + trackExpress para obtener primer seguimiento)
  */
 function AddExpressDialog({
   open,
@@ -302,9 +302,9 @@ function AddExpressDialog({
         const r = await parseExpressLabel(fd);
         if (r.trackingNo) {
           setTrackingNo(r.trackingNo);
-          toast.success(`Número reconocido: ${r.trackingNo}`);
+          toast.success(`Numero reconocido: ${r.trackingNo}`);
         } else {
-          toast.warning("No se reconoció el número; ingresalo manualmente");
+          toast.warning("No se reconocio el numero; ingresalo manualmente");
         }
         if (r.companyCode) setCompanyCode(r.companyCode);
       } catch (err) {
@@ -317,11 +317,11 @@ function AddExpressDialog({
 
   function handleSubmit() {
     if (!trackingNo.trim()) {
-      toast.error("Ingresá o reconocé el número de envío");
+      toast.error("Ingresa o reconoce el numero de envio");
       return;
     }
     if (!purpose.trim()) {
-      toast.error("Ingresá el propósito");
+      toast.error("Ingresa el proposito");
       return;
     }
     startSubmit(async () => {
@@ -335,7 +335,7 @@ function AddExpressDialog({
           recipient: recipient.trim(),
           recipientPhone: recipientPhone.trim(),
         });
-        toast.success("Registro de envío creado");
+        toast.success("Registro de envio creado");
         reset();
         onOpenChange(false);
         router.refresh();
@@ -351,21 +351,21 @@ function AddExpressDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Agregar registro de envío</DialogTitle>
+          <DialogTitle>Agregar registro de envio</DialogTitle>
           <DialogDescription className="text-xs">
-            Podés subir una foto del comprobante de envío para reconocer
-            automáticamente el número, o ingresarlo manualmente.
+            Podes subir una foto del comprobante de envio para reconocer
+            automaticamente el numero, o ingresarlo manualmente.
           </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-3 py-2">
           <div className="space-y-1.5">
-            <Label className="text-xs">Número</Label>
+            <Label className="text-xs">Numero</Label>
             <div className="flex gap-1">
               <Input
                 value={trackingNo}
                 onChange={(e) => setTrackingNo(e.target.value)}
-                placeholder="Podés ingresarlo manualmente o reconocerlo con una imagen"
+                placeholder="Podes ingresarlo manualmente o reconocerlo con una imagen"
                 className="font-mono"
               />
               <input
@@ -385,7 +385,7 @@ function AddExpressDialog({
                 onClick={() => fileRef.current?.click()}
                 disabled={ocrPending}
                 className="h-9 shrink-0 gap-1"
-                title="Subí la foto del comprobante de envío para que la IA reconozca el número + la empresa de envío"
+                title="Subi la foto del comprobante de envio para que la IA reconozca el numero + la empresa de envio"
               >
                 {ocrPending ? (
                   <Loader2 className="h-3 w-3 animate-spin" />
@@ -399,11 +399,11 @@ function AddExpressDialog({
 
           <div className="grid grid-cols-2 gap-2">
             <div className="space-y-1.5">
-              <Label className="text-xs">Empresa de envío</Label>
+              <Label className="text-xs">Empresa de envio</Label>
               <Input
                 value={companyCode}
                 onChange={(e) => setCompanyCode(e.target.value)}
-                placeholder="Dejar vacío para reconocer automáticamente"
+                placeholder="Dejar vacio para reconocer automaticamente"
               />
             </div>
             <div className="space-y-1.5">
@@ -417,10 +417,10 @@ function AddExpressDialog({
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="OUTBOUND">
-                    Envío (nosotros → exterior)
+                    Envio (nosotros → exterior)
                   </SelectItem>
                   <SelectItem value="INBOUND">
-                    Recepción (exterior → nosotros)
+                    Recepcion (exterior → nosotros)
                   </SelectItem>
                 </SelectContent>
               </Select>
@@ -428,11 +428,11 @@ function AddExpressDialog({
           </div>
 
           <div className="space-y-1.5">
-            <Label className="text-xs">Propósito *</Label>
+            <Label className="text-xs">Proposito *</Label>
             <Input
               value={purpose}
               onChange={(e) => setPurpose(e.target.value)}
-              placeholder="Ej.: envío de la demanda al Tribunal de Chaoyang"
+              placeholder="Ej.: envio de la demanda al Tribunal de Chaoyang"
             />
           </div>
 
@@ -445,7 +445,7 @@ function AddExpressDialog({
               />
             </div>
             <div className="space-y-1.5">
-              <Label className="text-xs">Teléfono del destinatario</Label>
+              <Label className="text-xs">Telefono del destinatario</Label>
               <Input
                 value={recipientPhone}
                 onChange={(e) => setRecipientPhone(e.target.value)}

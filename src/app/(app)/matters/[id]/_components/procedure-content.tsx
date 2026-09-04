@@ -69,7 +69,6 @@ type ProcedureWithChildren = MatterProcedure & {
   memos: ProcedureMemo[];
 };
 
-// 聚合后带程序标签的行类型
 type HearingRowItem = Hearing & { procLabel: string };
 type DeadlineRowItem = Deadline & { procLabel: string };
 type MemoRowItem = ProcedureMemo & { procLabel: string };
@@ -85,7 +84,7 @@ const procLabelOf = (p: MatterProcedure) =>
   p.customLabel ?? procedureTypeLabel[p.type];
 
 /**
- * v0.46：「Elementos importantes」全案聚合（开庭安排 + 重要时限 + 快递记录 + 其他备忘）。
+ * v0.46: Elementos importantes - agregacion de audiencias, plazos, envios y notas
  */
 export function ProcedureRemindersAndMemos({
   matterId,
@@ -135,8 +134,6 @@ export function ProcedureRemindersAndMemos({
   );
 }
 
-// ============ Elementos importantes（四类统一展示）============
-
 function ImportantItemsCard({
   matterId,
   deadlines,
@@ -172,43 +169,43 @@ function ImportantItemsCard({
       try {
         await toggleDeadlineCompleted(id);
       } catch {
-        toast.error("Operación fallida");
+        toast.error("Operacion fallida");
       }
     });
   }
 
   function handleDeleteDeadline(id: string) {
-    if (!confirm("Eliminar这条Plazo？")) return;
+    if (!confirm("Eliminar este plazo?")) return;
     startTransition(async () => {
       try {
         await deleteDeadline(id);
-        toast.success("已Eliminar");
+        toast.success("Eliminado");
       } catch {
-        toast.error("EliminarError");
+        toast.error("Error al eliminar");
       }
     });
   }
 
   function handleDeleteHearing(id: string) {
-    if (!confirm("Eliminar这条开庭记录？")) return;
+    if (!confirm("Eliminar esta audiencia?")) return;
     startTransition(async () => {
       try {
         await deleteHearing(id);
-        toast.success("已Eliminar");
+        toast.success("Eliminado");
       } catch {
-        toast.error("EliminarError");
+        toast.error("Error al eliminar");
       }
     });
   }
 
   function handleDeleteExpress(id: string) {
-    if (!confirm("Eliminar这条快递记录？")) return;
+    if (!confirm("Eliminar este envio?")) return;
     startTransition(async () => {
       try {
         await deleteExpress({ id });
-        toast.success("已Eliminar");
+        toast.success("Eliminado");
       } catch {
-        toast.error("EliminarError");
+        toast.error("Error al eliminar");
       }
     });
   }
@@ -218,7 +215,7 @@ function ImportantItemsCard({
       try {
         await deleteProcedureMemo(id);
       } catch {
-        toast.error("EliminarError");
+        toast.error("Error al eliminar");
       }
     });
   }
@@ -226,11 +223,11 @@ function ImportantItemsCard({
   const total = hearings.length + deadlines.length + expresses.length + memos.length;
   const allItems = buildAllImportantItems({ hearings, deadlines, expresses, memos });
   const filters: { value: ImportantFilter; label: string; count: number }[] = [
-    { value: "all", label: "ALL", count: total },
-    { value: "hearing", label: "开庭", count: hearings.length },
-    { value: "deadline", label: "时限", count: deadlines.length },
-    { value: "express", label: "快递", count: expresses.length },
-    { value: "memo", label: "备忘", count: memos.length }
+    { value: "all", label: "Todos", count: total },
+    { value: "hearing", label: "Audiencias", count: hearings.length },
+    { value: "deadline", label: "Plazos", count: deadlines.length },
+    { value: "express", label: "Envios", count: expresses.length },
+    { value: "memo", label: "Notas", count: memos.length }
   ];
 
   const currentCount = filters.find((f) => f.value === filter)?.count ?? 0;
@@ -263,7 +260,6 @@ function ImportantItemsCard({
             </Button>
           )}
         </div>
-        {/* 分类按钮组 */}
         <div className="flex flex-wrap items-center gap-0.5 rounded-md border border-border bg-background p-0.5">
           {filters.map((f) => (
             <button
@@ -288,7 +284,7 @@ function ImportantItemsCard({
 
       {currentCount === 0 ? (
         <p className="flex flex-1 items-center justify-center px-4 py-6 text-center text-xs text-muted-foreground">
-          暂无{currentLabel}
+          Sin {currentLabel}
         </p>
       ) : (
         <ul className="min-h-0 flex-1 divide-y divide-border overflow-y-auto px-4 py-2">
@@ -484,7 +480,6 @@ function AllImportantRow({
   );
 }
 
-// 程序标签小徽章（仅多程序时显示，标明该条属于哪个程序）
 function ProcTag({ label }: { label: string }) {
   return (
     <Badge
@@ -571,7 +566,7 @@ function DeadlineRow({
           )}
         </div>
         <div className="font-mono text-[10px] text-muted-foreground tabular">
-          {new Date(d.dueAt).toLocaleDateString("zh-CN")}
+          {new Date(d.dueAt).toLocaleDateString("es-AR")}
         </div>
       </div>
 
@@ -614,7 +609,7 @@ function HearingRow({
         <div className="mt-0.5 truncate text-[11px] text-muted-foreground">
           {h.room || h.address || h.judge
             ? [h.room, h.address, h.judge].filter(Boolean).join(" · ")
-            : "未填写法庭信息"}
+            : "Sin informacion de tribunal"}
         </div>
       </div>
       <div className="flex shrink-0 flex-col items-end gap-1 text-right">
@@ -622,7 +617,7 @@ function HearingRow({
           {upcoming ? "No realizada" : "Realizada"}
         </Badge>
         <span className="font-mono text-[10px] tabular text-muted-foreground">
-          {new Date(h.startsAt).toLocaleString("zh-CN", {
+          {new Date(h.startsAt).toLocaleString("es-AR", {
             month: "2-digit",
             day: "2-digit",
             hour: "2-digit",
@@ -677,7 +672,7 @@ function ExpressRow({
           </Badge>
         </div>
         <div className="mt-0.5 truncate font-mono text-[11px] tabular text-muted-foreground">
-          {item.companyCode ?? "Pendiente de identificación"} · {item.trackingNo}
+          {item.companyCode ?? "Pendiente de identificacion"} · {item.trackingNo}
         </div>
       </div>
       <div className="flex shrink-0 flex-col items-end gap-1 text-right">
@@ -686,8 +681,8 @@ function ExpressRow({
         </div>
         <div className="font-mono text-[10px] tabular text-muted-foreground">
           {item.lastUpdateAt
-            ? new Date(item.lastUpdateAt).toLocaleDateString("zh-CN")
-            : new Date(item.createdAt).toLocaleDateString("zh-CN")}
+            ? new Date(item.lastUpdateAt).toLocaleDateString("es-AR")
+            : new Date(item.createdAt).toLocaleDateString("es-AR")}
         </div>
       </div>
       {canManage && (
@@ -727,7 +722,7 @@ function MemoRow({
         <div className="mt-0.5 flex items-center gap-1.5 text-[11px] text-muted-foreground">
           {multiProc && <ProcTag label={memo.procLabel} />}
           <span className="font-mono tabular">
-            {new Date(memo.createdAt).toLocaleDateString("zh-CN")}
+            {new Date(memo.createdAt).toLocaleDateString("es-AR")}
           </span>
         </div>
       </div>
@@ -745,38 +740,36 @@ function MemoRow({
   );
 }
 
-// ============ 统一AgregarElementos importantes ============
-
 const deadlineCategoryLabel: Record<DeadlineCreateInput["category"], string> = {
-  LIMITATION: "诉讼时效",
-  EVIDENCE: "举证Plazo",
-  APPEAL: "上诉期",
-  PERFORMANCE: "履行期",
-  RESPONSE: "答辩期",
-  ENFORCEMENT: "执行申请",
-  ARBITRATION_SET_ASIDE: "撤销仲裁期",
-  PRESERVATION: "PreservaciónPlazo",
-  CUSTOM: "其他"
+  LIMITATION: "Prescripcion",
+  EVIDENCE: "Plazo probatorio",
+  APPEAL: "Plazo de apelacion",
+  PERFORMANCE: "Plazo de cumplimiento",
+  RESPONSE: "Plazo de contestacion",
+  ENFORCEMENT: "Solicitud de ejecucion",
+  ARBITRATION_SET_ASIDE: "Plazo de nulidad arbitral",
+  PRESERVATION: "Plazo de preservacion",
+  CUSTOM: "Otro"
 };
 
 const importantTypeMeta: Record<ImportantCategory, { label: string; icon: React.ElementType }> = {
-  hearing: { label: "开庭", icon: Gavel },
-  deadline: { label: "时限", icon: AlertTriangle },
-  express: { label: "快递", icon: Package },
-  memo: { label: "备忘", icon: StickyNote }
+  hearing: { label: "Audiencia", icon: Gavel },
+  deadline: { label: "Plazo", icon: AlertTriangle },
+  express: { label: "Envio", icon: Package },
+  memo: { label: "Nota", icon: StickyNote }
 };
 
 const CN_NUM: Record<number, string> = {
-  1: "一",
-  2: "二",
-  3: "三",
-  4: "四",
-  5: "五",
-  6: "六",
-  7: "七",
-  8: "八",
-  9: "九",
-  10: "十"
+  1: "1",
+  2: "2",
+  3: "3",
+  4: "4",
+  5: "5",
+  6: "6",
+  7: "7",
+  8: "8",
+  9: "9",
+  10: "10"
 };
 
 function toDateInput(date = new Date()) {
@@ -851,7 +844,7 @@ function ImportantItemDialog({
     const numStr = CN_NUM[count] ?? String(count);
     setType(defaultType);
     setHearingProcedureId(procId);
-    setHearingTitle(proc ? `${proc.label}第${numStr}次开庭` : "");
+    setHearingTitle(proc ? `${proc.label} - Audiencia Nro ${numStr}` : "");
     setHearingStartsAt(toDateTimeInput());
     setHearingRoom("");
     setHearingAddress("");
@@ -881,7 +874,7 @@ function ImportantItemDialog({
     if (!proc) return;
     const count = (hearingCounts[procId] ?? 0) + 1;
     const numStr = CN_NUM[count] ?? String(count);
-    setHearingTitle(`${proc.label}第${numStr}次开庭`);
+    setHearingTitle(`${proc.label} - Audiencia Nro ${numStr}`);
   }
 
   function handleSummonsUpload(file: File) {
@@ -899,14 +892,14 @@ function ImportantItemDialog({
         if (result.judge) setHearingJudge(result.judge);
         if (result.caseNumber || result.parties) {
           const parts: string[] = [];
-          if (result.caseNumber) parts.push(`案号：${result.caseNumber}`);
-          if (result.parties?.length) parts.push(`当事人：${result.parties.join("、")}`);
+          if (result.caseNumber) parts.push(`Numero de caso: ${result.caseNumber}`);
+          if (result.parties?.length) parts.push(`Partes: ${result.parties.join(", ")}`);
           setHearingNotes(parts.join("\n"));
         }
-        toast.success("传票识别完成，请核对信息");
+        toast.success("Reconocimiento de citacion completado, verifique la informacion");
       } catch (err) {
-        toast.error("传票识别Error", {
-          description: err instanceof Error ? err.message : "请手动填写"
+        toast.error("Error al reconocer citacion", {
+          description: err instanceof Error ? err.message : "Complete manualmente"
         });
       } finally {
         if (summonsRef.current) summonsRef.current.value = "";
@@ -922,13 +915,13 @@ function ImportantItemDialog({
         const result = await parseExpressLabel(fd);
         if (result.trackingNo) {
           setTrackingNo(result.trackingNo);
-          toast.success(`已识别单号：${result.trackingNo}`);
+          toast.success(`Numero reconocido: ${result.trackingNo}`);
         } else {
-          toast.warning("未识别到单号，请手动输入");
+          toast.warning("No se reconocio el numero, ingrese manualmente");
         }
         if (result.companyCode) setCompanyCode(result.companyCode);
       } catch (err) {
-        toast.error("识别Error", {
+        toast.error("Error al reconocer", {
           description: err instanceof Error ? err.message : ""
         });
       } finally {
@@ -939,16 +932,16 @@ function ImportantItemDialog({
 
   function submitHearing() {
     if (!hearingProcedureId) {
-      toast.error("请先选择所处程序");
+      toast.error("Seleccione el procedimiento");
       return;
     }
     if (!hearingTitle.trim()) {
-      toast.error("请填写开庭主题");
+      toast.error("Complete el titulo de la audiencia");
       return;
     }
     const startsAt = new Date(hearingStartsAt);
     if (Number.isNaN(startsAt.getTime())) {
-      toast.error("请填写有效开庭时间");
+      toast.error("Complete una fecha valida");
       return;
     }
     startTransition(async () => {
@@ -964,11 +957,11 @@ function ImportantItemDialog({
           contact: hearingContact.trim(),
           notes: hearingNotes.trim()
         });
-        toast.success("开庭安排已Agregar");
+        toast.success("Audiencia agregada");
         onOpenChange(false);
         router.refresh();
       } catch (err) {
-        toast.error("AgregarError", {
+        toast.error("Error al agregar", {
           description: err instanceof Error ? err.message : ""
         });
       }
@@ -977,16 +970,16 @@ function ImportantItemDialog({
 
   function submitDeadline() {
     if (!deadlineProcedureId) {
-      toast.error("请先选择所处程序");
+      toast.error("Seleccione el procedimiento");
       return;
     }
     if (!deadlineTitle.trim()) {
-      toast.error("请填写时限Nombre");
+      toast.error("Complete el nombre del plazo");
       return;
     }
     const dueAt = new Date(`${deadlineDueAt}T00:00:00`);
     if (Number.isNaN(dueAt.getTime())) {
-      toast.error("请填写有效Fecha de vencimiento");
+      toast.error("Complete una fecha de vencimiento valida");
       return;
     }
     startTransition(async () => {
@@ -999,11 +992,11 @@ function ImportantItemDialog({
           basis: deadlineBasis.trim(),
           remindDays: deadlineRemindDays
         });
-        toast.success("重要时限已Agregar");
+        toast.success("Plazo agregado");
         onOpenChange(false);
         router.refresh();
       } catch (err) {
-        toast.error("AgregarError", {
+        toast.error("Error al agregar", {
           description: err instanceof Error ? err.message : ""
         });
       }
@@ -1012,11 +1005,11 @@ function ImportantItemDialog({
 
   function submitExpress() {
     if (!trackingNo.trim()) {
-      toast.error("请填写或识别快递单号");
+      toast.error("Complete o reconozca el numero de envio");
       return;
     }
     if (!purpose.trim()) {
-      toast.error("请填写快递用途");
+      toast.error("Complete el proposito del envio");
       return;
     }
     startTransition(async () => {
@@ -1030,11 +1023,11 @@ function ImportantItemDialog({
           recipient: recipient.trim(),
           recipientPhone: recipientPhone.trim()
         });
-        toast.success("快递记录已Agregar");
+        toast.success("Envio agregado");
         onOpenChange(false);
         router.refresh();
       } catch (err) {
-        toast.error("AgregarError", {
+        toast.error("Error al agregar", {
           description: err instanceof Error ? err.message : ""
         });
       }
@@ -1043,11 +1036,11 @@ function ImportantItemDialog({
 
   function submitMemo() {
     if (!memoProcedureId) {
-      toast.error("请先选择所处程序");
+      toast.error("Seleccione el procedimiento");
       return;
     }
     if (!memoContent.trim()) {
-      toast.error("请填写备忘内容");
+      toast.error("Complete el contenido de la nota");
       return;
     }
     startTransition(async () => {
@@ -1056,11 +1049,11 @@ function ImportantItemDialog({
           procedureId: memoProcedureId,
           content: memoContent.trim()
         });
-        toast.success("其他备忘已Agregar");
+        toast.success("Nota agregada");
         onOpenChange(false);
         router.refresh();
       } catch (err) {
-        toast.error("AgregarError", {
+        toast.error("Error al agregar", {
           description: err instanceof Error ? err.message : ""
         });
       }
@@ -1077,15 +1070,15 @@ function ImportantItemDialog({
 
   const needsProcedure = type !== "express";
   const procedureMissing = needsProcedure && procedures.length === 0;
-  const submitLabel = `Agregar${importantTypeMeta[type].label}`;
+  const submitLabel = `Agregar ${importantTypeMeta[type].label}`;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="flex max-h-[88vh] max-w-2xl flex-col gap-0 p-0">
         <DialogHeader className="border-b border-border px-6 py-4">
-          <DialogTitle>AgregarElementos importantes</DialogTitle>
+          <DialogTitle>Agregar elemento importante</DialogTitle>
           <DialogDescription className="text-xs">
-            在一个窗口内选择事ítems分类并填写信息
+            Seleccione el tipo y complete la informacion
           </DialogDescription>
         </DialogHeader>
 
@@ -1117,7 +1110,7 @@ function ImportantItemDialog({
           <div className="flex-1 space-y-3 overflow-y-auto px-6 py-5">
             {procedureMissing && (
               <div className="rounded-md border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-xs text-amber-700">
-                请先AgregarCaso程序后，再录入开庭安排、重要时限或其他备忘。
+                Primero agregue un procedimiento al caso para registrar audiencias, plazos o notas.
               </div>
             )}
 
@@ -1147,22 +1140,22 @@ function ImportantItemDialog({
                     ) : (
                       <ScanText className="h-3.5 w-3.5" />
                     )}
-                    {summonsPending ? "识别中…" : "上传传票识别"}
+                    {summonsPending ? "Reconociendo..." : "Subir citacion"}
                   </Button>
                   <span className="text-[11px] text-muted-foreground">
-                    上传传票照片，自动填充开庭信息
+                    Subir foto de citacion, autocompleta la informacion
                   </span>
                 </div>
-                <ImportantField label="主题" required>
+                <ImportantField label="Titulo" required>
                   <Input
                     value={hearingTitle}
                     onChange={(e) => setHearingTitle(e.target.value)}
-                    placeholder="如：第一次开庭"
+                    placeholder="Ej.: Primera audiencia"
                     disabled={procedureMissing}
                   />
                 </ImportantField>
                 <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                  <ImportantField label="所处程序" required>
+                  <ImportantField label="Procedimiento" required>
                     <ProcedureSelect
                       value={hearingProcedureId}
                       procedures={procedures}
@@ -1173,14 +1166,14 @@ function ImportantItemDialog({
                       }}
                     />
                   </ImportantField>
-                  <ImportantField label="审理法院">
+                  <ImportantField label="Tribunal">
                     <Input
                       readOnly
                       value={proceduresDetail[hearingProcedureId]?.handlingAgency ?? "—"}
                       className="bg-muted/50 text-muted-foreground"
                     />
                   </ImportantField>
-                  <ImportantField label="开庭时间" required>
+                  <ImportantField label="Fecha de audiencia" required>
                     <Input
                       type="datetime-local"
                       value={hearingStartsAt}
@@ -1188,35 +1181,35 @@ function ImportantItemDialog({
                       disabled={procedureMissing}
                     />
                   </ImportantField>
-                  <ImportantField label="法庭">
+                  <ImportantField label="Sala">
                     <Input
                       value={hearingRoom}
                       onChange={(e) => setHearingRoom(e.target.value)}
-                      placeholder="如：第三法庭"
+                      placeholder="Ej.: Sala 3"
                       disabled={procedureMissing}
                     />
                   </ImportantField>
-                  <ImportantField label="主审 / 仲裁员">
+                  <ImportantField label="Juez / Arbitro">
                     <Input
                       value={hearingJudge}
                       onChange={(e) => setHearingJudge(e.target.value)}
                       disabled={procedureMissing}
                     />
                   </ImportantField>
-                  <ImportantField label="联系方式">
+                  <ImportantField label="Contacto">
                     <Input
                       value={hearingContact}
                       onChange={(e) => setHearingContact(e.target.value)}
-                      placeholder="法官/书记员电话"
+                      placeholder="Telefono del juez/secretario"
                       disabled={procedureMissing}
                     />
                   </ImportantField>
                 </div>
-                <ImportantField label="开庭地址">
+                <ImportantField label="Direccion de audiencia">
                   <Input
                     value={hearingAddress}
                     onChange={(e) => setHearingAddress(e.target.value)}
-                    placeholder="如：XX路XX号XX法院"
+                    placeholder="Ej.: Calle XX Nro XX - Tribunal"
                     disabled={procedureMissing}
                   />
                 </ImportantField>
@@ -1233,7 +1226,7 @@ function ImportantItemDialog({
 
             {type === "deadline" && (
               <>
-                <ImportantField label="所处程序" required>
+                <ImportantField label="Procedimiento" required>
                   <ProcedureSelect
                     value={deadlineProcedureId}
                     procedures={procedures}
@@ -1241,16 +1234,16 @@ function ImportantItemDialog({
                     onChange={setDeadlineProcedureId}
                   />
                 </ImportantField>
-                <ImportantField label="时限Nombre" required>
+                <ImportantField label="Nombre del plazo" required>
                   <Input
                     value={deadlineTitle}
                     onChange={(e) => setDeadlineTitle(e.target.value)}
-                    placeholder="如：举证截止 / 上诉Fecha de vencimiento"
+                    placeholder="Ej.: Fin de prueba / Vencimiento de apelacion"
                     disabled={procedureMissing}
                   />
                 </ImportantField>
                 <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                  <ImportantField label="时限类型">
+                  <ImportantField label="Tipo de plazo">
                     <Select
                       value={deadlineCategory}
                       onValueChange={(value) =>
@@ -1279,15 +1272,15 @@ function ImportantItemDialog({
                     />
                   </ImportantField>
                 </div>
-                <ImportantField label="计算依据">
+                <ImportantField label="Base de calculo">
                   <Input
                     value={deadlineBasis}
                     onChange={(e) => setDeadlineBasis(e.target.value)}
-                    placeholder="如：判决书送达日 2026-05-01 + 15 日"
+                    placeholder="Ej.: Notificacion de sentencia 2026-05-01 + 15 dias"
                     disabled={procedureMissing}
                   />
                 </ImportantField>
-                <ImportantField label="提前Recordatorios（días）">
+                <ImportantField label="Recordar con anticipacion (dias)">
                   <Input
                     type="number"
                     min={0}
@@ -1303,12 +1296,12 @@ function ImportantItemDialog({
 
             {type === "express" && (
               <>
-                <ImportantField label="单号" required>
+                <ImportantField label="Numero" required>
                   <div className="flex gap-1">
                     <Input
                       value={trackingNo}
                       onChange={(e) => setTrackingNo(e.target.value)}
-                      placeholder="可手动输入或上传图片识别"
+                      placeholder="Manual o subir imagen para reconocer"
                       className="font-mono"
                     />
                     <input
@@ -1334,19 +1327,19 @@ function ImportantItemDialog({
                       ) : (
                         <ScanLine className="h-3 w-3" />
                       )}
-                      识别
+                      Reconocer
                     </Button>
                   </div>
                 </ImportantField>
                 <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                  <ImportantField label="快递公司">
+                  <ImportantField label="Empresa de envio">
                     <Input
                       value={companyCode}
                       onChange={(e) => setCompanyCode(e.target.value)}
-                      placeholder="留空则自动识别"
+                      placeholder="Vacio para autodetectar"
                     />
                   </ImportantField>
-                  <ImportantField label="方向">
+                  <ImportantField label="Direccion">
                     <Select
                       value={direction}
                       onValueChange={(value) => setDirection(value as "OUTBOUND" | "INBOUND")}
@@ -1355,24 +1348,24 @@ function ImportantItemDialog({
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="OUTBOUND">Enviado（我方→外）</SelectItem>
-                        <SelectItem value="INBOUND">Recibido（外→我方）</SelectItem>
+                        <SelectItem value="OUTBOUND">Enviado (nosotros → exterior)</SelectItem>
+                        <SelectItem value="INBOUND">Recibido (exterior → nosotros)</SelectItem>
                       </SelectContent>
                     </Select>
                   </ImportantField>
                 </div>
-                <ImportantField label="用途" required>
+                <ImportantField label="Proposito" required>
                   <Input
                     value={purpose}
                     onChange={(e) => setPurpose(e.target.value)}
-                    placeholder="如：起诉状寄朝阳法院"
+                    placeholder="Ej.: demanda enviada al tribunal"
                   />
                 </ImportantField>
                 <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                  <ImportantField label="Recibido人 / 单位">
+                  <ImportantField label="Destinatario / entidad">
                     <Input value={recipient} onChange={(e) => setRecipient(e.target.value)} />
                   </ImportantField>
-                  <ImportantField label="Recibido电话">
+                  <ImportantField label="Telefono del destinatario">
                     <Input
                       value={recipientPhone}
                       onChange={(e) => setRecipientPhone(e.target.value)}
@@ -1385,7 +1378,7 @@ function ImportantItemDialog({
 
             {type === "memo" && (
               <>
-                <ImportantField label="所处程序" required>
+                <ImportantField label="Procedimiento" required>
                   <ProcedureSelect
                     value={memoProcedureId}
                     procedures={procedures}
@@ -1393,12 +1386,12 @@ function ImportantItemDialog({
                     onChange={setMemoProcedureId}
                   />
                 </ImportantField>
-                <ImportantField label="备忘内容" required>
+                <ImportantField label="Contenido de la nota" required>
                   <Textarea
                     rows={6}
                     value={memoContent}
                     onChange={(e) => setMemoContent(e.target.value)}
-                    placeholder="输入备忘内容..."
+                    placeholder="Escribir contenido de la nota..."
                     disabled={procedureMissing}
                   />
                 </ImportantField>
@@ -1444,7 +1437,7 @@ function ProcedureSelect({
   return (
     <Select value={value || undefined} onValueChange={onChange} disabled={disabled}>
       <SelectTrigger>
-        <SelectValue placeholder="选择所处程序" />
+        <SelectValue placeholder="Seleccionar procedimiento" />
       </SelectTrigger>
       <SelectContent>
         {procedures.map((p) => (

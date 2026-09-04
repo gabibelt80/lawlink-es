@@ -26,15 +26,15 @@ export function OverviewPanel({ matter }: { matter: MatterPayload }) {
 
   return (
     <div className="grid grid-cols-1 gap-5 lg:grid-cols-3">
-      {/* 近期Plazo */}
+      {/* Plazos proximos */}
       <section className="rounded-xl border border-border bg-card p-5 lg:col-span-2">
         <h2 className="mb-4 flex items-center gap-2 text-base font-semibold">
           <Briefcase className="h-4 w-4 text-primary" />
-          近期Plazo
+          Plazos proximos
         </h2>
         {upcomingDeadlines.length === 0 ? (
           <p className="py-6 text-center text-xs text-muted-foreground">
-            暂无未完成的Plazo
+            Sin plazos pendientes
           </p>
         ) : (
           <ul className="space-y-2">
@@ -63,10 +63,10 @@ export function OverviewPanel({ matter }: { matter: MatterPayload }) {
                             : "text-foreground"
                       }`}
                     >
-                      {isOverdue ? `Vencido ${-days} días` : days === 0 ? "Hoy" : `${days} días`}
+                      {isOverdue ? `Vencido ${-days} dias` : days === 0 ? "Hoy" : `${days} dias`}
                     </div>
                     <div className="font-mono text-[10px] text-muted-foreground tabular">
-                      {new Date(d.dueAt).toLocaleDateString("zh-CN")}
+                      {new Date(d.dueAt).toLocaleDateString("es-AR")}
                     </div>
                   </div>
                 </li>
@@ -76,11 +76,11 @@ export function OverviewPanel({ matter }: { matter: MatterPayload }) {
         )}
       </section>
 
-      {/* 近期开庭 */}
+      {/* Audiencias proximas */}
       <section className="rounded-xl border border-border bg-card p-5">
-        <h2 className="mb-4 text-base font-semibold">近期开庭</h2>
+        <h2 className="mb-4 text-base font-semibold">Audiencias proximas</h2>
         {upcomingHearings.length === 0 ? (
-          <p className="py-6 text-center text-xs text-muted-foreground">暂无</p>
+          <p className="py-6 text-center text-xs text-muted-foreground">Sin audiencias</p>
         ) : (
           <ul className="space-y-2">
             {upcomingHearings.map((h) => (
@@ -90,7 +90,7 @@ export function OverviewPanel({ matter }: { matter: MatterPayload }) {
               >
                 <div className="text-sm font-medium">{h.title}</div>
                 <div className="mt-0.5 font-mono text-xs text-muted-foreground tabular">
-                  {new Date(h.startsAt).toLocaleString("zh-CN", {
+                  {new Date(h.startsAt).toLocaleString("es-AR", {
                     month: "long",
                     day: "numeric",
                     hour: "2-digit",
@@ -103,11 +103,11 @@ export function OverviewPanel({ matter }: { matter: MatterPayload }) {
         )}
       </section>
 
-      {/* 团队 */}
+      {/* Equipo */}
       <section className="rounded-xl border border-border bg-card p-5 lg:col-span-3">
         <h2 className="mb-4 flex items-center gap-2 text-base font-semibold">
           <Users className="h-4 w-4 text-primary" />
-          团队成员
+          Equipo del caso
         </h2>
         <ul className="grid grid-cols-1 gap-2 md:grid-cols-3">
           {matter.members.map((m) => (
@@ -127,7 +127,7 @@ export function OverviewPanel({ matter }: { matter: MatterPayload }) {
                 </div>
               </div>
               <Badge variant="outline" className="text-[10px]">
-                {m.role === "LEAD" ? "主办" : m.role === "CO_LEAD" ? "协办" : "助理"}
+                {m.role === "LEAD" ? "Titular" : m.role === "CO_LEAD" ? "Co-titular" : "Asistente"}
               </Badge>
             </li>
           ))}
