@@ -85,7 +85,7 @@
     "tailwind-merge": "^2.5.4",
     "tailwindcss-animate": "^1.0.7",
     "unpdf": "^1.6.2",
-    "zod": "^3.25.76"
+    "zod": "^4.5.2"
   },
   "devDependencies": {
     "@testing-library/jest-dom": "^6.9.1",
