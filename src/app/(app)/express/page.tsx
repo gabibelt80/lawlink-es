@@ -30,7 +30,7 @@ export default async function ExpressPage() {
     <ExpressView
       items={items}
       matters={matters}
-      configured={s.kdniao.configured || s.kuaidi100.configured}
+      configured={s.andreaConfigured || s.correoConfigured}
     />
   );
 }

@@ -1,29 +1,49 @@
 /**
- * v0.9.3 快递 API 配置（双 provider：快递鸟 主 + 快递100 备）
- *
- * SystemSetting 单 key `expressSettings`，value：
+ * Configuración de servicios de mensajería argentinos
+ * 
+ * SystemSetting con clave `expressSettings`, valor JSON cifrado:
  *   {
- *     kdniao: { ebusinessId, appKeyCipher: {ct,iv,tag} },
- *     kuaidi100: { customer, keyCipher: {ct,iv,tag} }
+ *     andreani: { apiKeyCipher: {ct,iv,tag} },
+ *     correoArgentino: { apiKeyCipher: {ct,iv,tag} }
  *   }
- *
- * appKey/key 用 storage/crypto 同密钥加密。
  */
 import { prisma } from "@/lib/prisma";
 import { encryptBuffer, decryptBuffer } from "@/lib/storage/crypto";
+export async function readPublicExpressSettings(): Promise<{
+  andreani: { configured: boolean; apiKeyMasked: string };
+  correoArgentino: { configured: boolean; apiKeyMasked: string };
+}> {
+  const s = await readStoredExpressSettings();
+  const andreaApiKey = dec(s.andreani.apiKeyCipher);
+  const correoApiKey = dec(s.correoArgentino.apiKeyCipher);
+  return {
+    andreani: {
+      configured: !!andreaApiKey,
+      apiKeyMasked: andreaApiKey ? `${andreaApiKey.slice(0, 4)}••••${andreaApiKey.slice(-4)}` : ""
+    },
+    correoArgentino: {
+      configured: !!correoApiKey,
+      apiKeyMasked: correoApiKey ? `${correoApiKey.slice(0, 4)}••••${correoApiKey.slice(-4)}` : ""
+    }
+  };
+}
 
 const EXPRESS_SETTINGS_KEY = "expressSettings";
 
 type Cipher = { ct: string; iv: string; tag: string };
 
 export interface StoredExpressSettings {
-  kdniao: { ebusinessId: string; appKeyCipher: Cipher | null };
-  kuaidi100: { customer: string; keyCipher: Cipher | null };
+  andreani: { apiKeyCipher: Cipher | null };
+  correoArgentino: { apiKeyCipher: Cipher | null };
 }
 
 export interface ResolvedExpressSettings {
-  kdniao: { ebusinessId: string; appKey: string; configured: boolean };
-  kuaidi100: { customer: string; key: string; configured: boolean };
+  andreani: { apiKey: string; configured: boolean };
+  correoArgentino: { apiKey: string; configured: boolean };
+  andreaConfigured: boolean;
+  correoConfigured: boolean;
+  andreaApiKey: string;
+  correoApiKey: string;
 }
 
 function enc(plain: string): Cipher | null {
@@ -45,81 +65,56 @@ export async function readStoredExpressSettings(): Promise<StoredExpressSettings
   const row = await prisma.systemSetting.findUnique({ where: { key: EXPRESS_SETTINGS_KEY } });
   const v = (row?.value as Partial<StoredExpressSettings> | null) ?? {};
   return {
-    kdniao: {
-      ebusinessId: v.kdniao?.ebusinessId ?? "",
-      appKeyCipher: v.kdniao?.appKeyCipher ?? null
+    andreani: {
+      apiKeyCipher: v.andreani?.apiKeyCipher ?? null
     },
-    kuaidi100: {
-      customer: v.kuaidi100?.customer ?? "",
-      keyCipher: v.kuaidi100?.keyCipher ?? null
-    }
-  };
-}
-
-export async function readPublicExpressSettings(): Promise<{
-  kdniao: { ebusinessId: string; configured: boolean; appKeyMasked: string };
-  kuaidi100: { customer: string; configured: boolean; keyMasked: string };
-}> {
-  const s = await readStoredExpressSettings();
-  const kdniaoKey = dec(s.kdniao.appKeyCipher);
-  const kd100Key = dec(s.kuaidi100.keyCipher);
-  return {
-    kdniao: {
-      ebusinessId: s.kdniao.ebusinessId,
-      configured: !!(s.kdniao.ebusinessId && kdniaoKey),
-      appKeyMasked: kdniaoKey ? `${kdniaoKey.slice(0, 4)}••••${kdniaoKey.slice(-4)}` : ""
-    },
-    kuaidi100: {
-      customer: s.kuaidi100.customer,
-      configured: !!(s.kuaidi100.customer && kd100Key),
-      keyMasked: kd100Key ? `${kd100Key.slice(0, 4)}••••${kd100Key.slice(-4)}` : ""
+    correoArgentino: {
+      apiKeyCipher: v.correoArgentino?.apiKeyCipher ?? null
     }
   };
 }
 
 export async function getExpressSettings(): Promise<ResolvedExpressSettings> {
   const s = await readStoredExpressSettings();
-  const kdniaoKey = dec(s.kdniao.appKeyCipher);
-  const kd100Key = dec(s.kuaidi100.keyCipher);
+  const andreaApiKey = dec(s.andreani.apiKeyCipher);
+  const correoApiKey = dec(s.correoArgentino.apiKeyCipher);
   return {
-    kdniao: {
-      ebusinessId: s.kdniao.ebusinessId,
-      appKey: kdniaoKey,
-      configured: !!(s.kdniao.ebusinessId && kdniaoKey)
+    andreani: {
+      apiKey: andreaApiKey,
+      configured: !!andreaApiKey
     },
-    kuaidi100: {
-      customer: s.kuaidi100.customer,
-      key: kd100Key,
-      configured: !!(s.kuaidi100.customer && kd100Key)
-    }
+    correoArgentino: {
+      apiKey: correoApiKey,
+      configured: !!correoApiKey
+    },
+    andreaConfigured: !!andreaApiKey,
+    correoConfigured: !!correoApiKey,
+    andreaApiKey,
+    correoApiKey
   };
 }
 
 export async function saveExpressSettings(input: {
-  kdniaoEbusinessId?: string;
-  kdniaoAppKey?: string;
-  kdniaoClearKey?: boolean;
-  kuaidi100Customer?: string;
-  kuaidi100Key?: string;
-  kuaidi100ClearKey?: boolean;
+  andreaniApiKey?: string;
+  andreaniClearKey?: boolean;
+  correoArgentinoApiKey?: string;
+  correoArgentinoClearKey?: boolean;
 }) {
   const cur = await readStoredExpressSettings();
   const next: StoredExpressSettings = {
-    kdniao: {
-      ebusinessId: input.kdniaoEbusinessId ?? cur.kdniao.ebusinessId,
-      appKeyCipher: input.kdniaoClearKey
+    andreani: {
+      apiKeyCipher: input.andreaniClearKey
         ? null
-        : input.kdniaoAppKey
-          ? enc(input.kdniaoAppKey)
-          : cur.kdniao.appKeyCipher
+        : input.andreaniApiKey
+          ? enc(input.andreaniApiKey)
+          : cur.andreani.apiKeyCipher
     },
-    kuaidi100: {
-      customer: input.kuaidi100Customer ?? cur.kuaidi100.customer,
-      keyCipher: input.kuaidi100ClearKey
+    correoArgentino: {
+      apiKeyCipher: input.correoArgentinoClearKey
         ? null
-        : input.kuaidi100Key
-          ? enc(input.kuaidi100Key)
-          : cur.kuaidi100.keyCipher
+        : input.correoArgentinoApiKey
+          ? enc(input.correoArgentinoApiKey)
+          : cur.correoArgentino.apiKeyCipher
     }
   };
 

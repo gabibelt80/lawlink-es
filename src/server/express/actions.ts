@@ -241,12 +241,10 @@ export async function saveExpressSettingsAction(input: z.infer<typeof expressSet
   const data = expressSettingsSaveSchema.parse(input);
 
   await saveSettings({
-    kdniaoEbusinessId: data.kdniaoEbusinessId?.trim() || undefined,
-    kdniaoAppKey: data.kdniaoAppKey?.trim() || undefined,
-    kdniaoClearKey: data.kdniaoClearKey,
-    kuaidi100Customer: data.kuaidi100Customer?.trim() || undefined,
-    kuaidi100Key: data.kuaidi100Key?.trim() || undefined,
-    kuaidi100ClearKey: data.kuaidi100ClearKey
+    andreaniApiKey: data.andreaniApiKey?.trim() || undefined,
+    andreaniClearKey: data.andreaniClearKey,
+    correoArgentinoApiKey: data.correoArgentinoApiKey?.trim() || undefined,
+    correoArgentinoClearKey: data.correoArgentinoClearKey
   });
 
   await audit({
