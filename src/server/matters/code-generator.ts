@@ -1,11 +1,11 @@
-import { Prisma } from "@prisma/client";
+﻿import { Prisma } from "@prisma/client";
 import type { MatterCategory } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { matterCategoryCode } from "@/lib/procedures-by-category";
 import { getFirmProfile, CATEGORY_ABBR } from "@/server/settings/firm-profile";
 import { renderCaseNoTemplate } from "@/lib/matters/firm-caseno";
 
-/** SystemSetting 原子计数器：key 自增并Volver新值（serializable 防并发冲突） */
+/** SystemSetting åŽŸå­è®¡æ•°å™¨ï¼škey è‡ªå¢žå¹¶Volveræ–°å€¼ï¼ˆserializable é˜²å¹¶å‘å†²çªï¼‰ */
 async function nextCounter(key: string): Promise<number> {
   return prisma.$transaction(
     async (tx) => {
@@ -24,9 +24,9 @@ async function nextCounter(key: string): Promise<number> {
 }
 
 /**
- * 原子生成 internalCode：{前缀}-{YYYY}-{CODE}-{4位流水}
+ * åŽŸå­ç”Ÿæˆ internalCodeï¼š{å‰ç¼€}-{YYYY}-{CODE}-{4ä½æµæ°´}
  *
- * 前缀可在「Configuración → 律所信息」配置（默认 LL）。计数器 key 形如 `code-counter-2026-CC`。
+ * å‰ç¼€å¯åœ¨ã€ŒConfiguraciÃ³n â†’ å¾‹æ‰€ä¿¡æ¯ã€é…ç½®ï¼ˆé»˜è®¤ LLï¼‰ã€‚è®¡æ•°å™¨ key å½¢å¦‚ `code-counter-2026-CC`ã€‚
  */
 export async function generateInternalCode(category: MatterCategory): Promise<string> {
   const year = new Date().getFullYear();
@@ -38,9 +38,9 @@ export async function generateInternalCode(category: MatterCategory): Promise<st
 }
 
 /**
- * v0.42 生成所内案号（ítems 11）：按「Configuración → 律所信息」的模板渲染。
- * 计数器按 年 + 类别 独立自增，key 形如 `firm-caseno-2026-CC`。
- * 模板为空时回退默认；y internalCode 计数器互不干扰。
+ * v0.42 ç”Ÿæˆæ‰€å†…æ¡ˆå·ï¼ˆÃ­tems 11ï¼‰ï¼šæŒ‰ã€ŒConfiguraciÃ³n â†’ å¾‹æ‰€ä¿¡æ¯ã€çš„æ¨¡æ¿æ¸²æŸ“ã€‚
+ * è®¡æ•°å™¨æŒ‰ å¹´ + ç±»åˆ« ç‹¬ç«‹è‡ªå¢žï¼Œkey å½¢å¦‚ `firm-caseno-2026-CC`ã€‚
+ * æ¨¡æ¿ä¸ºç©ºæ—¶å›žé€€é»˜è®¤ï¼›y internalCode è®¡æ•°å™¨äº’ä¸å¹²æ‰°ã€‚
  */
 export async function generateFirmCaseNo(category: MatterCategory): Promise<string> {
   const year = new Date().getFullYear();
@@ -56,3 +56,5 @@ export async function generateFirmCaseNo(category: MatterCategory): Promise<stri
     seq
   });
 }
+
+

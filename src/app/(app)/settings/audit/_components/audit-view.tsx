@@ -26,6 +26,54 @@ type AuditItem = {
   user: { id: string; name: string } | null;
 };
 
+const ACTION_LABELS: Record<string, string> = {
+  LOGIN: "Inicio de sesion",
+  LOGOUT: "Cierre de sesion",
+  LOGIN_FAILED: "Intento de login fallido",
+  MATTER_VIEW: "Vio un caso",
+  MATTER_CREATE: "Creo un caso",
+  MATTER_CLOSE: "Cerro un caso",
+  MATTER_ARCHIVE: "Archivo un caso",
+  MATTER_DELETE: "Elimino un caso",
+  INTAKE_VIEW: "Vio una admision",
+  INTAKE_CREATE: "Creo una admision",
+  INTAKE_CONVERT: "Convirtio admision a caso",
+  INTAKE_DECLINE: "Rechazo una admision",
+  INTAKE_RESUBMIT: "Reenvio una admision",
+  CLIENT_AUTO_CREATE: "Creo un cliente automaticamente",
+  CLIENT_CREATE: "Creo un cliente",
+  CLIENT_DELETE: "Elimino un cliente",
+  USER_CREATE: "Creo un usuario",
+  USER_ROLE_UPDATE: "Actualizo el rol de un usuario",
+  USER_PASSWORD_RESET: "Restablecio contrasena",
+  USER_DEACTIVATE: "Deshabilito un usuario",
+  USER_ACTIVATE: "Habilito un usuario",
+  CALENDAR_TOKEN_CREATE: "Genero enlace de calendario",
+  CALENDAR_TOKEN_REGENERATE: "Regenero enlace de calendario",
+  ANNOUNCEMENT_CREATE: "Publico un anuncio",
+  ANNOUNCEMENT_UPDATE: "Actualizo un anuncio",
+  ANNOUNCEMENT_ARCHIVE: "Archivo un anuncio",
+  CONFLICT_CHECK_RUN: "Ejecuto busqueda de conflictos",
+  CONFLICT_CONCLUSION_SET: "Definio conclusion de conflicto",
+  SEAL_REQUEST_CREATE: "Solicito un sello",
+  SEAL_APPROVED: "Aprobo un sello",
+  SEAL_REJECTED: "Rechazo un sello",
+  SEAL_STAMPED: "Completo un sellado",
+  SEAL_CANCELLED: "Cancelo un sello",
+  DOCUMENT_UPLOAD: "Subio un documento",
+  DOCUMENT_DELETE: "Elimino un documento",
+  TASK_CREATE: "Creo una tarea",
+  TASK_COMPLETE: "Completo una tarea",
+  TASK_DELETE: "Elimino una tarea",
+  DEADLINE_CREATE: "Creo un plazo",
+  DEADLINE_COMPLETE: "Completo un plazo",
+  HEARING_CREATE: "Creo una audiencia",
+  FEE_ENTRY_CREATE: "Registro un cobro",
+  ARCHIVE_OVERDUE_SCAN_CRON: "Escaneo automatico de vencimientos",
+  FIRM_FILE_UPLOAD: "Subio un archivo del estudio",
+  TEMPLATE_RENDER: "Genero un documento desde plantilla",
+};
+
 const actionColor: Record<string, string> = {
   LOGIN: "#5B8DEF",
   MATTER_CREATE: "#4ADE80",
@@ -98,7 +146,7 @@ export function AuditView({
       <header className="flex items-center justify-between">
         <h2 className="flex items-center gap-2 text-base font-semibold">
           <ScrollText className="h-4 w-4 text-primary" />
-          Registro de auditoría{" "}
+          Registro de auditoria{" "}
           <span className="text-muted-foreground">({items.length})</span>
         </h2>
       </header>
@@ -111,14 +159,14 @@ export function AuditView({
             updateUrl({ action: v });
           }}
         >
-          <SelectTrigger className="h-9 w-44 bg-background">
-            <SelectValue placeholder="动作" />
+          <SelectTrigger className="h-9 w-52 bg-background">
+            <SelectValue placeholder="Accion" />
           </SelectTrigger>
           <SelectContent className="max-h-80">
-            <SelectItem value="ALL">Ver todos动作</SelectItem>
+            <SelectItem value="ALL">Ver todas las acciones</SelectItem>
             {distinctActions.map((a) => (
               <SelectItem key={a} value={a}>
-                {a}
+                {ACTION_LABELS[a] ?? a}
               </SelectItem>
             ))}
           </SelectContent>
@@ -132,10 +180,10 @@ export function AuditView({
           }}
         >
           <SelectTrigger className="h-9 w-40 bg-background">
-            <SelectValue placeholder="用户" />
+            <SelectValue placeholder="Usuario" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="ALL">Ver todos用户</SelectItem>
+            <SelectItem value="ALL">Ver todos los usuarios</SelectItem>
             {userOptions.map((u) => (
               <SelectItem key={u.id} value={u.id}>
                 {u.name}
@@ -155,10 +203,10 @@ export function AuditView({
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="7">近 7 días</SelectItem>
-            <SelectItem value="30">近 30 días</SelectItem>
-            <SelectItem value="90">近 90 días</SelectItem>
-            <SelectItem value="365">近 1 年</SelectItem>
+            <SelectItem value="7">Ultimos 7 dias</SelectItem>
+            <SelectItem value="30">Ultimos 30 dias</SelectItem>
+            <SelectItem value="90">Ultimos 90 dias</SelectItem>
+            <SelectItem value="365">Ultimo anio</SelectItem>
           </SelectContent>
         </Select>
 
@@ -172,12 +220,13 @@ export function AuditView({
 
       {items.length === 0 ? (
         <div className="rounded-xl border border-dashed border-border bg-card py-16 text-center">
-          <p className="text-sm text-muted-foreground">Sin coincidencias的审计记录</p>
+          <p className="text-sm text-muted-foreground">Sin registros de auditoria que coincidan</p>
         </div>
       ) : (
         <ul className="space-y-1.5">
           {items.map((it) => {
             const color = colorFor(it.action);
+            const actionLabel = ACTION_LABELS[it.action] ?? it.action;
             return (
               <li
                 key={it.id}
@@ -197,7 +246,7 @@ export function AuditView({
                       className="font-mono text-[10px]"
                       style={{ borderColor: `${color}50`, color }}
                     >
-                      {it.action}
+                      {actionLabel}
                     </Badge>
                     {it.targetType && (
                       <span className="font-mono text-xs text-muted-foreground">
@@ -212,14 +261,19 @@ export function AuditView({
                   </div>
                   {it.detail !== null && it.detail !== undefined && (
                     <pre className="mt-1 max-h-24 overflow-hidden font-mono text-[10px] text-muted-foreground/80">
-                      {JSON.stringify(it.detail, null, 0)}
+                      {typeof it.detail === "string"
+                        ? it.detail
+                        : Object.entries(it.detail as Record<string, unknown>)
+                            .slice(0, 4)
+                            .map(([k, v]) => `${k}: ${v}`)
+                            .join(", ")}
                     </pre>
                   )}
                 </div>
                 <div className="text-right text-xs">
-                  <div>{it.user?.name ?? "—"}</div>
+                  <div>{it.user?.name ?? "Sistema"}</div>
                   <div className="font-mono text-[10px] text-muted-foreground tabular">
-                    {new Date(it.createdAt).toLocaleString("zh-CN", {
+                    {new Date(it.createdAt).toLocaleString("es-AR", {
                       month: "2-digit",
                       day: "2-digit",
                       hour: "2-digit",

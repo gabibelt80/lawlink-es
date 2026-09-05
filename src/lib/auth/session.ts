@@ -1,18 +1,18 @@
-import { getServerSession } from "next-auth";
+﻿import { getServerSession } from "next-auth";
 import { redirect } from "next/navigation";
 import { authOptions } from "./options";
 
 /**
- * Server Component / Server Action 中读取当前 session。
- * 未Iniciar sesiónVolver null。
+ * Server Component / Server Action ä¸­è¯»å–å½“å‰ sessionã€‚
+ * æœªIniciar sesiÃ³nVolver nullã€‚
  */
 export async function getSession() {
   return getServerSession(authOptions);
 }
 
 /**
- * 要求Iniciar sesión，未Iniciar sesión强制跳 /login。
- * 在 Server Component / Server Action 中使用。
+ * è¦æ±‚Iniciar sesiÃ³nï¼ŒæœªIniciar sesiÃ³nå¼ºåˆ¶è·³ /loginã€‚
+ * åœ¨ Server Component / Server Action ä¸­ä½¿ç”¨ã€‚
  */
 export async function requireSession() {
   const session = await getSession();
@@ -21,3 +21,4 @@ export async function requireSession() {
   }
   return session;
 }
+

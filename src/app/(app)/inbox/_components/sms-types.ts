@@ -1,5 +1,5 @@
-/**
- * /inbox 共享类型
+﻿/**
+ * /inbox å…±äº«ç±»åž‹
  */
 import type { Prisma, SmsType, ProcedureType } from "@prisma/client";
 import type {
@@ -38,15 +38,15 @@ export type MatterOption = {
 };
 
 export const SMS_TYPE_CN: Record<SmsType, string> = {
-  HEARING_NOTICE: "开庭Notificaciones",
-  SERVICE_NOTICE: "送达Notificaciones",
-  FEE_NOTICE: "缴费Notificaciones",
-  MEDIATION: "调解Notificaciones",
-  ENFORCEMENT: "执行Notificaciones",
-  FILING_NOTICE: "立案Notificaciones",
-  JUDGMENT_NOTICE: "判决Notificaciones",
-  EVIDENCE_SUBMIT: "Enviar材料",
-  OTHER: "其他Notificaciones"
+  HEARING_NOTICE: "å¼€åº­Notificaciones",
+  SERVICE_NOTICE: "é€è¾¾Notificaciones",
+  FEE_NOTICE: "ç¼´è´¹Notificaciones",
+  MEDIATION: "è°ƒè§£Notificaciones",
+  ENFORCEMENT: "æ‰§è¡ŒNotificaciones",
+  FILING_NOTICE: "ç«‹æ¡ˆNotificaciones",
+  JUDGMENT_NOTICE: "åˆ¤å†³Notificaciones",
+  EVIDENCE_SUBMIT: "Enviarææ–™",
+  OTHER: "å…¶ä»–Notificaciones"
 };
 
 export const SMS_TYPE_ACCENT: Record<SmsType, string> = {
@@ -61,7 +61,7 @@ export const SMS_TYPE_ACCENT: Record<SmsType, string> = {
   OTHER: "#737373"
 };
 
-// 解析结果结构（y lib/sms-parser.ts ParsedSms 对齐）
+// è§£æžç»“æžœç»“æž„ï¼ˆy lib/sms-parser.ts ParsedSms å¯¹é½ï¼‰
 export type ParsedJson = {
   smsType: SmsType;
   caseNumbers: string[];
@@ -83,8 +83,9 @@ export type ParsedJson = {
   documentLinks: SmsDocumentLink[];
   attachmentResults: SmsAttachmentResult[];
   summary: string;
-  // v0.9.1 AI 增强字段
+  // v0.9.1 AI å¢žå¼ºå­—æ®µ
   aiEnriched?: boolean;
   action?: string | null;
   urgency?: "HIGH" | "MEDIUM" | "LOW" | null;
 };
+

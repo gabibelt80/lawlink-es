@@ -86,27 +86,27 @@ const severityStyle: Record<
   BLOCKING: {
     color: "#F87171",
     bg: "rgba(248,113,113,0.12)",
-    label: "bloqueante",
+    label: "Bloqueante",
   },
-  HIGH: { color: "#FB923C", bg: "rgba(251,146,60,0.12)", label: "alto" },
-  MEDIUM: { color: "#FBBF24", bg: "rgba(251,191,36,0.12)", label: "medio" },
-  LOW: { color: "#4ADE80", bg: "rgba(74,222,128,0.12)", label: "bajo" },
+  HIGH: { color: "#FB923C", bg: "rgba(251,146,60,0.12)", label: "Alto" },
+  MEDIUM: { color: "#FBBF24", bg: "rgba(251,191,36,0.12)", label: "Medio" },
+  LOW: { color: "#4ADE80", bg: "rgba(74,222,128,0.12)", label: "Bajo" },
 };
 
 const queryRoleOptions: { value: QueryRole; label: string }[] = [
-  { value: "CLIENT_PARTY", label: "cliente potencial" },
-  { value: "OPPOSING_PARTY", label: "parte contraria" },
-  { value: "THIRD_PARTY", label: "tercero" },
+  { value: "CLIENT_PARTY", label: "Cliente potencial" },
+  { value: "OPPOSING_PARTY", label: "Parte contraria" },
+  { value: "THIRD_PARTY", label: "Tercero" },
 ];
 
 const partyRoleLabel: Record<PartyRole, string> = {
-  CLIENT_PARTY: "cliente",
-  OPPOSING_PARTY: "contraparte",
-  THIRD_PARTY: "tercero",
-  CO_LITIGANT: "co-demandante",
-  AGENT: "agente",
-  WITNESS: "testigo",
-  OTHER: "otro",
+  CLIENT_PARTY: "Cliente",
+  OPPOSING_PARTY: "Contraparte",
+  THIRD_PARTY: "Tercero",
+  CO_LITIGANT: "Co-demandante",
+  AGENT: "Agente",
+  WITNESS: "Testigo",
+  OTHER: "Otro",
 };
 
 function emptyQuery(): QueryRow {
@@ -144,7 +144,7 @@ export function ConflictDialog({
       }))
       .filter((q) => q.name || q.idNumber);
     if (cleaned.length === 0) {
-      toast.warning("请至少填写一个Nombre y apellido或证件号");
+      toast.warning("Ingresá al menos un nombre o documento");
       return;
     }
 
@@ -157,15 +157,15 @@ export function ConflictDialog({
         setHasRun(true);
         const extra =
           res.idMatchedClients?.length || res.sameNameClients?.length
-            ? `（同名 ${res.sameNameClients?.length ?? 0} · 证件号Coincidencia ${res.idMatchedClients?.length ?? 0}）`
+            ? `(coincidencias de nombre ${res.sameNameClients?.length ?? 0} · coincidencias de documento ${res.idMatchedClients?.length ?? 0})`
             : "";
         if (res.hits.length === 0) {
-          toast.success(`未命中冲突${extra}`);
+          toast.success(`Sin conflictos encontrados ${extra}`);
         } else {
-          toast.success(`命中 ${res.hits.length} 条${extra}，请审阅`);
+          toast.success(`Se encontraron ${res.hits.length} resultados ${extra}, revisar`);
         }
       } catch (err) {
-        toast.error("检索Error", {
+        toast.error("Error en la búsqueda", {
           description: err instanceof Error ? err.message : "",
         });
       }
@@ -184,18 +184,19 @@ export function ConflictDialog({
         <DialogHeader className="border-b border-border bg-background px-6 py-4">
           <DialogTitle className="flex items-center gap-2">
             <ShieldCheck className="h-4 w-4 text-primary" />
-            利益冲突检索
+            Búsqueda de conflicto de intereses
           </DialogTitle>
           <DialogDescription className="text-xs">
-            填入待查的Nombre y apellido或证件号（至少一ítems），快速比对历史ClienteyCaso
+            Ingresá nombre o documento a verificar (al menos un dato), compara
+            rápido con clientes y casos históricos
           </DialogDescription>
         </DialogHeader>
 
         <div className="max-h-[calc(85vh-140px)] space-y-4 overflow-y-auto px-6 py-4">
-          {/* 输入ítems */}
+          {/* Criterios de búsqueda */}
           <section>
             <div className="mb-2 flex items-center justify-between">
-              <Label className="text-xs">检索ítems</Label>
+              <Label className="text-xs">Criterios de búsqueda</Label>
               <Button
                 type="button"
                 variant="outline"
@@ -265,7 +266,7 @@ export function ConflictDialog({
                           ),
                         )
                       }
-                      placeholder="身份证 / 统一社会信用代码"
+                      placeholder="DNI / CUIT / CUIL"
                       className="h-9 bg-background font-mono"
                     />
                   </div>
@@ -294,7 +295,7 @@ export function ConflictDialog({
                 className="text-[11px] text-muted-foreground hover:text-primary"
                 onClick={() => onOpenChange(false)}
               >
-                Ver完整记录页 →
+                Ver página completa de registros →
               </Link>
               <Button
                 type="button"
@@ -307,17 +308,18 @@ export function ConflictDialog({
                 ) : (
                   <Search className="h-4 w-4" />
                 )}
-                开始检索
+                Buscar
               </Button>
             </div>
           </section>
 
-          {/* Cliente库同名（非冲突，仅提示） */}
+          {/* Coincidencias de nombre en la base de clientes (solo aviso, no es conflicto) */}
           {hasRun && sameName.length > 0 && (
             <section className="rounded-md border border-[#5B8DEF]/30 bg-[#5B8DEF]/10 p-3">
               <div className="flex items-center gap-2 text-xs text-[#5B8DEF]">
                 <Info className="h-3.5 w-3.5" />
-                Cliente库已有 {sameName.length} 个同名记录（仅提示，非冲突）
+                Hay {sameName.length} clientes con el mismo nombre (solo aviso,
+                no es conflicto)
               </div>
               <div className="mt-2 flex flex-wrap gap-1.5">
                 {sameName.map((c) => (
@@ -335,13 +337,13 @@ export function ConflictDialog({
             </section>
           )}
 
-          {/* 身份证 / 信用代码精确Coincidencia（强提示） */}
+          {/* Documento coincide exactamente (aviso fuerte) */}
           {hasRun && idMatched.length > 0 && (
             <section className="rounded-md border border-amber-500/40 bg-amber-500/10 p-3">
               <div className="flex items-center gap-2 text-xs text-amber-400">
                 <AlertTriangle className="h-3.5 w-3.5" />
-                身份证 / 信用代码yCliente库 {idMatched.length}{" "}
-                条记录精确Coincidencia，请人工核对
+                Documento coincide exactamente con {idMatched.length} registros
+                de clientes, verificar manualmente
               </div>
               <div className="mt-2 flex flex-wrap gap-1.5">
                 {idMatched.map((c) => (
@@ -360,18 +362,18 @@ export function ConflictDialog({
             </section>
           )}
 
-          {/* 结果 */}
+          {/* Resultados */}
           {hasRun && (
             <section>
               <h3 className="mb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                检索结果（{results?.length ?? 0}）
+                Resultados ({results?.length ?? 0})
               </h3>
 
               {!results || results.length === 0 ? (
                 <div className="rounded-md border border-[#4ADE80]/30 bg-[#4ADE80]/10 p-3 text-sm">
                   <div className="flex items-center gap-2">
                     <CheckCircle2 className="h-4 w-4 text-[#4ADE80]" />
-                    <span>未命中任何历史Cliente或Caso</span>
+                    <span>No se encontraron clientes ni casos históricos</span>
                   </div>
                 </div>
               ) : (
@@ -414,8 +416,8 @@ export function ConflictDialog({
                               </span>
                               <span className="text-xs text-muted-foreground">
                                 {h.hitType === "HISTORICAL_CLIENT"
-                                  ? "历史Cliente"
-                                  : "历史Caso"}
+                                  ? "Cliente histórico"
+                                  : "Caso histórico"}
                               </span>
                             </div>
                             <p className="mt-1 text-sm">{h.reason}</p>
@@ -427,7 +429,7 @@ export function ConflictDialog({
                               {h.matchedRatio !== null &&
                                 h.matchedRatio < 1 && (
                                   <span className="ml-2">
-                                    相似度 {(h.matchedRatio * 100).toFixed(0)}%
+                                    Similitud {(h.matchedRatio * 100).toFixed(0)}%
                                   </span>
                                 )}
                             </div>
@@ -476,17 +478,17 @@ function MatterContext({
         </span>
       </div>
       <div className="grid grid-cols-2 gap-x-3 gap-y-1 text-muted-foreground">
-        <Field label="Sistema收案">{formatDate(info.intakeDate)}</Field>
-        <Field label="当前Estado">{matterStatusLabel[info.status]}</Field>
-        <Field label="Causa/类型">{causeOrCategory}</Field>
-        <Field label="主办Abogado">{info.ownerName ?? "—"}</Field>
-        <Field label="命中Rol">
+        <Field label="Fecha de admisión">{formatDate(info.intakeDate)}</Field>
+        <Field label="Estado actual">{matterStatusLabel[info.status]}</Field>
+        <Field label="Causa / tipo">{causeOrCategory}</Field>
+        <Field label="Abogado a cargo">{info.ownerName ?? "—"}</Field>
+        <Field label="Rol coincidente">
           {partyRoleLabel[info.partyRole]}
           {info.partyStanding
             ? ` · ${litigationStandingLabel[info.partyStanding]}`
             : ""}
         </Field>
-        <Field label="命中主体">{hit.matchedName}</Field>
+        <Field label="Sujeto coincidente">{hit.matchedName}</Field>
       </div>
     </div>
   );
@@ -501,7 +503,7 @@ function Field({
 }) {
   return (
     <div className="flex min-w-0 gap-1.5">
-      <span className="shrink-0 text-muted-foreground/70">{label}：</span>
+      <span className="shrink-0 text-muted-foreground/70">{label}:</span>
       <span className="truncate text-foreground/85">{children}</span>
     </div>
   );
@@ -511,5 +513,5 @@ function formatDate(value: string | null) {
   if (!value) return "—";
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return "—";
-  return date.toLocaleDateString("zh-CN");
+  return date.toLocaleDateString("es-AR");
 }

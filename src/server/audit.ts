@@ -1,10 +1,7 @@
-import { prisma } from "@/lib/prisma";
+﻿import { getTenantPrisma } from "@/lib/tenant-prisma";
 
 /**
- * 写一条审计日志。Error不抛错（业务流程不应被审计Error阻塞）。
- *
- * 用法：
- *   await audit({ userId, action: "CLIENT_CREATE", targetType: "Client", targetId, detail })
+ * Escribe un registro de auditoria. No lanza errores (el flujo del negocio no debe bloquearse por errores de auditoria).
  */
 export async function audit(params: {
   userId?: string | null;
@@ -16,9 +13,33 @@ export async function audit(params: {
   userAgent?: string;
 }) {
   try {
+    const prisma = await getTenantPrisma();
+
+    let resolvedUserId: string | null = null;
+
+    if (params.userId) {
+      // Buscar el usuario en el tenant por ID
+      const user = await prisma.user.findUnique({
+        where: { id: params.userId },
+        select: { id: true }
+      });
+      if (user) {
+        resolvedUserId = user.id;
+      } else {
+        // Si no se encuentra por ID, buscar por email (para FirmUser del central)
+        const firmUser = await prisma.user.findFirst({
+          where: { email: params.userId },
+          select: { id: true }
+        });
+        if (firmUser) {
+          resolvedUserId = firmUser.id;
+        }
+      }
+    }
+
     await prisma.auditLog.create({
       data: {
-        userId: params.userId ?? null,
+        userId: resolvedUserId,
         action: params.action,
         targetType: params.targetType,
         targetId: params.targetId,
@@ -28,6 +49,6 @@ export async function audit(params: {
       }
     });
   } catch (err) {
-    console.error("[audit] 写入Error：", err);
+    console.error("[audit] Error al escribir:", err);
   }
 }

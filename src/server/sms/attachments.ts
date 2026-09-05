@@ -1,6 +1,6 @@
-// 内部 helper：仅供 server action 调用，调用方负责 session y权限校验。
-// 不能标 "use server"：这里接受 userId/matterId 参数且不做鉴权，
-// 一旦成为 server action 端点会被Cliente端直接伪造调用。
+﻿// å†…éƒ¨ helperï¼šä»…ä¾› server action è°ƒç”¨ï¼Œè°ƒç”¨æ–¹è´Ÿè´£ session yæƒé™æ ¡éªŒã€‚
+// ä¸èƒ½æ ‡ "use server"ï¼šè¿™é‡ŒæŽ¥å— userId/matterId å‚æ•°ä¸”ä¸åšé‰´æƒï¼Œ
+// ä¸€æ—¦æˆä¸º server action ç«¯ç‚¹ä¼šè¢«Clienteç«¯ç›´æŽ¥ä¼ªé€ è°ƒç”¨ã€‚
 import { lookup } from "node:dns/promises";
 import net from "node:net";
 import type { DocumentCategory, SmsType } from "@prisma/client";
@@ -123,8 +123,8 @@ async function downloadFromDocumentLink(
         url: link.url,
         status: "LOGIN_REQUIRED",
         message: link.extractionCodes.length > 0
-          ? "该送达入口可能需要Iniciar sesión或输入提取码，已识别到SMS内的验证码/提取码"
-          : "该送达入口可能需要网页Iniciar sesión、验证码或专有流程，需人工打开处理",
+          ? "è¯¥é€è¾¾å…¥å£å¯èƒ½éœ€è¦Iniciar sesiÃ³næˆ–è¾“å…¥æå–ç ï¼Œå·²è¯†åˆ«åˆ°SMSå†…çš„éªŒè¯ç /æå–ç "
+          : "è¯¥é€è¾¾å…¥å£å¯èƒ½éœ€è¦ç½‘é¡µIniciar sesiÃ³nã€éªŒè¯ç æˆ–ä¸“æœ‰æµç¨‹ï¼Œéœ€äººå·¥æ‰“å¼€å¤„ç†",
         checkedAt: new Date().toISOString()
       };
     }
@@ -133,7 +133,7 @@ async function downloadFromDocumentLink(
     return {
       url: link.url,
       status: "FAILED",
-      message: err instanceof Error ? err.message : "Adjunto提取Error",
+      message: err instanceof Error ? err.message : "Adjuntoæå–Error",
       checkedAt: new Date().toISOString()
     };
   }
@@ -148,7 +148,7 @@ async function downloadFromUrl(
     return {
       url,
       status: "FAILED",
-      message: "Enlace跳转循环，已停止",
+      message: "Enlaceè·³è½¬å¾ªçŽ¯ï¼Œå·²åœæ­¢",
       checkedAt: new Date().toISOString()
     };
   }
@@ -159,7 +159,7 @@ async function downloadFromUrl(
     return {
       url,
       status: "FAILED",
-      message: `访问Error：HTTP ${response.status}`,
+      message: `è®¿é—®Errorï¼šHTTP ${response.status}`,
       checkedAt: new Date().toISOString()
     };
   }
@@ -171,7 +171,7 @@ async function downloadFromUrl(
       return {
         url,
         status: "NO_FILE_FOUND",
-        message: "送达页面过大，未自动解析页面内Adjunto",
+        message: "é€è¾¾é¡µé¢è¿‡å¤§ï¼Œæœªè‡ªåŠ¨è§£æžé¡µé¢å†…Adjunto",
         checkedAt: new Date().toISOString()
       };
     }
@@ -187,8 +187,8 @@ async function downloadFromUrl(
       url,
       status: htmlLooksLikeLogin(html) ? "LOGIN_REQUIRED" : "NO_FILE_FOUND",
       message: htmlLooksLikeLogin(html)
-        ? "页面需要Iniciar sesión、验证码或Confirmar签收，未自动下载"
-        : "页面内未发现可直接下载的文书Adjunto",
+        ? "é¡µé¢éœ€è¦Iniciar sesiÃ³nã€éªŒè¯ç æˆ–Confirmarç­¾æ”¶ï¼Œæœªè‡ªåŠ¨ä¸‹è½½"
+        : "é¡µé¢å†…æœªå‘çŽ°å¯ç›´æŽ¥ä¸‹è½½çš„æ–‡ä¹¦Adjunto",
       checkedAt: new Date().toISOString()
     };
   }
@@ -197,7 +197,7 @@ async function downloadFromUrl(
     return {
       url,
       status: "UNSUPPORTED_TYPE",
-      message: contentType ? `Enlace不是支持的文书文件：${contentType}` : "Enlace不是可识别的文书文件",
+      message: contentType ? `Enlaceä¸æ˜¯æ”¯æŒçš„æ–‡ä¹¦æ–‡ä»¶ï¼š${contentType}` : "Enlaceä¸æ˜¯å¯è¯†åˆ«çš„æ–‡ä¹¦æ–‡ä»¶",
       checkedAt: new Date().toISOString()
     };
   }
@@ -205,7 +205,7 @@ async function downloadFromUrl(
     return {
       url,
       status: "FAILED",
-      message: "Adjunto超过 20MB 限制",
+      message: "Adjuntoè¶…è¿‡ 20MB é™åˆ¶",
       checkedAt: new Date().toISOString()
     };
   }
@@ -215,7 +215,7 @@ async function downloadFromUrl(
     return {
       url,
       status: "FAILED",
-      message: "Adjunto超过 20MB 限制",
+      message: "Adjuntoè¶…è¿‡ 20MB é™åˆ¶",
       checkedAt: new Date().toISOString()
     };
   }
@@ -223,7 +223,7 @@ async function downloadFromUrl(
     return {
       url,
       status: "FAILED",
-      message: "Adjunto为空",
+      message: "Adjuntoä¸ºç©º",
       checkedAt: new Date().toISOString()
     };
   }
@@ -241,7 +241,7 @@ async function downloadFromUrl(
     return {
       url,
       status: "ALREADY_DOWNLOADED",
-      message: "该Adjunto已在本案材料中",
+      message: "è¯¥Adjuntoå·²åœ¨æœ¬æ¡ˆææ–™ä¸­",
       documentId: existing.id,
       documentName: existing.name,
       mimeType: existing.mimeType,
@@ -262,7 +262,7 @@ async function downloadFromUrl(
   return {
     url,
     status: "DOWNLOADED",
-    message: "已Guardar为Caso材料",
+    message: "å·²Guardarä¸ºCasoææ–™",
     documentId: document.id,
     documentName: document.name,
     mimeType: document.mimeType,
@@ -297,7 +297,7 @@ async function fetchWithRedirects(url: string): Promise<{ response: Response; fi
       clearTimeout(timer);
     }
   }
-  throw new Error("Enlace重定向次数过多");
+  throw new Error("Enlaceé‡å®šå‘æ¬¡æ•°è¿‡å¤š");
 }
 
 async function assertSafeHttpUrl(input: string): Promise<URL> {
@@ -305,17 +305,17 @@ async function assertSafeHttpUrl(input: string): Promise<URL> {
   try {
     url = new URL(input);
   } catch {
-    throw new Error("Enlace格式不正确");
+    throw new Error("Enlaceæ ¼å¼ä¸æ­£ç¡®");
   }
   if (url.protocol !== "http:" && url.protocol !== "https:") {
-    throw new Error("仅支持 HTTP/HTTPS Enlace");
+    throw new Error("ä»…æ”¯æŒ HTTP/HTTPS Enlace");
   }
   if (isLocalHostname(url.hostname)) {
-    throw new Error("不允许访问本机或内网地址");
+    throw new Error("ä¸å…è®¸è®¿é—®æœ¬æœºæˆ–å†…ç½‘åœ°å€");
   }
   const records = await lookup(url.hostname, { all: true });
   if (records.length === 0 || records.some((r) => isPrivateAddress(r.address))) {
-    throw new Error("不允许访问本机或内网地址");
+    throw new Error("ä¸å…è®¸è®¿é—®æœ¬æœºæˆ–å†…ç½‘åœ°å€");
   }
   return url;
 }
@@ -362,7 +362,7 @@ function extractFileLinksFromHtml(html: string, baseUrl: string): string[] {
 }
 
 function htmlLooksLikeLogin(html: string): boolean {
-  return /Iniciar sesión|账号|Contraseña|验证码|签收|Confirmar送达|提取码|取件码|人机|captcha/i.test(html);
+  return /Iniciar sesiÃ³n|è´¦å·|ContraseÃ±a|éªŒè¯ç |ç­¾æ”¶|Confirmaré€è¾¾|æå–ç |å–ä»¶ç |äººæœº|captcha/i.test(html);
 }
 
 function baseMime(mime: string | null): string | null {
@@ -380,7 +380,7 @@ function buildAttachmentName(response: Response, finalUrl: string): string {
   const dispositionName = filenameFromDisposition(response.headers.get("content-disposition"));
   const urlName = filenameFromUrl(finalUrl);
   const mimeType = baseMime(response.headers.get("content-type"));
-  const base = sanitizeFilename(normalizeUploadedFilename(dispositionName || urlName || "法院SMS送达文书"));
+  const base = sanitizeFilename(normalizeUploadedFilename(dispositionName || urlName || "æ³•é™¢SMSé€è¾¾æ–‡ä¹¦"));
   const withExt = ensureExt(base, mimeType);
   if (/\.[A-Za-z0-9]{1,5}$/.test(withExt)) return withExt;
   const ext = mimeType ? MIME_EXT[mimeType] : null;
@@ -416,7 +416,7 @@ function sanitizeFilename(name: string): string {
     .replace(/[\\/:*?"<>|]/g, "_")
     .replace(/\s+/g, " ")
     .trim();
-  return (cleaned || "法院SMS送达文书").slice(0, 120);
+  return (cleaned || "æ³•é™¢SMSé€è¾¾æ–‡ä¹¦").slice(0, 120);
 }
 
 async function saveAttachmentDocument({
@@ -460,7 +460,7 @@ async function saveAttachmentDocument({
       algorithm,
       iv,
       authTag,
-      tags: ["法院SMS", "电子送达", "自动提取"],
+      tags: ["æ³•é™¢SMS", "ç”µå­é€è¾¾", "è‡ªåŠ¨æå–"],
       uploadedById: ctx.userId
     },
     select: { id: true, name: true, mimeType: true, size: true }
@@ -470,7 +470,7 @@ async function saveAttachmentDocument({
     data: {
       matterId: ctx.matterId,
       eventType: "DOCUMENT_UPLOADED",
-      title: `提取法院SMSAdjunto：${filename}`,
+      title: `æå–æ³•é™¢SMSAdjuntoï¼š${filename}`,
       occurredAt: new Date(),
       refType: "Document",
       refId: doc.id
@@ -489,9 +489,11 @@ async function saveAttachmentDocument({
 }
 
 function categoryForSmsAttachment(smsType: SmsType, filename: string): DocumentCategory {
-  if (smsType === "JUDGMENT_NOTICE" || /判决|裁定|裁判|调解书/.test(filename)) return "JUDGMENT";
-  if (smsType === "EVIDENCE_SUBMIT" || /证据|材料|举证/.test(filename)) return "EVIDENCE";
-  if (/起诉|答辩|上诉|申请书|反诉|代理词|意见/.test(filename)) return "PLEADING";
+  if (smsType === "JUDGMENT_NOTICE" || /åˆ¤å†³|è£å®š|è£åˆ¤|è°ƒè§£ä¹¦/.test(filename)) return "JUDGMENT";
+  if (smsType === "EVIDENCE_SUBMIT" || /è¯æ®|ææ–™|ä¸¾è¯/.test(filename)) return "EVIDENCE";
+  if (/èµ·è¯‰|ç­”è¾©|ä¸Šè¯‰|ç”³è¯·ä¹¦|åè¯‰|ä»£ç†è¯|æ„è§/.test(filename)) return "PLEADING";
   if (smsType === "SERVICE_NOTICE" || smsType === "FILING_NOTICE" || smsType === "FEE_NOTICE") return "PROCEDURE";
   return "OTHER";
 }
+
+

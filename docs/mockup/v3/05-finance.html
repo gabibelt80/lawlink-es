@@ -1,231 +1,653 @@
 <!doctype html>
-<html lang="zh-CN">
-<head>
-<meta charset="utf-8" />
-<title>LawLink · 财务</title>
-<link rel="stylesheet" href="design-system.css" />
-<style>
-  .page-head { display: flex; align-items: flex-end; justify-content: space-between; margin-bottom: 14px; }
-  .page-title { font-family: var(--font-display); font-size: 20px; font-weight: 600; letter-spacing: -0.022em; line-height: 1.2; margin: 0 0 4px; }
-  .page-sub { font-size: 13px; color: var(--t-muted); }
+<html lang="es-AR">
+  <head>
+    <meta charset="utf-8" />
+    <title>LawLink · Finanzas</title>
+    <link rel="stylesheet" href="design-system.css" />
+    <style>
+      .page-head {
+        display: flex;
+        align-items: flex-end;
+        justify-content: space-between;
+        margin-bottom: 14px;
+      }
+      .page-title {
+        font-family: var(--font-display);
+        font-size: 20px;
+        font-weight: 600;
+        letter-spacing: -0.022em;
+        line-height: 1.2;
+        margin: 0 0 4px;
+      }
+      .page-sub {
+        font-size: 13px;
+        color: var(--t-muted);
+      }
 
-  /* 财务总览：4 个大数字卡（Apple 数字风）*/
-  .fin-kpi { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 14px; }
-  .fk { padding: 16px; }
-  .fk-label { font-size: 12px; color: var(--t-muted); margin-bottom: 10px; }
-  .fk-value { font-family: var(--font-display); font-size: 24px; font-weight: 600; letter-spacing: -0.025em; line-height: 1; font-variant-numeric: tabular-nums; }
-  .fk-sub { display: flex; align-items: center; gap: 6px; margin-top: 12px; font-size: 12px; }
+      /* 财务总览：4 个大数字卡（Apple 数字风）*/
+      .fin-kpi {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 16px;
+        margin-bottom: 14px;
+      }
+      .fk {
+        padding: 16px;
+      }
+      .fk-label {
+        font-size: 12px;
+        color: var(--t-muted);
+        margin-bottom: 10px;
+      }
+      .fk-value {
+        font-family: var(--font-display);
+        font-size: 24px;
+        font-weight: 600;
+        letter-spacing: -0.025em;
+        line-height: 1;
+        font-variant-numeric: tabular-nums;
+      }
+      .fk-sub {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        margin-top: 12px;
+        font-size: 12px;
+      }
 
-  /* 律师创收看板 */
-  .earnings-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 14px; margin-bottom: 14px; }
+      /* 律师创收看板 */
+      .earnings-grid {
+        display: grid;
+        grid-template-columns: 2fr 1fr;
+        gap: 14px;
+        margin-bottom: 14px;
+      }
 
-  /* 律师排行 */
-  .lawyer-row {
-    display: grid; grid-template-columns: 30px 1fr 120px 100px 80px;
-    gap: 14px; align-items: center;
-    padding: 12px 0; border-bottom: 1px solid var(--bd-subtle);
-  }
-  .lawyer-row:last-child { border-bottom: none; }
-  .rank { font-family: var(--font-mono); font-size: 13px; color: var(--t-muted); font-weight: 500; }
-  .rank.top { color: var(--indigo); font-weight: 600; }
-  .lawyer-info { display: flex; align-items: center; gap: 10px; min-width: 0; }
-  .lawyer-name { font-size: 13px; font-weight: 500; }
-  .lawyer-role { font-size: 11px; color: var(--t-muted); }
+      /* 律师排行 */
+      .lawyer-row {
+        display: grid;
+        grid-template-columns: 30px 1fr 120px 100px 80px;
+        gap: 14px;
+        align-items: center;
+        padding: 12px 0;
+        border-bottom: 1px solid var(--bd-subtle);
+      }
+      .lawyer-row:last-child {
+        border-bottom: none;
+      }
+      .rank {
+        font-family: var(--font-mono);
+        font-size: 13px;
+        color: var(--t-muted);
+        font-weight: 500;
+      }
+      .rank.top {
+        color: var(--indigo);
+        font-weight: 600;
+      }
+      .lawyer-info {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        min-width: 0;
+      }
+      .lawyer-name {
+        font-size: 13px;
+        font-weight: 500;
+      }
+      .lawyer-role {
+        font-size: 11px;
+        color: var(--t-muted);
+      }
 
-  /* 趋势图 */
-  .chart-wrap { padding: 16px 20px 20px; height: 280px; }
-</style>
-</head>
-<body>
-<div class="shell">
-  <aside class="sidebar">
-    <div class="brand"><div class="brand-mark">L</div><div><div class="brand-name">立正律师事务所</div><div class="brand-sub">LawLink · v3</div></div></div>
-    <nav class="nav">
-      <div class="nav-section-label">工作区</div>
-      <div class="nav-item"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 12l9-9 9 9M5 10v10h14V10"/></svg>工作台</div>
-      <div class="nav-item"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>案件</div>
-      <div class="nav-item"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="9" cy="8" r="3.5"/><path d="M2 20c0-3.5 3-6 7-6s7 2.5 7 6"/></svg>客户</div>
-      <div class="nav-item active"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="6" width="18" height="13" rx="2"/><path d="M3 10h18"/></svg>财务</div>
-      <div class="nav-item"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 9h18M8 3v4M16 3v4"/></svg>日程</div>
-      <div class="nav-item"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>审批</div>
-      <div class="nav-section-label">资料</div>
-      <div class="nav-item"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 3v18h18"/><rect x="7" y="11" width="3" height="6"/><rect x="12" y="7" width="3" height="10"/></svg>报表</div>
-    </nav>
-  </aside>
-
-  <div class="main">
-    <header class="topbar">
-      <div class="searchbox"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>搜索案件、客户、材料...<span class="kbd">⌘K</span></div>
-      <div style="flex:1"></div>
-      <div class="segmented">
-        <button class="seg active">本月</button>
-        <button class="seg">本季</button>
-        <button class="seg">本年</button>
-      </div>
-      <button class="btn btn-secondary btn-sm"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>导出</button>
-      <div style="width:1px;height:24px;background:var(--bd-default);margin:0 4px"></div>
-      <div style="display:flex;align-items:center;gap:8px;padding:0 10px 0 4px;height:34px;border-radius:var(--r-full);border:1px solid var(--bd-default);background:var(--bg-card);cursor:pointer"><div class="avatar av-indigo">叶</div><span style="font-size:13px;font-weight:500">叶森</span></div>
-    </header>
-
-    <div class="content">
-      <div class="page-head">
-        <div>
-          <h1 class="page-title">财务</h1>
-          <p class="page-sub">2026 年 6 月 · 全所创收看板</p>
-        </div>
-      </div>
-
-      <!-- KPI -->
-      <div class="fin-kpi">
-        <div class="card fk">
-          <div class="fk-label">本月实收</div>
-          <div class="fk-value">$286K</div>
-          <div class="fk-sub"><span class="dot dot-green"></span><span style="color:var(--green);font-weight:500">+12%</span><span class="t-mute">同比上月</span></div>
-        </div>
-        <div class="card fk">
-          <div class="fk-label">待收账款</div>
-          <div class="fk-value">$420K</div>
-          <div class="fk-sub"><span class="t-mute">18 个案件</span></div>
-        </div>
-        <div class="card fk">
-          <div class="fk-label">本月成本</div>
-          <div class="fk-value">$38K</div>
-          <div class="fk-sub"><span class="dot dot-amber"></span><span style="color:var(--amber)">诉讼费 + 鉴定费</span></div>
-        </div>
-        <div class="card fk">
-          <div class="fk-label">净收入</div>
-          <div class="fk-value">$248K</div>
-          <div class="fk-sub"><span class="dot dot-green"></span><span style="color:var(--green);font-weight:500">+8%</span><span class="t-mute">环比</span></div>
-        </div>
-      </div>
-
-      <div class="earnings-grid">
-        <!-- 实收趋势 -->
-        <div class="card">
-          <div class="panel-head">
-            <div class="panel-title">实收 vs 应收趋势</div>
-            <div style="display:flex;gap:14px">
-              <span class="t-xs t-mute" style="display:flex;align-items:center;gap:5px"><span style="width:14px;height:2px;background:var(--indigo);border-radius:1px"></span>实收</span>
-              <span class="t-xs t-mute" style="display:flex;align-items:center;gap:5px"><span style="width:14px;height:2px;background:var(--t-faint);border-radius:1px"></span>应收</span>
-            </div>
-          </div>
-          <div class="chart-wrap">
-            <svg viewBox="0 0 600 260" preserveAspectRatio="none" style="width:100%;height:100%">
-              <defs>
-                <linearGradient id="fin-fill" x1="0" x2="0" y1="0" y2="1">
-                  <stop offset="0%" stop-color="#007b7f" stop-opacity="0.2"/>
-                  <stop offset="100%" stop-color="#007b7f" stop-opacity="0"/>
-                </linearGradient>
-              </defs>
-              <g stroke="#ECECEF" stroke-dasharray="3 4">
-                <line x1="0" y1="50" x2="600" y2="50"/>
-                <line x1="0" y1="110" x2="600" y2="110"/>
-                <line x1="0" y1="170" x2="600" y2="170"/>
-              </g>
-              <polyline points="40,140 130,120 220,150 310,100 400,130 490,80 580,60" fill="none" stroke="#A1A1A6" stroke-width="1.5"/>
-              <polygon points="40,160 130,140 220,170 310,120 400,150 490,100 580,80 580,240 40,240" fill="url(#fin-fill)"/>
-              <polyline points="40,160 130,140 220,170 310,120 400,150 490,100 580,80" fill="none" stroke="#007b7f" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
-              <circle cx="580" cy="80" r="5" fill="#007b7f"/>
-              <circle cx="580" cy="80" r="10" fill="#007b7f" opacity="0.2"/>
-              <g fill="#6E6E73" font-family="SF Mono, monospace" font-size="11">
-                <text x="30" y="255">12月</text><text x="120" y="255">1月</text><text x="210" y="255">2月</text>
-                <text x="300" y="255">3月</text><text x="390" y="255">4月</text><text x="480" y="255">5月</text><text x="555" y="255">6月</text>
-              </g>
-            </svg>
+      /* 趋势图 */
+      .chart-wrap {
+        padding: 16px 20px 20px;
+        height: 280px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="shell">
+      <aside class="sidebar">
+        <div class="brand">
+          <div class="brand-mark">L</div>
+          <div>
+            <div class="brand-name">Estudio Jurídico Lizheng</div>
+            <div class="brand-sub">LawLink · v3</div>
           </div>
         </div>
-
-        <!-- 律师创收排行 -->
-        <div class="card">
-          <div class="panel-head">
-            <div class="panel-title">律师创收</div>
-            <span class="t-xs t-mute">本月</span>
+        <nav class="nav">
+          <div class="nav-section-label">Área de trabajo</div>
+          <div class="nav-item">
+            <svg
+              class="ic"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.8"
+            >
+              <path d="M3 12l9-9 9 9M5 10v10h14V10" /></svg
+            >Panel de trabajo
           </div>
-          <div class="panel-body">
-            <div class="lawyer-row">
-              <span class="rank top">01</span>
-              <div class="lawyer-info"><div class="avatar av-indigo">叶</div><div><div class="lawyer-name">叶森</div><div class="lawyer-role">主办律师</div></div></div>
-              <div class="progress"><div class="progress-fill" style="width:100%"></div></div>
-              <span class="num-md t-indigo">$126K</span>
-              <span class="t-xs t-mute">6 件</span>
-            </div>
-            <div class="lawyer-row">
-              <span class="rank top">02</span>
-              <div class="lawyer-info"><div class="avatar av-violet">李</div><div><div class="lawyer-name">李明华</div><div class="lawyer-role">协办律师</div></div></div>
-              <div class="progress"><div class="progress-fill" style="width:68%"></div></div>
-              <span class="num-md">$86K</span>
-              <span class="t-xs t-mute">4 件</span>
-            </div>
-            <div class="lawyer-row">
-              <span class="rank">03</span>
-              <div class="lawyer-info"><div class="avatar av-green">王</div><div><div class="lawyer-name">王晓彤</div><div class="lawyer-role">律师助理</div></div></div>
-              <div class="progress"><div class="progress-fill" style="width:34%"></div></div>
-              <span class="num-md">$42K</span>
-              <span class="t-xs t-mute">3 件</span>
-            </div>
-            <div class="lawyer-row">
-              <span class="rank">04</span>
-              <div class="lawyer-info"><div class="avatar av-amber">张</div><div><div class="lawyer-name">张伟</div><div class="lawyer-role">主办律师</div></div></div>
-              <div class="progress"><div class="progress-fill" style="width:25%"></div></div>
-              <span class="num-md">$32K</span>
-              <span class="t-xs t-mute">2 件</span>
-            </div>
+          <div class="nav-item">
+            <svg
+              class="ic"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.8"
+            >
+              <path
+                d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"
+              /></svg
+            >Casos
           </div>
-        </div>
-      </div>
+          <div class="nav-item">
+            <svg
+              class="ic"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.8"
+            >
+              <circle cx="9" cy="8" r="3.5" />
+              <path d="M2 20c0-3.5 3-6 7-6s7 2.5 7 6" /></svg
+            >Clientes
+          </div>
+          <div class="nav-item active">
+            <svg
+              class="ic"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.8"
+            >
+              <rect x="3" y="6" width="18" height="13" rx="2" />
+              <path d="M3 10h18" /></svg
+            >Finanzas
+          </div>
+          <div class="nav-item">
+            <svg
+              class="ic"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.8"
+            >
+              <rect x="3" y="5" width="18" height="16" rx="2" />
+              <path d="M3 9h18M8 3v4M16 3v4" /></svg
+            >Calendario
+          </div>
+          <div class="nav-item">
+            <svg
+              class="ic"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.8"
+            >
+              <path d="M9 11l3 3L22 4" />
+              <path
+                d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"
+              /></svg
+            >Aprobaciones
+          </div>
+          <div class="nav-section-label">Archivos</div>
+          <div class="nav-item">
+            <svg
+              class="ic"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.8"
+            >
+              <path d="M3 3v18h18" />
+              <rect x="7" y="11" width="3" height="6" />
+              <rect x="12" y="7" width="3" height="10" /></svg
+            >Informes
+          </div>
+        </nav>
+      </aside>
 
-      <!-- 收款流水 -->
-      <div class="card">
-        <div class="panel-head">
-          <div class="panel-title">近期收款流水</div>
+      <div class="main">
+        <header class="topbar">
+          <div class="searchbox">
+            <svg
+              width="14"
+              height="14"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <circle cx="11" cy="11" r="7" />
+              <path d="M21 21l-4.3-4.3" /></svg
+            >Buscar casos, clientes, documentos...<span class="kbd">⌘K</span>
+          </div>
+          <div style="flex: 1"></div>
           <div class="segmented">
-            <button class="seg active">全部</button>
-            <button class="seg">实收</button>
-            <button class="seg">应收</button>
-            <button class="seg">成本</button>
+            <button class="seg active">Este mes</button>
+            <button class="seg">Este trimestre</button>
+            <button class="seg">Este año</button>
           </div>
-        </div>
-        <div style="padding:0 20px">
-          <div style="display:grid;grid-template-columns:100px 1fr 1fr 120px 100px;gap:14px;padding:10px 0;border-bottom:1px solid var(--bd-subtle">
-            <span class="lh" style="font-size:11px;font-weight:600;color:var(--t-muted);text-transform:uppercase;letter-spacing:0.04em">日期</span>
-            <span class="lh" style="font-size:11px;font-weight:600;color:var(--t-muted);text-transform:uppercase;letter-spacing:0.04em">案件</span>
-            <span class="lh" style="font-size:11px;font-weight:600;color:var(--t-muted);text-transform:uppercase;letter-spacing:0.04em">付款方</span>
-            <span class="lh" style="font-size:11px;font-weight:600;color:var(--t-muted);text-transform:uppercase;letter-spacing:0.04em">类型</span>
-            <span class="lh" style="font-size:11px;font-weight:600;color:var(--t-muted);text-transform:uppercase;letter-spacing:0.04em;text-align:right">金额</span>
+          <button class="btn btn-secondary btn-sm">
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.8"
+            >
+              <path
+                d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"
+              /></svg
+            >Exportar
+          </button>
+          <div
+            style="
+              width: 1px;
+              height: 24px;
+              background: var(--bd-default);
+              margin: 0 4px;
+            "
+          ></div>
+          <div
+            style="
+              display: flex;
+              align-items: center;
+              gap: 8px;
+              padding: 0 10px 0 4px;
+              height: 34px;
+              border-radius: var(--r-full);
+              border: 1px solid var(--bd-default);
+              background: var(--bg-card);
+              cursor: pointer;
+            "
+          >
+            <div class="avatar av-indigo">Y</div>
+            <span style="font-size: 13px; font-weight: 500">Ye Sen</span>
           </div>
-          <div style="display:grid;grid-template-columns:100px 1fr 1fr 120px 100px;gap:14px;padding:12px 0;border-bottom:1px solid var(--bd-subtle;align-items:center">
-            <span class="num-sm t-mute">06-12</span>
-            <span style="font-size:13px">青石建设诉华东置业</span>
-            <span class="t-sm t-sec">上海青石建设有限公司</span>
-            <span class="badge b-green">实收</span>
-            <span class="num-md" style="color:var(--green);justify-self:end">+$60,000</span>
+        </header>
+
+        <div class="content">
+          <div class="page-head">
+            <div>
+              <h1 class="page-title">Finanzas</h1>
+              <p class="page-sub">
+                Junio de 2026 · Panel de ingresos del estudio
+              </p>
+            </div>
           </div>
-          <div style="display:grid;grid-template-columns:100px 1fr 1fr 120px 100px;gap:14px;padding:12px 0;border-bottom:1px solid var(--bd-subtle);align-items:center">
-            <span class="num-sm t-mute">06-10</span>
-            <span style="font-size:13px">明远科技股权转让</span>
-            <span class="t-sm t-sec">杭州明远科技</span>
-            <span class="badge b-amber">成本</span>
-            <span class="num-md" style="color:var(--amber);justify-self:end">-$8,500</span>
+
+          <!-- KPI -->
+          <div class="fin-kpi">
+            <div class="card fk">
+              <div class="fk-label">Cobrado este mes</div>
+              <div class="fk-value">$286K</div>
+              <div class="fk-sub">
+                <span class="dot dot-green"></span
+                ><span style="color: var(--green); font-weight: 500">+12%</span
+                ><span class="t-mute">vs. mes anterior</span>
+              </div>
+            </div>
+            <div class="card fk">
+              <div class="fk-label">Cuentas por cobrar</div>
+              <div class="fk-value">$420K</div>
+              <div class="fk-sub"><span class="t-mute">18 casos</span></div>
+            </div>
+            <div class="card fk">
+              <div class="fk-label">Costos del mes</div>
+              <div class="fk-value">$38K</div>
+              <div class="fk-sub">
+                <span class="dot dot-amber"></span
+                ><span style="color: var(--amber)"
+                  >Gastos judiciales + peritajes</span
+                >
+              </div>
+            </div>
+            <div class="card fk">
+              <div class="fk-label">Ingresos netos</div>
+              <div class="fk-value">$248K</div>
+              <div class="fk-sub">
+                <span class="dot dot-green"></span
+                ><span style="color: var(--green); font-weight: 500">+8%</span
+                ><span class="t-mute">vs. mes anterior</span>
+              </div>
+            </div>
           </div>
-          <div style="display:grid;grid-template-columns:100px 1fr 1fr 120px 100px;gap:14px;padding:12px 0;border-bottom:1px solid var(--bd-subtle);align-items:center">
-            <span class="num-sm t-mute">06-08</span>
-            <span style="font-size:13px">劳动争议仲裁后一审</span>
-            <span class="t-sm t-sec">林某</span>
-            <span class="badge b-green">实收</span>
-            <span class="num-md" style="color:var(--green);justify-self:end">+$15,000</span>
+
+          <div class="earnings-grid">
+            <!-- 实收趋势 -->
+            <div class="card">
+              <div class="panel-head">
+                <div class="panel-title">Cobrado vs Pendiente de cobroTendencia</div>
+                <div style="display: flex; gap: 14px">
+                  <span
+                    class="t-xs t-mute"
+                    style="display: flex; align-items: center; gap: 5px"
+                    ><span
+                      style="
+                        width: 14px;
+                        height: 2px;
+                        background: var(--indigo);
+                        border-radius: 1px;
+                      "
+                    ></span
+                    >Cobrado</span
+                  >
+                  <span
+                    class="t-xs t-mute"
+                    style="display: flex; align-items: center; gap: 5px"
+                    ><span
+                      style="
+                        width: 14px;
+                        height: 2px;
+                        background: var(--t-faint);
+                        border-radius: 1px;
+                      "
+                    ></span
+                    >Pendiente de cobro</span
+                  >
+                </div>
+              </div>
+              <div class="chart-wrap">
+                <svg
+                  viewBox="0 0 600 260"
+                  preserveAspectRatio="none"
+                  style="width: 100%; height: 100%"
+                >
+                  <defs>
+                    <linearGradient id="fin-fill" x1="0" x2="0" y1="0" y2="1">
+                      <stop
+                        offset="0%"
+                        stop-color="#007b7f"
+                        stop-opacity="0.2"
+                      />
+                      <stop
+                        offset="100%"
+                        stop-color="#007b7f"
+                        stop-opacity="0"
+                      />
+                    </linearGradient>
+                  </defs>
+                  <g stroke="#ECECEF" stroke-dasharray="3 4">
+                    <line x1="0" y1="50" x2="600" y2="50" />
+                    <line x1="0" y1="110" x2="600" y2="110" />
+                    <line x1="0" y1="170" x2="600" y2="170" />
+                  </g>
+                  <polyline
+                    points="40,140 130,120 220,150 310,100 400,130 490,80 580,60"
+                    fill="none"
+                    stroke="#A1A1A6"
+                    stroke-width="1.5"
+                  />
+                  <polygon
+                    points="40,160 130,140 220,170 310,120 400,150 490,100 580,80 580,240 40,240"
+                    fill="url(#fin-fill)"
+                  />
+                  <polyline
+                    points="40,160 130,140 220,170 310,120 400,150 490,100 580,80"
+                    fill="none"
+                    stroke="#007b7f"
+                    stroke-width="2.5"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  />
+                  <circle cx="580" cy="80" r="5" fill="#007b7f" />
+                  <circle
+                    cx="580"
+                    cy="80"
+                    r="10"
+                    fill="#007b7f"
+                    opacity="0.2"
+                  />
+                  <g
+                    fill="#6E6E73"
+                    font-family="SF Mono, monospace"
+                    font-size="11"
+                  >
+                    <text x="30" y="255">diciembre</text>
+                    <text x="120" y="255">enero</text>
+                    <text x="210" y="255">febrero</text>
+                    <text x="300" y="255">marzo</text>
+                    <text x="390" y="255">abril</text>
+                    <text x="480" y="255">mayo</text>
+                    <text x="555" y="255">junio</text>
+                  </g>
+                </svg>
+              </div>
+            </div>
+
+            <!-- 律师创收排行 -->
+            <div class="card">
+              <div class="panel-head">
+                <div class="panel-title">Ingresos por abogado</div>
+                <span class="t-xs t-mute">este mes</span>
+              </div>
+              <div class="panel-body">
+                <div class="lawyer-row">
+                  <span class="rank top">01</span>
+                  <div class="lawyer-info">
+                    <div class="avatar av-indigo">Y</div>
+                    <div>
+                      <div class="lawyer-name">Ye Sen</div>
+                      <div class="lawyer-role">Abogado responsable</div>
+                    </div>
+                  </div>
+                  <div class="progress">
+                    <div class="progress-fill" style="width: 100%"></div>
+                  </div>
+                  <span class="num-md t-indigo">$126K</span>
+                  <span class="t-xs t-mute">6 casos</span>
+                </div>
+                <div class="lawyer-row">
+                  <span class="rank top">02</span>
+                  <div class="lawyer-info">
+                    <div class="avatar av-violet">L</div>
+                    <div>
+                      <div class="lawyer-name">Li Minghua</div>
+                      <div class="lawyer-role">Abogado colaborador</div>
+                    </div>
+                  </div>
+                  <div class="progress">
+                    <div class="progress-fill" style="width: 68%"></div>
+                  </div>
+                  <span class="num-md">$86K</span>
+                  <span class="t-xs t-mute">4 casos</span>
+                </div>
+                <div class="lawyer-row">
+                  <span class="rank">03</span>
+                  <div class="lawyer-info">
+                    <div class="avatar av-green">W</div>
+                    <div>
+                      <div class="lawyer-name">Wang Xiaotong</div>
+                      <div class="lawyer-role">Asistente legal</div>
+                    </div>
+                  </div>
+                  <div class="progress">
+                    <div class="progress-fill" style="width: 34%"></div>
+                  </div>
+                  <span class="num-md">$42K</span>
+                  <span class="t-xs t-mute">3 casos</span>
+                </div>
+                <div class="lawyer-row">
+                  <span class="rank">04</span>
+                  <div class="lawyer-info">
+                    <div class="avatar av-amber">张</div>
+                    <div>
+                      <div class="lawyer-name">Zhang Wei</div>
+                      <div class="lawyer-role">Abogado responsable</div>
+                    </div>
+                  </div>
+                  <div class="progress">
+                    <div class="progress-fill" style="width: 25%"></div>
+                  </div>
+                  <span class="num-md">$32K</span>
+                  <span class="t-xs t-mute">2 casos</span>
+                </div>
+              </div>
+            </div>
           </div>
-          <div style="display:grid;grid-template-columns:100px 1fr 1fr 120px 100px;gap:14px;padding:12px 0;align-items:center">
-            <span class="num-sm t-mute">06-05</span>
-            <span style="font-size:13px">万达商贸合同纠纷</span>
-            <span class="t-sm t-sec">万达商贸有限公司</span>
-            <span class="badge b-indigo">应收</span>
-            <span class="num-md t-sec" style="justify-self:end">$30,000</span>
+
+          <!-- 收款流水 -->
+          <div class="card">
+            <div class="panel-head">
+              <div class="panel-title">Movimientos recientes de cobros</div>
+              <div class="segmented">
+                <button class="seg active">Todos</button>
+                <button class="seg">Cobrado</button>
+                <button class="seg">Pendiente de cobro</button>
+                <button class="seg">Costo</button>
+              </div>
+            </div>
+            <div style="padding: 0 20px">
+              <div
+                style="
+                  display: grid;
+                  grid-template-columns: 100px 1fr 1fr 120px 100px;
+                  gap: 14px;
+                  padding: 10px 0;
+                  border-bottom: 1px solid var(--bd-subtle);
+                "
+              >
+                <span
+                  class="lh"
+                  style="
+                    font-size: 11px;
+                    font-weight: 600;
+                    color: var(--t-muted);
+                    text-transform: uppercase;
+                    letter-spacing: 0.04em;
+                  "
+                  >Fecha</span
+                >
+                <span
+                  class="lh"
+                  style="
+                    font-size: 11px;
+                    font-weight: 600;
+                    color: var(--t-muted);
+                    text-transform: uppercase;
+                    letter-spacing: 0.04em;
+                  "
+                  >Casos</span
+                >
+                <span
+                  class="lh"
+                  style="
+                    font-size: 11px;
+                    font-weight: 600;
+                    color: var(--t-muted);
+                    text-transform: uppercase;
+                    letter-spacing: 0.04em;
+                  "
+                  >Pagador</span
+                >
+                <span
+                  class="lh"
+                  style="
+                    font-size: 11px;
+                    font-weight: 600;
+                    color: var(--t-muted);
+                    text-transform: uppercase;
+                    letter-spacing: 0.04em;
+                  "
+                  >Tipo</span
+                >
+                <span
+                  class="lh"
+                  style="
+                    font-size: 11px;
+                    font-weight: 600;
+                    color: var(--t-muted);
+                    text-transform: uppercase;
+                    letter-spacing: 0.04em;
+                    text-align: right;
+                  "
+                  >Monto</span
+                >
+              </div>
+              <div
+                style="
+                  display: grid;
+                  grid-template-columns: 100px 1fr 1fr 120px 100px;
+                  gap: 14px;
+                  padding: 12px 0;
+                  border-bottom: 1px solid var(--bd-subtle);
+                  align-items: center;
+                "
+              >
+                <span class="num-sm t-mute">06-12</span>
+                <span style="font-size: 13px">Qingshi ConstructionLHuadong Property</span>
+                <span class="t-sm t-sec">Shanghai Qingshi Construction ConstructionS.A.</span>
+                <span class="badge b-green">Cobrado</span>
+                <span
+                  class="num-md"
+                  style="color: var(--green); justify-self: end"
+                  >+$60,000</span
+                >
+              </div>
+              <div
+                style="
+                  display: grid;
+                  grid-template-columns: 100px 1fr 1fr 120px 100px;
+                  gap: 14px;
+                  padding: 12px 0;
+                  border-bottom: 1px solid var(--bd-subtle);
+                  align-items: center;
+                "
+              >
+                <span class="num-sm t-mute">06-10</span>
+                <span style="font-size: 13px">Mingyuan Technologytransferencia de acciones</span>
+                <span class="t-sm t-sec">Hangzhou Mingyuan Technology Technology</span>
+                <span class="badge b-amber">Costo</span>
+                <span
+                  class="num-md"
+                  style="color: var(--amber); justify-self: end"
+                  >-$8,500</span
+                >
+              </div>
+              <div
+                style="
+                  display: grid;
+                  grid-template-columns: 100px 1fr 1fr 120px 100px;
+                  gap: 14px;
+                  padding: 12px 0;
+                  border-bottom: 1px solid var(--bd-subtle);
+                  align-items: center;
+                "
+              >
+                <span class="num-sm t-mute">06-08</span>
+                <span style="font-size: 13px">Arbitraje por conflicto laboral posterior a primera instancia instancia</span>
+                <span class="t-sm t-sec">Lin</span>
+                <span class="badge b-green">Cobrado</span>
+                <span
+                  class="num-md"
+                  style="color: var(--green); justify-self: end"
+                  >+$15,000</span
+                >
+              </div>
+              <div
+                style="
+                  display: grid;
+                  grid-template-columns: 100px 1fr 1fr 120px 100px;
+                  gap: 14px;
+                  padding: 12px 0;
+                  align-items: center;
+                "
+              >
+                <span class="num-sm t-mute">06-05</span>
+                <span style="font-size: 13px">Wanda Comercio: conflicto contractual</span>
+                <span class="t-sm t-sec">Wanda ComercioS.A.</span>
+                <span class="badge b-indigo">Pendiente de cobro</span>
+                <span class="num-md t-sec" style="justify-self: end"
+                  >$30,000</span
+                >
+              </div>
+            </div>
           </div>
         </div>
       </div>
-
     </div>
-  </div>
-</div>
-</body>
+  </body>
 </html>

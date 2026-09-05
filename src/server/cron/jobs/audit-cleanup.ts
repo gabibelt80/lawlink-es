@@ -1,8 +1,8 @@
-/**
- * AuditLog 保留策略：每días 03:00 删超过 N días的旧记录。
+﻿/**
+ * AuditLog ä¿ç•™ç­–ç•¥ï¼šæ¯dÃ­as 03:00 åˆ è¶…è¿‡ N dÃ­asçš„æ—§è®°å½•ã€‚
  *
- * 默认 365 días；环境变量 AUDIT_RETENTION_DAYS 可覆盖（如设 90 = 3 个月）。
- * AuditLog 表无 FK 反向引用，安全 hard delete。
+ * é»˜è®¤ 365 dÃ­asï¼›çŽ¯å¢ƒå˜é‡ AUDIT_RETENTION_DAYS å¯è¦†ç›–ï¼ˆå¦‚è®¾ 90 = 3 ä¸ªæœˆï¼‰ã€‚
+ * AuditLog è¡¨æ—  FK åå‘å¼•ç”¨ï¼Œå®‰å…¨ hard deleteã€‚
  */
 import { prisma } from "@/lib/prisma";
 import { audit } from "@/server/audit";
@@ -25,7 +25,7 @@ export async function runAuditCleanup(): Promise<AuditCleanupResult> {
     where: { createdAt: { lt: cutoff } }
   });
 
-  // 自己写一条 audit 留痕（这条 365 días后又会被自己删，但短期内可查）
+  // è‡ªå·±å†™ä¸€æ¡ audit ç•™ç—•ï¼ˆè¿™æ¡ 365 dÃ­asåŽåˆä¼šè¢«è‡ªå·±åˆ ï¼Œä½†çŸ­æœŸå†…å¯æŸ¥ï¼‰
   await audit({
     userId: null,
     action: "AUDIT_CLEANUP_CRON",
@@ -44,3 +44,5 @@ export async function runAuditCleanup(): Promise<AuditCleanupResult> {
     cutoffDate: cutoff.toISOString().slice(0, 10)
   };
 }
+
+

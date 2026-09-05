@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Tipos compartidos de página /seals (v0.8)
  */
 import type { Prisma } from "@prisma/client";
@@ -22,20 +22,20 @@ export type MatterOption = {
   title: string;
 };
 
-export const SEAL_TYPE_CN: Record<string, string> = {
-  OFFICIAL_SEAL: "律所公章",
-  CONTRACT_SEAL: "合同专用章",
-  FINANCE_SEAL: "Finanzas专用章",
-  LEGAL_REP_SEAL: "法定代表人章",
-  CONTRACT_REVIEW_SEAL: "合同审核章",
+export const SEAL_TYPE_ES: Record<string, string> = {
+  OFFICIAL_SEAL: "Sello del estudio",
+  CONTRACT_SEAL: "Sello de contratos",
+  FINANCE_SEAL: "Sello de finanzas",
+  LEGAL_REP_SEAL: "Sello del representante legal",
+  CONTRACT_REVIEW_SEAL: "Sello de revisión de contratos",
 };
 
-export const SEAL_STATUS_CN: Record<string, string> = {
-  PENDING: "待Aprobación",
-  APPROVED: "待盖章",
+export const SEAL_STATUS_ES: Record<string, string> = {
+  PENDING: "Pendiente de aprobación",
+  APPROVED: "Pendiente de sellado",
   STAMPED: "Completado",
   REJECTED: "Rechazado",
-  CANCELLED: "已撤销",
+  CANCELLED: "Cancelado",
 };
 
 export const SEAL_STATUS_COLOR: Record<

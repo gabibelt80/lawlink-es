@@ -1,12 +1,12 @@
-"use server";
+﻿"use server";
 
 /**
  * v0.11: Demanda / Solicitud - Esqueleto OCR (v0.27 extendido: compatible con PDF escaneado)
  *
- * Compatible con imágenes (jpg/png/webp) y PDF.
- * - Imágenes utilizan reconocimiento visual aiVision
- * - PDF intenta primero extracción de texto unpdf + aiChat (bajo costo, rápido)
- * - Cuando la capa de texto de PDF está vacía (documento escaneado) retroceso: unpdf renderPageAsImage renderiza las primeras 3 páginas → reconocimiento aiVision por página → fusión de resultados
+ * Compatible con imÃ¡genes (jpg/png/webp) y PDF.
+ * - Las imÃ¡genes usan reconocimiento visual aiVision
+ * - El PDF primero intenta extracciÃ³n de texto con unpdf + aiChat (bajo costo, rÃ¡pido)
+ * - Cuando la capa de texto del PDF estÃ¡ vacÃ­a (documento escaneado) retrocede: unpdf renderPageAsImage renderiza las primeras 3 pÃ¡ginas â†’ reconocimiento aiVision por pÃ¡gina â†’ fusiÃ³n de resultados
  */
 import { requireSession } from "@/lib/auth/session";
 import {
@@ -26,8 +26,8 @@ export type PleadingPartyHint = {
 };
 
 export type ParsedPleading = {
-  plaintiffs: PleadingPartyHint[]; // 起诉方/申请方
-  thirdParties: PleadingPartyHint[]; // 第三人
+  plaintiffs: PleadingPartyHint[]; // Demandante/solicitante
+  thirdParties: PleadingPartyHint[]; // Terceros
   cause?: string;
   claimAmount?: number;
   claimDescription?: string;
@@ -37,21 +37,21 @@ export type ParsedPleading = {
 const SUPPORTED_IMAGE_MIME = ["image/jpeg", "image/png", "image/webp"];
 const SUPPORTED_PDF_MIME = ["application/pdf"];
 
-const SYSTEM_PROMPT = `Eres un asistente de análisis de documentos legales. La imagen de abajo es una demanda / solicitud / solicitud de arbitraje.
-Responde estrictamente con el siguiente formato JSON (solo JSON, sin ninguna explicación):
+const SYSTEM_PROMPT = `Sos un asistente de anÃ¡lisis de documentos legales argentinos. La imagen de abajo es una demanda / solicitud / solicitud de arbitraje.
+RespondÃ© estrictamente con el siguiente formato JSON (solo JSON, sin ninguna explicaciÃ³n):
 {
-  "plaintiffs": [{"name": "Nombre completo", "idNumber": "Documento de identidad o número de identificación tributaria (opcional)", "address": "Opcional", "legalRep": "Representante legal (aplicable para empresas, opcional)", "phone": "Opcional"}],
+  "plaintiffs": [{"name": "Nombre completo", "idNumber": "DNI o CUIT (opcional)", "address": "Opcional", "legalRep": "Representante legal (aplicable para empresas, opcional)", "phone": "Opcional"}],
   "thirdParties": [{"name": "Nombre completo", "idNumber": "Opcional", "address": "Opcional"}],
   "cause": "Causa (por ejemplo: conflicto por contrato de compraventa)",
-  "claimAmount": número (en yuanes, solo para monto monetario; si no es monetario, usa null),
-  "claimDescription": "Resumen de la solicitud / pretensión principal",
+  "claimAmount": nÃºmero (en pesos argentinos, solo para monto monetario; si no es monetario, usÃ¡ null),
+  "claimDescription": "Resumen de la solicitud / pretensiÃ³n principal",
   "court": "Nombre completo del tribunal o arbitraje competente"
 }
 Reglas:
-- Si no se encuentra un campo, devuelve [] o null, no inventes información.
-- El demandante incluye demandante / solicitante / solicitante de ejecución / recurrente, y debe colocarse en plaintiffs.
-- No devuelvas demandado / demandado / apelado (es el usuario).
-- La unidad monetaria debe ser yuanes chinos`;
+- Si no se encuentra un campo, devolvÃ© [] o null, no inventes informaciÃ³n.
+- El demandante incluye demandante / solicitante / solicitante de ejecuciÃ³n / recurrente, y debe colocarse en plaintiffs.
+- No devuelvas demandado / apelado (es el usuario).
+- La unidad monetaria debe ser pesos argentinos`;
 
 function normalizeResult(
   parsed: Partial<ParsedPleading> | null | undefined,
@@ -69,7 +69,7 @@ function normalizeResult(
   };
 }
 
-// 合并多页扫描结果：当事人列表按 name 去重，标量字段取第一个非空
+// Fusionar resultados de pÃ¡ginas escaneadas: las listas de partes se deduplican por nombre, los campos escalares toman el primer valor no vacÃ­o
 function mergeResults(results: ParsedPleading[]): ParsedPleading {
   const seen = new Set<string>();
   const dedupe = (list: PleadingPartyHint[]) => {
@@ -96,16 +96,16 @@ function mergeResults(results: ParsedPleading[]): ParsedPleading {
 export async function parsePleading(form: FormData): Promise<ParsedPleading> {
   await requireSession();
   const file = form.get("file");
-  if (!(file instanceof File)) throw new Error("缺少文件");
+  if (!(file instanceof File)) throw new Error("Falta el archivo");
 
   const isImage = SUPPORTED_IMAGE_MIME.includes(file.type);
   const isPdf = SUPPORTED_PDF_MIME.includes(file.type);
   if (!isImage && !isPdf) {
     throw new Error(
-      `仅支持 JPG / PNG / WebP / PDF，当前 ${file.type || "Desconocido"}`,
+      `Solo se admiten JPG / PNG / WebP / PDF, actual: ${file.type || "Desconocido"}`,
     );
   }
-  if (file.size > 20 * 1024 * 1024) throw new Error("文件超过 20MB");
+  if (file.size > 20 * 1024 * 1024) throw new Error("El archivo supera 20MB");
 
   const buf = Buffer.from(await file.arrayBuffer());
 
@@ -120,7 +120,7 @@ export async function parsePleading(form: FormData): Promise<ParsedPleading> {
       return normalizeResult(extractJson<ParsedPleading>(content));
     }
 
-    // PDF：先试文本层抽取（成本低）
+    // PDF: primero intenta extracciÃ³n de capa de texto (menor costo)
     const pdf = await getDocumentProxy(new Uint8Array(buf));
     const { text } = await extractText(pdf, { mergePages: true });
     const cleaned = (Array.isArray(text) ? text.join("\n") : text).trim();
@@ -131,7 +131,7 @@ export async function parsePleading(form: FormData): Promise<ParsedPleading> {
           { role: "system", content: SYSTEM_PROMPT },
           {
             role: "user",
-            content: `下方为起诉状 / 申请书的全文：\n\n${cleaned.slice(0, 12000)}`,
+            content: `A continuaciÃ³n el texto completo de la demanda / solicitud:\n\n${cleaned.slice(0, 12000)}`,
           },
         ],
         maxTokens: 1500,
@@ -139,7 +139,7 @@ export async function parsePleading(form: FormData): Promise<ParsedPleading> {
       return normalizeResult(extractJson<ParsedPleading>(content));
     }
 
-    // v0.27: 文本层为空（扫描版 PDF）→ 渲染前 3 页为 PNG，逐页 vision 识别后合并
+    // v0.27: Capa de texto vacÃ­a (PDF escaneado) â†’ renderiza las primeras 3 pÃ¡ginas como PNG, reconocimiento visual por pÃ¡gina y fusiÃ³n
     const totalPages = pdf.numPages;
     const pagesToRender = Math.min(totalPages, 3);
     const canvasImport = () => import("@napi-rs/canvas") as Promise<any>;
@@ -153,7 +153,7 @@ export async function parsePleading(form: FormData): Promise<ParsedPleading> {
       const dataUrl = `data:image/png;base64,${Buffer.from(arrayBuf).toString("base64")}`;
       const { content } = await aiVision({
         image: { dataUrl },
-        prompt: `${SYSTEM_PROMPT}\n\n（这是扫描版起诉状 / 申请书第 ${i}/${pagesToRender} 页）`,
+        prompt: `${SYSTEM_PROMPT}\n\n(Esta es la pÃ¡gina ${i}/${pagesToRender} de la demanda / solicitud escaneada)`,
         maxTokens: 1500,
       });
       const parsed = extractJson<ParsedPleading>(content);
@@ -161,11 +161,12 @@ export async function parsePleading(form: FormData): Promise<ParsedPleading> {
     }
 
     if (pageResults.length === 0) {
-      throw new Error("扫描版 PDF 识别Error，请改传图片或检查文件");
+      throw new Error("Error al reconocer PDF escaneado, subÃ­ una imagen o revisÃ¡ el archivo");
     }
     return mergeResults(pageResults);
   } catch (err) {
     if (err instanceof AiNotConfiguredError) throw err;
-    throw new Error(err instanceof Error ? err.message : "OCR 识别Error");
+    throw new Error(err instanceof Error ? err.message : "Error de OCR");
   }
 }
+

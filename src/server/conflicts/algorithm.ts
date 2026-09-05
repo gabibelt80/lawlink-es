@@ -1,21 +1,21 @@
-/**
- * 冲突检索算法（V2）
+﻿/**
+ * å†²çªæ£€ç´¢ç®—æ³•ï¼ˆV2ï¼‰
  *
- * y V1 的关键区别：
- *   - V1 把"Cliente库同名"也当作冲突命中并标 HIGH，会出现"自己跟自己冲突"
- *     的错觉（Sistema已有同名Cliente档案 ≠ 利益冲突）。
- *   - V2 严格把"利益冲突"定义为：候选当事人在过去 Matter 里的Roly本次
- *     候选Rol组合构成冲突。命中只落在 Matter 上，不落在 Client。
- *   - 同名Cliente档案单独走 sameNameClients 提示，不染色、不计入 hits。
- *   - 身份证号一致 → 单独走 idMatchedClients（强提示，可点开人工核对）。
+ * y V1 çš„å…³é”®åŒºåˆ«ï¼š
+ *   - V1 æŠŠ"Clienteåº“åŒå"ä¹Ÿå½“ä½œå†²çªå‘½ä¸­å¹¶æ ‡ HIGHï¼Œä¼šå‡ºçŽ°"è‡ªå·±è·Ÿè‡ªå·±å†²çª"
+ *     çš„é”™è§‰ï¼ˆSistemaå·²æœ‰åŒåClienteæ¡£æ¡ˆ â‰  åˆ©ç›Šå†²çªï¼‰ã€‚
+ *   - V2 ä¸¥æ ¼æŠŠ"åˆ©ç›Šå†²çª"å®šä¹‰ä¸ºï¼šå€™é€‰å½“äº‹äººåœ¨è¿‡åŽ» Matter é‡Œçš„Rolyæœ¬æ¬¡
+ *     å€™é€‰Rolç»„åˆæž„æˆå†²çªã€‚å‘½ä¸­åªè½åœ¨ Matter ä¸Šï¼Œä¸è½åœ¨ Clientã€‚
+ *   - åŒåClienteæ¡£æ¡ˆå•ç‹¬èµ° sameNameClients æç¤ºï¼Œä¸æŸ“è‰²ã€ä¸è®¡å…¥ hitsã€‚
+ *   - èº«ä»½è¯å·ä¸€è‡´ â†’ å•ç‹¬èµ° idMatchedClientsï¼ˆå¼ºæç¤ºï¼Œå¯ç‚¹å¼€äººå·¥æ ¸å¯¹ï¼‰ã€‚
  *
- * 严重度判定：
- *   候选 CLIENT_PARTY  ×  历史 OPPOSING_PARTY  → HIGH        曾经的对手现在要变委托方
- *   候选 OPPOSING_PARTY × 历史 CLIENT_PARTY    → BLOCKING    拟代理的对方曾是我所Cliente
- *   候选 OPPOSING_PARTY × 历史 OPPOSING_PARTY  → LOW         历史交锋提示，可继续办
- *   候选 CLIENT_PARTY  ×  历史 CLIENT_PARTY    → LOW         熟Cliente复办
- *   候选 THIRD_PARTY    × 任何                  → MEDIUM
- *   身份证一致 → 在原严重度基础上升 1 级（BLOCKING 顶días）
+ * ä¸¥é‡åº¦åˆ¤å®šï¼š
+ *   å€™é€‰ CLIENT_PARTY  Ã—  åŽ†å² OPPOSING_PARTY  â†’ HIGH        æ›¾ç»çš„å¯¹æ‰‹çŽ°åœ¨è¦å˜å§”æ‰˜æ–¹
+ *   å€™é€‰ OPPOSING_PARTY Ã— åŽ†å² CLIENT_PARTY    â†’ BLOCKING    æ‹Ÿä»£ç†çš„å¯¹æ–¹æ›¾æ˜¯æˆ‘æ‰€Cliente
+ *   å€™é€‰ OPPOSING_PARTY Ã— åŽ†å² OPPOSING_PARTY  â†’ LOW         åŽ†å²äº¤é”‹æç¤ºï¼Œå¯ç»§ç»­åŠž
+ *   å€™é€‰ CLIENT_PARTY  Ã—  åŽ†å² CLIENT_PARTY    â†’ LOW         ç†ŸClienteå¤åŠž
+ *   å€™é€‰ THIRD_PARTY    Ã— ä»»ä½•                  â†’ MEDIUM
+ *   èº«ä»½è¯ä¸€è‡´ â†’ åœ¨åŽŸä¸¥é‡åº¦åŸºç¡€ä¸Šå‡ 1 çº§ï¼ˆBLOCKING é¡¶dÃ­asï¼‰
  */
 
 import type { Prisma, PartyRole, LitigationStanding, MatterCategory, MatterStatus } from "@prisma/client";
@@ -132,11 +132,11 @@ export async function runConflictCheck(queries: QueryItem[]): Promise<ConflictCh
     const idNumber = q.idNumber?.trim() || null;
     if (!name && !idNumber) continue;
 
-    // v0.16: 同名 / 证件号CoincidenciaCliente档案不再作为冲突提示
-    //  (用户反馈：y利益冲突检索无关；保留 sameNameClients/idMatchedClients 数据
-    //  结构以兼容历史 ConflictCheck 记录，但新检索时永远为空)
+    // v0.16: åŒå / è¯ä»¶å·CoincidenciaClienteæ¡£æ¡ˆä¸å†ä½œä¸ºå†²çªæç¤º
+    //  (ç”¨æˆ·åé¦ˆï¼šyåˆ©ç›Šå†²çªæ£€ç´¢æ— å…³ï¼›ä¿ç•™ sameNameClients/idMatchedClients æ•°æ®
+    //  ç»“æž„ä»¥å…¼å®¹åŽ†å² ConflictCheck è®°å½•ï¼Œä½†æ–°æ£€ç´¢æ—¶æ°¸è¿œä¸ºç©º)
 
-    // ============ 历史Caso Party Coincidencia ============
+    // ============ åŽ†å²Caso Party Coincidencia ============
     const partyWhere: Prisma.PartyWhereInput[] = [];
     if (name) partyWhere.push({ name });
     if (idNumber) partyWhere.push({ idNumber });
@@ -164,7 +164,7 @@ export async function runConflictCheck(queries: QueryItem[]): Promise<ConflictCh
       if (!p.matter) continue;
       const matterInfo = toMatterInfo(p.matter, p.role, p.standing);
 
-      // 身份证一致 → 在基础严重度上升 1 级
+      // èº«ä»½è¯ä¸€è‡´ â†’ åœ¨åŸºç¡€ä¸¥é‡åº¦ä¸Šå‡ 1 çº§
       if (idNumber && p.idNumber && p.idNumber === idNumber) {
         const base = pickSeverity(q.role, p.role);
         const sev = bumpSeverity(base);
@@ -177,7 +177,7 @@ export async function runConflictCheck(queries: QueryItem[]): Promise<ConflictCh
           matchedValue: idNumber,
           matchedRatio: 1,
           severity: sev,
-          reason: `身份证 / 信用代码yCaso「${p.matter.internalCode}」中 ${roleLabel(p.role)}「${p.name}」一致`,
+          reason: `èº«ä»½è¯ / ä¿¡ç”¨ä»£ç yCasoã€Œ${p.matter.internalCode}ã€ä¸­ ${roleLabel(p.role)}ã€Œ${p.name}ã€ä¸€è‡´`,
           matterInfo
         });
       }
@@ -192,19 +192,19 @@ export async function runConflictCheck(queries: QueryItem[]): Promise<ConflictCh
           matchedValue: name,
           matchedRatio: 1,
           severity: sev,
-          reason: `yCaso「${p.matter.internalCode}」中 ${roleLabel(p.role)}「${p.name}」同名`,
+          reason: `yCasoã€Œ${p.matter.internalCode}ã€ä¸­ ${roleLabel(p.role)}ã€Œ${p.name}ã€åŒå`,
           matterInfo
         });
       }
     }
 
-    // Party Nombre y apellido模糊Coincidencia（限 3 字符以上，避免单字大量误命中）
+    // Party Nombre y apellidoæ¨¡ç³ŠCoincidenciaï¼ˆé™ 3 å­—ç¬¦ä»¥ä¸Šï¼Œé¿å…å•å­—å¤§é‡è¯¯å‘½ä¸­ï¼‰
     if (name && name.length >= 3) {
       const partiesFuzzy = await prisma.party.findMany({
         where: {
           matterId: { not: null },
           matter: { deletedAt: null },
-          name: { contains: name, mode: "insensitive" },
+          name: { contains: name },
           NOT: { name }
         },
         select: {
@@ -229,21 +229,21 @@ export async function runConflictCheck(queries: QueryItem[]): Promise<ConflictCh
           matchedValue: name,
           matchedRatio: name.length / p.name.length,
           severity: "LOW",
-          reason: `yCaso「${p.matter.internalCode}」中 ${roleLabel(p.role)}「${p.name}」Nombre相似`,
+          reason: `yCasoã€Œ${p.matter.internalCode}ã€ä¸­ ${roleLabel(p.role)}ã€Œ${p.name}ã€Nombreç›¸ä¼¼`,
           matterInfo: toMatterInfo(p.matter, p.role, p.standing)
         });
       }
     }
 
-    // ============ v0.43: Cliente档案 → 关联Caso 检索（修复漏报）============
-    // 老Caso常只在 Matter.primaryClient / clientLinks 记Cliente、Party 表为空，
-    // 上面的 Party 检索会漏掉。Cliente作为某Caso的「委托方(CLIENT_PARTY)」是真实
-    // 冲突信号，故按Nombre/证件号查 Client，再回溯其关联 Matter 产出命中。
-    // 不滤 status（已归档/进行中都要提示）；孤立Cliente档案（无任何关联Caso）不产出命中。
+    // ============ v0.43: Clienteæ¡£æ¡ˆ â†’ å…³è”Caso æ£€ç´¢ï¼ˆä¿®å¤æ¼æŠ¥ï¼‰============
+    // è€Casoå¸¸åªåœ¨ Matter.primaryClient / clientLinks è®°Clienteã€Party è¡¨ä¸ºç©ºï¼Œ
+    // ä¸Šé¢çš„ Party æ£€ç´¢ä¼šæ¼æŽ‰ã€‚Clienteä½œä¸ºæŸCasoçš„ã€Œå§”æ‰˜æ–¹(CLIENT_PARTY)ã€æ˜¯çœŸå®ž
+    // å†²çªä¿¡å·ï¼Œæ•…æŒ‰Nombre/è¯ä»¶å·æŸ¥ Clientï¼Œå†å›žæº¯å…¶å…³è” Matter äº§å‡ºå‘½ä¸­ã€‚
+    // ä¸æ»¤ statusï¼ˆå·²å½’æ¡£/è¿›è¡Œä¸­éƒ½è¦æç¤ºï¼‰ï¼›å­¤ç«‹Clienteæ¡£æ¡ˆï¼ˆæ— ä»»ä½•å…³è”Casoï¼‰ä¸äº§å‡ºå‘½ä¸­ã€‚
     const clientWhere: Prisma.ClientWhereInput[] = [];
     if (name) clientWhere.push({ name });
     if (idNumber) clientWhere.push({ idNumber });
-    if (name && name.length >= 3) clientWhere.push({ name: { contains: name, mode: "insensitive" } });
+    if (name && name.length >= 3) clientWhere.push({ name: { contains: name } });
 
     if (clientWhere.length > 0) {
       const clients = await prisma.client.findMany({
@@ -261,7 +261,7 @@ export async function runConflictCheck(queries: QueryItem[]): Promise<ConflictCh
       });
 
       for (const c of clients) {
-        // 该Cliente关联的Ver todosCaso（primaryClient + clientLinks），按 id 去重
+        // è¯¥Clienteå…³è”çš„Ver todosCasoï¼ˆprimaryClient + clientLinksï¼‰ï¼ŒæŒ‰ id åŽ»é‡
         const matters = [...c.matters, ...c.matterLinks.map((l) => l.matter)].filter(
           (m, i, arr) => arr.findIndex((x) => x.id === m.id) === i
         );
@@ -284,7 +284,7 @@ export async function runConflictCheck(queries: QueryItem[]): Promise<ConflictCh
               matchedValue: idNumber!,
               matchedRatio: 1,
               severity: sev,
-              reason: `身份证 / 信用代码yCaso「${m.internalCode}」的委托方「${c.name}」一致`,
+              reason: `èº«ä»½è¯ / ä¿¡ç”¨ä»£ç yCasoã€Œ${m.internalCode}ã€çš„å§”æ‰˜æ–¹ã€Œ${c.name}ã€ä¸€è‡´`,
               matterInfo
             });
           }
@@ -298,7 +298,7 @@ export async function runConflictCheck(queries: QueryItem[]): Promise<ConflictCh
               matchedValue: name,
               matchedRatio: 1,
               severity: pickSeverity(q.role, "CLIENT_PARTY"),
-              reason: `yCaso「${m.internalCode}」的委托方「${c.name}」同名`,
+              reason: `yCasoã€Œ${m.internalCode}ã€çš„å§”æ‰˜æ–¹ã€Œ${c.name}ã€åŒå`,
               matterInfo
             });
           } else if (nameFuzzy) {
@@ -311,7 +311,7 @@ export async function runConflictCheck(queries: QueryItem[]): Promise<ConflictCh
               matchedValue: name,
               matchedRatio: name.length / c.name.length,
               severity: "LOW",
-              reason: `yCaso「${m.internalCode}」的委托方「${c.name}」Nombre相似`,
+              reason: `yCasoã€Œ${m.internalCode}ã€çš„å§”æ‰˜æ–¹ã€Œ${c.name}ã€Nombreç›¸ä¼¼`,
               matterInfo
             });
           }
@@ -320,7 +320,7 @@ export async function runConflictCheck(queries: QueryItem[]): Promise<ConflictCh
     }
   }
 
-  // 去重：同一 (targetId,matchedField,matchedValue) 保留最高严重度
+  // åŽ»é‡ï¼šåŒä¸€ (targetId,matchedField,matchedValue) ä¿ç•™æœ€é«˜ä¸¥é‡åº¦
   const dedup = new Map<string, ConflictHitDraft>();
   for (const h of hits) {
     const key = `${h.targetId}|${h.matchedField}|${h.matchedValue}`;
@@ -343,18 +343,20 @@ export async function runConflictCheck(queries: QueryItem[]): Promise<ConflictCh
 function roleLabel(role: PartyRole) {
   switch (role) {
     case "CLIENT_PARTY":
-      return "委托方";
+      return "å§”æ‰˜æ–¹";
     case "OPPOSING_PARTY":
-      return "对方";
+      return "å¯¹æ–¹";
     case "THIRD_PARTY":
-      return "第三人";
+      return "ç¬¬ä¸‰äºº";
     case "CO_LITIGANT":
-      return "共同诉讼人";
+      return "å…±åŒè¯‰è®¼äºº";
     case "AGENT":
-      return "代理人";
+      return "ä»£ç†äºº";
     case "WITNESS":
-      return "证人";
+      return "è¯äºº";
     default:
-      return "当事人";
+      return "å½“äº‹äºº";
   }
 }
+
+

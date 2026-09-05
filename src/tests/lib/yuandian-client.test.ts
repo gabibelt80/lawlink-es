@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, vi } from "vitest";
+﻿import { describe, it, expect, beforeEach, vi } from "vitest";
 import {
   searchPtalCases,
   buildCaseDetailUrl,
@@ -35,18 +35,18 @@ function jsonResponse(body: unknown, ok = true, status = 200) {
 }
 
 describe("searchPtalCases", () => {
-  it("未配置 apiKey → 抛 YuandianNotConfiguredError", async () => {
+  it("æœªé…ç½® apiKey â†’ æŠ› YuandianNotConfiguredError", async () => {
     await expect(
-      searchPtalCases({ ay: ["民间借贷纠纷"] }, unconfiguredSettings)
+      searchPtalCases({ ay: ["æ°‘é—´å€Ÿè´·çº çº·"] }, unconfiguredSettings)
     ).rejects.toBeInstanceOf(YuandianNotConfiguredError);
   });
 
-  it("所有过滤条件都空 → 抛错（pesos典要求 body 非空）", async () => {
-    await expect(searchPtalCases({}, configuredSettings)).rejects.toThrow(/至少填写一个/);
+  it("æ‰€æœ‰è¿‡æ»¤æ¡ä»¶éƒ½ç©º â†’ æŠ›é”™ï¼ˆpesoså…¸è¦æ±‚ body éžç©ºï¼‰", async () => {
+    await expect(searchPtalCases({}, configuredSettings)).rejects.toThrow(/è‡³å°‘å¡«å†™ä¸€ä¸ª/);
     expect(fetchMock).not.toHaveBeenCalled();
   });
 
-  it("正常请求：body 构造 + 响应解析", async () => {
+  it("æ­£å¸¸è¯·æ±‚ï¼šbody æž„é€  + å“åº”è§£æž", async () => {
     fetchMock.mockResolvedValue(
       jsonResponse({
         status: "success",
@@ -55,17 +55,17 @@ describe("searchPtalCases", () => {
           total: 2,
           lst: [
             {
-              type: "普通案例",
+              type: "æ™®é€šæ¡ˆä¾‹",
               id: "abc",
-              ah: "（2022）京民终1号",
-              title: "甲诉乙",
-              ay: ["民间借贷纠纷"],
-              jbdw: "北京市第三中院",
-              ajlb: "民事Caso",
-              xzqh_p: "北京",
-              wszl: "判决书",
-              cprq: "2022年01月01日",
-              content: "片段",
+              ah: "ï¼ˆ2022ï¼‰äº¬æ°‘ç»ˆ1å·",
+              title: "ç”²è¯‰ä¹™",
+              ay: ["æ°‘é—´å€Ÿè´·çº çº·"],
+              jbdw: "åŒ—äº¬å¸‚ç¬¬ä¸‰ä¸­é™¢",
+              ajlb: "æ°‘äº‹Caso",
+              xzqh_p: "åŒ—äº¬",
+              wszl: "åˆ¤å†³ä¹¦",
+              cprq: "2022å¹´01æœˆ01æ—¥",
+              content: "ç‰‡æ®µ",
               url: "/ydzk/caseDetail/case/abc",
               score: 9.9
             }
@@ -75,7 +75,7 @@ describe("searchPtalCases", () => {
     );
 
     const res = await searchPtalCases(
-      { ay: ["民间借贷纠纷"], qw: "违约 Vencido", top_k: 3 },
+      { ay: ["æ°‘é—´å€Ÿè´·çº çº·"], qw: "è¿çº¦ Vencido", top_k: 3 },
       configuredSettings
     );
     expect(res.total).toBe(2);
@@ -87,38 +87,38 @@ describe("searchPtalCases", () => {
     expect(init.method).toBe("POST");
     expect(init.headers["X-API-Key"]).toBe("test_key");
     const body = JSON.parse(init.body as string);
-    expect(body.ay).toEqual(["民间借贷纠纷"]);
-    expect(body.qw).toBe("违约 Vencido");
+    expect(body.ay).toEqual(["æ°‘é—´å€Ÿè´·çº çº·"]);
+    expect(body.qw).toBe("è¿çº¦ Vencido");
     expect(body.search_mode).toBe("and");
     expect(body.top_k).toBe(3);
   });
 
-  it("data === null（未命中）→ Volver空", async () => {
+  it("data === nullï¼ˆæœªå‘½ä¸­ï¼‰â†’ Volverç©º", async () => {
     fetchMock.mockResolvedValue(
-      jsonResponse({ status: "success", code: 200, data: null, message: "未查询到相关内容" })
+      jsonResponse({ status: "success", code: 200, data: null, message: "æœªæŸ¥è¯¢åˆ°ç›¸å…³å†…å®¹" })
     );
-    const res = await searchPtalCases({ qw: "极小概率" }, configuredSettings);
+    const res = await searchPtalCases({ qw: "æžå°æ¦‚çŽ‡" }, configuredSettings);
     expect(res.total).toBe(0);
     expect(res.items).toEqual([]);
   });
 
-  it("status=failed → 抛 YuandianApiError", async () => {
+  it("status=failed â†’ æŠ› YuandianApiError", async () => {
     fetchMock.mockResolvedValue(
-      jsonResponse({ status: "failed", code: 500, message: "search_mode 不合法" })
+      jsonResponse({ status: "failed", code: 500, message: "search_mode ä¸åˆæ³•" })
     );
     await expect(searchPtalCases({ qw: "x" }, configuredSettings)).rejects.toBeInstanceOf(
       YuandianApiError
     );
   });
 
-  it("HTTP 401 → 抛 YuandianApiError", async () => {
+  it("HTTP 401 â†’ æŠ› YuandianApiError", async () => {
     fetchMock.mockResolvedValue(jsonResponse({}, false, 401));
     await expect(searchPtalCases({ qw: "x" }, configuredSettings)).rejects.toBeInstanceOf(
       YuandianApiError
     );
   });
 
-  it("top_k 边界：>50 裁到 50，<1 裁到 1", async () => {
+  it("top_k è¾¹ç•Œï¼š>50 è£åˆ° 50ï¼Œ<1 è£åˆ° 1", async () => {
     fetchMock.mockResolvedValue(
       jsonResponse({ status: "success", code: 200, data: { total: 0, lst: [] } })
     );
@@ -130,7 +130,7 @@ describe("searchPtalCases", () => {
     expect(JSON.parse(fetchMock.mock.calls[1][1].body).top_k).toBe(1);
   });
 
-  it("空白 qw 不进 body", async () => {
+  it("ç©ºç™½ qw ä¸è¿› body", async () => {
     fetchMock.mockResolvedValue(
       jsonResponse({ status: "success", code: 200, data: { total: 0, lst: [] } })
     );
@@ -142,14 +142,15 @@ describe("searchPtalCases", () => {
 });
 
 describe("buildCaseDetailUrl", () => {
-  it("拼接 host + path", () => {
+  it("æ‹¼æŽ¥ host + path", () => {
     expect(
       buildCaseDetailUrl("https://www.example.com", "/ydzk/caseDetail/case/abc")
     ).toBe("https://www.example.com/ydzk/caseDetail/case/abc");
   });
-  it("host 尾 / y path 头 / 容错", () => {
+  it("host å°¾ / y path å¤´ / å®¹é”™", () => {
     expect(buildCaseDetailUrl("https://www.example.com/", "ydzk/x")).toBe(
       "https://www.example.com/ydzk/x"
     );
   });
 });
+

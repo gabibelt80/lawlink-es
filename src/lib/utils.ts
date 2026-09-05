@@ -1,4 +1,4 @@
-import { type ClassValue, clsx } from "clsx";
+﻿import { type ClassValue, clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
 
 export function cn(...inputs: ClassValue[]) {
@@ -7,11 +7,11 @@ export function cn(...inputs: ClassValue[]) {
 
 export function formatCurrency(amount: number, options?: { compact?: boolean }) {
   if (options?.compact && Math.abs(amount) >= 10000) {
-    return `$${(amount / 10000).toFixed(1)}万`;
+    return `$${(amount / 10000).toFixed(1)}k`;
   }
-  return new Intl.NumberFormat("zh-CN", {
+  return new Intl.NumberFormat("es-AR", {
     style: "currency",
-    currency: "CNY",
+    currency: "ARS",
     maximumFractionDigits: 0
   }).format(amount);
 }
@@ -19,7 +19,7 @@ export function formatCurrency(amount: number, options?: { compact?: boolean }) 
 export function formatDate(date: Date | string, fmt: "full" | "short" | "month-day" = "short") {
   const d = typeof date === "string" ? new Date(date) : date;
   if (fmt === "full") {
-    return d.toLocaleDateString("zh-CN", {
+    return d.toLocaleDateString("es-AR", {
       year: "numeric",
       month: "long",
       day: "numeric",
@@ -27,9 +27,9 @@ export function formatDate(date: Date | string, fmt: "full" | "short" | "month-d
     });
   }
   if (fmt === "month-day") {
-    return d.toLocaleDateString("zh-CN", { month: "long", day: "numeric" });
+    return d.toLocaleDateString("es-AR", { month: "long", day: "numeric" });
   }
-  return d.toLocaleDateString("zh-CN");
+  return d.toLocaleDateString("es-AR");
 }
 
 export function daysUntil(date: Date | string): number {

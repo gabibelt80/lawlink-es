@@ -1,4 +1,4 @@
-import type { MatterCategory, ProcedureType } from "@prisma/client";
+﻿import type { MatterCategory, ProcedureType } from "@prisma/client";
 import {
   causeScopeForSelection,
   isCauseAllowedForSelection,
@@ -7,13 +7,13 @@ import {
 import { prisma } from "@/lib/prisma";
 
 /**
- * 以Caso当前Estado为基准做Causa校验（v1.2 收口入口）。
+ * ä»¥Casoå½“å‰Estadoä¸ºåŸºå‡†åšCausaæ ¡éªŒï¼ˆv1.2 æ”¶å£å…¥å£ï¼‰ã€‚
  *
- * 基准程序取「当前 ENGAGED 的首个程序」，而不是 order 最小的程序：
- * 后者可能是补录的 INFORMATIONAL 前序程序（如别人代理的一审），
- * 用它当基准会让校验对着一个我们并不代理的程序类型判断。
+ * åŸºå‡†ç¨‹åºå–ã€Œå½“å‰ ENGAGED çš„é¦–ä¸ªç¨‹åºã€ï¼Œè€Œä¸æ˜¯ order æœ€å°çš„ç¨‹åºï¼š
+ * åŽè€…å¯èƒ½æ˜¯è¡¥å½•çš„ INFORMATIONAL å‰åºç¨‹åºï¼ˆå¦‚åˆ«äººä»£ç†çš„ä¸€å®¡ï¼‰ï¼Œ
+ * ç”¨å®ƒå½“åŸºå‡†ä¼šè®©æ ¡éªŒå¯¹ç€ä¸€ä¸ªæˆ‘ä»¬å¹¶ä¸ä»£ç†çš„ç¨‹åºç±»åž‹åˆ¤æ–­ã€‚
  *
- * 所有「改CasoCausa」的入口都应走这里，不要各自去查程序类型。
+ * æ‰€æœ‰ã€Œæ”¹CasoCausaã€çš„å…¥å£éƒ½åº”èµ°è¿™é‡Œï¼Œä¸è¦å„è‡ªåŽ»æŸ¥ç¨‹åºç±»åž‹ã€‚
  */
 export async function assertCauseAllowedForMatter(
   matterId: string,
@@ -57,7 +57,7 @@ export async function assertCauseAllowedForSelection(input: {
     const scope = causeScopeForSelection(input.category, input.procedureType);
     if (isCommercialArbitrationSelection(input.category, input.procedureType)) {
       throw new Error(
-        "Cuando la selección actual es arbitraje comercial, solo se pueden seleccionar causas de disputas contractuales y otras causas de derechos patrimoniales",
+        "Cuando la selecciÃ³n actual es arbitraje comercial, solo se pueden seleccionar causas de disputas contractuales y otras causas de derechos patrimoniales",
       );
     }
     if (input.category === "LABOR_ARBITRATION") {
@@ -67,11 +67,13 @@ export async function assertCauseAllowedForSelection(input: {
     }
     if (cause.category !== scope.dbCategory) {
       throw new Error(
-        "La causa seleccionada no coincide con la categoría del Caso; por favor, selecciona otra",
+        "La causa seleccionada no coincide con la categorÃ­a del Caso; por favor, selecciona otra",
       );
     }
     throw new Error(
-      "La causa seleccionada no está dentro del rango disponible para la categoría actual del Caso",
+      "La causa seleccionada no estÃ¡ dentro del rango disponible para la categorÃ­a actual del Caso",
     );
   }
 }
+
+

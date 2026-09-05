@@ -1,37 +1,37 @@
-"use server";
+﻿"use server";
 
 /**
- * v0.28: 引导式 AI 文书起草（对照"Caso云"的填空式文书起草）
+ * v0.28: RedacciÃ³n guiada de documentos con IA (similar a la redacciÃ³n por formulario de "Caso cloud")
  *
- * 用户在前端以"填空式"提供：文书类型 + 我方 / 对方 + Caso背景 + 诉讼请求，
- * 这里拼成结构化提示交给 aiChat，Volver Markdown 草稿，供前端预览 / 复制 / 下载。
+ * El usuario completa en el frontend: tipo de documento + nuestra parte / contraparte + antecedentes del caso + pretensiones,
+ * aquÃ­ se arma un prompt estructurado para aiChat, devuelve borrador en Markdown para previsualizar / copiar / descargar.
  *
- * 原则：仅依据用户提供的信息起草，不臆造事实、证据y具体法条编号；
- * 信息缺失处用【】占位提示补充。生成结果仅为草稿，需Abogado核校。
+ * Principio: solo redacta segÃºn la informaciÃ³n proporcionada por el usuario, no inventa hechos, pruebas ni nÃºmeros de artÃ­culos especÃ­ficos;
+ * la informaciÃ³n faltante se indica con marcadores ã€ã€‘. El resultado es solo un borrador, debe ser revisado por un abogado.
  */
 import { requireSession } from "@/lib/auth/session";
 import { aiChat, AiNotConfiguredError } from "@/lib/ai/client";
 
 export type DraftInput = {
-  docType: string; // 文书类型，如"民事起诉状"
-  selfParty?: string; // 我方当事人
-  opposingParty?: string; // 对方当事人
-  background?: string; // Caso背景
-  claims?: string; // 诉讼请求 / 核心主张
-  extra?: string; // 其他补充
+  docType: string; // Tipo de documento, ej.: "Demanda civil"
+  selfParty?: string; // Nuestra parte
+  opposingParty?: string; // Parte contraria
+  background?: string; // Antecedentes del caso
+  claims?: string; // PretensiÃ³n / alegaciÃ³n principal
+  extra?: string; // InformaciÃ³n adicional
 };
 
 export type DraftResult =
   | { ok: true; content: string }
   | { ok: false; reason: "not_configured" | "error"; message: string };
 
-const SYSTEM_PROMPT = `Usted es un Abogado con amplia experiencia en la redacción de diversos documentos legales.
-Con base en la información brindada por el usuario, redacte un borrador de documento legal con estructura normativa y terminología profesional, en formato Markdown.
+const SYSTEM_PROMPT = `Sos un abogado con amplia experiencia en la redacciÃ³n de documentos legales argentinos.
+SegÃºn la informaciÃ³n brindada por el usuario, redactÃ¡ un borrador de documento legal con estructura normativa y terminologÃ­a profesional, en formato Markdown.
 Requisitos:
-1. Respetar estrictamente el formato general de este tipo de documento (datos de las partes, cuerpo, peticiones/ hechos y fundamentos, cierre, etc.).
-2. Redactar únicamente con base en la información suministrada; no inventar identidad de las partes, pruebas, montos ni citas normativas específicas; si falta información, utilice marcadores 【】 para indicar la información faltante y sugerir que se complete.
-3. El lenguaje debe ser formal, lógico y claro; los hechos y fundamentos deben exponerse por puntos.
-4. Al final, indique que se trata de un borrador generado por IA y que debe ser revisado por un Abogado antes de su uso.`;
+1. RespetÃ¡ estrictamente el formato general de este tipo de documento (datos de las partes, cuerpo, peticiones/hechos y fundamentos, cierre, etc.).
+2. RedactÃ¡ Ãºnicamente con base en la informaciÃ³n suministrada; no inventes identidad de las partes, pruebas, montos ni citas normativas especÃ­ficas; si falta informaciÃ³n, usÃ¡ marcadores ã€ã€‘ para indicar la informaciÃ³n faltante y sugerÃ­ completarla.
+3. El lenguaje debe ser formal, lÃ³gico y claro; los hechos y fundamentos deben exponerse por puntos.
+4. Al final, indicÃ¡ que se trata de un borrador generado por IA y que debe ser revisado por un abogado antes de su uso.`;
 
 export async function draftDocument(input: DraftInput): Promise<DraftResult> {
   await requireSession();
@@ -41,11 +41,11 @@ export async function draftDocument(input: DraftInput): Promise<DraftResult> {
     return {
       ok: false,
       reason: "error",
-      message: "Primero seleccione o complete el tipo de documento",
+      message: "Primero seleccionÃ¡ o completÃ¡ el tipo de documento",
     };
   }
 
-  const lines = [`Por favor, redacte un/a "${docType}".`];
+  const lines = [`Por favor, redactÃ¡ un/a "${docType}".`];
   if (input.selfParty?.trim())
     lines.push(`Nuestra parte: ${input.selfParty.trim()}`);
   if (input.opposingParty?.trim())
@@ -53,9 +53,9 @@ export async function draftDocument(input: DraftInput): Promise<DraftResult> {
   if (input.background?.trim())
     lines.push(`Antecedentes del caso:\n${input.background.trim()}`);
   if (input.claims?.trim())
-    lines.push(`Petición / alegación principal:\n${input.claims.trim()}`);
+    lines.push(`PeticiÃ³n / alegaciÃ³n principal:\n${input.claims.trim()}`);
   if (input.extra?.trim())
-    lines.push(`Información adicional:\n${input.extra.trim()}`);
+    lines.push(`InformaciÃ³n adicional:\n${input.extra.trim()}`);
 
   try {
     const { content } = await aiChat({
@@ -74,7 +74,8 @@ export async function draftDocument(input: DraftInput): Promise<DraftResult> {
     return {
       ok: false,
       reason: "error",
-      message: err instanceof Error ? err.message : "生成Error，请稍后重试",
+      message: err instanceof Error ? err.message : "Error al generar, intentÃ¡ de nuevo mÃ¡s tarde",
     };
   }
 }
+

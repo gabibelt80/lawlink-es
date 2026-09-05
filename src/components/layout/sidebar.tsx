@@ -2,18 +2,19 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Scale } from "lucide-react";
+import { useSession } from "next-auth/react";
+import { Scale, LayoutDashboard } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { primaryNav, secondaryNav, type NavItem } from "./nav-config";
 
-/** v0.42 ítems1: 侧栏品牌（可在Configuración → 律所信息配置） */
+/** v0.42 ítem 1: Marca de la barra lateral (configurable en Configuración → Información del estudio) */
 export type FirmBrand = {
   name: string;
   subtitle: string;
   logoDataUrl: string | null;
 };
 
-/** 桌面侧边栏（md 以上显示） */
+/** Barra lateral de escritorio (visible desde md) */
 export function Sidebar({ firm }: { firm: FirmBrand }) {
   return (
     <aside className="fixed left-0 top-0 z-30 hidden h-screen w-[208px] flex-col border-r border-border bg-sidebar md:flex">
@@ -22,9 +23,15 @@ export function Sidebar({ firm }: { firm: FirmBrand }) {
   );
 }
 
-/** 导航内容 — 桌面侧边栏和移动 Sheet 共用 */
+/** Contenido de navegación — compartido entre barra lateral de escritorio y Sheet móvil */
 export function NavContent({ firm }: { firm: FirmBrand }) {
   const pathname = usePathname();
+  const { data: session } = useSession();
+  const isSystemAdmin = session?.user?.role === "SYSTEM_ADMIN";
+
+  const navItems = isSystemAdmin
+    ? [...primaryNav, { label: "Administración", href: "/admin", icon: LayoutDashboard }]
+    : primaryNav;
 
   return (
     <>
@@ -59,10 +66,10 @@ export function NavContent({ firm }: { firm: FirmBrand }) {
 
       <nav className="flex-1 overflow-y-auto px-2 py-1">
         <div className="px-2 pb-1 pt-2 text-[10px] font-semibold uppercase text-muted-foreground/70">
-          工作区
+          {isSystemAdmin ? "Sistema" : "Área de trabajo"}
         </div>
         <div className="space-y-0.5">
-          {primaryNav.map((item) => (
+          {navItems.map((item) => (
             <NavLink
               key={item.href}
               item={item}
@@ -72,17 +79,19 @@ export function NavContent({ firm }: { firm: FirmBrand }) {
         </div>
       </nav>
 
-      <div className="border-t border-border px-2 py-2">
-        <div className="space-y-0.5">
-          {secondaryNav.map((item) => (
-            <NavLink
-              key={item.href}
-              item={item}
-              active={isActive(pathname, item.href)}
-            />
-          ))}
+      {(
+        <div className="border-t border-border px-2 py-2">
+          <div className="space-y-0.5">
+            {secondaryNav.map((item) => (
+              <NavLink
+                key={item.href}
+                item={item}
+                active={isActive(pathname, item.href)}
+              />
+            ))}
+          </div>
         </div>
-      </div>
+      )}
     </>
   );
 }

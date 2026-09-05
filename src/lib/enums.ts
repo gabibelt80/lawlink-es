@@ -1,5 +1,5 @@
-/**
- * 枚举展示中文映射。前端用这里的 label，DB/API 用枚举值。
+﻿/**
+ * Mapeo de etiquetas de enums para mostrar en espaÃ±ol. El frontend usa estas labels, la DB/API usa los valores del enum.
  */
 import type {
   ClientType,
@@ -18,17 +18,17 @@ import type {
 } from "@prisma/client";
 
 export const clientTypeLabel: Record<ClientType, string> = {
-  INDIVIDUAL: "自然人",
-  COMPANY: "公司",
-  ORGANIZATION: "其他组织"
+  INDIVIDUAL: "Persona fisica",
+  COMPANY: "Empresa",
+  ORGANIZATION: "Otra organizacion"
 };
 
-// v0.39: Cliente合作Estado
+// v0.39: Estado de cooperacion del cliente
 export const cooperationStatusLabel: Record<ClientCooperationStatus, string> = {
-  POTENTIAL: "潜在",
-  NEGOTIATING: "洽谈中",
-  SIGNED: "已签约",
-  TERMINATED: "已终止"
+  POTENTIAL: "Potencial",
+  NEGOTIATING: "En negociacion",
+  SIGNED: "Firmado",
+  TERMINATED: "Terminado"
 };
 
 export const COOPERATION_STATUS_OPTIONS: ClientCooperationStatus[] = [
@@ -38,28 +38,28 @@ export const COOPERATION_STATUS_OPTIONS: ClientCooperationStatus[] = [
   "TERMINATED"
 ];
 
-// v0.39: Cliente性别（个人Cliente）
+// v0.39: GÃ©nero del cliente (cliente persona fÃ­sica)
 export const genderLabel: Record<ClientGender, string> = {
-  MALE: "男",
-  FEMALE: "女"
+  MALE: "Masculino",
+  FEMALE: "Femenino"
 };
 
 export const GENDER_OPTIONS: ClientGender[] = ["MALE", "FEMALE"];
 
-// v0.30: 当事人主体类型。自然人填身份证号，其余主体填统一社会信用代码。
+// v0.30: Tipo de sujeto de la parte. Persona fÃ­sica completa DNI, los demÃ¡s completan cÃ³digo de crÃ©dito social unificado.
 export const partyTypeLabel: Record<PartyType, string> = {
-  NATURAL_PERSON: "自然人",
-  COMPANY: "公司",
-  PARTNERSHIP: "合伙企业",
-  INDIVIDUAL_BUSINESS: "个体工商户",
-  INSTITUTION: "事业单位",
-  SOCIAL_ORG: "社会组织",
-  GOVERNMENT: "政府机关",
-  OTHER_ORG: "其他组织",
-  ORGANIZATION: "其他组织" // 旧数据兼容
+  NATURAL_PERSON: "Persona fisica",
+  COMPANY: "Empresa",
+  PARTNERSHIP: "Sociedad colectiva",
+  INDIVIDUAL_BUSINESS: "Empresario individual",
+  INSTITUTION: "Institucion publica",
+  SOCIAL_ORG: "Organizacion social",
+  GOVERNMENT: "Organo gubernamental",
+  OTHER_ORG: "Otra organizacion",
+  ORGANIZATION: "Otra organizacion" // Compatibilidad con datos antiguos
 };
 
-// 录入下拉的主体类型顺序（不含旧的 ORGANIZATION）
+// Orden de tipos de sujeto en el desplegable de ingreso (sin el antiguo ORGANIZATION)
 export const PARTY_TYPE_OPTIONS: PartyType[] = [
   "NATURAL_PERSON",
   "COMPANY",
@@ -71,13 +71,13 @@ export const PARTY_TYPE_OPTIONS: PartyType[] = [
   "OTHER_ORG"
 ];
 
-// v0.30: 需向律协备案y否
+// v0.30: Requiere inscripcion en el colegio de abogados
 export const barFilingLabel: Record<BarFilingType, string> = {
-  NONE: "否",
-  COLLECTIVE: "需要，涉集体Caso",
-  SENSITIVE: "需要，涉敏感Caso",
-  MAJOR: "需要，涉重大Caso",
-  OTHER: "需要，其他特殊Caso"
+  NONE: "No",
+  COLLECTIVE: "SÃ­, caso colectivo",
+  SENSITIVE: "SÃ­, caso sensible",
+  MAJOR: "SÃ­, caso de gran envergadura",
+  OTHER: "SÃ­, otro caso especial"
 };
 
 export const BAR_FILING_OPTIONS: BarFilingType[] = [
@@ -88,44 +88,44 @@ export const BAR_FILING_OPTIONS: BarFilingType[] = [
   "OTHER"
 ];
 
-// v0.31: Caso类别按业务性质分三类——决定收案表单结构
-// litigation 诉讼/仲裁（Civil/Comercial/Penal/Administrativo）；project 非诉/专ítems；counsel 顾问
+// v0.31: La categorÃ­a del caso se divide en tres tipos segÃºn la naturaleza del negocio â€” determina la estructura del formulario de admision
+// litigation: litigio/arbitraje (Civil/Comercial/Penal/Administrativo); project: no contencioso/proyectos; counsel: consultoria
 export type CategoryKind = "litigation" | "project" | "counsel";
 
 export function matterCategoryKind(c: MatterCategory): CategoryKind {
   if (c === "LEGAL_COUNSEL") return "counsel";
   if (c === "NON_LITIGATION" || c === "SPECIAL_PROJECT") return "project";
-  // 民商诉讼 / 劳动仲裁 / 商事仲裁 / Penal / Administrativo → 诉讼/仲裁类
+  // Litigio civil y comercial / arbitraje laboral / arbitraje comercial / Penal / Administrativo â†’ tipo litigio/arbitraje
   return "litigation";
 }
 
-// 非诉 / 专ítems 业务类型（可微调）
+// Tipos de negocio no contencioso / proyectos (se pueden ajustar)
 export const PROJECT_BUSINESS_TYPES: string[] = [
-  "尽职调查",
-  "合同审查 / 起草",
-  "投融资",
-  "并购重组",
-  "改制上市",
-  "破产清算",
-  "知识产权",
-  "合规体系",
-  "招投标",
-  "Administrativo许可 / Aprobación",
-  "其他"
+  "Debida diligencia",
+  "Revision / redaccion de contratos",
+  "Inversion y financiamiento",
+  "Fusiones y adquisiciones",
+  "Reestructuracion y salida a bolsa",
+  "Quiebra y liquidacion",
+  "Propiedad intelectual",
+  "Sistema de cumplimiento",
+  "Licitaciones",
+  "Permiso / Aprobacion administrativa",
+  "Otros"
 ];
 
-// 顾问类型
-export const COUNSEL_TYPES: string[] = ["常年法律顾问", "专ítems法律顾问"];
+// Tipos de consultoria
+export const COUNSEL_TYPES: string[] = ["Asesoria legal permanente", "Asesoria legal para proyectos"];
 
 export const matterCategoryLabel: Record<MatterCategory, string> = {
-  CIVIL_COMMERCIAL: "民商诉讼",
-  LABOR_ARBITRATION: "劳动仲裁",
-  COMMERCIAL_ARBITRATION: "商事仲裁",
-  CRIMINAL: "Penal诉讼",
-  ADMINISTRATIVE: "Administrativo诉讼",
-  NON_LITIGATION: "非诉ítems目",
-  LEGAL_COUNSEL: "常年顾问",
-  SPECIAL_PROJECT: "法律专ítems"
+  CIVIL_COMMERCIAL: "Litigio civil y comercial",
+  LABOR_ARBITRATION: "Arbitraje laboral",
+  COMMERCIAL_ARBITRATION: "Arbitraje comercial",
+  CRIMINAL: "Litigio penal",
+  ADMINISTRATIVE: "Etapa administrativo",
+  NON_LITIGATION: "Proyecto no contencioso",
+  LEGAL_COUNSEL: "Asesoria permanente",
+  SPECIAL_PROJECT: "Proyecto legal especial"
 };
 
 export const matterCategoryColor: Record<MatterCategory, string> = {
@@ -139,105 +139,106 @@ export const matterCategoryColor: Record<MatterCategory, string> = {
   SPECIAL_PROJECT: "#60A5FA"
 };
 
-// v0.17: Caso类别单字图标（用于列表卡片标题前）
+// v0.17: Letra de icono de categoria de caso (para mostrar antes del titulo en tarjetas de lista)
 export const matterCategoryShort: Record<MatterCategory, string> = {
-  CIVIL_COMMERCIAL: "民",
-  LABOR_ARBITRATION: "劳",
-  COMMERCIAL_ARBITRATION: "商",
-  CRIMINAL: "刑",
-  ADMINISTRATIVE: "行",
-  NON_LITIGATION: "非",
-  LEGAL_COUNSEL: "顾",
-  SPECIAL_PROJECT: "专"
+  CIVIL_COMMERCIAL: "C",
+  LABOR_ARBITRATION: "L",
+  COMMERCIAL_ARBITRATION: "A",
+  CRIMINAL: "P",
+  ADMINISTRATIVE: "D",
+  NON_LITIGATION: "N",
+  LEGAL_COUNSEL: "G",
+  SPECIAL_PROJECT: "S"
 };
 
 export const matterStatusLabel: Record<MatterStatus, string> = {
-  PENDING_ACCEPTANCE: "待启动",
-  IN_PROGRESS: "办理中",
-  ON_HOLD: "暂停",
-  CLOSED: "已Cerrar caso",
-  ARCHIVED: "已归档"
+  PENDING_ACCEPTANCE: "Pendiente de inicio",
+  IN_PROGRESS: "En tramite",
+  ON_HOLD: "Suspendido",
+  CLOSED: "Cerrado",
+  ARCHIVED: "Archivado"
 };
 
 export const intakeStatusLabel: Record<IntakeStatus, string> = {
-  INTAKE: "已咨询",
-  PENDING_CONFIRMATION: "待Confirmar",
-  CONVERTED: "已转化",
-  DECLINED: "No aceptar caso",
-  NEEDS_REVISION: "Pendiente de corrección"
+  INTAKE: "Consultado",
+  PENDING_CONFIRMATION: "Pendiente de confirmacion",
+  CONVERTED: "Convertido",
+  DECLINED: "Rechazado",
+  NEEDS_REVISION: "Pendiente de correccion"
 };
 
 export const userRoleLabel: Record<UserRole, string> = {
-  ADMIN: "SistemaAdministrar员",
-  PRINCIPAL_LAWYER: "主办Abogado",
-  LAWYER: "经办Abogado",
-  ASSISTANT: "助理",
+  ADMIN: "Administrador del sistema",
+  PRINCIPAL_LAWYER: "Abogado principal",
+  LAWYER: "Abogado a cargo",
+  ASSISTANT: "Asistente",
   FINANCE: "Finanzas"
 };
 
 export const litigationStandingLabel: Record<LitigationStanding, string> = {
-  PLAINTIFF: "原告",
-  JOINT_PLAINTIFF: "共同原告",
-  DEFENDANT: "被告",
-  JOINT_DEFENDANT: "共同被告",
-  THIRD_PARTY: "第三人",
-  COUNTERCLAIM_PLAINTIFF: "反诉原告",
-  COUNTERCLAIM_DEFENDANT: "反诉被告",
-  APPELLANT: "上诉人",
-  APPELLEE: "被上诉人",
-  RETRIAL_APPLICANT: "再审申请人",
-  RETRIAL_RESPONDENT: "再审被申请人",
-  ENFORCEMENT_APPLICANT: "申请执行人",
-  EXECUTED_PERSON: "被执行人",
-  CRIMINAL_DEFENDANT: "Penal被告人",
-  CRIMINAL_VICTIM: "被害人",
-  PRIVATE_PROSECUTOR: "自诉人",
-  CRIMINAL_INCIDENTAL_PLAINTIFF: "Penal附带民事原告",
-  ARBITRATION_CLAIMANT: "仲裁申请人",
-  ARBITRATION_RESPONDENT: "仲裁被申请人",
-  ADMIN_PLAINTIFF: "Administrativo原告",
-  ADMIN_DEFENDANT: "Administrativo被告",
-  ADMIN_RECONSIDERATION_APPLICANT: "复议申请人",
-  ADMIN_RECONSIDERATION_RESPONDENT: "复议被申请人",
-  NON_LITIGATION_PARTY: "ítems目当事人"
+  PLAINTIFF: "Demandante",
+  JOINT_PLAINTIFF: "Codemandante",
+  DEFENDANT: "Demandado",
+  JOINT_DEFENDANT: "Codemandado",
+  THIRD_PARTY: "Tercero",
+  COUNTERCLAIM_PLAINTIFF: "Demandante reconvencional",
+  COUNTERCLAIM_DEFENDANT: "Demandado reconvencional",
+  APPELLANT: "Apelante",
+  APPELLEE: "Apelado",
+  RETRIAL_APPLICANT: "Solicitante de revision",
+  RETRIAL_RESPONDENT: "Demandado en revision",
+  ENFORCEMENT_APPLICANT: "Solicitante de ejecucion",
+  EXECUTED_PERSON: "Ejecutado",
+  CRIMINAL_DEFENDANT: "Imputado penal",
+  CRIMINAL_VICTIM: "VÃ­ctima",
+  PRIVATE_PROSECUTOR: "Querellante",
+  CRIMINAL_INCIDENTAL_PLAINTIFF: "Actor civil en proceso penal",
+  ARBITRATION_CLAIMANT: "Demandante arbitral",
+  ARBITRATION_RESPONDENT: "Demandado arbitral",
+  ADMIN_PLAINTIFF: "Demandante administrativo",
+  ADMIN_DEFENDANT: "Demandado administrativo",
+  ADMIN_RECONSIDERATION_APPLICANT: "Solicitante de reconsideracion",
+  ADMIN_RECONSIDERATION_RESPONDENT: "Demandado en reconsideracion",
+  NON_LITIGATION_PARTY: "Parte del proyecto"
 };
 
 export const procedureTypeLabel: Record<ProcedureType, string> = {
-  FIRST_INSTANCE: "一审",
-  SECOND_INSTANCE: "二审",
-  RETRIAL_REVIEW: "再审审查",
-  RETRIAL: "再审",
-  REMAND_FIRST: "重审一审",
-  REMAND_SECOND: "重审二审",
-  PROSECUTORIAL_SUPERVISION: "检察监督",
-  COMMERCIAL_ARBITRATION: "商事仲裁",
-  LABOR_ARBITRATION: "劳动仲裁",
-  ARBITRATION_SET_ASIDE: "撤销仲裁裁决",
-  ARBITRATION_ENFORCEMENT_REVIEW: "不予执行仲裁审查",
-  ENFORCEMENT: "强制执行",
-  ENFORCEMENT_OBJECTION: "执行异议",
-  INVESTIGATION: "侦查",
-  PROSECUTION_REVIEW: "审查起诉",
-  DEATH_PENALTY_REVIEW: "死刑复核",
-  CRIMINAL_ENFORCEMENT: "刑罚执行",
-  COMMUTATION_PAROLE_REVIEW: "减刑假释审查",
-  ADMIN_RECONSIDERATION: "Administrativo复议",
-  ADMIN_NON_LITIGATION_ENFORCEMENT: "非诉Administrativo执行",
-  NON_LITIGATION_PHASE: "非诉阶段",
-  CUSTOM: "自定义"
+  FIRST_INSTANCE: "Primera instancia",
+  SECOND_INSTANCE: "Segunda instancia",
+  RETRIAL_REVIEW: "Revision de nuevo juicio",
+  RETRIAL: "Nuevo juicio",
+  REMAND_FIRST: "Reenvio a primera instancia",
+  REMAND_SECOND: "Reenvio a segunda instancia",
+  PROSECUTORIAL_SUPERVISION: "Supervision fiscal",
+  COMMERCIAL_ARBITRATION: "Arbitraje comercial",
+  LABOR_ARBITRATION: "Arbitraje laboral",
+  ARBITRATION_SET_ASIDE: "Anulacion de laudo arbitral",
+  ARBITRATION_ENFORCEMENT_REVIEW: "Revision de ejecucion de laudo",
+  ENFORCEMENT: "Ejecucion forzosa",
+  ENFORCEMENT_OBJECTION: "Incidente de ejecucion",
+  INVESTIGATION: "Investigacion",
+  PROSECUTION_REVIEW: "Revision de acusacion",
+  DEATH_PENALTY_REVIEW: "Revision de pena de muerte",
+  CRIMINAL_ENFORCEMENT: "Ejecucion penal",
+  COMMUTATION_PAROLE_REVIEW: "Revision de conmutacion / libertad condicional",
+  ADMIN_RECONSIDERATION: "Reconsideracion administrativa",
+  ADMIN_PRE_LITIGATION: "Reclamo administrativo previo",
+  ADMIN_NON_LITIGATION_ENFORCEMENT: "Ejecucion administrativa no contenciosa",
+  NON_LITIGATION_PHASE: "Etapa no contenciosa",
+  CUSTOM: "Personalizado"
 };
 
 export const feeTypeLabel: Record<FeeType, string> = {
-  FIXED: "固定收费",
-  CONTINGENCY: "风险代理",
-  TIMED: "计时收费"
+  FIXED: "Honorario fijo",
+  CONTINGENCY: "Representacion de riesgo",
+  TIMED: "Honorario por hora"
 };
 
 export const invoiceRequestStatusLabel: Record<InvoiceRequestStatus, string> = {
-  PENDING: "待Finanzas处理",
-  APPROVED: "已批准",
-  ISSUED: "已开具",
-  REJECTED: "Rechazado"
+  PENDING: "Pendiente de Finanzas",
+  APPROVED: "Aprobada",
+  ISSUED: "Emitida",
+  REJECTED: "Rechazada"
 };
 
 export const invoiceRequestStatusColor: Record<InvoiceRequestStatus, string> = {
@@ -248,8 +249,8 @@ export const invoiceRequestStatusColor: Record<InvoiceRequestStatus, string> = {
 };
 
 /**
- * 按程序类型 + 立场（我方 or 对方）Volver可选诉讼地位枚举。
- * 用于收案表单 / Caso详情中的当事人录入联动。
+ * SegÃºn el tipo de procedimiento + posicion (nuestra o contraria) devuelve las posiciones procesales disponibles.
+ * Se usa en el formulario de admision / ingreso de partes en el detalle del caso.
  */
 export function procedureToStandingOptions(
   proc: ProcedureType | null | undefined,

@@ -38,7 +38,7 @@ export function FirmProfileForm({ initial }: { initial: Initial }) {
   const fileRef = useRef<HTMLInputElement>(null);
 
   const year = new Date().getFullYear();
-  const sample = initial.categories[0]; // 以第一个类别（民商诉讼）做示例
+  const sample = initial.categories[0]; // Usamos la primera categoría (litigios civiles y comerciales) como ejemplo
   const caseNoPreview = sample
     ? renderCaseNoTemplate(template, {
         year,
@@ -52,16 +52,16 @@ export function FirmProfileForm({ initial }: { initial: Initial }) {
   const onPickLogo = (file: File | undefined) => {
     if (!file) return;
     if (!/^image\//.test(file.type)) {
-      toast.error("请选择图片文件（PNG / JPG / WebP / SVG）");
+      toast.error("Seleccioná un archivo de imagen (PNG / JPG / WebP / SVG)");
       return;
     }
     if (file.size > LOGO_MAX_BYTES) {
-      toast.error("Logo 过大，请控制在约 180KB 以内");
+      toast.error("El logo es demasiado grande, controlá que sea de aproximadamente 180 KB");
       return;
     }
     const reader = new FileReader();
     reader.onload = () => setLogoDataUrl(reader.result as string);
-    reader.onerror = () => toast.error("读取图片Error");
+    reader.onerror = () => toast.error("Error al leer la imagen");
     reader.readAsDataURL(file);
   };
 
@@ -77,34 +77,34 @@ export function FirmProfileForm({ initial }: { initial: Initial }) {
           logoDataUrl,
           categoryWords: words
         });
-        toast.success("律所信息已Guardar");
+        toast.success("Información del estudio guardada");
       } catch (e) {
-        toast.error(e instanceof Error ? e.message : "GuardarError");
+        toast.error(e instanceof Error ? e.message : "Error al guardar");
       }
     });
   };
 
   return (
     <div className="space-y-5">
-      {/* —— 律所品牌 —— */}
+      {/* —— Marca del estudio —— */}
       <section className="ll-surface rounded-lg border border-border p-5">
         <header className="mb-3 flex items-center gap-2">
           <Building2 className="h-4 w-4 text-primary" />
-          <h2 className="text-lg">律所品牌</h2>
+          <h2 className="text-lg">Marca del estudio</h2>
         </header>
         <p className="mb-4 text-[12px] text-muted-foreground">
-          侧边栏顶部显示的Nombre、副标题y Logo。留空Nombre将回退默认「LawLink」。
+          Nombre, subtítulo y logo que se muestran en la parte superior de la barra lateral. Si dejás el nombre vacío, se usará «LawLink» por defecto.
         </p>
 
         <div className="flex items-start gap-5">
-          {/* Logo 预览 + 上传 */}
+          {/* Vista previa del logo + carga */}
           <div className="flex flex-col items-center gap-2">
             <div className="flex h-16 w-16 items-center justify-center overflow-hidden rounded-md border border-border bg-muted/30">
               {logoDataUrl ? (
                 // eslint-disable-next-line @next/next/no-img-element
-                <img src={logoDataUrl} alt="Logo 预览" className="h-full w-full object-contain" />
+                <img src={logoDataUrl} alt="Vista previa del logo" className="h-full w-full object-contain" />
               ) : (
-                <span className="text-[10px] text-muted-foreground">无 Logo</span>
+                <span className="text-[10px] text-muted-foreground">Sin logo</span>
               )}
             </div>
             <input
@@ -121,7 +121,7 @@ export function FirmProfileForm({ initial }: { initial: Initial }) {
                 className="inline-flex items-center gap-1 text-[11px] text-primary hover:underline"
               >
                 <ImageUp className="h-3 w-3" />
-                上传
+                Subir
               </button>
               {logoDataUrl && (
                 <button
@@ -133,7 +133,7 @@ export function FirmProfileForm({ initial }: { initial: Initial }) {
                   className="inline-flex items-center gap-1 text-[11px] text-destructive hover:underline"
                 >
                   <Trash2 className="h-3 w-3" />
-                  清除
+                  Quitar
                 </button>
               )}
             </div>
@@ -141,20 +141,20 @@ export function FirmProfileForm({ initial }: { initial: Initial }) {
 
           <div className="grid flex-1 grid-cols-1 gap-3 md:grid-cols-2">
             <div>
-              <Label className="text-[11px]">律所Nombre</Label>
+              <Label className="text-[11px]">Nombre del estudio</Label>
               <Input
                 value={firmName}
                 onChange={(e) => setFirmName(e.target.value)}
-                placeholder="如：星澜Abogado事务所"
+                placeholder="Ej.: Estudio Jurídico Xinglan"
                 className="mt-1"
               />
             </div>
             <div>
-              <Label className="text-[11px]">副标题</Label>
+              <Label className="text-[11px]">Subtítulo</Label>
               <Input
                 value={firmSubtitle}
                 onChange={(e) => setFirmSubtitle(e.target.value)}
-                placeholder="如：AbogadoPanel de trabajo"
+                placeholder="Ej.: Panel de trabajo del estudio"
                 className="mt-1"
               />
             </div>
@@ -162,19 +162,19 @@ export function FirmProfileForm({ initial }: { initial: Initial }) {
         </div>
       </section>
 
-      {/* —— 内部编号前缀 —— */}
+      {/* —— Prefijo de numeración interna —— */}
       <section className="ll-surface rounded-lg border border-border p-5">
         <header className="mb-3 flex items-center gap-2">
           <Hash className="h-4 w-4 text-primary" />
-          <h2 className="text-lg">Sistema内部编号</h2>
+          <h2 className="text-lg">Numeración interna del sistema</h2>
         </header>
         <p className="mb-4 text-[12px] text-muted-foreground">
-          每个Caso自动生成的Sistema编号前缀。格式固定为
-          <span className="mx-1 font-mono">前缀-年份-类别-流水</span>，仅前缀可改。
+          Prefijo de la numeración automática del sistema para cada caso. El formato es fijo:
+          <span className="mx-1 font-mono">prefijo-año-categoría-correlativo</span>, solo se puede modificar el prefijo.
         </p>
         <div className="flex items-end gap-4">
           <div className="w-40">
-            <Label className="text-[11px]">编号前缀</Label>
+            <Label className="text-[11px]">Prefijo de numeración</Label>
             <Input
               value={prefix}
               onChange={(e) => setPrefix(e.target.value)}
@@ -183,7 +183,7 @@ export function FirmProfileForm({ initial }: { initial: Initial }) {
             />
           </div>
           <div className="pb-2 text-[12px] text-muted-foreground">
-            示例：
+            Ejemplo:
             <span className="ml-1 font-mono text-foreground/85">
               {(prefix.trim() || "LL")}-{year}-CC-0001
             </span>
@@ -191,52 +191,52 @@ export function FirmProfileForm({ initial }: { initial: Initial }) {
         </div>
       </section>
 
-      {/* —— 所内案号 —— */}
+      {/* —— Número interno del estudio —— */}
       <section className="ll-surface rounded-lg border border-border p-5">
         <header className="mb-3 flex items-center gap-2">
           <Hash className="h-4 w-4 text-primary" />
-          <h2 className="text-lg">所内案号（自定义模板）</h2>
+          <h2 className="text-lg">Número interno del estudio (plantilla personalizada)</h2>
         </header>
         <p className="mb-4 text-[12px] text-muted-foreground">
-          律所习惯的案号，转化收案时按模板自动生成。可用占位符：
-          <code className="mx-0.5">{"{年}"}</code>
-          <code className="mx-0.5">{"{年2}"}</code>
-          <code className="mx-0.5">{"{所}"}</code>
-          <code className="mx-0.5">{"{类}"}</code>
-          <code className="mx-0.5">{"{类词}"}</code>
-          <code className="mx-0.5">{"{序3}"}</code>
-          <code className="mx-0.5">{"{序4}"}</code>
-          （流水按「年+类别」独立计数）。
+          Número de caso habitual del estudio, se genera automáticamente según la plantilla al convertir un caso. Marcadores disponibles:
+          <code className="mx-0.5">{"{año}"}</code>
+          <code className="mx-0.5">{"{año2}"}</code>
+          <code className="mx-0.5">{"{est}"}</code>
+          <code className="mx-0.5">{"{cat}"}</code>
+          <code className="mx-0.5">{"{palabraCat}"}</code>
+          <code className="mx-0.5">{"{sec3}"}</code>
+          <code className="mx-0.5">{"{sec4}"}</code>
+          (el correlativo se cuenta de forma independiente por «año + categoría»).
         </p>
 
         <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
           <div>
-            <Label className="text-[11px]">所简称（{"{所}"}）</Label>
+            <Label className="text-[11px]">Abreviatura del estudio ({"{est}"})</Label>
             <Input
               value={shortName}
               onChange={(e) => setShortName(e.target.value)}
-              placeholder="如：普"
+              placeholder="Ej.: P"
               className="mt-1"
             />
           </div>
           <div>
-            <Label className="text-[11px]">案号模板</Label>
+            <Label className="text-[11px]">Plantilla de número de caso</Label>
             <Input
               value={template}
               onChange={(e) => setTemplate(e.target.value)}
-              placeholder="{年}-{所}{类词}-{序3}"
+              placeholder="{año}-{est}{palabraCat}-{sec3}"
               className="mt-1 font-mono"
             />
           </div>
         </div>
 
         <div className="mt-3 rounded-md border border-border bg-muted/20 px-3 py-2 text-[12px]">
-          示例（{sample?.label ?? "民商诉讼"}）：
+          Ejemplo ({sample?.label ?? "Litigio civil y comercial"}):
           <span className="ml-1 font-mono text-foreground/90">{caseNoPreview || "—"}</span>
         </div>
 
         <div className="mt-4">
-          <Label className="text-[11px] text-muted-foreground">类别词（{"{类词}"}）映射</Label>
+          <Label className="text-[11px] text-muted-foreground">Palabra de categoría ({"{palabraCat}"})</Label>
           <div className="mt-2 grid grid-cols-2 gap-2 md:grid-cols-4">
             {initial.categories.map((c) => (
               <div key={c.key} className="rounded-md border border-border bg-card p-2">
@@ -258,7 +258,7 @@ export function FirmProfileForm({ initial }: { initial: Initial }) {
 
       <div className="flex items-center justify-between">
         <p className="text-[11px] text-muted-foreground">
-          修改前缀 / 模板不影响已生成的历史编号；仅对之后新建的Caso生效。
+          Modificar el prefijo / plantilla no afecta los números históricos ya generados; solo se aplica a los casos nuevos que se creen a partir de ahora.
         </p>
         <Button onClick={save} disabled={pending} className="gap-1.5">
           {pending && <Loader2 className="h-3.5 w-3.5 animate-spin" />}

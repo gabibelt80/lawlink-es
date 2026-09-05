@@ -37,11 +37,11 @@ export type MatterRow = Omit<Matter, "claimAmount"> & {
 type MetaColumn = "hearing" | "firmCaseNo";
 
 const MATTER_ROW_GRID =
-  "grid gap-x-3 gap-y-2 lg:grid-cols-[1rem_minmax(16rem,1.1fr)_8.5rem_minmax(9rem,0.8fr)_minmax(13rem,1.2fr)_6.5rem_5.5rem] lg:items-center";
+  "grid gap-x-3 gap-y-2 lg:grid-cols-[1rem_minmax(12rem,1.2fr)_7rem_minmax(8rem,0.7fr)_minmax(10rem,1fr)_5.5rem_4.5rem] lg:items-center";
 const MATTER_ROW_GRID_WITH_INTAKE =
-  "grid gap-x-3 gap-y-2 lg:grid-cols-[8.5rem_minmax(16rem,1.1fr)_minmax(9rem,0.8fr)_minmax(13rem,1.2fr)_6.5rem_5.5rem] lg:items-center";
+  "grid gap-x-3 gap-y-2 lg:grid-cols-[7rem_minmax(12rem,1.2fr)_minmax(8rem,0.7fr)_minmax(10rem,1fr)_5.5rem_4.5rem] lg:items-center";
 const MATTER_ROW_GRID_WITH_ARCHIVE =
-  "grid gap-x-3 gap-y-2 lg:grid-cols-[8.5rem_minmax(16rem,1.1fr)_minmax(9rem,0.8fr)_minmax(13rem,1.2fr)_8.5rem_5.5rem] lg:items-center";
+  "grid gap-x-3 gap-y-2 lg:grid-cols-[7rem_minmax(12rem,1.2fr)_minmax(8rem,0.7fr)_minmax(10rem,1fr)_7rem_4.5rem] lg:items-center";
 
 export function CaseListHeader({
   metaColumn = "hearing",

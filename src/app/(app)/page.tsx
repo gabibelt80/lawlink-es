@@ -25,7 +25,7 @@ export default async function DashboardPage() {
 
   return (
     <div className="space-y-4 pb-8">
-      {/* v0.47：顶部问候区 + 右侧近期Calendario */}
+      {/* v0.47: Zona de saludo superior + agenda reciente a la derecha */}
       <DashboardGreeting
         name={session?.user?.name ?? ""}
         summary={{

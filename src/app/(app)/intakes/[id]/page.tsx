@@ -33,7 +33,7 @@ export default async function IntakeDetailPage({ params }: PageProps) {
     select: { id: true, name: true }
   });
 
-  // 拉每条 hit 对应的 Matter 详情（编号 / 名 / Causa / 主办 / 当事人Rol）
+  // Obtener el detalle del Matter correspondiente a cada hit (número / nombre / Causa / Titular / Rol de la parte)
   let latestCheck: Parameters<typeof ConflictSection>[0]["latestCheck"] = null;
   if (latestCheckRaw) {
     const matterIds = Array.from(
@@ -104,7 +104,7 @@ export default async function IntakeDetailPage({ params }: PageProps) {
       };
     });
 
-    // 兼容 V1 旧数据：queryPayload 没有 sameNameClients / idMatchedClients
+    // Compatibilidad con datos antiguos V1: queryPayload no tiene sameNameClients / idMatchedClients
     const payload = (latestCheckRaw.queryPayload ?? {}) as {
       sameNameClients?: { clientId: string; name: string }[];
       idMatchedClients?: { clientId: string; name: string; idNumber: string }[];
@@ -131,11 +131,11 @@ export default async function IntakeDetailPage({ params }: PageProps) {
           className="inline-flex items-center gap-1 text-sm text-muted-foreground transition-colors hover:text-foreground"
         >
           <ArrowLeft className="h-3.5 w-3.5" />
-          Volver收案列表
+          Volver a la lista de admisiones
         </Link>
       </div>
 
-      {/* 头部 */}
+      {/* Encabezado */}
       <header className="rounded-xl border border-border bg-card p-6">
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div className="flex-1">
@@ -161,7 +161,7 @@ export default async function IntakeDetailPage({ params }: PageProps) {
                   href={matterHref(intake.matter)}
                   className="inline-flex items-center gap-1 rounded-md border border-primary/30 bg-primary/10 px-2 py-0.5 text-xs text-primary hover:bg-primary/15"
                 >
-                  已转为Caso {intake.matter.internalCode} →
+                  Convertido a caso {intake.matter.internalCode} →
                 </Link>
               )}
             </div>
@@ -179,7 +179,7 @@ export default async function IntakeDetailPage({ params }: PageProps) {
             {intake.cause?.name ?? intake.causeFreeText ?? "—"}
           </InfoItem>
           <InfoItem label="Iniciado por">{createdBy?.name ?? "—"}</InfoItem>
-          <InfoItem label="主办Abogado">{intake.ownerUser?.name ?? "—"}</InfoItem>
+          <InfoItem label="Abogado principal">{intake.ownerUser?.name ?? "—"}</InfoItem>
           <InfoItem label="Cliente">
             {intake.client ? (
               <Link
@@ -192,8 +192,8 @@ export default async function IntakeDetailPage({ params }: PageProps) {
               "—"
             )}
           </InfoItem>
-          <InfoItem label="收案Fecha">
-            {new Date(intake.receivedAt).toLocaleDateString("zh-CN")}
+          <InfoItem label="Fecha de admisión">
+            {new Date(intake.receivedAt).toLocaleDateString("es-AR")}
           </InfoItem>
         </dl>
 
@@ -217,7 +217,7 @@ export default async function IntakeDetailPage({ params }: PageProps) {
             <div className="rounded-md border border-destructive/30 bg-destructive/10 p-3 text-sm">
               <div className="mb-1 flex items-center gap-1.5 text-xs font-medium uppercase tracking-wider text-destructive">
                 <AlertTriangle className="h-3.5 w-3.5" />
-                No aceptar casoMotivo
+                Motivo de rechazo
               </div>
               <p className="text-foreground/90">{intake.declinedReason}</p>
             </div>
@@ -225,7 +225,7 @@ export default async function IntakeDetailPage({ params }: PageProps) {
         )}
       </header>
 
-      {/* 冲突检索 */}
+      {/* Búsqueda de conflictos */}
       <ConflictSection
         intakeId={intake.id}
         intakeClientName={intake.client?.name}
@@ -242,11 +242,11 @@ export default async function IntakeDetailPage({ params }: PageProps) {
         canEditConclusion={intake.status !== "CONVERTED" && intake.status !== "DECLINED"}
       />
 
-      {/* 当事人 */}
+      {/* Partes */}
       <section className="rounded-xl border border-border bg-card p-6">
         <h2 className="mb-4 flex items-center gap-2 text-base font-semibold">
           <Users className="h-4 w-4 text-primary" />
-          当事人
+          Partes
         </h2>
 
         <div className="grid grid-cols-1 gap-5 md:grid-cols-3">
@@ -261,14 +261,14 @@ export default async function IntakeDetailPage({ params }: PageProps) {
               <Empty />
             )}
           </Column>
-          <Column title="相对方" color="#FB923C">
+          <Column title="Parte contraria" color="#FB923C">
             {opposing.length === 0 ? (
               <Empty />
             ) : (
               opposing.map((p) => <PartyCard key={p.id} name={p.name} sub={p.idNumber ?? undefined} />)
             )}
           </Column>
-          <Column title="第三人" color="#9B7BF7">
+          <Column title="Tercero" color="#9B7BF7">
             {thirdParty.length === 0 ? (
               <Empty />
             ) : (

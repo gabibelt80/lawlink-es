@@ -1,12 +1,20 @@
-"use server";
+﻿"use server";
 
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
-import { prisma } from "@/lib/prisma";
+import { getTenantPrisma } from "@/lib/tenant-prisma";
 import { requireSession } from "@/lib/auth/session";
 import { audit } from "@/server/audit";
 import { matterAssociationFilter } from "@/lib/permissions";
 import { runConflictCheck, type MatterInfoForHit, type QueryItem } from "./algorithm";
+
+async function resolveTenantUserId(email: string, prisma: any): Promise<string | null> {
+  const user = await prisma.user.findUnique({
+    where: { email },
+    select: { id: true }
+  });
+  return user?.id ?? null;
+}
 
 function hitKey(hit: { targetId: string; matchedField: string; matchedValue: string }) {
   return `${hit.targetId}|${hit.matchedField}|${hit.matchedValue}`;
@@ -23,6 +31,7 @@ function serializeMatterInfo(info: MatterInfoForHit | undefined, canViewMatter: 
 }
 
 async function getOpenableMatterIds(userId: string, matterIds: string[]) {
+  const prisma = await getTenantPrisma();
   const uniqueIds = Array.from(new Set(matterIds));
   if (uniqueIds.length === 0) return new Set<string>();
 
@@ -40,7 +49,6 @@ async function getOpenableMatterIds(userId: string, matterIds: string[]) {
 
 const queryItemSchema = z
   .object({
-    // v0.4: Rol可选（顶栏快查不需要），server 端默认 OPPOSING_PARTY
     role: z
       .enum([
         "CLIENT_PARTY",
@@ -56,7 +64,7 @@ const queryItemSchema = z
     idNumber: z.string().max(50).optional().or(z.literal(""))
   })
   .refine((q) => (q.name && q.name.trim()) || (q.idNumber && q.idNumber.trim()), {
-    message: "Nombre y apellido或证件号至少填写一ítems"
+    message: "Nombre o numero de documento: al menos uno es obligatorio"
   });
 
 const runCheckSchema = z.object({
@@ -65,14 +73,15 @@ const runCheckSchema = z.object({
 });
 
 /**
- * 跑一次冲突检索并落库。
- * 如果 intakeId 在，则把 ConflictCheck 挂在该 Intake 上；否则单独存（targetType=Intake 为空）。
+ * Ejecuta una busqueda de conflictos y guarda el resultado.
+ * Si intakeId existe, vincula el ConflictCheck a esa Intake.
  */
 export async function runCheckAndSave(input: z.infer<typeof runCheckSchema>) {
+  const prisma = await getTenantPrisma();
   const session = await requireSession();
+  const tenantUserId = await resolveTenantUserId(session.user.email, prisma);
   const data = runCheckSchema.parse(input);
 
-  // 清理 query（v0.4: 允许 name 为空，由 idNumber 兜底；role 缺省视为 OPPOSING_PARTY）
   const queries: QueryItem[] = data.queries.map((q) => ({
     role: q.role ?? "OPPOSING_PARTY",
     name: (q.name ?? "").trim(),
@@ -96,9 +105,9 @@ export async function runCheckAndSave(input: z.infer<typeof runCheckSchema>) {
         idMatchedClients: result.idMatchedClients
       } as object,
       conclusion: noHits ? "DIFFERENT" : "PENDING",
-      decidedById: noHits ? session.user.id : null,
+      decidedById: noHits ? tenantUserId : null,
       decidedAt: noHits ? new Date() : null,
-      note: noHits ? "Sistema自动标记：未命中历史Caso冲突。" : null,
+      note: noHits ? "Sistema: sin coincidencias con casos existentes." : null,
       hits: {
         create: result.hits.map((h) => ({
           hitType: h.hitType,
@@ -117,7 +126,7 @@ export async function runCheckAndSave(input: z.infer<typeof runCheckSchema>) {
   });
 
   await audit({
-    userId: session.user.id,
+    userId: tenantUserId,
     action: "CONFLICT_CHECK_RUN",
     targetType: "ConflictCheck",
     targetId: check.id,
@@ -155,14 +164,16 @@ const conclusionSchema = z.object({
 });
 
 export async function setConflictConclusion(input: z.infer<typeof conclusionSchema>) {
+  const prisma = await getTenantPrisma();
   const session = await requireSession();
+  const tenantUserId = await resolveTenantUserId(session.user.email, prisma);
   const data = conclusionSchema.parse(input);
 
   const updated = await prisma.conflictCheck.update({
     where: { id: data.checkId },
     data: {
       conclusion: data.conclusion,
-      decidedById: session.user.id,
+      decidedById: tenantUserId,
       decidedAt: new Date(),
       note: data.note || null
     },
@@ -170,7 +181,7 @@ export async function setConflictConclusion(input: z.infer<typeof conclusionSche
   });
 
   await audit({
-    userId: session.user.id,
+    userId: tenantUserId,
     action: "CONFLICT_CONCLUSION_SET",
     targetType: "ConflictCheck",
     targetId: updated.id,

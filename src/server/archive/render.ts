@@ -1,11 +1,11 @@
-/**
- * v0.9.4 归档专用渲染：卷宗封皮 + 卷宗目录
+﻿/**
+ * v0.9.4 å½’æ¡£ä¸“ç”¨æ¸²æŸ“ï¼šå·å®—å°çš® + å·å®—ç›®å½•
  *
- * 复用 docxtemplater 管道，但比通用 renderTemplate 多两件事：
- *   1. 注入 archive.* 上下文（归档号、Cerrar caso方式、归档Fechaetc.）
- *   2. 卷宗目录额外注入 documents[] 数组用于行循环
+ * å¤ç”¨ docxtemplater ç®¡é“ï¼Œä½†æ¯”é€šç”¨ renderTemplate å¤šä¸¤ä»¶äº‹ï¼š
+ *   1. æ³¨å…¥ archive.* ä¸Šä¸‹æ–‡ï¼ˆå½’æ¡£å·ã€Cerrar casoæ–¹å¼ã€å½’æ¡£Fechaetc.ï¼‰
+ *   2. å·å®—ç›®å½•é¢å¤–æ³¨å…¥ documents[] æ•°ç»„ç”¨äºŽè¡Œå¾ªçŽ¯
  *
- * 渲染产物落到 ARCHIVE/Cerrar caso/归档 卷宗，category=PROCEDURE，绑定模板 ID（用于审计）。
+ * æ¸²æŸ“äº§ç‰©è½åˆ° ARCHIVE/Cerrar caso/å½’æ¡£ å·å®—ï¼Œcategory=PROCEDUREï¼Œç»‘å®šæ¨¡æ¿ IDï¼ˆç”¨äºŽå®¡è®¡ï¼‰ã€‚
  */
 import { Prisma, type PrismaClient, type MatterCategory } from "@prisma/client";
 import { storage } from "@/lib/storage";
@@ -20,16 +20,16 @@ import { CLOSED_REASON_CN } from "./schemas";
 import type { ArchiveClosedReason } from "@prisma/client";
 
 const CATEGORY_CN_DOC: Record<string, string> = {
-  EVIDENCE: "证据",
-  PLEADING: "诉讼文书",
-  PROCEDURE: "程序文书",
-  JUDGMENT: "裁判文书",
-  CONTRACT: "合同",
-  OTHER: "其他",
+  EVIDENCE: "è¯æ®",
+  PLEADING: "è¯‰è®¼æ–‡ä¹¦",
+  PROCEDURE: "ç¨‹åºæ–‡ä¹¦",
+  JUDGMENT: "è£åˆ¤æ–‡ä¹¦",
+  CONTRACT: "åˆåŒ",
+  OTHER: "å…¶ä»–",
 };
 
 function toCNDate(d: Date): string {
-  const cnDigits = "〇一二三四五六七八九";
+  const cnDigits = "ã€‡ä¸€äºŒä¸‰å››äº”å…­ä¸ƒå…«ä¹";
   const y = String(d.getFullYear())
     .split("")
     .map((c) => cnDigits[+c])
@@ -38,14 +38,14 @@ function toCNDate(d: Date): string {
   const day = d.getDate();
   const cnNum = (n: number) => {
     if (n <= 10)
-      return ["〇", "一", "二", "三", "四", "五", "六", "七", "八", "九", "十"][
+      return ["ã€‡", "ä¸€", "äºŒ", "ä¸‰", "å››", "äº”", "å…­", "ä¸ƒ", "å…«", "ä¹", "å"][
         n
       ];
-    if (n < 20) return "十" + cnDigits[n - 10];
-    if (n < 30) return "二十" + (n === 20 ? "" : cnDigits[n - 20]);
-    return "三十" + (n === 30 ? "" : cnDigits[n - 30]);
+    if (n < 20) return "å" + cnDigits[n - 10];
+    if (n < 30) return "äºŒå" + (n === 20 ? "" : cnDigits[n - 20]);
+    return "ä¸‰å" + (n === 30 ? "" : cnDigits[n - 30]);
   };
-  return `${y}年${cnNum(m)}月${cnNum(day)}日`;
+  return `${y}å¹´${cnNum(m)}æœˆ${cnNum(day)}æ—¥`;
 }
 
 interface ArchiveExtras {
@@ -60,10 +60,10 @@ async function loadBuiltinTemplate(
   prisma: PrismaClient,
   key: "archive_cover" | "archive_catalog",
 ) {
-  // 用 name 找内置模板（key 没存 DB，name 由 BUILTIN_TEMPLATES 决定）
+  // ç”¨ name æ‰¾å†…ç½®æ¨¡æ¿ï¼ˆkey æ²¡å­˜ DBï¼Œname ç”± BUILTIN_TEMPLATES å†³å®šï¼‰
   const nameMap: Record<string, string> = {
-    archive_cover: "卷宗封皮",
-    archive_catalog: "卷宗目录",
+    archive_cover: "å·å®—å°çš®",
+    archive_catalog: "å·å®—ç›®å½•",
   };
   const tmpl = await prisma.documentTemplate.findFirst({
     where: { name: nameMap[key], isBuiltIn: true, enabled: true },
@@ -71,7 +71,7 @@ async function loadBuiltinTemplate(
   });
   if (!tmpl || !tmpl.docxBlob) {
     throw new Error(
-      `Falta la plantilla incorporada ${nameMap[key]}. Ejecutá npx prisma db seed.`,
+      `Falta la plantilla incorporada ${nameMap[key]}. EjecutÃ¡ npx prisma db seed.`,
     );
   }
   const raw = await storage.readFile(tmpl.docxBlob.path);
@@ -87,7 +87,7 @@ async function findOrCreateArchiveFolder(
   matterCategory: MatterCategory,
 ): Promise<string> {
   const suggestedName =
-    suggestFolderByTemplateCategory("ARCHIVE", matterCategory) ?? "归档";
+    suggestFolderByTemplateCategory("ARCHIVE", matterCategory) ?? "å½’æ¡£";
   const existing = await prisma.documentFolder.findFirst({
     where: { matterId, name: suggestedName },
     select: { id: true },
@@ -100,7 +100,7 @@ async function findOrCreateArchiveFolder(
 }
 
 /**
- * 渲染卷宗封皮 → Volver Document.id
+ * æ¸²æŸ“å·å®—å°çš® â†’ Volver Document.id
  */
 export async function renderArchiveCover(
   prisma: PrismaClient,
@@ -123,7 +123,7 @@ export async function renderArchiveCover(
     where: { id: opts.matterId },
     select: { internalCode: true, category: true },
   });
-  if (!matter) throw new Error("Caso不存在");
+  if (!matter) throw new Error("Casoä¸å­˜åœ¨");
 
   const ctx: RenderContext = {
     ...baseCtx,
@@ -146,7 +146,7 @@ export async function renderArchiveCover(
     matter.category,
   );
 
-  const fileName = `卷宗封皮_${opts.extras.archiveNo}.docx`;
+  const fileName = `å·å®—å°çš®_${opts.extras.archiveNo}.docx`;
   const doc = await prisma.document.create({
     data: {
       matterId: opts.matterId,
@@ -164,7 +164,7 @@ export async function renderArchiveCover(
       algorithm: enc.algorithm,
       iv: enc.iv.toString("base64"),
       authTag: enc.authTag.toString("base64"),
-      tags: ["归档", "卷宗封皮", opts.extras.archiveNo],
+      tags: ["å½’æ¡£", "å·å®—å°çš®", opts.extras.archiveNo],
       uploadedById: opts.userId,
     },
   });
@@ -181,10 +181,10 @@ interface CatalogDocEntry {
 }
 
 /**
- * 渲染卷宗目录 → Volver Document.id
+ * æ¸²æŸ“å·å®—ç›®å½• â†’ Volver Document.id
  *
- * documents 数组从Caso下所有 Document 取（按 createdAt 升序）；
- * 排除自身（封皮 + 目录尚未生成）+ 已Eliminar（deletedAt）。
+ * documents æ•°ç»„ä»ŽCasoä¸‹æ‰€æœ‰ Document å–ï¼ˆæŒ‰ createdAt å‡åºï¼‰ï¼›
+ * æŽ’é™¤è‡ªèº«ï¼ˆå°çš® + ç›®å½•å°šæœªç”Ÿæˆï¼‰+ å·²Eliminarï¼ˆdeletedAtï¼‰ã€‚
  */
 export async function renderArchiveCatalog(
   prisma: PrismaClient,
@@ -192,7 +192,7 @@ export async function renderArchiveCatalog(
     matterId: string;
     userId: string;
     extras: ArchiveExtras;
-    excludeDocIds?: string[]; // 通常传入封皮 doc id
+    excludeDocIds?: string[]; // é€šå¸¸ä¼ å…¥å°çš® doc id
   },
 ): Promise<string> {
   const { tmpl, templateBuffer } = await loadBuiltinTemplate(
@@ -208,7 +208,7 @@ export async function renderArchiveCatalog(
     where: { id: opts.matterId },
     select: { internalCode: true, category: true },
   });
-  if (!matter) throw new Error("Caso不存在");
+  if (!matter) throw new Error("Casoä¸å­˜åœ¨");
 
   const docs = await prisma.document.findMany({
     where: {
@@ -253,7 +253,7 @@ export async function renderArchiveCatalog(
     matter.category,
   );
 
-  const fileName = `卷宗目录_${opts.extras.archiveNo}.docx`;
+  const fileName = `å·å®—ç›®å½•_${opts.extras.archiveNo}.docx`;
   const doc = await prisma.document.create({
     data: {
       matterId: opts.matterId,
@@ -271,9 +271,11 @@ export async function renderArchiveCatalog(
       algorithm: enc.algorithm,
       iv: enc.iv.toString("base64"),
       authTag: enc.authTag.toString("base64"),
-      tags: ["归档", "卷宗目录", opts.extras.archiveNo],
+      tags: ["å½’æ¡£", "å·å®—ç›®å½•", opts.extras.archiveNo],
       uploadedById: opts.userId,
     },
   });
   return doc.id;
 }
+
+

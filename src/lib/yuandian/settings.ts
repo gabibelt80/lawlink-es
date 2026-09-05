@@ -1,9 +1,9 @@
-/**
- * v0.19: Configuración de la API de Yuandian (chineselaw.com)
+﻿/**
+ * v0.19: ConfiguraciÃ³n de la API de Yuandian (chineselaw.com)
  *
- * Utiliza el mismo mecanismo de encriptación de AI Configuración (STORAGE_ENCRYPTION_KEY)
+ * Utiliza el mismo mecanismo de encriptaciÃ³n de AI ConfiguraciÃ³n (STORAGE_ENCRYPTION_KEY)
  * con una clave independiente de SystemSetting.
- * Yuandian ofrece APIs de legislación / casos / empresas; en esta versión se integra la "búsqueda de casos".
+ * Yuandian ofrece APIs de legislaciÃ³n / casos / empresas; en esta versiÃ³n se integra la "bÃºsqueda de casos".
  */
 import { prisma } from "@/lib/prisma";
 import { encryptBuffer, decryptBuffer } from "@/lib/storage/crypto";
@@ -66,7 +66,7 @@ export async function readPublicYuandianSettings(): Promise<{
     configured: !!key,
     baseUrl: s.baseUrl,
     caseDetailHost: s.caseDetailHost,
-    apiKeyMasked: key ? `${key.slice(0, 4)}••••${key.slice(-4)}` : ""
+    apiKeyMasked: key ? `${key.slice(0, 4)}â€¢â€¢â€¢â€¢${key.slice(-4)}` : ""
   };
 }
 

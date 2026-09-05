@@ -1,4 +1,4 @@
-import type { ProcedureType } from "@prisma/client";
+﻿import type { ProcedureType } from "@prisma/client";
 
 export type StagePresetKind = "required" | "optional";
 
@@ -9,70 +9,70 @@ export type ProcedureStagePreset = {
 };
 
 const CIVIL_TRIAL_PRESETS: ProcedureStagePreset[] = [
-  { name: "代理授权", kind: "required", description: "委托手续、授权文件、律所函、风险告知和材料交接。" },
-  { name: "案情研判", kind: "required", description: "事实梳理、证据缺口、法律检索和诉讼方案。" },
-  { name: "起诉立案", kind: "required", description: "起诉/应诉材料、主体身份、管辖材料、缴费和诉调衔接。" },
-  { name: "财产Preservación", kind: "optional", description: "Preservación申请、担保、裁定、续保和解除。" },
-  { name: "管辖权异议", kind: "optional", description: "管辖异议申请或答辩、裁定签收和上诉衔接。" },
-  { name: "举证质证", kind: "required", description: "举证Plazo、证据交换、补充证据和质证意见。" },
-  { name: "司法鉴定", kind: "optional", description: "鉴定事ítems、样本材料、鉴定机构和鉴定意见质证。" },
-  { name: "庭前会议", kind: "optional", description: "庭前会议Notificaciones、争点Confirmar、证据交换和程序安排。" },
-  { name: "模拟法庭", kind: "optional", description: "争点清单、发问提纲、攻防演练和Cliente庭前沟通。" },
-  { name: "开庭审理", kind: "required", description: "传票、庭审提纲、发问提纲、证据原件和庭审记录。" },
-  { name: "庭后补充", kind: "optional", description: "庭后代理意见、补充证据、庭审Informe和法官沟通。" },
-  { name: "裁判签收", kind: "required", description: "裁判文书签收、上诉期、履行期和裁判结果Informe。" },
-  { name: "上诉/二审衔接", kind: "optional", description: "是否上诉、二审委托、上诉材料和二审策略。" },
-  { name: "Caso归档", kind: "required", description: "Cerrar casoInforme、材料完整性、原件退还和归档申请。" }
+  { name: "Autorizacion", kind: "required", description: "Tramites de mandato, documentos de autorizacion, carta del estudio, aviso de riesgos y entrega de materiales." },
+  { name: "Analisis del caso", kind: "required", description: "Orden de hechos, brechas probatorias, busqueda juridica y plan de litigio." },
+  { name: "Presentacion de demanda", kind: "required", description: "Materiales de demanda/contestacion, identidad, jurisdiccion, pago y seguimiento." },
+  { name: "Preservacion de bienes", kind: "optional", description: "Solicitud de preservacion, garantia, resolucion, renovacion y levantamiento." },
+  { name: "Excepciones", kind: "optional", description: "Solicitud o contestacion de excepciones, resolucion y apelacion." },
+  { name: "Pruebas y contrapruebas", kind: "required", description: "Plazos probatorios, intercambio de evidencia, evidencia complementaria y objeciones." },
+  { name: "Peritaje", kind: "optional", description: "Puntos de peritaje, muestras, institucion pericial y objeciones al dictamen." },
+  { name: "Audiencia preliminar", kind: "optional", description: "Notificaciones de audiencia preliminar, fijacion de puntos, intercambio de evidencia y programacion." },
+  { name: "Simulacro", kind: "optional", description: "Lista de puntos controvertidos, interrogatorio, practica de debate y reunion con cliente." },
+  { name: "Audiencia", kind: "required", description: "Citacion, esquema de audiencia, interrogatorio, evidencia original y registro." },
+  { name: "Post-audiencia", kind: "optional", description: "Alegatos, evidencia complementaria, informe de audiencia y contacto con el juez." },
+  { name: "Recepcion de sentencia", kind: "required", description: "Recepcion de sentencia, plazo de apelacion, cumplimiento e informe de resultado." },
+  { name: "Apelacion", kind: "optional", description: "Decision de apelar, mandato de segunda instancia, materiales y estrategia." },
+  { name: "Archivo del caso", kind: "required", description: "Informe de cierre, integridad de materiales, devolucion de originales y solicitud de archivo." }
 ];
 
 const SECOND_INSTANCE_PRESETS: ProcedureStagePreset[] = [
-  { name: "代理授权", kind: "required", description: "二审委托手续、授权文件和材料接收。" },
-  { name: "上诉/应诉", kind: "required", description: "上诉状、答辩状、二审证据和上诉费。" },
-  { name: "二审阅卷研判", kind: "required", description: "一审卷宗、裁判争点、二审代理思路和证据补强。" },
-  { name: "财产Preservación", kind: "optional", description: "二审阶段Preservación、续保或解除衔接。" },
-  { name: "管辖权异议", kind: "optional", description: "二审程序中的管辖或移送争议处理。" },
-  { name: "举证质证", kind: "required", description: "二审新证据、补充证据和质证意见。" },
-  { name: "司法鉴定", kind: "optional", description: "二审鉴定申请、补充鉴定或鉴定意见质证。" },
-  { name: "模拟法庭", kind: "optional", description: "二审争点攻防、发问提纲和Cliente庭前演练。" },
-  { name: "开庭/询问", kind: "required", description: "开庭、询问或书面审理准备y记录。" },
-  { name: "庭后补充", kind: "optional", description: "庭后补充意见、补交材料和法官沟通。" },
-  { name: "二审裁判", kind: "required", description: "二审裁判签收、生效、履行和后续程序提示。" },
-  { name: "Caso归档", kind: "required", description: "二审Cerrar casoInforme、材料归档和原件退还。" }
+  { name: "Autorizacion", kind: "required", description: "Tramites de mandato de segunda instancia, documentos de autorizacion y recepcion de materiales." },
+  { name: "Apelacion", kind: "required", description: "Apelacion, contestacion, evidencia de segunda instancia y tasas." },
+  { name: "Analisis del caso", kind: "required", description: "Expediente de primera instancia, puntos controvertidos, plan de segunda instancia y refuerzo probatorio." },
+  { name: "Preservacion de bienes", kind: "optional", description: "Preservacion, renovacion o levantamiento en segunda instancia." },
+  { name: "Excepciones", kind: "optional", description: "Excepciones de jurisdiccion o traslado en segunda instancia." },
+  { name: "Pruebas y contrapruebas", kind: "required", description: "Nueva evidencia, evidencia complementaria y objeciones en segunda instancia." },
+  { name: "Peritaje", kind: "optional", description: "Solicitud de peritaje, peritaje complementario u objeciones al dictamen." },
+  { name: "Simulacro", kind: "optional", description: "Estrategia de segunda instancia, interrogatorio y practica con cliente." },
+  { name: "Audiencia", kind: "required", description: "Audiencia, vista o tramite escrito con preparacion y registro." },
+  { name: "Post-audiencia", kind: "optional", description: "Alegatos complementarios, materiales y contacto con el juez." },
+  { name: "Recepcion de sentencia", kind: "required", description: "Recepcion de sentencia de segunda instancia, firmeza, cumplimiento y proximos pasos." },
+  { name: "Archivo del caso", kind: "required", description: "Informe de cierre de segunda instancia, archivo y devolucion de originales." }
 ];
 
 const ENFORCEMENT_PRESETS: ProcedureStagePreset[] = [
-  { name: "代理授权", kind: "required", description: "执行阶段委托手续和材料交接。" },
-  { name: "执行立案", kind: "required", description: "强制执行申请、生效证明、账户信息和立案材料。" },
-  { name: "财产Preservación", kind: "optional", description: "已Preservación财产续保、解除或后续处置。" },
-  { name: "财产查控", kind: "required", description: "财产线索、网络查控、查封冻结和处置跟进。" },
-  { name: "异议/复议", kind: "optional", description: "执行异议、复议、不予执行和听证准备。" },
-  { name: "执行和解", kind: "optional", description: "和解方案、协议签署、履行监督和恢复执行预案。" },
-  { name: "执行Cerrar caso", kind: "required", description: "执行回款、终本/终结、Cerrar caso文书和后续安排。" },
-  { name: "Caso归档", kind: "required", description: "执行Cerrar casoInforme、材料归档和原件退还。" }
+  { name: "Autorizacion", kind: "required", description: "Tramites de mandato de ejecucion y entrega de materiales." },
+  { name: "Ejecucion", kind: "required", description: "Solicitud de ejecucion forzosa, certificado de firmeza, cuenta y materiales de inicio." },
+  { name: "Preservacion de bienes", kind: "optional", description: "Renovacion, levantamiento o disposicion de bienes preservados." },
+  { name: "Investigacion de bienes", kind: "required", description: "Pistas de bienes, investigacion patrimonial, embargo y seguimiento de disposicion." },
+  { name: "Objeciones", kind: "optional", description: "Objeciones de ejecucion, reconsideracion, no ejecucion y audiencia." },
+  { name: "Acuerdo de ejecucion", kind: "optional", description: "Propuesta de acuerdo, firma, supervision de cumplimiento y plan de reanudacion." },
+  { name: "Cierre de ejecucion", kind: "required", description: "Cobro, terminacion, documento de cierre y proximos pasos." },
+  { name: "Archivo del caso", kind: "required", description: "Informe de cierre de ejecucion, archivo y devolucion de originales." }
 ];
 
 const ARBITRATION_PRESETS: ProcedureStagePreset[] = [
-  { name: "代理授权", kind: "required", description: "仲裁委托手续、授权文件和材料交接。" },
-  { name: "案情研判", kind: "required", description: "事实梳理、证据缺口、法律检索和仲裁方案。" },
-  { name: "仲裁立案", kind: "required", description: "仲裁申请、主体材料、证据目录和仲裁费缴纳。" },
-  { name: "财产Preservación", kind: "optional", description: "仲裁Preservación、担保、法院协助执行和续保。" },
-  { name: "管辖权异议", kind: "optional", description: "仲裁管辖异议、仲裁协议效力和程序抗辩。" },
-  { name: "举证质证", kind: "required", description: "证据交换、补充证据和质证意见。" },
-  { name: "司法鉴定", kind: "optional", description: "鉴定申请、样本材料、鉴定机构和鉴定意见质证。" },
-  { name: "模拟法庭", kind: "optional", description: "仲裁庭审攻防、发问提纲和Cliente庭前演练。" },
-  { name: "开庭审理", kind: "required", description: "开庭Notificaciones、庭审提纲、发问提纲和原件核对。" },
-  { name: "庭后补充", kind: "optional", description: "庭后补充意见、补交材料和仲裁庭沟通。" },
-  { name: "仲裁裁决", kind: "required", description: "裁决签收、履行、撤裁评估和后续程序提示。" },
-  { name: "Caso归档", kind: "required", description: "仲裁Cerrar casoInforme、材料归档和原件退还。" }
+  { name: "Autorizacion", kind: "required", description: "Tramites de mandato arbitral, documentos de autorizacion y entrega de materiales." },
+  { name: "Analisis del caso", kind: "required", description: "Orden de hechos, brechas probatorias, busqueda juridica y plan arbitral." },
+  { name: "Presentacion de demanda", kind: "required", description: "Solicitud de arbitraje, identidad, indice de evidencia y pago de tasas arbitrales." },
+  { name: "Preservacion de bienes", kind: "optional", description: "Preservacion arbitral, garantia, ejecucion asistida por tribunal y renovacion." },
+  { name: "Excepciones", kind: "optional", description: "Excepciones de jurisdiccion arbitral, validez del acuerdo y defensa procesal." },
+  { name: "Pruebas y contrapruebas", kind: "required", description: "Intercambio de evidencia, evidencia complementaria y objeciones." },
+  { name: "Peritaje", kind: "optional", description: "Solicitud de peritaje, muestras, institucion pericial y objeciones." },
+  { name: "Simulacro", kind: "optional", description: "Estrategia de audiencia arbitral, interrogatorio y practica con cliente." },
+  { name: "Audiencia", kind: "required", description: "Notificacion de audiencia, esquema, interrogatorio y verificacion de originales." },
+  { name: "Post-audiencia", kind: "optional", description: "Alegatos complementarios, materiales y comunicacion con el tribunal arbitral." },
+  { name: "Recepcion de sentencia", kind: "required", description: "Recepcion de laudo, cumplimiento, evaluacion de nulidad y proximos pasos." },
+  { name: "Archivo del caso", kind: "required", description: "Informe de cierre arbitral, archivo y devolucion de originales." }
 ];
 
 const CRIMINAL_INVESTIGATION_PRESETS: ProcedureStagePreset[] = [
-  { name: "代理授权", kind: "required", description: "Penal委托手续、授权材料和会见手续。" },
-  { name: "会见", kind: "required", description: "会见预约、会见笔录、家属沟通和风险提示。" },
-  { name: "取保候审", kind: "optional", description: "取保评估、申请材料、保证方式和办案机关沟通。" },
-  { name: "阅卷线索", kind: "required", description: "事实线索、证据风险、补充材料和调查方向。" },
-  { name: "辩护意见", kind: "required", description: "侦查阶段法律意见、羁押必要性意见和沟通留痕。" },
-  { name: "Caso归档", kind: "required", description: "阶段性Informe、材料归档和后续程序衔接。" }
+  { name: "Autorizacion", kind: "required", description: "Tramites de mandato penal, materiales de autorizacion y gestion de entrevista." },
+  { name: "Entrevista", kind: "required", description: "Reserva de entrevista, acta, comunicacion con familiares y aviso de riesgos." },
+  { name: "Excarcelacion", kind: "optional", description: "Evaluacion de excarcelacion, materiales de solicitud, garantia y contacto con el tribunal." },
+  { name: "Revision de expediente", kind: "required", description: "Pistas de hecho, riesgos probatorios, materiales complementarios y direccion de investigacion." },
+  { name: "Defensa", kind: "required", description: "Dictamen juridico en etapa de investigacion, necesidad de prision preventiva y registro de comunicacion." },
+  { name: "Archivo del caso", kind: "required", description: "Informe de etapa, archivo y proximos pasos procesales." }
 ];
 
 export function procedureStagePresetsForProcedure(type: ProcedureType): ProcedureStagePreset[] {

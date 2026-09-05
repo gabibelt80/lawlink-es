@@ -8,10 +8,9 @@ import { userRoleLabel } from "@/lib/enums";
 export default async function ProfilePage() {
   const session = await getSession();
   const user = session!.user;
-  // 从 DB 读最新头像（避免 JWT 缓存导致上传后不刷新）
   const dbUser = await prisma.user.findUnique({
     where: { id: user.id },
-    select: { avatar: true }
+    select: { avatar: true },
   });
 
   return (
@@ -19,26 +18,42 @@ export default async function ProfilePage() {
       <section className="rounded-xl border border-border bg-card p-6">
         <h2 className="mb-4 text-base font-semibold">Información personal</h2>
         <div className="mb-5">
-          <AvatarForm name={user.name ?? ""} initialAvatar={dbUser?.avatar ?? null} />
+          <AvatarForm
+            name={user.name ?? ""}
+            initialAvatar={dbUser?.avatar ?? null}
+          />
         </div>
         <dl className="grid grid-cols-1 gap-4 text-sm md:grid-cols-2">
           <Item label="Nombre y apellido">{user.name}</Item>
-          <Item label="Email" mono>{user.email}</Item>
-          <Item label="Rol">{userRoleLabel[user.role as keyof typeof userRoleLabel] ?? user.role}</Item>
+          <Item label="Correo electrónico" mono>
+            {user.email}
+          </Item>
+          <Item label="Rol">
+            {userRoleLabel[user.role as keyof typeof userRoleLabel] ??
+              user.role}
+          </Item>
         </dl>
       </section>
 
       <CalendarSubscription />
 
       <section className="rounded-xl border border-border bg-card p-6">
-        <h2 className="mb-4 text-base font-semibold">修改Contraseña</h2>
+        <h2 className="mb-4 text-base font-semibold">Cambiar contraseña</h2>
         <ChangePasswordForm />
       </section>
     </div>
   );
 }
 
-function Item({ label, mono, children }: { label: string; mono?: boolean; children: React.ReactNode }) {
+function Item({
+  label,
+  mono,
+  children,
+}: {
+  label: string;
+  mono?: boolean;
+  children: React.ReactNode;
+}) {
   return (
     <div>
       <dt className="text-xs text-muted-foreground">{label}</dt>

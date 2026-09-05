@@ -1,6 +1,6 @@
-"use server";
+﻿"use server";
 
-import { prisma } from "@/lib/prisma";
+import { getTenantPrisma } from "@/lib/tenant-prisma";
 import { requireSession } from "@/lib/auth/session";
 import { audit } from "@/server/audit";
 import { assertMatterWritable } from "@/lib/archive/guard";
@@ -38,6 +38,7 @@ function emptyToNull<T extends Record<string, unknown>>(obj: T): T {
 // ============ Procedure ============
 
 export async function addProcedure(input: ProcedureCreateInput) {
+  const prisma = await getTenantPrisma();
   const session = await requireSession();
   const data = procedureCreateSchema.parse(input);
   await assertCanAccessMatter(session.user.id, session.user.role, data.matterId);
@@ -73,7 +74,7 @@ export async function addProcedure(input: ProcedureCreateInput) {
     data: {
       matterId: data.matterId,
       eventType: "PROCEDURE_ADDED",
-      title: `新增程序：${created.customLabel ?? created.type}`,
+      title: `Nuevo procedimiento: ${created.customLabel ?? created.type}`,
       occurredAt: new Date(),
       refType: "MatterProcedure",
       refId: created.id
@@ -93,6 +94,7 @@ export async function addProcedure(input: ProcedureCreateInput) {
 }
 
 export async function updateProcedure(input: ProcedureUpdateInput) {
+  const prisma = await getTenantPrisma();
   const session = await requireSession();
   const data = procedureUpdateSchema.parse(input);
   const { id, ...rest } = data;
@@ -101,7 +103,7 @@ export async function updateProcedure(input: ProcedureUpdateInput) {
     where: { id },
     select: { matterId: true, type: true, jurisdiction: true, handlingAgency: true }
   });
-  if (!existing) throw new Error("程序不存在");
+  if (!existing) throw new Error("El procedimiento no existe");
   await assertCanAccessMatter(session.user.id, session.user.role, existing.matterId);
   await assertMatterWritable(existing.matterId);
   assertAgencyAllowedForProcedure(rest.handlingAgency ?? existing.handlingAgency, rest.type ?? existing.type);
@@ -133,13 +135,14 @@ export async function updateProcedure(input: ProcedureUpdateInput) {
 }
 
 export async function deleteProcedure(id: string) {
+  const prisma = await getTenantPrisma();
   const session = await requireSession();
   const procedure = await prisma.matterProcedure.findUnique({ where: { id } });
   if (!procedure) return { ok: false };
 
   await assertCanAccessMatter(session.user.id, session.user.role, procedure.matterId);
   await assertMatterWritable(procedure.matterId);
-  await assertCanLeadMatter(session.user.id, procedure.matterId, "仅Caso主办/协办可以Eliminar程序");
+  await assertCanLeadMatter(session.user.id, session.user.role, procedure.matterId, "Solo el responsable/co-responsable puede eliminar el procedimiento");
 
   await prisma.matterProcedure.delete({ where: { id } });
   await audit({
@@ -160,6 +163,7 @@ async function materializeProcedureStage(
   input: ProcedureStageCreateInput,
   options: { allowExisting: boolean }
 ) {
+  const prisma = await getTenantPrisma();
   const session = await requireSession();
   const data = procedureStageCreateSchema.parse(input);
 
@@ -167,9 +171,9 @@ async function materializeProcedureStage(
     where: { id: data.procedureId },
     select: { matterId: true, type: true }
   });
-  if (!procedure) throw new Error("程序不存在");
+  if (!procedure) throw new Error("El procedimiento no existe");
 
-  await assertCanAssociateMatter(session.user.id, procedure.matterId);
+  await assertCanAssociateMatter(session.user.id, session.user.role, procedure.matterId);
   await assertMatterWritable(procedure.matterId);
 
   const targetName = data.name.trim();
@@ -183,7 +187,7 @@ async function materializeProcedureStage(
     const existing = existingStages.find((stage) => normalizeProcedureStageName(stage.name) === normalizedTarget);
 
     if (existing) {
-      // v0.48: 隐藏的环节重新Agregar时恢复为 ACTIVE（数据未删，直接复用）
+      // La etapa oculta se restaura al agregarla de nuevo
       if (existing.status === "HIDDEN") {
         const revived = await tx.matterStage.update({
           where: { id: existing.id },
@@ -195,7 +199,7 @@ async function materializeProcedureStage(
       if (options.allowExisting) {
         return { stage: existing, created: false, revived: false, materializedCount: 0 };
       }
-      throw new Error("该环节已存在");
+      throw new Error("La etapa ya existe");
     }
 
     if (existingStages.length === 0) {
@@ -223,7 +227,7 @@ async function materializeProcedureStage(
         }
       }
 
-      if (!targetStage) throw new Error("环节CrearError");
+      if (!targetStage) throw new Error("Error al crear la etapa");
       return { stage: targetStage, created: true, revived: false, materializedCount: names.length };
     }
 
@@ -250,7 +254,7 @@ async function materializeProcedureStage(
       data: {
         matterId: procedure.matterId,
         eventType: "STAGE_ADDED",
-        title: result.revived ? `Restaurar etapa：${result.stage.name}` : `新增环节：${result.stage.name}`,
+        title: result.revived ? `Restaurar etapa: ${result.stage.name}` : `Nueva etapa: ${result.stage.name}`,
         occurredAt: new Date(),
         refType: "MatterStage",
         refId: result.stage.id
@@ -312,6 +316,7 @@ function nextStageOrder(
 }
 
 export async function removeProcedureStage(input: ProcedureStageRemoveInput) {
+  const prisma = await getTenantPrisma();
   const session = await requireSession();
   const data = procedureStageRemoveSchema.parse(input);
 
@@ -324,25 +329,24 @@ export async function removeProcedureStage(input: ProcedureStageRemoveInput) {
   });
   if (!stage) return { ok: false };
 
-  await assertCanAssociateMatter(session.user.id, stage.procedure.matterId);
+  await assertCanAssociateMatter(session.user.id, session.user.role, stage.procedure.matterId);
   await assertMatterWritable(stage.procedure.matterId);
 
   const preset = stagePresetForName(stage.procedure.type, stage.name);
   if (preset?.kind === "required") {
-    throw new Error("必备环节不能移除");
+    throw new Error("Las etapas obligatorias no se pueden eliminar");
   }
 
-  // v0.48: 关联材料按 stageId 外键统计（标签仅作展示），环节改名不再影响判定
   const linkedDocuments = await prisma.document.count({
     where: { stageId: stage.id, deletedAt: null }
   });
-  const preservationRecords = stage.name.includes("Preservación")
+  const preservationRecords = stage.name.includes("Preservacion")
     ? await prisma.preservationCase.count({ where: { matterId: stage.procedure.matterId } })
     : 0;
   const hasContent = stage._count.tasks > 0 || linkedDocuments > 0 || preservationRecords > 0;
 
   if (hasContent) {
-    // 有Tarea/材料/专ítems记录：置 HIDDEN 保留数据，重新Agregar同名环节时可恢复
+    // Con contenido: ocultar conservando datos
     await prisma.$transaction(async (tx) => {
       await tx.matterStage.update({
         where: { id: stage.id },
@@ -352,7 +356,7 @@ export async function removeProcedureStage(input: ProcedureStageRemoveInput) {
         data: {
           matterId: stage.procedure.matterId,
           eventType: "STAGE_REMOVED",
-          title: `隐藏环节：${stage.name}（数据保留）`,
+          title: `Etapa oculta: ${stage.name} (datos conservados)`,
           occurredAt: new Date(),
           refType: "MatterStage",
           refId: stage.id
@@ -388,7 +392,7 @@ export async function removeProcedureStage(input: ProcedureStageRemoveInput) {
       data: {
         matterId: stage.procedure.matterId,
         eventType: "STAGE_REMOVED",
-        title: `移除环节：${stage.name}`,
+        title: `Etapa eliminada: ${stage.name}`,
         occurredAt: new Date(),
         refType: "MatterStage",
         refId: stage.id
@@ -411,6 +415,7 @@ export async function removeProcedureStage(input: ProcedureStageRemoveInput) {
 // ============ Deadline ============
 
 export async function addDeadline(input: DeadlineCreateInput) {
+  const prisma = await getTenantPrisma();
   const session = await requireSession();
   const data = deadlineCreateSchema.parse(input);
 
@@ -418,7 +423,7 @@ export async function addDeadline(input: DeadlineCreateInput) {
     where: { id: data.procedureId },
     select: { matterId: true }
   });
-  if (!procedureForGuard) throw new Error("程序不存在");
+  if (!procedureForGuard) throw new Error("El procedimiento no existe");
   await assertCanAccessMatter(session.user.id, session.user.role, procedureForGuard.matterId);
   await assertMatterWritable(procedureForGuard.matterId);
 
@@ -446,12 +451,11 @@ export async function addDeadline(input: DeadlineCreateInput) {
       targetId: created.id,
       detail: { matterId: procedure.matterId, procedureId: data.procedureId }
     });
-    // v0.43 ítems4：写入Caso动态时间线
     await prisma.timelineEvent.create({
       data: {
         matterId: procedure.matterId,
         eventType: "DEADLINE_ADDED",
-        title: `新增Plazo：${data.title}`,
+        title: `Nuevo plazo: ${data.title}`,
         occurredAt: new Date(),
         refType: "Deadline",
         refId: created.id
@@ -464,6 +468,7 @@ export async function addDeadline(input: DeadlineCreateInput) {
 }
 
 export async function toggleDeadlineCompleted(id: string) {
+  const prisma = await getTenantPrisma();
   const session = await requireSession();
   const current = await prisma.deadline.findUnique({
     where: { id },
@@ -494,6 +499,7 @@ export async function toggleDeadlineCompleted(id: string) {
 }
 
 export async function deleteDeadline(id: string) {
+  const prisma = await getTenantPrisma();
   const session = await requireSession();
   const current = await prisma.deadline.findUnique({
     where: { id },
@@ -517,6 +523,7 @@ export async function deleteDeadline(id: string) {
 // ============ Hearing ============
 
 export async function addHearing(input: HearingCreateInput) {
+  const prisma = await getTenantPrisma();
   const session = await requireSession();
   const data = hearingCreateSchema.parse(input);
 
@@ -524,7 +531,7 @@ export async function addHearing(input: HearingCreateInput) {
     where: { id: data.procedureId },
     select: { matterId: true }
   });
-  if (!procedureForGuard) throw new Error("程序不存在");
+  if (!procedureForGuard) throw new Error("El procedimiento no existe");
   await assertCanAccessMatter(session.user.id, session.user.role, procedureForGuard.matterId);
   await assertMatterWritable(procedureForGuard.matterId);
 
@@ -552,7 +559,7 @@ export async function addHearing(input: HearingCreateInput) {
       data: {
         matterId: procedure.matterId,
         eventType: "HEARING_SCHEDULED",
-        title: `开庭：${data.title}`,
+        title: `Audiencia: ${data.title}`,
         occurredAt: data.startsAt,
         refType: "Hearing",
         refId: created.id
@@ -573,6 +580,7 @@ export async function addHearing(input: HearingCreateInput) {
 }
 
 export async function deleteHearing(id: string) {
+  const prisma = await getTenantPrisma();
   const session = await requireSession();
   const current = await prisma.hearing.findUnique({
     where: { id },
@@ -593,22 +601,23 @@ export async function deleteHearing(id: string) {
   return { ok: true };
 }
 
-// ============ ProcedureMemo（v0.42 备忘录）============
+// ============ ProcedureMemo (v0.42 notas) ============
 
 export async function addProcedureMemo(input: {
   procedureId: string;
   content: string;
 }) {
+  const prisma = await getTenantPrisma();
   const session = await requireSession();
   const content = input.content.trim();
-  if (!content) throw new Error("备忘内容不能为空");
-  if (content.length > 1000) throw new Error("备忘内容过长（≤1000字）");
+  if (!content) throw new Error("El contenido de la nota no puede estar vacio");
+  if (content.length > 1000) throw new Error("El contenido es demasiado largo (maximo 1000 caracteres)");
 
   const proc = await prisma.matterProcedure.findUnique({
     where: { id: input.procedureId },
     select: { matterId: true }
   });
-  if (!proc) throw new Error("程序不存在");
+  if (!proc) throw new Error("El procedimiento no existe");
   await assertCanAccessMatter(session.user.id, session.user.role, proc.matterId);
   await assertMatterWritable(proc.matterId);
 
@@ -624,6 +633,7 @@ export async function addProcedureMemo(input: {
 }
 
 export async function toggleProcedureMemo(id: string) {
+  const prisma = await getTenantPrisma();
   const session = await requireSession();
   const current = await prisma.procedureMemo.findUnique({
     where: { id },
@@ -643,6 +653,7 @@ export async function toggleProcedureMemo(id: string) {
 }
 
 export async function deleteProcedureMemo(id: string) {
+  const prisma = await getTenantPrisma();
   const session = await requireSession();
   const current = await prisma.procedureMemo.findUnique({
     where: { id },

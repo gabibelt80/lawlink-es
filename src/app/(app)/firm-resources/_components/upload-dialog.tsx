@@ -27,14 +27,14 @@ import {
 import { uploadFirmFile } from "@/server/firm-files/actions";
 
 const CATEGORY_OPTIONS: { value: FirmFileCategory; label: string }[] = [
-  { value: "CONTRACT", label: "合同" },
-  { value: "LETTER", label: "函件" },
-  { value: "LICENSE", label: "证照" },
-  { value: "OTHER_FIRM", label: "其他" },
-  { value: "POLICY", label: "制度" },
-  { value: "GUIDE", label: "指引" },
-  { value: "TEMPLATE", label: "参考模板" },
-  { value: "REFERENCE", label: "其他文件" }
+  { value: "CONTRACT", label: "Contrato" },
+  { value: "LETTER", label: "Carta" },
+  { value: "LICENSE", label: "Licencia" },
+  { value: "OTHER_FIRM", label: "Otro" },
+  { value: "POLICY", label: "Normativa" },
+  { value: "GUIDE", label: "Guía" },
+  { value: "TEMPLATE", label: "Plantilla de referencia" },
+  { value: "REFERENCE", label: "Otro archivo" }
 ];
 
 const NONE_VALUE = "__none__";
@@ -81,11 +81,11 @@ export function UploadDialog({
 
   function submit() {
     if (!file) {
-      toast.warning("请选择文件");
+      toast.warning("Seleccione un archivo");
       return;
     }
     if (!name.trim()) {
-      toast.warning("Nombre必填");
+      toast.warning("El nombre es obligatorio");
       return;
     }
     startTransition(async () => {
@@ -100,21 +100,21 @@ export function UploadDialog({
         const res = await uploadFirmFile(fd);
         toast.success(
           supersedesId !== NONE_VALUE
-            ? `已上传并替代旧版：${res.name}`
-            : `已上传：${res.name}`
+            ? `Se subió y reemplazó la versión anterior: ${res.name}`
+            : `Se subió: ${res.name}`
         );
         reset();
         onOpenChange(false);
         router.refresh();
       } catch (err) {
-        toast.error("上传Error", {
+        toast.error("Error al subir", {
           description: err instanceof Error ? err.message : ""
         });
       }
     });
   }
 
-  // 可被替代的旧版：仅显示同分类且没有Actualizar版本的
+  // Versiones anteriores reemplazables: solo se muestran las de la misma categoría y sin versión actualizada
   const replaceableFiles = existingFiles.filter(
     (f) => !f.hasNewerVersion
   );
@@ -125,16 +125,16 @@ export function UploadDialog({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-base">
             <Upload className="h-4 w-4 text-primary" />
-            上传律所Material
+            Subir material del estudio
           </DialogTitle>
           <DialogDescription className="text-xs">
-            单文件 ≤ 50MB；全所共享可见
+            Archivo único ≤ 50 MB; visible para todo el estudio
           </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-3">
           <div>
-            <Label className="text-[11px]">文件 *</Label>
+            <Label className="text-[11px]">Archivo *</Label>
             <Input
               ref={fileRef}
               type="file"
@@ -154,12 +154,12 @@ export function UploadDialog({
               <Input
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                placeholder="如：员工手册 v2.4"
+                placeholder="Ej.: manual del empleado v2.4"
                 className="mt-1"
               />
             </div>
             <div>
-              <Label className="text-[11px]">分类 *</Label>
+              <Label className="text-[11px]">Categoría *</Label>
               <Select
                 value={category}
                 onValueChange={(v) => setCategory(v as FirmFileCategory)}
@@ -179,36 +179,36 @@ export function UploadDialog({
           </div>
 
           <div>
-            <Label className="text-[11px]">Descripción（可选）</Label>
+            <Label className="text-[11px]">Descripción (opcional)</Label>
             <Textarea
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              placeholder="简短说明用途、适用场景"
+              placeholder="Breve descripción del uso y contexto"
               rows={2}
               className="mt-1 resize-none text-sm"
             />
           </div>
 
           <div>
-            <Label className="text-[11px]">标签（逗号 / 空格分隔）</Label>
+            <Label className="text-[11px]">Etiquetas (separadas por coma / espacio)</Label>
             <Input
               value={tags}
               onChange={(e) => setTags(e.target.value)}
-              placeholder="如：合伙人,薪酬,2024"
+              placeholder="Ej.: socio, salarios, 2024"
               className="mt-1"
             />
           </div>
 
           <div>
             <Label className="text-[11px]">
-              替代哪个旧版？（可选；选了之后旧版会被标&ldquo;旧版&rdquo;）
+              ¿Reemplazar una versión anterior? (opcional; la versión anterior se marcará como "versión anterior")
             </Label>
             <Select value={supersedesId} onValueChange={setSupersedesId}>
               <SelectTrigger className="mt-1 h-9 text-xs">
-                <SelectValue placeholder="不替代任何文件（新增）" />
+                <SelectValue placeholder="No reemplazar ningún archivo (nuevo)" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value={NONE_VALUE}>不替代任何文件（新增）</SelectItem>
+                <SelectItem value={NONE_VALUE}>No reemplazar ningún archivo (nuevo)</SelectItem>
                 {replaceableFiles.map((f) => (
                   <SelectItem key={f.id} value={f.id}>
                     {f.name}
@@ -225,7 +225,7 @@ export function UploadDialog({
           </Button>
           <Button onClick={submit} disabled={isPending || !file}>
             {isPending && <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />}
-            上传
+            Subir
           </Button>
         </DialogFooter>
       </DialogContent>

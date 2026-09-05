@@ -1,8 +1,8 @@
-/**
- * v0.22: 报表深入分析
+﻿/**
+ * v0.22: æŠ¥è¡¨æ·±å…¥åˆ†æž
  *
- * - 办案周期：本期已结Caso的 closedAt - createdAt días数，按 category 统计
- * - AI 审查 top issues：本期 ReviewRecord.itemsJson 聚合，找高频 title
+ * - åŠžæ¡ˆå‘¨æœŸï¼šæœ¬æœŸå·²ç»“Casoçš„ closedAt - createdAt dÃ­asæ•°ï¼ŒæŒ‰ category ç»Ÿè®¡
+ * - AI å®¡æŸ¥ top issuesï¼šæœ¬æœŸ ReviewRecord.itemsJson èšåˆï¼Œæ‰¾é«˜é¢‘ title
  */
 import { prisma } from "@/lib/prisma";
 import type { MatterCategory } from "@prisma/client";
@@ -19,20 +19,20 @@ export type CycleStats = {
 };
 
 /**
- * 计算"收案→Cerrar caso"周期。本期 closedAt 落入的Caso为口径。
- * 用 JS 端排序算中位数（prisma groupBy 不支持中位数）。
+ * è®¡ç®—"æ”¶æ¡ˆâ†’Cerrar caso"å‘¨æœŸã€‚æœ¬æœŸ closedAt è½å…¥çš„Casoä¸ºå£å¾„ã€‚
+ * ç”¨ JS ç«¯æŽ’åºç®—ä¸­ä½æ•°ï¼ˆprisma groupBy ä¸æ”¯æŒä¸­ä½æ•°ï¼‰ã€‚
  */
 export async function getCaseCycleAnalysis(period: ReportPeriod): Promise<CycleStats[]> {
   const closed = await prisma.matter.findMany({
     where: {
       closedAt: { gte: period.start, lt: period.end },
       deletedAt: null,
-      createdAt: { lt: period.end } // 防御性：createdAt 应当 <= closedAt
+      createdAt: { lt: period.end } // é˜²å¾¡æ€§ï¼šcreatedAt åº”å½“ <= closedAt
     },
     select: { category: true, createdAt: true, closedAt: true }
   });
 
-  // 按 category 聚合 days 数组
+  // æŒ‰ category èšåˆ days æ•°ç»„
   const byCat = new Map<MatterCategory, number[]>();
   for (const m of closed) {
     if (!m.closedAt) continue;
@@ -78,12 +78,12 @@ export type ReviewIssueAnalysis = {
   totalItems: number;
   bySeverity: Record<ReviewSeverity, number>;
   byType: Record<ReviewType, number>;
-  topIssues: ReviewTopIssue[]; // 出现频率 top 10 的 title
+  topIssues: ReviewTopIssue[]; // å‡ºçŽ°é¢‘çŽ‡ top 10 çš„ title
 };
 
 /**
- * 本期 AI 审查的跨Caso聚合统计。
- * 从 ReviewRecord.itemsJson 拉出来 JS 聚合（PG jsonb 函数路径 prisma 不友好）。
+ * æœ¬æœŸ AI å®¡æŸ¥çš„è·¨Casoèšåˆç»Ÿè®¡ã€‚
+ * ä»Ž ReviewRecord.itemsJson æ‹‰å‡ºæ¥ JS èšåˆï¼ˆPG jsonb å‡½æ•°è·¯å¾„ prisma ä¸å‹å¥½ï¼‰ã€‚
  */
 export async function getReviewIssueAnalysis(period: ReportPeriod): Promise<ReviewIssueAnalysis> {
   const records = await prisma.reviewRecord.findMany({
@@ -99,7 +99,7 @@ export async function getReviewIssueAnalysis(period: ReportPeriod): Promise<Revi
     ISSUE: 0,
     SUGGESTION: 0
   };
-  // title → 累加
+  // title â†’ ç´¯åŠ 
   const titleMap = new Map<
     string,
     { type: ReviewType; occurrences: number; severityCounts: Record<ReviewSeverity, number> }
@@ -147,3 +147,5 @@ export async function getReviewIssueAnalysis(period: ReportPeriod): Promise<Revi
     topIssues
   };
 }
+
+

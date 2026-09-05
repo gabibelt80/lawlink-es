@@ -27,9 +27,9 @@ import { matterHref } from "@/lib/matters/route";
 import { ClientEditButton } from "./_components/client-edit-button";
 
 const billingStatusLabel: Record<string, string> = {
-  DRAFT: "草稿",
-  ACTIVE: "生效中",
-  CLOSED: "已结"
+  DRAFT: "Borrador",
+  ACTIVE: "Vigente",
+  CLOSED: "Cerrado"
 };
 const yuan = (n: number) => `$${n.toLocaleString()}`;
 const dash = <span className="text-muted-foreground/50">—</span>;
@@ -44,12 +44,12 @@ const COOP_TONE: Record<string, string> = {
 const ACTIVE_MATTER_STATUSES = new Set(["PENDING_ACCEPTANCE", "IN_PROGRESS", "ON_HOLD"]);
 
 function firstChar(value: string) {
-  return value.trim().slice(0, 1) || "客";
+  return value.trim().slice(0, 1) || "C";
 }
 
 function dateText(date: Date | string | null | undefined) {
   if (!date) return "—";
-  return new Date(date).toLocaleDateString("zh-CN");
+  return new Date(date).toLocaleDateString("es-AR");
 }
 
 export default async function ClientDetailPage({ params }: { params: { id: string } }) {
@@ -59,10 +59,10 @@ export default async function ClientDetailPage({ params }: { params: { id: strin
 
   const isIndividual = client.type === "INDIVIDUAL";
   const TypeIcon = isIndividual ? User : client.type === "COMPANY" ? Building2 : Briefcase;
-  // 企业Cliente：Contacto principal（contacts 已按 isPrimary desc 排序）
+  // Cliente empresa: Contacto principal (contacts ya ordenado por isPrimary desc)
   const primaryContact = client.contacts[0] ?? null;
 
-  // 按Caso分组合同，关联Casoy签约合同合并展示（左Caso / 右合同）
+  // Agrupar contratos por caso, mostrando caso asociado y contrato firmado combinados (izquierda Caso / derecha contrato)
   const billingsByMatter = new Map<string, typeof finance.billings>();
   for (const b of finance.billings) {
     const arr = billingsByMatter.get(b.matter.id) ?? [];
@@ -87,7 +87,7 @@ export default async function ClientDetailPage({ params }: { params: { id: strin
         className="inline-flex items-center gap-1 text-[13px] text-muted-foreground transition-colors hover:text-foreground"
       >
         <ArrowLeft className="h-3.5 w-3.5" />
-        VolverCliente列表
+        Volver a la lista de clientes
       </Link>
 
       <section className="ll-hero-surface px-5 py-5">
@@ -120,9 +120,9 @@ export default async function ClientDetailPage({ params }: { params: { id: strin
                 {client.name}
               </h1>
               <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-muted-foreground">
-                <span className="font-mono">{client.internalCode || "暂无Cliente编号"}</span>
-                <span>首次合作 {dateText(client.createdAt)}</span>
-                {primaryContact ? <span>Contacto principal：{primaryContact.name}</span> : null}
+                <span className="font-mono">{client.internalCode || "Sin número de cliente"}</span>
+                <span>Primera colaboración {dateText(client.createdAt)}</span>
+                {primaryContact ? <span>Contacto principal: {primaryContact.name}</span> : null}
               </div>
             </div>
           </div>
@@ -130,10 +130,10 @@ export default async function ClientDetailPage({ params }: { params: { id: strin
         </div>
 
         <div className="relative z-[1] mt-4 grid grid-cols-2 gap-3 lg:grid-cols-4">
-          <HeroStat label="累计委托" value={`${finance.matterCount} 件`} icon={<Briefcase className="h-3.5 w-3.5" />} />
-          <HeroStat label="办理中" value={`${activeMatterCount} 件`} icon={<Clock className="h-3.5 w-3.5" />} accent />
-          <HeroStat label="累计实收" value={yuan(finance.received)} icon={<Coins className="h-3.5 w-3.5" />} />
-          <HeroStat label="待收" value={yuan(finance.pending)} icon={<Wallet className="h-3.5 w-3.5" />} tone="warn" />
+          <HeroStat label="Total de encargos" value={`${finance.matterCount} casos`} icon={<Briefcase className="h-3.5 w-3.5" />} />
+          <HeroStat label="En trámite" value={`${activeMatterCount} casos`} icon={<Clock className="h-3.5 w-3.5" />} accent />
+          <HeroStat label="Total cobrado" value={yuan(finance.received)} icon={<Coins className="h-3.5 w-3.5" />} />
+          <HeroStat label="Por cobrar" value={yuan(finance.pending)} icon={<Wallet className="h-3.5 w-3.5" />} tone="warn" />
         </div>
       </section>
 
@@ -143,18 +143,18 @@ export default async function ClientDetailPage({ params }: { params: { id: strin
             <header className="ll-panel-head">
               <h2 className="ll-panel-title">
                 <Briefcase className="h-4 w-4 text-primary" />
-                关联Caso
+                Casos asociados
                 <span className="font-mono text-xs text-muted-foreground tabular">
                   {client.matters.length}
                 </span>
               </h2>
               <span className="text-xs text-muted-foreground">
-                合同合计 <span className="font-mono text-foreground">{yuan(finance.contractTotal)}</span>
+                Total contratos <span className="font-mono text-foreground">{yuan(finance.contractTotal)}</span>
               </span>
             </header>
 
             {client.matters.length === 0 ? (
-              <p className="py-10 text-center text-xs text-muted-foreground">暂无关联Caso</p>
+              <p className="py-10 text-center text-xs text-muted-foreground">Sin casos asociados</p>
             ) : (
               <ul className="divide-y divide-border px-4">
                 {client.matters.map((m) => {
@@ -175,13 +175,13 @@ export default async function ClientDetailPage({ params }: { params: { id: strin
                           <Badge variant="outline" className="rounded-full text-[10px]">
                             {matterStatusLabel[m.status]}
                           </Badge>
-                          <span>Actualizar {dateText(m.updatedAt)}</span>
+                          <span>Actualizado {dateText(m.updatedAt)}</span>
                         </div>
                       </Link>
 
                       <div className="min-w-0">
                         {bs.length === 0 ? (
-                          <span className="text-xs text-muted-foreground/60">暂无合同</span>
+                          <span className="text-xs text-muted-foreground/60">Sin contratos</span>
                         ) : (
                           <ul className="space-y-1.5">
                             {bs.map((b) => (
@@ -224,48 +224,48 @@ export default async function ClientDetailPage({ params }: { params: { id: strin
               </h2>
             </header>
             <dl className="grid grid-cols-[80px_minmax(0,1fr)] gap-px overflow-hidden rounded-md border border-border bg-border text-[12.5px] sm:grid-cols-[84px_minmax(0,1fr)_84px_minmax(0,1fr)]">
-              <L>Cliente编号</L>
+              <L>N° de cliente</L>
               <V mono title={client.internalCode ?? undefined}>{client.internalCode || dash}</V>
-              <L>Cliente来源</L>
+              <L>Fuente del cliente</L>
               <V title={client.source ?? undefined}>{client.source || dash}</V>
 
               {isIndividual ? (
                 <>
-                  <L>身份证号</L>
+                  <L>N° de documento</L>
                   <V mono title={client.idNumber ?? undefined}>{client.idNumber || dash}</V>
-                  <L>性别</L>
+                  <L>Género</L>
                   <V>{client.gender ? genderLabel[client.gender] : dash}</V>
-                  <L>所属行业</L>
+                  <L>Industria</L>
                   <V title={client.industry ?? undefined}>{client.industry || dash}</V>
-                  <L>民族</L>
+                  <L>Etnia</L>
                   <V>{client.ethnicity || dash}</V>
                 </>
               ) : (
                 <>
-                  <L>信用代码</L>
+                  <L>Código de crédito</L>
                   <V mono title={client.idNumber ?? undefined}>{client.idNumber || dash}</V>
-                  <L>法定代表人</L>
+                  <L>Representante legal</L>
                   <V title={client.legalRep ?? undefined}>{client.legalRep || dash}</V>
-                  <L>所属行业</L>
+                  <L>Industria</L>
                   <V title={client.industry ?? undefined}>{client.industry || dash}</V>
                   <L>Email</L>
                   <V title={client.email ?? undefined}>{client.email || dash}</V>
                 </>
               )}
 
-              <L>联系电话</L>
+              <L>Teléfono</L>
               <V mono title={primaryContact?.phone ?? client.phone ?? undefined}>
                 {primaryContact?.phone || client.phone || dash}
               </V>
               <L>Email</L>
               <V title={client.email ?? undefined}>{client.email || dash}</V>
 
-              <L>住所地</L>
+              <L>Domicilio</L>
               <V wide title={client.address ?? undefined}>{client.address || dash}</V>
 
               {client.tags.length > 0 && (
                 <>
-                  <L>标签</L>
+                  <L>Etiquetas</L>
                   <V wide nowrap={false}>
                     <span className="flex flex-wrap gap-1">
                       {client.tags.map((t) => (
@@ -279,7 +279,7 @@ export default async function ClientDetailPage({ params }: { params: { id: strin
               )}
               {client.notes && (
                 <>
-                  <L>Observaciones</L>
+                  <L>Notas</L>
                   <V wide nowrap={false}>
                     <span className="whitespace-pre-wrap">{client.notes}</span>
                   </V>
@@ -294,14 +294,14 @@ export default async function ClientDetailPage({ params }: { params: { id: strin
             <header className="ll-panel-head">
               <h2 className="ll-panel-title">
                 <Phone className="h-4 w-4 text-primary" />
-                联系人
+                Contactos
               </h2>
               <span className="font-mono text-xs text-muted-foreground tabular">
                 {client.contacts.length}
               </span>
             </header>
             {client.contacts.length === 0 ? (
-              <p className="px-4 py-8 text-center text-xs text-muted-foreground">暂无联系人</p>
+              <p className="px-4 py-8 text-center text-xs text-muted-foreground">Sin contactos</p>
             ) : (
               <ul className="divide-y divide-border px-4">
                 {client.contacts.map((contact) => (
@@ -314,7 +314,7 @@ export default async function ClientDetailPage({ params }: { params: { id: strin
                         <span className="truncate text-[13px] font-medium">{contact.name}</span>
                         {contact.isPrimary ? (
                           <Badge variant="outline" className="rounded-full text-[10px]">
-                            主要
+                            Principal
                           </Badge>
                         ) : null}
                       </div>
@@ -348,19 +348,19 @@ export default async function ClientDetailPage({ params }: { params: { id: strin
             <header className="mb-3 flex items-center justify-between">
               <h2 className="ll-panel-title">
                 <Wallet className="h-4 w-4 text-primary" />
-                Finanzas汇Total
+                Resumen financiero
               </h2>
               <span className="font-mono text-xs text-muted-foreground">{paidRate}%</span>
             </header>
             <div className="space-y-2">
-              <SummaryField label="累计合同" value={yuan(finance.contractTotal)} />
-              <SummaryField label="累计应收" value={yuan(finance.receivable)} />
-              <SummaryField label="累计实收" value={yuan(finance.received)} accent="green" />
-              <SummaryField label="待收" value={yuan(finance.pending)} accent="warn" />
+              <SummaryField label="Total contratos" value={yuan(finance.contractTotal)} />
+              <SummaryField label="Total por cobrar" value={yuan(finance.receivable)} />
+              <SummaryField label="Total cobrado" value={yuan(finance.received)} accent="green" />
+              <SummaryField label="Por cobrar" value={yuan(finance.pending)} accent="warn" />
             </div>
             <div className="mt-4">
               <div className="mb-1.5 flex items-center justify-between text-[11px] text-muted-foreground">
-                <span>收款率</span>
+                <span>Tasa de cobro</span>
                 <span className="font-mono">{paidRate}%</span>
               </div>
               <div className="h-2 overflow-hidden rounded-full bg-muted">
@@ -375,13 +375,13 @@ export default async function ClientDetailPage({ params }: { params: { id: strin
           <section className="ll-surface p-4">
             <h2 className="ll-panel-title mb-3">
               <MapPin className="h-4 w-4 text-primary" />
-              Cliente概况
+              Perfil del cliente
             </h2>
             <div className="space-y-2 text-[12px]">
-              <SummaryField label="合作Estado" value={cooperationStatusLabel[client.cooperationStatus]} />
-              <SummaryField label="Cliente类型" value={clientTypeLabel[client.type]} />
-              <SummaryField label="首次合作" value={dateText(client.createdAt)} />
-              <SummaryField label="最近Actualizar" value={dateText(client.updatedAt)} />
+              <SummaryField label="Estado de cooperación" value={cooperationStatusLabel[client.cooperationStatus]} />
+              <SummaryField label="Tipo de cliente" value={clientTypeLabel[client.type]} />
+              <SummaryField label="Primera colaboración" value={dateText(client.createdAt)} />
+              <SummaryField label="Última actualización" value={dateText(client.updatedAt)} />
             </div>
           </section>
         </aside>
@@ -447,7 +447,7 @@ function SummaryField({
   );
 }
 
-// Cliente信息表：标签格（灰底）
+// Tabla de información del cliente: celda de etiqueta (fondo gris)
 function L({ children }: { children: React.ReactNode }) {
   return (
     <dt className="bg-muted/50 px-2.5 py-2 text-[11.5px] leading-snug text-muted-foreground">
@@ -456,7 +456,7 @@ function L({ children }: { children: React.ReactNode }) {
   );
 }
 
-// Cliente信息表：取值格（白底）。默认单行截断；wide 跨整行；nowrap=false 允许换行（标签/Observaciones）
+// Tabla de información del cliente: celda de valor (fondo blanco). Por defecto truncado en una línea; wide ocupa toda la fila; nowrap=false permite saltos de línea (etiquetas/notas)
 function V({
   children,
   mono,

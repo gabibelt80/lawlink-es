@@ -109,7 +109,7 @@ export function ReportsView({
               description: res.failed
                 .map((f) => f.error)
                 .slice(0, 3)
-                .join("；"),
+                .join("; "),
             },
           );
         }
@@ -396,7 +396,7 @@ export function ReportsView({
                         {r.closedCount}
                       </td>
                       <td className="px-2 py-1.5 text-right font-mono">
-                        {r.receivedAmount.toLocaleString("zh-CN", {
+                        {r.receivedAmount.toLocaleString("es-AR", {
                           minimumFractionDigits: 2,
                           maximumFractionDigits: 2,
                         })}
@@ -442,12 +442,12 @@ export function ReportsView({
                     <tr key={r.clientId}>
                       <td className="px-2 py-1.5">{r.name}</td>
                       <td className="px-2 py-1.5 text-right font-mono">
-                        {r.receivable.toLocaleString("zh-CN", {
+                        {r.receivable.toLocaleString("es-AR", {
                           minimumFractionDigits: 2,
                         })}
                       </td>
                       <td className="px-2 py-1.5 text-right font-mono text-emerald-600">
-                        {r.received.toLocaleString("zh-CN", {
+                        {r.received.toLocaleString("es-AR", {
                           minimumFractionDigits: 2,
                         })}
                       </td>
@@ -459,7 +459,7 @@ export function ReportsView({
                             : "text-muted-foreground",
                         )}
                       >
-                        {r.balance.toLocaleString("zh-CN", {
+                        {r.balance.toLocaleString("es-AR", {
                           minimumFractionDigits: 2,
                         })}
                       </td>
@@ -579,7 +579,7 @@ export function ReportsView({
                     <tr key={iss.title}>
                       <td className="px-2 py-1.5">{iss.title}</td>
                       <td className="px-2 py-1.5 text-muted-foreground">
-                        {TYPE_CN[iss.type]}
+                        {TYPE_ES[iss.type]}
                       </td>
                       <td className="px-2 py-1.5 text-right font-mono">
                         {iss.occurrences}
@@ -609,7 +609,7 @@ export function ReportsView({
   );
 }
 
-const TYPE_CN = {
+const TYPE_ES = {
   MISSING: "Faltante",
   RISK: "Riesgo",
   ISSUE: "Problema",

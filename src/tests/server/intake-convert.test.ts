@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+﻿import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const {
   prismaMock,
@@ -41,7 +41,7 @@ vi.mock("@/lib/prisma", () => ({
 
 vi.mock("@/lib/auth/session", () => ({
   requireSession: vi.fn().mockResolvedValue({
-    user: { id: "approver-1", role: "ADMIN", name: "Aprobación人" }
+    user: { id: "approver-1", role: "ADMIN", name: "AprobaciÃ³näºº" }
   })
 }));
 
@@ -68,12 +68,12 @@ function validConflictChecks() {
   return [
     {
       conclusion: "DIFFERENT",
-      note: "未命中历史Caso冲突",
+      note: "æœªå‘½ä¸­åŽ†å²Casoå†²çª",
       queryPayload: {
         queries: [
-          { role: "CLIENT_PARTY", name: "甲公司", idNumber: "91330000123456789X" },
-          { role: "OPPOSING_PARTY", name: "乙公司" },
-          { role: "THIRD_PARTY", name: "丙", idNumber: "330100199001010000" }
+          { role: "CLIENT_PARTY", name: "ç”²å…¬å¸", idNumber: "91330000123456789X" },
+          { role: "OPPOSING_PARTY", name: "ä¹™å…¬å¸" },
+          { role: "THIRD_PARTY", name: "ä¸™", idNumber: "330100199001010000" }
         ]
       },
       hits: []
@@ -84,7 +84,7 @@ function validConflictChecks() {
 beforeEach(() => {
   vi.clearAllMocks();
   generateInternalCodeMock.mockResolvedValue("LL-2026-001");
-  generateFirmCaseNoMock.mockResolvedValue("YS-2026-民-001");
+  generateFirmCaseNoMock.mockResolvedValue("YS-2026-æ°‘-001");
   txMock.matter.create.mockResolvedValue({ id: "matter-1", internalCode: "LL-2026-001" });
   txMock.matterProcedure.create.mockResolvedValue({ id: "procedure-1" });
   txMock.party.create
@@ -94,30 +94,30 @@ beforeEach(() => {
 });
 
 describe("convertIntakeToMatter", () => {
-  it("按收案当前程序Crear首程序，并同步当事人诉讼地位为程序当事人", async () => {
+  it("æŒ‰æ”¶æ¡ˆå½“å‰ç¨‹åºCrearé¦–ç¨‹åºï¼Œå¹¶åŒæ­¥å½“äº‹äººè¯‰è®¼åœ°ä½ä¸ºç¨‹åºå½“äº‹äºº", async () => {
     prismaMock.intake.findUnique.mockResolvedValue({
       id: "intake-1",
       status: "PENDING_CONFIRMATION",
-      title: "甲y乙合同纠纷",
+      title: "ç”²yä¹™åˆåŒçº çº·",
       category: "CIVIL_COMMERCIAL",
       causeId: null,
       causeFreeText: null,
       clientId: "client-1",
       client: {
         id: "client-1",
-        name: "甲公司",
+        name: "ç”²å…¬å¸",
         type: "COMPANY",
         idNumber: "91330000123456789X",
         phone: "13800000000",
-        address: "杭州",
-        legalRep: "张三"
+        address: "æ­å·ž",
+        legalRep: "å¼ ä¸‰"
       },
       receivedAt: new Date("2026-06-01T00:00:00Z"),
       ownerUserId: "lawyer-1",
       coUserIds: [],
       firstProcedureType: "FIRST_INSTANCE",
-      firstAgency: "杭州市西湖区人民法院",
-      jurisdiction: "浙江省杭州市西湖区",
+      firstAgency: "æ­å·žå¸‚è¥¿æ¹–åŒºäººæ°‘æ³•é™¢",
+      jurisdiction: "æµ™æ±Ÿçœæ­å·žå¸‚è¥¿æ¹–åŒº",
       ourStanding: "PLAINTIFF",
       claimAmount: 100000,
       counterclaim: false,
@@ -131,28 +131,28 @@ describe("convertIntakeToMatter", () => {
       feeAmount: null,
       feeType: null,
       feeSchedule: null,
-      contactName: "李四",
+      contactName: "æŽå››",
       parties: [
         {
           role: "OPPOSING_PARTY",
           standing: "DEFENDANT",
           ordinal: 1,
-          name: "乙公司",
+          name: "ä¹™å…¬å¸",
           partyType: "COMPANY",
           idNumber: null,
           phone: null,
           address: null,
-          legalRep: "王五",
+          legalRep: "çŽ‹äº”",
           contactName: null,
           enterpriseSocialCode: "91330000999999999X",
-          enterpriseName: "乙公司",
+          enterpriseName: "ä¹™å…¬å¸",
           notes: null
         },
         {
           role: "THIRD_PARTY",
           standing: "THIRD_PARTY",
           ordinal: 2,
-          name: "丙",
+          name: "ä¸™",
           partyType: "NATURAL_PERSON",
           idNumber: "330100199001010000",
           phone: null,
@@ -175,8 +175,8 @@ describe("convertIntakeToMatter", () => {
         data: expect.objectContaining({
           matterId: "matter-1",
           type: "FIRST_INSTANCE",
-          handlingAgency: "杭州市西湖区人民法院",
-          jurisdiction: "浙江省杭州市西湖区",
+          handlingAgency: "æ­å·žå¸‚è¥¿æ¹–åŒºäººæ°‘æ³•é™¢",
+          jurisdiction: "æµ™æ±Ÿçœæ­å·žå¸‚è¥¿æ¹–åŒº",
           ourStanding: "PLAINTIFF"
         })
       })
@@ -206,33 +206,33 @@ describe("convertIntakeToMatter", () => {
     });
   });
 
-  it("未运行利益冲突检索时拒绝转正式Caso", async () => {
+  it("æœªè¿è¡Œåˆ©ç›Šå†²çªæ£€ç´¢æ—¶æ‹’ç»è½¬æ­£å¼Caso", async () => {
     prismaMock.intake.findUnique.mockResolvedValue({
       id: "intake-1",
       status: "PENDING_CONFIRMATION",
-      client: { name: "甲公司", idNumber: null },
+      client: { name: "ç”²å…¬å¸", idNumber: null },
       parties: [],
       conflictChecks: [],
       documents: []
     });
 
     await expect(convertIntakeToMatter("intake-1")).rejects.toThrow(
-      "转为正式Caso前必须先运行利益冲突检索"
+      "è½¬ä¸ºæ­£å¼Casoå‰å¿…é¡»å…ˆè¿è¡Œåˆ©ç›Šå†²çªæ£€ç´¢"
     );
     expect(prismaMock.$transaction).not.toHaveBeenCalled();
   });
 
-  it("高风险命中没有Observaciones排除理由时拒绝转正式Caso", async () => {
+  it("é«˜é£Žé™©å‘½ä¸­æ²¡æœ‰ObservacionesæŽ’é™¤ç†ç”±æ—¶æ‹’ç»è½¬æ­£å¼Caso", async () => {
     prismaMock.intake.findUnique.mockResolvedValue({
       id: "intake-1",
       status: "PENDING_CONFIRMATION",
-      client: { name: "甲公司", idNumber: null },
+      client: { name: "ç”²å…¬å¸", idNumber: null },
       parties: [],
       conflictChecks: [
         {
           conclusion: "DIFFERENT",
           note: null,
-          queryPayload: { queries: [{ role: "CLIENT_PARTY", name: "甲公司" }] },
+          queryPayload: { queries: [{ role: "CLIENT_PARTY", name: "ç”²å…¬å¸" }] },
           hits: [{ severity: "HIGH" }]
         }
       ],
@@ -240,8 +240,9 @@ describe("convertIntakeToMatter", () => {
     });
 
     await expect(convertIntakeToMatter("intake-1")).rejects.toThrow(
-      "存在高风险或阻塞命中"
+      "å­˜åœ¨é«˜é£Žé™©æˆ–é˜»å¡žå‘½ä¸­"
     );
     expect(prismaMock.$transaction).not.toHaveBeenCalled();
   });
 });
+

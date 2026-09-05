@@ -1,15 +1,15 @@
-"use server";
+﻿"use server";
 
 /**
- * v0.27: 服务中心 - 外部联系人通讯录
+ * v0.27: Centro de servicios - Contactos externos
  *
- * 范围：法院 / 检察院 / 公证 / 仲裁 / 他所Abogado / 鉴定专家 / 其他外部联系
- * 同事用 User 表，不在此（前端可一并展示）。
+ * Alcance: tribunales / fiscalias / notarias / arbitraje / otros estudios / peritos / otros
  *
- * 权限：所有Iniciar sesión用户可看已Aprobar联系人，可新建；普通成员新建后需Administrar层审核。
+ * Permisos: todos los usuarios pueden ver contactos aprobados y crear nuevos;
+ * los usuarios regulares requieren aprobacion de un administrador.
  */
 import { z } from "zod";
-import { prisma } from "@/lib/prisma";
+import { getTenantPrisma } from "@/lib/tenant-prisma";
 import { revalidatePath } from "next/cache";
 import { requireSession } from "@/lib/auth/session";
 import { audit } from "@/server/audit";
@@ -31,7 +31,7 @@ const categories = [
 ] as const;
 
 const externalContactSchema = z.object({
-  name: z.string().min(1, "Nombre y apellido必填").max(60),
+  name: z.string().min(1, "El nombre es obligatorio").max(60),
   category: z.enum(categories),
   organization: z.string().max(120).optional().or(z.literal("")),
   title: z.string().max(60).optional().or(z.literal("")),
@@ -59,6 +59,7 @@ function empty(s?: string | null) {
 export async function listExternalContacts(
   filter: { category?: (typeof categories)[number] | "ALL"; search?: string } = {}
 ) {
+  const prisma = await getTenantPrisma();
   const session = await requireSession();
   const canReview = isManager(session.user.role);
   const where: Prisma.ExternalContactWhereInput = {
@@ -71,8 +72,8 @@ export async function listExternalContacts(
   if (filter.search && filter.search.trim()) {
     const q = filter.search.trim();
     where.OR = [
-      { name: { contains: q, mode: "insensitive" } },
-      { organization: { contains: q, mode: "insensitive" } },
+      { name: { contains: q } },
+      { organization: { contains: q } },
       { phone: { contains: q } }
     ];
   }
@@ -104,20 +105,22 @@ async function notifyRequester(userId: string, input: {
 }
 
 async function assertCanModify(id: string, sessionUserId: string, role: string) {
+  const prisma = await getTenantPrisma();
   const c = await prisma.externalContact.findUnique({
     where: { id },
     select: { createdById: true }
   });
-  if (!c) throw new Error("联系人不存在");
+  if (!c) throw new Error("El contacto no existe");
   const allowed =
     role === "ADMIN" || role === "PRINCIPAL_LAWYER" || c.createdById === sessionUserId;
-  if (!allowed) throw new Error("无权修改此联系人");
+  if (!allowed) throw new Error("Sin permiso para modificar este contacto");
 }
 
 export async function createExternalContact(input: z.infer<typeof externalContactSchema>) {
+  const prisma = await getTenantPrisma();
   const session = await requireSession();
   const data = externalContactSchema.parse(input);
-  // v1.0: 审核流默认Cerrar（小所信任环境，新增直接Aprobar）；可在Configuración里打开
+  // v1.0: Revision desactivada por defecto (entorno de confianza)
   const { externalContactReview } = await getWorkflowToggles();
   const status =
     !externalContactReview || isManager(session.user.role) ? "APPROVED" : "PENDING_REVIEW";
@@ -148,8 +151,8 @@ export async function createExternalContact(input: z.infer<typeof externalContac
     await notifyRoleApprovers({
       roles: ["ADMIN", "PRINCIPAL_LAWYER"],
       excludeUserId: session.user.id,
-      title: "新的通讯录联系人待审核",
-      content: `${session.user.name ?? "同事"} 新增了外部联系人「${created.name}」`,
+      title: "Nuevo contacto externo pendiente de revision",
+      content: `${session.user.name ?? "Un colega"} agrego el contacto externo "${created.name}"`,
       href: "/contacts",
       refType: "ExternalContact",
       refId: created.id,
@@ -161,6 +164,7 @@ export async function createExternalContact(input: z.infer<typeof externalContac
 }
 
 export async function updateExternalContact(input: z.infer<typeof externalContactUpdateSchema>) {
+  const prisma = await getTenantPrisma();
   const session = await requireSession();
   const data = externalContactUpdateSchema.parse(input);
   await assertCanModify(data.id, session.user.id, session.user.role);
@@ -191,15 +195,16 @@ export async function updateExternalContact(input: z.infer<typeof externalContac
 }
 
 export async function approveExternalContact(input: z.infer<typeof externalContactReviewSchema>) {
+  const prisma = await getTenantPrisma();
   const session = await requireSession();
-  if (!isManager(session.user.role)) throw new Error("仅Administrar员可审核联系人");
+  if (!isManager(session.user.role)) throw new Error("Solo el Administrador puede aprobar contactos");
   const data = externalContactReviewSchema.parse(input);
   const current = await prisma.externalContact.findUnique({
     where: { id: data.id },
     select: { id: true, name: true, status: true, createdById: true }
   });
-  if (!current) throw new Error("联系人不存在");
-  if (current.status !== "PENDING_REVIEW") throw new Error("该联系人当前不在待审核Estado");
+  if (!current) throw new Error("El contacto no existe");
+  if (current.status !== "PENDING_REVIEW") throw new Error("El contacto no esta pendiente de revision");
 
   const approved = await prisma.externalContact.update({
     where: { id: data.id },
@@ -220,8 +225,8 @@ export async function approveExternalContact(input: z.infer<typeof externalConta
   });
   if (current.createdById !== session.user.id) {
     await notifyRequester(current.createdById, {
-      title: "通讯录联系人已Aprobar",
-      content: `外部联系人「${approved.name}」已Aprobar审核并展示`,
+      title: "Contacto externo aprobado",
+      content: `El contacto externo "${approved.name}" fue aprobado`,
       refId: approved.id
     });
   }
@@ -230,15 +235,16 @@ export async function approveExternalContact(input: z.infer<typeof externalConta
 }
 
 export async function rejectExternalContact(input: z.infer<typeof externalContactReviewSchema>) {
+  const prisma = await getTenantPrisma();
   const session = await requireSession();
-  if (!isManager(session.user.role)) throw new Error("仅Administrar员可审核联系人");
+  if (!isManager(session.user.role)) throw new Error("Solo el Administrador puede rechazar contactos");
   const data = externalContactReviewSchema.parse(input);
   const current = await prisma.externalContact.findUnique({
     where: { id: data.id },
     select: { id: true, name: true, status: true, createdById: true }
   });
-  if (!current) throw new Error("联系人不存在");
-  if (current.status !== "PENDING_REVIEW") throw new Error("该联系人当前不在待审核Estado");
+  if (!current) throw new Error("El contacto no existe");
+  if (current.status !== "PENDING_REVIEW") throw new Error("El contacto no esta pendiente de revision");
 
   const rejected = await prisma.externalContact.update({
     where: { id: data.id },
@@ -259,8 +265,8 @@ export async function rejectExternalContact(input: z.infer<typeof externalContac
   });
   if (current.createdById !== session.user.id) {
     await notifyRequester(current.createdById, {
-      title: "通讯录联系人未Aprobar",
-      content: `外部联系人「${rejected.name}」未Aprobar审核${data.note ? `：${data.note}` : ""}`,
+      title: "Contacto externo no aprobado",
+      content: `El contacto externo "${rejected.name}" no fue aprobado${data.note ? `: ${data.note}` : ""}`,
       refId: rejected.id
     });
   }
@@ -269,6 +275,7 @@ export async function rejectExternalContact(input: z.infer<typeof externalContac
 }
 
 export async function archiveExternalContact(id: string) {
+  const prisma = await getTenantPrisma();
   const session = await requireSession();
   await assertCanModify(id, session.user.id, session.user.role);
   await prisma.externalContact.update({

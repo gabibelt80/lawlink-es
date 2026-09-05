@@ -31,11 +31,11 @@ import { Badge } from "@/components/ui/badge";
 import { formatCurrency } from "@/lib/utils";
 
 const feeTypeLabel = {
-  RECEIVABLE: "应收",
-  RECEIVED: "实收",
-  REFUND: "退款",
-  COST: "成本",
-  COMMISSION: "分成",
+  RECEIVABLE: "Pendiente de cobro",
+  RECEIVED: "Cobrado",
+  REFUND: "Reembolso",
+  COST: "Costo",
+  COMMISSION: "Comisión",
 } as const;
 
 const feeTypeColor: Record<keyof typeof feeTypeLabel, string> = {
@@ -74,7 +74,7 @@ export type InvoiceRequestRow = {
   processNote: string | null;
   invoiceNo: string | null;
   issuedAt: Date | null;
-  // v0.42 开票类型 + 抬头 + 专票六要素（来自 InvoiceRequest 标量字段）
+  // v0.42 Tipo de factura + encabezado + seis elementos de factura especial (campos escalares de InvoiceRequest)
   invoiceType: "PLAIN" | "SPECIAL" | null;
   invoiceItem: "LAWYER_FEE" | "CONSULTING_FEE" | "AGENCY_FEE" | "OTHER" | null;
   buyerName: string | null;
@@ -83,7 +83,7 @@ export type InvoiceRequestRow = {
   buyerPhone: string | null;
   buyerBank: string | null;
   buyerBankAccount: string | null;
-  // v0.43 ítems5：matter 可空（无关联Caso开票）
+  // v0.43 ítem 5: matter puede ser nulo (facturación sin caso asociado)
   matter: { id: string; internalCode: string; title: string } | null;
   noMatterReason: string | null;
   requestedBy: { id: string; name: string };
@@ -193,40 +193,40 @@ export function FinanceView({
           {/* KPI */}
           <div className="grid grid-cols-2 gap-3 lg:grid-cols-6">
             <StatCard
-              label="本月实收"
+              label="Cobrado este mes"
               value={stats.monthlyReceived}
               icon={<Coins className="h-3.5 w-3.5" />}
               color="#4ADE80"
             />
             <StatCard
-              label="本月应收"
+              label="Pendiente de cobro este mes"
               value={stats.monthlyReceivable}
               icon={<TrendingUp className="h-3.5 w-3.5" />}
               color="#FBBF24"
             />
             <StatCard
-              label="本月已开票"
+              label="Facturado este mes"
               value={stats.monthlyIssued}
               icon={<FileText className="h-3.5 w-3.5" />}
               color="#5B8DEF"
             />
             <StatCard
-              label="本年实收"
+              label="Cobrado este año"
               value={stats.yearlyReceived}
               icon={<Receipt className="h-3.5 w-3.5" />}
               color="#5B8DEF"
             />
-            {/* v1.0: 分成降级——从未产生分成时不展示个人分成卡 */}
+            {/* v1.0: Degradación de comisión: si nunca se generaron comisiones, no se muestran las tarjetas de comisión personal */}
             {(stats.personalMonthly > 0 || stats.personalYearly > 0) && (
               <>
                 <StatCard
-                  label="我的本月分成"
+                  label="Mi comisión este mes"
                   value={stats.personalMonthly}
                   icon={<Percent className="h-3.5 w-3.5" />}
                   color="#9B7BF7"
                 />
                 <StatCard
-                  label="我的本年分成"
+                  label="Mi comisión este año"
                   value={stats.personalYearly}
                   icon={<Percent className="h-3.5 w-3.5" />}
                   color="#9B7BF7"
@@ -235,10 +235,10 @@ export function FinanceView({
             )}
           </div>
 
-          {/* 月度趋势图 */}
+          {/* Gráfico de tendencia mensual */}
           <section className="ll-surface">
             <header className="ll-panel-head">
-              <h2 className="ll-panel-title">近 6 个月趋势</h2>
+              <h2 className="ll-panel-title">Tendencia de los últimos 6 meses</h2>
               <div className="flex items-center gap-3 text-xs text-muted-foreground">
                 <span className="flex items-center gap-1.5">
                   <span
@@ -248,7 +248,7 @@ export function FinanceView({
                       boxShadow: "0 0 8px #5B8DEF",
                     }}
                   />
-                  实收
+                  Cobrado
                 </span>
                 <span className="flex items-center gap-1.5">
                   <span
@@ -258,7 +258,7 @@ export function FinanceView({
                       boxShadow: "0 0 8px #4FD1C5",
                     }}
                   />
-                  应收
+                  Pendiente de cobro
                 </span>
               </div>
             </header>
@@ -320,7 +320,7 @@ export function FinanceView({
                     axisLine={false}
                     tickLine={false}
                     width={50}
-                    tickFormatter={(v) => `${(v / 10000).toFixed(0)}万`}
+                    tickFormatter={(v) => `${(v / 10000).toFixed(0)}k`}
                   />
                   <Tooltip
                     contentStyle={{
@@ -334,7 +334,7 @@ export function FinanceView({
                   <Area
                     type="monotone"
                     dataKey="receivable"
-                    name="应收"
+                    name="Pendiente de cobro"
                     stroke="#4FD1C5"
                     strokeWidth={1.5}
                     fill="url(#finance-receivable)"
@@ -342,7 +342,7 @@ export function FinanceView({
                   <Area
                     type="monotone"
                     dataKey="received"
-                    name="实收"
+                    name="Cobrado"
                     stroke="#5B8DEF"
                     strokeWidth={2}
                     fill="url(#finance-received)"
@@ -352,11 +352,11 @@ export function FinanceView({
             </div>
           </section>
 
-          {/* 流水 */}
+          {/* Movimientos */}
           <section className="ll-surface overflow-hidden">
             <header className="ll-panel-head">
               <h2 className="ll-panel-title">
-                收付流水{" "}
+                Movimientos{" "}
                 <span className="text-muted-foreground">
                   ({filtered.length})
                 </span>
@@ -380,7 +380,7 @@ export function FinanceView({
 
             {filtered.length === 0 ? (
               <p className="py-12 text-center text-xs text-muted-foreground">
-                Sin coincidencias的记录
+                No hay movimientos que coincidan con el filtro
               </p>
             ) : (
               <ul className="max-h-[640px] divide-y divide-border overflow-y-auto">
@@ -421,10 +421,10 @@ export function FinanceView({
                       </div>
                       <div className="text-right">
                         <div className="font-mono text-xs text-muted-foreground tabular">
-                          {new Date(e.occurredAt).toLocaleDateString("zh-CN")}
+                          {new Date(e.occurredAt).toLocaleDateString("es-AR")}
                         </div>
                         <div className="text-[11px] text-muted-foreground">
-                          录入：{e.recordedBy.name}
+                          Registrado por: {e.recordedBy.name}
                         </div>
                       </div>
                     </li>

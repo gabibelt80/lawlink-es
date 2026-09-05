@@ -1,7 +1,7 @@
-"use server";
+﻿"use server";
 
 import { z } from "zod";
-import { prisma } from "@/lib/prisma";
+import { getTenantPrisma } from "@/lib/tenant-prisma";
 import { requireSession } from "@/lib/auth/session";
 import { audit } from "@/server/audit";
 import { createNotification } from "@/server/notifications/create";
@@ -11,7 +11,7 @@ import { matterHrefById, revalidateMatter } from "@/server/matters/route";
 
 const taskCreateSchema = z.object({
   matterId: z.string().cuid(),
-  title: z.string().min(1, "事ítems标题必填").max(200),
+  title: z.string().min(1, "El título de la tarea es obligatorio").max(200),
   description: z.string().max(2000).optional().or(z.literal("")),
   assigneeId: z.string().cuid().optional().or(z.literal("")),
   dueAt: z.coerce.date().optional(),
@@ -27,9 +27,10 @@ export type TaskCreateInput = z.infer<typeof taskCreateSchema>;
 export type TaskUpdateInput = z.infer<typeof taskUpdateSchema>;
 
 export async function createTask(input: TaskCreateInput) {
+  const prisma = await getTenantPrisma();
   const session = await requireSession();
   const data = taskCreateSchema.parse(input);
-  await assertCanAssociateMatter(session.user.id, data.matterId);
+  await assertCanAssociateMatter(session.user.id, session.user.role, data.matterId);
   await assertMatterWritable(data.matterId);
 
   const created = await prisma.task.create({
@@ -52,25 +53,25 @@ export async function createTask(input: TaskCreateInput) {
     detail: { matterId: data.matterId, title: created.title }
   });
 
-  // v0.43 ítems4：写入Caso动态时间线
+  // v0.43 ítem 4: escribir en la línea de tiempo del Caso
   await prisma.timelineEvent.create({
     data: {
       matterId: data.matterId,
       eventType: "TASK_ADDED",
-      title: `新增事ítems：${created.title}`,
+      title: `Nueva tarea: ${created.title}`,
       occurredAt: new Date(),
       refType: "Task",
       refId: created.id
     }
   });
 
-  // Notificaciones被指派人（非Crear者本人时）
+  // Notificaciones al asignado (cuando no es el mismo Creador)
   if (data.assigneeId && data.assigneeId !== session.user.id) {
     await createNotification({
       userId: data.assigneeId,
       type: "TASK_ASSIGNED",
-      title: "您有新事ítems",
-      content: `事ítems「${created.title}」已指派给您`,
+      title: "Tenés una nueva tarea",
+      content: `La tarea「${created.title}」te fue asignada`,
       href: await matterHrefById(data.matterId),
       refType: "Task",
       refId: created.id
@@ -82,9 +83,10 @@ export async function createTask(input: TaskCreateInput) {
 }
 
 export async function updateTask(input: TaskUpdateInput) {
+  const prisma = await getTenantPrisma();
   const session = await requireSession();
   const data = taskUpdateSchema.parse(input);
-  await assertCanAssociateMatter(session.user.id, data.matterId);
+  await assertCanAssociateMatter(session.user.id, session.user.role, data.matterId);
   await assertMatterWritable(data.matterId);
   const { id, matterId, ...rest } = data;
 
@@ -112,10 +114,11 @@ export async function updateTask(input: TaskUpdateInput) {
 }
 
 export async function toggleTaskCompleted(id: string) {
+  const prisma = await getTenantPrisma();
   const session = await requireSession();
   const current = await prisma.task.findUnique({ where: { id } });
   if (!current) return { ok: false };
-  await assertCanAssociateMatter(session.user.id, current.matterId);
+  await assertCanAssociateMatter(session.user.id, session.user.role, current.matterId);
   await assertMatterWritable(current.matterId);
 
   const next = !current.completed;
@@ -139,10 +142,11 @@ export async function toggleTaskCompleted(id: string) {
 }
 
 export async function deleteTask(id: string) {
+  const prisma = await getTenantPrisma();
   const session = await requireSession();
   const current = await prisma.task.findUnique({ where: { id } });
   if (!current) return { ok: false };
-  await assertCanAssociateMatter(session.user.id, current.matterId);
+  await assertCanAssociateMatter(session.user.id, session.user.role, current.matterId);
   await assertMatterWritable(current.matterId);
 
   await prisma.task.delete({ where: { id } });

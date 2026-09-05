@@ -1,6 +1,6 @@
-"use server";
+﻿"use server";
 
-import { prisma } from "@/lib/prisma";
+import { getTenantPrisma } from "@/lib/tenant-prisma";
 import { requireSession } from "@/lib/auth/session";
 import {
   matterVisibilityFilter,
@@ -36,9 +36,9 @@ export type ScheduleItem = {
   matter: string;
   clientName: string | null;
   matterId: string | null;
-  matterCode: string | null; // internalCode，详情页路由键
+  matterCode: string | null;
   procedure?: string;
-  daysUntil: number; // 距Hoy数（0=Hoy）
+  daysUntil: number;
 };
 
 export type HeroData = {
@@ -57,6 +57,7 @@ export type HeroData = {
 // ============ KPIs ============
 
 export async function getDashboardKpis(): Promise<KpiItem[]> {
+  const prisma = await getTenantPrisma();
   const session = await requireSession();
   const userId = session.user.id;
   const role = session.user.role;
@@ -97,14 +98,12 @@ export async function getDashboardKpis(): Promise<KpiItem[]> {
 
   const receivedTotal = Number(received._sum.amount ?? 0);
 
-  // Trend text is derived from raw counts
-  // Sparkline is a flat representation of the single value (no historical series yet)
   const spark = (v: number) => Array(14).fill(v);
 
   return [
     {
       key: "in_progress",
-      label: "Caso en trámite",
+      label: "Caso en tramite",
       value: inProgress,
       trend: { direction: "up", text: `${inProgress} casos` },
       sparkline: spark(inProgress),
@@ -118,9 +117,9 @@ export async function getDashboardKpis(): Promise<KpiItem[]> {
     },
     {
       key: "deadline",
-      label: "Plazos próximos 7 días",
+      label: "Vencimientos proximos 7 dias",
       value: deadlines,
-      trend: { direction: "warn", text: `${deadlines} plazos` },
+      trend: { direction: "warn", text: `${deadlines} vencimientos` },
       sparkline: spark(deadlines),
     },
     {
@@ -130,7 +129,7 @@ export async function getDashboardKpis(): Promise<KpiItem[]> {
       valueFormat: "currency",
       trend: {
         direction: "up",
-        text: `$${(receivedTotal / 10000).toFixed(1)} mil`,
+        text: `$${(receivedTotal / 1000).toFixed(1)} mil`,
       },
       sparkline: spark(Math.round(receivedTotal / 1000)),
     },
@@ -140,6 +139,7 @@ export async function getDashboardKpis(): Promise<KpiItem[]> {
 // ============ Revenue Trend ============
 
 export async function getDashboardRevenueTrend(months = 6) {
+  const prisma = await getTenantPrisma();
   const session = await requireSession();
   const visFilter = matterVisibilityFilter(session.user.id, session.user.role);
   const now = new Date();
@@ -158,7 +158,7 @@ export async function getDashboardRevenueTrend(months = 6) {
   for (let i = 0; i < months; i++) {
     const d = new Date(start.getFullYear(), start.getMonth() + i, 1);
     buckets.push({
-      month: `${d.getMonth() + 1}月`,
+      month: `${d.getMonth() + 1}M`,
       received: 0,
       receivable: 0,
     });
@@ -171,12 +171,11 @@ export async function getDashboardRevenueTrend(months = 6) {
       d.getMonth() -
       start.getMonth();
     if (idx < 0 || idx >= months) continue;
-    const val = Number(e.amount) / 10000; // display in 万
+    const val = Number(e.amount) / 1000;
     if (e.type === "RECEIVED") buckets[idx].received += val;
     if (e.type === "RECEIVABLE") buckets[idx].receivable += val;
   }
 
-  // Round to 1 decimal
   for (const b of buckets) {
     b.received = Math.round(b.received * 10) / 10;
     b.receivable = Math.round(b.receivable * 10) / 10;
@@ -188,6 +187,7 @@ export async function getDashboardRevenueTrend(months = 6) {
 // ============ Category Distribution ============
 
 export async function getDashboardCategoryDistribution() {
+  const prisma = await getTenantPrisma();
   const session = await requireSession();
   const visFilter = matterVisibilityFilter(session.user.id, session.user.role);
 
@@ -210,15 +210,15 @@ export async function getDashboardCategoryDistribution() {
     };
   });
 
-  // Sort by value desc
   result.sort((a, b) => b.value - a.value);
 
   return result;
 }
 
-// ============ Schedule (past 2 days to next 15 days：开庭 + Plazo) ============
+// ============ Schedule ============
 
 export async function getDashboardSchedule(): Promise<ScheduleItem[]> {
+  const prisma = await getTenantPrisma();
   const session = await requireSession();
   const visFilter = matterVisibilityFilter(session.user.id, session.user.role);
 
@@ -272,13 +272,13 @@ export async function getDashboardSchedule(): Promise<ScheduleItem[]> {
   ]);
 
   const itemsWithSort: { item: ScheduleItem; ts: number }[] = [];
-  const weekdays = ["周日", "周一", "周二", "周三", "周四", "周五", "周六"];
+  const weekdays = ["Dom", "Lun", "Mar", "Mie", "Jue", "Vie", "Sab"];
   const DAY = 1000 * 60 * 60 * 24;
   const daysFrom = (d: Date) => Math.ceil((d.getTime() - now.getTime()) / DAY);
   const fmt = (d: Date) => ({
-    date: `${d.getMonth() + 1}月${d.getDate()}日`,
+    date: `${d.getMonth() + 1}M${d.getDate()}`,
     weekday: weekdays[d.getDay()],
-    time: d.toLocaleTimeString("zh-CN", {
+    time: d.toLocaleTimeString("es-AR", {
       hour: "2-digit",
       minute: "2-digit",
       hour12: false,
@@ -341,6 +341,7 @@ export async function getDashboardSchedule(): Promise<ScheduleItem[]> {
 // ============ Hero Data ============
 
 export async function getDashboardHeroData(): Promise<HeroData> {
+  const prisma = await getTenantPrisma();
   const session = await requireSession();
   const userId = session.user.id;
   const role = session.user.role;
@@ -354,7 +355,6 @@ export async function getDashboardHeroData(): Promise<HeroData> {
 
   const [todayDeadlines, weekHearings, nearTermDeadlines, urgentDeadline] =
     await Promise.all([
-      // Today's deadlines
       prisma.deadline.count({
         where: {
           dueAt: { gte: todayStart, lt: todayEnd },
@@ -365,7 +365,6 @@ export async function getDashboardHeroData(): Promise<HeroData> {
           },
         },
       }),
-      // This week's hearings
       prisma.hearing.count({
         where: {
           startsAt: { gte: todayStart, lt: weekEnd },
@@ -375,7 +374,6 @@ export async function getDashboardHeroData(): Promise<HeroData> {
           },
         },
       }),
-      // Near-term deadlines (7 days)
       prisma.deadline.count({
         where: {
           dueAt: { gte: now, lte: in7d },
@@ -386,7 +384,6 @@ export async function getDashboardHeroData(): Promise<HeroData> {
           },
         },
       }),
-      // Most urgent deadline (nearest future uncompleted)
       prisma.deadline.findFirst({
         where: {
           dueAt: { gte: now },
@@ -430,3 +427,4 @@ export async function getDashboardHeroData(): Promise<HeroData> {
     focus,
   };
 }
+

@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Storage provider abstraction.
  *
  * All file I/O in LawLink goes through this interface so that the backing
@@ -18,3 +18,4 @@ export interface StorageProvider {
   /** Delete a previously written file. Tolerates already-missing files. */
   deleteFile(relPath: string): Promise<void>;
 }
+

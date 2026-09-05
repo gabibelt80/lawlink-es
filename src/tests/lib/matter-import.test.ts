@@ -1,4 +1,4 @@
-import { describe, it, expect } from "vitest";
+﻿import { describe, it, expect } from "vitest";
 import {
   parseCategoryLabel,
   parseStatusLabel,
@@ -12,44 +12,44 @@ import {
   type RawRow
 } from "@/lib/imports/matter-import";
 
-describe("批量导入 — 文本映射", () => {
-  it("Caso类型反查", () => {
-    expect(parseCategoryLabel("民商诉讼")).toBe("CIVIL_COMMERCIAL");
-    expect(parseCategoryLabel("劳动仲裁")).toBe("LABOR_ARBITRATION");
-    expect(parseCategoryLabel("不存在")).toBeNull();
+describe("æ‰¹é‡å¯¼å…¥ â€” æ–‡æœ¬æ˜ å°„", () => {
+  it("Casoç±»åž‹åæŸ¥", () => {
+    expect(parseCategoryLabel("æ°‘å•†è¯‰è®¼")).toBe("CIVIL_COMMERCIAL");
+    expect(parseCategoryLabel("åŠ³åŠ¨ä»²è£")).toBe("LABOR_ARBITRATION");
+    expect(parseCategoryLabel("ä¸å­˜åœ¨")).toBeNull();
   });
 
-  it("CasoEstado反查（兼容「Cerrar caso」）", () => {
-    expect(parseStatusLabel("办理中")).toBe("IN_PROGRESS");
-    expect(parseStatusLabel("已Cerrar caso")).toBe("CLOSED");
+  it("CasoEstadoåæŸ¥ï¼ˆå…¼å®¹ã€ŒCerrar casoã€ï¼‰", () => {
+    expect(parseStatusLabel("åŠžç†ä¸­")).toBe("IN_PROGRESS");
+    expect(parseStatusLabel("å·²Cerrar caso")).toBe("CLOSED");
     expect(parseStatusLabel("Cerrar caso")).toBe("CLOSED");
-    expect(parseStatusLabel("已归档")).toBe("ARCHIVED");
-    expect(parseStatusLabel("乱填")).toBeNull();
+    expect(parseStatusLabel("å·²å½’æ¡£")).toBe("ARCHIVED");
+    expect(parseStatusLabel("ä¹±å¡«")).toBeNull();
   });
 
-  it("个人/企业 → PartyType / ClientType", () => {
-    expect(parsePartyType("企业")).toBe("COMPANY");
-    expect(parsePartyType("个人")).toBe("NATURAL_PERSON");
+  it("ä¸ªäºº/ä¼ä¸š â†’ PartyType / ClientType", () => {
+    expect(parsePartyType("ä¼ä¸š")).toBe("COMPANY");
+    expect(parsePartyType("ä¸ªäºº")).toBe("NATURAL_PERSON");
     expect(parsePartyType("")).toBe("NATURAL_PERSON");
-    expect(parseClientType("企业")).toBe("COMPANY");
+    expect(parseClientType("ä¼ä¸š")).toBe("COMPANY");
     expect(parseClientType(undefined)).toBe("INDIVIDUAL");
   });
 
-  it("Fecha / Monto解析", () => {
+  it("Fecha / Montoè§£æž", () => {
     expect(parseImportDate("2026-05-30")?.getFullYear()).toBe(2026);
     expect(parseImportDate("2026/5/3")?.getMonth()).toBe(4);
-    expect(parseImportDate("无效")).toBeNull();
+    expect(parseImportDate("æ— æ•ˆ")).toBeNull();
     expect(parseAmount("120,000")).toBe(120000);
-    expect(parseAmount("$12万")).toBeNull(); // 「万」不解析
+    expect(parseAmount("$12ä¸‡")).toBeNull(); // ã€Œä¸‡ã€ä¸è§£æž
     expect(parseAmount("")).toBeNull();
   });
 
-  it("标题生成无重复空格", () => {
-    expect(buildMatterTitle("张三", "某公司", "买卖合同纠纷")).toBe("张三 y 某公司 买卖合同纠纷");
-    expect(buildMatterTitle("张三", "某公司", null)).toBe("张三 y 某公司");
+  it("æ ‡é¢˜ç”Ÿæˆæ— é‡å¤ç©ºæ ¼", () => {
+    expect(buildMatterTitle("å¼ ä¸‰", "æŸå…¬å¸", "ä¹°å–åˆåŒçº çº·")).toBe("å¼ ä¸‰ y æŸå…¬å¸ ä¹°å–åˆåŒçº çº·");
+    expect(buildMatterTitle("å¼ ä¸‰", "æŸå…¬å¸", null)).toBe("å¼ ä¸‰ y æŸå…¬å¸");
   });
 
-  it("首程序类型推断y收案转化一致", () => {
+  it("é¦–ç¨‹åºç±»åž‹æŽ¨æ–­yæ”¶æ¡ˆè½¬åŒ–ä¸€è‡´", () => {
     expect(firstProcedureTypeFor("CIVIL_COMMERCIAL")).toBe("FIRST_INSTANCE");
     expect(firstProcedureTypeFor("CRIMINAL")).toBe("FIRST_INSTANCE");
     expect(firstProcedureTypeFor("NON_LITIGATION")).toBe("NON_LITIGATION_PHASE");
@@ -57,19 +57,19 @@ describe("批量导入 — 文本映射", () => {
   });
 });
 
-describe("批量导入 — 单行校验", () => {
+describe("æ‰¹é‡å¯¼å…¥ â€” å•è¡Œæ ¡éªŒ", () => {
   const okRow: RawRow = {
-    clientName: "张三",
+    clientName: "å¼ ä¸‰",
     clientIdNumber: "110101199001011234",
-    opposingName: "某公司",
+    opposingName: "æŸå…¬å¸",
     opposingIdNumber: "91110000MA01XXXX1A",
-    opposingType: "企业",
-    category: "民商诉讼",
-    status: "办理中",
+    opposingType: "ä¼ä¸š",
+    category: "æ°‘å•†è¯‰è®¼",
+    status: "åŠžç†ä¸­",
     claimAmount: "120000"
   };
 
-  it("合法行Aprobar并归一化", () => {
+  it("åˆæ³•è¡ŒAprobarå¹¶å½’ä¸€åŒ–", () => {
     const { errors, normalized } = validateRow(okRow);
     expect(errors).toHaveLength(0);
     expect(normalized).not.toBeNull();
@@ -79,15 +79,16 @@ describe("批量导入 — 单行校验", () => {
     expect(normalized?.claimAmount).toBe(120000);
   });
 
-  it("缺必填ítems报错且 normalized 为 null", () => {
-    const { errors, normalized } = validateRow({ ...okRow, clientName: "", category: "瞎填" });
+  it("ç¼ºå¿…å¡«Ã­temsæŠ¥é”™ä¸” normalized ä¸º null", () => {
+    const { errors, normalized } = validateRow({ ...okRow, clientName: "", category: "çžŽå¡«" });
     expect(normalized).toBeNull();
     expect(errors.some((e) => e.includes("ClienteNombre"))).toBe(true);
-    expect(errors.some((e) => e.includes("Caso类型"))).toBe(true);
+    expect(errors.some((e) => e.includes("Casoç±»åž‹"))).toBe(true);
   });
 
-  it("收案Fecha格式错误报错", () => {
-    const { errors } = validateRow({ ...okRow, intakeDate: "2026年5月" });
-    expect(errors.some((e) => e.includes("收案Fecha"))).toBe(true);
+  it("æ”¶æ¡ˆFechaæ ¼å¼é”™è¯¯æŠ¥é”™", () => {
+    const { errors } = validateRow({ ...okRow, intakeDate: "2026å¹´5æœˆ" });
+    expect(errors.some((e) => e.includes("æ”¶æ¡ˆFecha"))).toBe(true);
   });
 });
+

@@ -1,9 +1,9 @@
-"use server";
+﻿"use server";
 
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { Prisma } from "@prisma/client";
-import { prisma } from "@/lib/prisma";
+import { getTenantPrisma } from "@/lib/tenant-prisma";
 import { requireSession } from "@/lib/auth/session";
 import { audit } from "@/server/audit";
 import { assertDocumentWritable } from "@/lib/archive/guard";
@@ -25,10 +25,11 @@ const documentCategorySchema = z.enum([
 const MAX_FILE_SIZE = 20 * 1024 * 1024; // 20MB
 
 /**
- * 上传材料。前端Aprobar Server Action 传 FormData，含 file（File）、metadata。
- * 加密分支：encrypted=true 时把文件用 AES-256-GCM 加密后写盘。
+ * Sube material. El front envia FormData con file y metadata.
+ * Si encrypted=true, el archivo se cifra con AES-256-GCM antes de guardar.
  */
 export async function uploadDocument(formData: FormData) {
+  const prisma = await getTenantPrisma();
   const session = await requireSession();
 
   const matterIdRaw = formData.get("matterId");
@@ -44,13 +45,13 @@ export async function uploadDocument(formData: FormData) {
   const sourcePartyRaw = formData.get("sourceParty");
   const file = formData.get("file");
 
-  if (!(file instanceof File)) throw new Error("缺少文件");
+  if (!(file instanceof File)) throw new Error("Falta el archivo");
 
   const matterId = typeof matterIdRaw === "string" && matterIdRaw ? matterIdRaw : null;
   const intakeId = typeof intakeIdRaw === "string" && intakeIdRaw ? intakeIdRaw : null;
-  if (!matterId && !intakeId) throw new Error("matterId 或 intakeId 至少需要一个");
+  if (!matterId && !intakeId) throw new Error("matterId o intakeId son obligatorios");
 
-  if (typeof name !== "string" || !name.trim()) throw new Error("材料Nombre必填");
+  if (typeof name !== "string" || !name.trim()) throw new Error("El nombre del material es obligatorio");
   const parsedCategory = documentCategorySchema.parse(category || "OTHER");
   const tags =
     typeof tagsRaw === "string" && tagsRaw
@@ -62,14 +63,14 @@ export async function uploadDocument(formData: FormData) {
   const folderId = typeof folderIdRaw === "string" && folderIdRaw ? folderIdRaw : null;
   const stageId = typeof stageIdRaw === "string" && stageIdRaw ? stageIdRaw : null;
 
-  // 校验归属对象存在
+  // Verifica que el objeto de pertenencia exista
   let folderName: string | null = null;
   if (matterId) {
     const matter = await prisma.matter.findUnique({
       where: { id: matterId, deletedAt: null },
       select: { id: true, status: true }
     });
-    if (!matter) throw new Error("Caso不存在");
+    if (!matter) throw new Error("El Caso no existe");
     await assertCanAccessMatter(session.user.id, session.user.role, matterId);
 
     if (folderId) {
@@ -78,26 +79,25 @@ export async function uploadDocument(formData: FormData) {
         select: { matterId: true, name: true }
       });
       if (!folder || folder.matterId !== matterId) {
-        throw new Error("目标卷宗yCaso不Coincidencia");
+        throw new Error("La carpeta destino y el Caso no coinciden");
       }
       folderName = folder.name;
     }
 
-    // v0.48: 归属环节必须属于本Caso（且y procedureId 一致时才可信）
+    // v0.48: La etapa debe pertenecer al mismo Caso
     if (stageId) {
       const stage = await prisma.matterStage.findUnique({
         where: { id: stageId },
         select: { procedureId: true, procedure: { select: { matterId: true } } }
       });
       if (!stage || stage.procedure.matterId !== matterId) {
-        throw new Error("归属环节yCaso不Coincidencia");
+        throw new Error("La etapa y el Caso no coinciden");
       }
       if (typeof procedureId === "string" && procedureId && stage.procedureId !== procedureId) {
-        throw new Error("归属环节y程序不Coincidencia");
+        throw new Error("La etapa y el procedimiento no coinciden");
       }
     }
 
-    // 归档后仅允许补传到 ARCHIVE 卷宗（Cerrar caso / 归档），由 guard 判定
     await assertDocumentWritable(matterId, { kind: "upload", folderName });
   }
   if (intakeId) {
@@ -105,8 +105,8 @@ export async function uploadDocument(formData: FormData) {
       where: { id: intakeId },
       select: { id: true, status: true, createdById: true, ownerUserId: true, coUserIds: true }
     });
-    if (!intake) throw new Error("收案记录不存在");
-    if (intake.status === "DECLINED") throw new Error("已拒绝的收案不可上传材料");
+    if (!intake) throw new Error("La admision no existe");
+    if (intake.status === "DECLINED") throw new Error("No se puede subir material a una admision rechazada");
     const uid = session.user.id;
     if (
       !isManager(session.user.role) &&
@@ -114,7 +114,7 @@ export async function uploadDocument(formData: FormData) {
       intake.ownerUserId !== uid &&
       !intake.coUserIds.includes(uid)
     ) {
-      throw new Error("无权向该收案上传材料");
+      throw new Error("Sin permiso para subir material a esta admision");
     }
   }
 
@@ -178,13 +178,13 @@ export async function uploadDocument(formData: FormData) {
     detail: { matterId, intakeId, name, encrypted, size: file.size }
   });
 
-  // v0.43 ítems4：写入Caso动态时间线（仅Caso文档）
+  // v0.43: escribe en la linea de tiempo del Caso
   if (matterId) {
     await prisma.timelineEvent.create({
       data: {
         matterId,
         eventType: "DOCUMENT_UPLOADED",
-        title: `上传材料：${name.trim()}`,
+        title: `Subida de material: ${name.trim()}`,
         occurredAt: new Date(),
         refType: "Document",
         refId: created.id
@@ -198,6 +198,7 @@ export async function uploadDocument(formData: FormData) {
 }
 
 export async function deleteDocument(id: string) {
+  const prisma = await getTenantPrisma();
   const session = await requireSession();
   const doc = await prisma.document.findUnique({ where: { id } });
   if (!doc) return { ok: false };
@@ -205,17 +206,17 @@ export async function deleteDocument(id: string) {
   if (doc.matterId) {
     await assertDocumentWritable(doc.matterId, { kind: "modify" });
     if (doc.uploadedById !== session.user.id) {
-      await assertCanLeadMatter(session.user.id, doc.matterId, "只能Eliminar自己上传的材料，或由本案主办/协办Eliminar");
+      await assertCanLeadMatter(session.user.id, session.user.role, doc.matterId, "Solo puede eliminar el material que subio, o el responsable/co-responsable");
     }
   } else if (
     doc.uploadedById !== session.user.id &&
     session.user.role !== "ADMIN" &&
     session.user.role !== "PRINCIPAL_LAWYER"
   ) {
-    throw new Error("只能Eliminar自己上传的材料");
+    throw new Error("Solo puede eliminar el material que subio");
   }
 
-  // 软Eliminar（保留文件以备审计），如需物理Eliminar走单独脚本
+  // Eliminacion logica (conserva archivo para auditoria)
   await prisma.document.update({
     where: { id },
     data: { deletedAt: new Date() }
@@ -235,9 +236,10 @@ export async function deleteDocument(id: string) {
 }
 
 export async function hardDeleteDocument(id: string) {
+  const prisma = await getTenantPrisma();
   const session = await requireSession();
   if (session.user.role !== "ADMIN") {
-    throw new Error("仅 ADMIN 可彻底Eliminar材料");
+    throw new Error("Solo el Administrador puede eliminar definitivamente");
   }
   const doc = await prisma.document.findUnique({ where: { id } });
   if (!doc) return { ok: false };
@@ -267,6 +269,7 @@ const docListQuerySchema = z.object({
 });
 
 export async function listAllDocuments(input: Partial<z.infer<typeof docListQuerySchema>> = {}) {
+  const prisma = await getTenantPrisma();
   const session = await requireSession();
   const query = docListQuerySchema.parse(input);
 
@@ -279,8 +282,8 @@ export async function listAllDocuments(input: Partial<z.infer<typeof docListQuer
     ...(query.search
       ? {
           OR: [
-            { name: { contains: query.search, mode: "insensitive" } },
-            { tags: { has: query.search } }
+            { name: { contains: query.search } },
+            { tags: { array_contains: query.search } }
           ]
         }
       : {})
@@ -297,17 +300,18 @@ export async function listAllDocuments(input: Partial<z.infer<typeof docListQuer
   });
 }
 
-// ============ v0.10: 文书Aprobación流程 ============
+// ============ v0.10: Flujo de aprobacion de documentos ============
 
 export async function submitDocumentForReview(id: string) {
+  const prisma = await getTenantPrisma();
   const session = await requireSession();
   const doc = await prisma.document.findUnique({ where: { id, deletedAt: null } });
-  if (!doc) throw new Error("材料不存在");
+  if (!doc) throw new Error("El material no existe");
   if (doc.matterId) {
     await assertCanAccessMatter(session.user.id, session.user.role, doc.matterId);
     await assertDocumentWritable(doc.matterId, { kind: "modify" });
   }
-  if (doc.status !== "DRAFT") throw new Error("只有草稿Estado的材料才能Enviar审核");
+  if (doc.status !== "DRAFT") throw new Error("Solo los materiales en borrador pueden enviarse a revision");
 
   await prisma.document.update({
     where: { id },
@@ -327,13 +331,14 @@ export async function submitDocumentForReview(id: string) {
 }
 
 export async function approveDocument(id: string) {
+  const prisma = await getTenantPrisma();
   const session = await requireSession();
   if (!isManager(session.user.role)) {
-    throw new Error("仅Administrar员或主办Abogado可Aprobación文书");
+    throw new Error("Solo el Administrador o Abogado Principal puede aprobar documentos");
   }
   const doc = await prisma.document.findUnique({ where: { id, deletedAt: null } });
-  if (!doc) throw new Error("材料不存在");
-  if (doc.status !== "PENDING_REVIEW") throw new Error("材料不在待审核Estado");
+  if (!doc) throw new Error("El material no existe");
+  if (doc.status !== "PENDING_REVIEW") throw new Error("El material no esta en revision");
 
   await prisma.document.update({
     where: { id },
@@ -357,13 +362,14 @@ export async function approveDocument(id: string) {
 }
 
 export async function rejectDocument(id: string, reason?: string) {
+  const prisma = await getTenantPrisma();
   const session = await requireSession();
   if (!isManager(session.user.role)) {
-    throw new Error("仅Administrar员或主办Abogado可Rechazar文书");
+    throw new Error("Solo el Administrador o Abogado Principal puede rechazar documentos");
   }
   const doc = await prisma.document.findUnique({ where: { id, deletedAt: null } });
-  if (!doc) throw new Error("材料不存在");
-  if (doc.status !== "PENDING_REVIEW") throw new Error("材料不在待审核Estado");
+  if (!doc) throw new Error("El material no existe");
+  if (doc.status !== "PENDING_REVIEW") throw new Error("El material no esta en revision");
 
   await prisma.document.update({
     where: { id },
@@ -387,12 +393,13 @@ export async function rejectDocument(id: string, reason?: string) {
 }
 
 export async function fileDocument(id: string) {
+  const prisma = await getTenantPrisma();
   const session = await requireSession();
   const doc = await prisma.document.findUnique({ where: { id, deletedAt: null } });
-  if (!doc) throw new Error("材料不存在");
+  if (!doc) throw new Error("El material no existe");
   if (doc.matterId)
     await assertCanAccessMatter(session.user.id, session.user.role, doc.matterId);
-  if (doc.status !== "APPROVED") throw new Error("只有已Aprobación的材料才能归档");
+  if (doc.status !== "APPROVED") throw new Error("Solo los materiales aprobados pueden archivarse");
 
   await prisma.document.update({
     where: { id },

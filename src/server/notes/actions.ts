@@ -1,7 +1,7 @@
-"use server";
+﻿"use server";
 
 import { z } from "zod";
-import { prisma } from "@/lib/prisma";
+import { getTenantPrisma } from "@/lib/tenant-prisma";
 import { requireSession } from "@/lib/auth/session";
 import { audit } from "@/server/audit";
 import { assertMatterWritable } from "@/lib/archive/guard";
@@ -15,7 +15,7 @@ const noteCreateSchema = z.object({
   channel: noteChannelSchema.default("OTHER"),
   withWhom: z.string().max(80).optional().or(z.literal("")),
   occurredAt: z.coerce.date().default(() => new Date()),
-  content: z.string().min(1, "内容不能为空").max(5000),
+  content: z.string().min(1, "El contenido no puede estar vacio").max(5000),
   tags: z.array(z.string().max(20)).default([])
 });
 
@@ -27,6 +27,7 @@ export type NoteCreateInput = z.infer<typeof noteCreateSchema>;
 export type NoteUpdateInput = z.infer<typeof noteUpdateSchema>;
 
 export async function createNote(input: NoteCreateInput) {
+  const prisma = await getTenantPrisma();
   const session = await requireSession();
   const data = noteCreateSchema.parse(input);
   await assertCanAccessMatter(session.user.id, session.user.role, data.matterId);
@@ -57,13 +58,14 @@ export async function createNote(input: NoteCreateInput) {
 }
 
 export async function updateNote(input: NoteUpdateInput) {
+  const prisma = await getTenantPrisma();
   const session = await requireSession();
   const data = noteUpdateSchema.parse(input);
 
   const existing = await prisma.note.findUnique({ where: { id: data.id } });
-  if (!existing) throw new Error("沟通记录不存在");
+  if (!existing) throw new Error("La nota no existe");
   if (existing.authorId !== session.user.id && session.user.role !== "ADMIN") {
-    throw new Error("只能Editar自己的沟通记录");
+    throw new Error("Solo puede editar sus propias notas");
   }
   await assertMatterWritable(existing.matterId);
 
@@ -90,11 +92,12 @@ export async function updateNote(input: NoteUpdateInput) {
 }
 
 export async function deleteNote(id: string) {
+  const prisma = await getTenantPrisma();
   const session = await requireSession();
   const existing = await prisma.note.findUnique({ where: { id } });
   if (!existing) return { ok: false };
   if (existing.authorId !== session.user.id && session.user.role !== "ADMIN") {
-    throw new Error("只能Eliminar自己的沟通记录");
+    throw new Error("Solo puede eliminar sus propias notas");
   }
   await assertMatterWritable(existing.matterId);
 
@@ -115,6 +118,7 @@ export async function deleteNote(id: string) {
 }
 
 export async function listNotes(matterId: string) {
+  const prisma = await getTenantPrisma();
   const session = await requireSession();
   await assertCanAccessMatter(session.user.id, session.user.role, matterId);
   return prisma.note.findMany({

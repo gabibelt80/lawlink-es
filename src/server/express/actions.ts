@@ -1,9 +1,9 @@
-"use server";
+﻿"use server";
 
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { Prisma } from "@prisma/client";
-import { prisma } from "@/lib/prisma";
+import { getTenantPrisma } from "@/lib/tenant-prisma";
 import { requireSession } from "@/lib/auth/session";
 import { audit } from "@/server/audit";
 import { assertMatterWritable } from "@/lib/archive/guard";
@@ -21,11 +21,10 @@ import {
 } from "./schemas";
 import { revalidateMatter } from "@/server/matters/route";
 
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-// 列表 / 查询
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// Listado / Consulta
 
 export async function listExpress(input?: z.input<typeof expressListFilterSchema>) {
+  const prisma = await getTenantPrisma();
   const session = await requireSession();
   const filter = expressListFilterSchema.parse(input ?? {});
 
@@ -44,11 +43,11 @@ export async function listExpress(input?: z.input<typeof expressListFilterSchema
       accessWhere,
       {
         OR: [
-          { trackingNo: { contains: filter.search, mode: "insensitive" } },
-          { purpose: { contains: filter.search, mode: "insensitive" } },
-          { recipient: { contains: filter.search, mode: "insensitive" } },
-          { matter: { internalCode: { contains: filter.search, mode: "insensitive" } } },
-          { matter: { title: { contains: filter.search, mode: "insensitive" } } }
+          { trackingNo: { contains: filter.search } },
+          { purpose: { contains: filter.search } },
+          { recipient: { contains: filter.search } },
+          { matter: { internalCode: { contains: filter.search } } },
+          { matter: { title: { contains: filter.search } } }
         ]
       }
     ];
@@ -65,6 +64,7 @@ export async function listExpress(input?: z.input<typeof expressListFilterSchema
 }
 
 export async function getExpress(id: string) {
+  const prisma = await getTenantPrisma();
   const session = await requireSession();
   await assertCanAccessExpressRecord(session.user.id, id);
   return prisma.expressTracking.findUnique({
@@ -77,28 +77,27 @@ export async function getExpress(id: string) {
 }
 
 async function assertCanAccessExpressRecord(userId: string, id: string) {
+  const prisma = await getTenantPrisma();
   const record = await prisma.expressTracking.findUnique({
     where: { id },
     select: { id: true, matterId: true, createdById: true }
   });
-  if (!record) throw new Error("快递记录不存在");
+  if (!record) throw new Error("El registro de envío no existe");
   if (record.matterId) {
     await assertCanAssociateMatter(userId, record.matterId);
     return record;
   }
-  if (record.createdById !== userId) throw new Error("无权Acciones此快递记录");
+  if (record.createdById !== userId) throw new Error("Sin permiso para acceder a este envío");
   return record;
 }
 
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-// Crear + 首次查询
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// Crear + primera consulta
 
 export async function createExpress(input: z.infer<typeof expressCreateSchema>) {
+  const prisma = await getTenantPrisma();
   const session = await requireSession();
   const data = expressCreateSchema.parse(input);
 
-  // 自动识别公司（如未指定）
   let companyCode = data.companyCode?.trim() || null;
   if (!companyCode) companyCode = detectCompany(data.trackingNo);
 
@@ -107,12 +106,11 @@ export async function createExpress(input: z.infer<typeof expressCreateSchema>) 
       where: { id: data.matterId },
       select: { id: true }
     });
-    if (!m) throw new Error("关联Caso不存在");
-    await assertCanAssociateMatter(session.user.id, data.matterId);
+    if (!m) throw new Error("El caso asociado no existe");
+    await assertCanAssociateMatter(session.user.id, session.user.role, data.matterId);
     await assertMatterWritable(data.matterId);
   }
 
-  // 先尝试一次跟踪（Error不阻塞）
   let lastState: string | null = null;
   let tracesJson: Prisma.InputJsonValue | undefined = undefined;
   let lastUpdateAt: Date | null = null;
@@ -124,7 +122,7 @@ export async function createExpress(input: z.infer<typeof expressCreateSchema>) 
       lastUpdateAt = new Date();
     }
   } catch {
-    // 静默：用户可以稍后手动刷新
+    // Silencioso: el usuario puede actualizar manualmente más tarde
   }
 
   const created = await prisma.expressTracking.create({
@@ -157,11 +155,10 @@ export async function createExpress(input: z.infer<typeof expressCreateSchema>) 
   return { ok: true, id: created.id, firstState: lastState };
 }
 
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-// 刷新
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// Actualizar seguimiento
 
 export async function refreshExpress(input: z.infer<typeof expressIdSchema>) {
+  const prisma = await getTenantPrisma();
   const session = await requireSession();
   const data = expressIdSchema.parse(input);
 
@@ -200,6 +197,7 @@ export async function refreshExpress(input: z.infer<typeof expressIdSchema>) {
 }
 
 export async function deleteExpress(input: z.infer<typeof expressIdSchema>) {
+  const prisma = await getTenantPrisma();
   const session = await requireSession();
   const data = expressIdSchema.parse(input);
 
@@ -219,24 +217,24 @@ export async function deleteExpress(input: z.infer<typeof expressIdSchema>) {
   return { ok: true };
 }
 
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-// 配置（仅 ADMIN）
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// Configuración (solo ADMIN)
 
 async function requireAdmin() {
   const session = await requireSession();
   if (session.user.role !== "ADMIN") {
-    throw new Error("仅Administrar员可修改快递接入配置");
+    throw new Error("Solo el administrador puede modificar la configuración de envíos");
   }
   return session;
 }
 
 export async function getExpressSettingsPublic() {
+  const prisma = await getTenantPrisma();
   await requireAdmin();
   return readPublicExpressSettings();
 }
 
 export async function saveExpressSettingsAction(input: z.infer<typeof expressSettingsSaveSchema>) {
+  const prisma = await getTenantPrisma();
   const session = await requireAdmin();
   const data = expressSettingsSaveSchema.parse(input);
 

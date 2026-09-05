@@ -1,8 +1,8 @@
-"use server";
+﻿"use server";
 
 import { z } from "zod";
 import { Prisma } from "@prisma/client";
-import { prisma } from "@/lib/prisma";
+import { getTenantPrisma } from "@/lib/tenant-prisma";
 import { requireSession } from "@/lib/auth/session";
 import { audit } from "@/server/audit";
 import { assertMatterWritable } from "@/lib/archive/guard";
@@ -16,12 +16,13 @@ import {
 } from "./schemas";
 import { revalidateMatter } from "@/server/matters/route";
 
-/** 判断当前用户是否能Editar该Caso的卷宗结构（仅本案 LEAD / CO_LEAD） */
+/** Verifica si el usuario puede editar la estructura de carpetas del Caso */
 async function requireFolderEditor(matterId: string, session: { user: { id: string; role: string } }) {
-  await assertCanLeadMatter(session.user.id, matterId, "仅Caso主办/协办可Administrar卷宗");
+  await assertCanLeadMatter(session.user.id, session.user.role, matterId, "Solo el responsable/co-responsable puede administrar carpetas");
 }
 
 export async function listFoldersByMatter(matterId: string) {
+  const prisma = await getTenantPrisma();
   const session = await requireSession();
   await assertCanAccessMatter(session.user.id, session.user.role, matterId);
   return prisma.documentFolder.findMany({
@@ -34,12 +35,13 @@ export async function listFoldersByMatter(matterId: string) {
 }
 
 export async function createFolder(input: z.infer<typeof folderCreateSchema>) {
+  const prisma = await getTenantPrisma();
   const session = await requireSession();
   const data = folderCreateSchema.parse(input);
   await requireFolderEditor(data.matterId, session);
   await assertMatterWritable(data.matterId);
 
-  // 计算 orderIndex（追加到末尾）
+  // Calcula orderIndex (agrega al final)
   const last = await prisma.documentFolder.findFirst({
     where: { matterId: data.matterId },
     orderBy: { orderIndex: "desc" },
@@ -59,7 +61,7 @@ export async function createFolder(input: z.infer<typeof folderCreateSchema>) {
     });
   } catch (e) {
     if (e instanceof Prisma.PrismaClientKnownRequestError && e.code === "P2002") {
-      throw new Error(`已有同名卷宗「${data.name.trim()}」`);
+      throw new Error(`Ya existe una carpeta llamada "${data.name.trim()}"`);
     }
     throw e;
   }
@@ -77,6 +79,7 @@ export async function createFolder(input: z.infer<typeof folderCreateSchema>) {
 }
 
 export async function renameFolder(input: z.infer<typeof folderRenameSchema>) {
+  const prisma = await getTenantPrisma();
   const session = await requireSession();
   const data = folderRenameSchema.parse(input);
 
@@ -84,7 +87,7 @@ export async function renameFolder(input: z.infer<typeof folderRenameSchema>) {
     where: { id: data.id },
     select: { id: true, matterId: true }
   });
-  if (!folder) throw new Error("卷宗不存在");
+  if (!folder) throw new Error("La carpeta no existe");
   await requireFolderEditor(folder.matterId, session);
   await assertMatterWritable(folder.matterId);
 
@@ -95,7 +98,7 @@ export async function renameFolder(input: z.infer<typeof folderRenameSchema>) {
     });
   } catch (e) {
     if (e instanceof Prisma.PrismaClientKnownRequestError && e.code === "P2002") {
-      throw new Error(`已有同名卷宗「${data.name.trim()}」`);
+      throw new Error(`Ya existe una carpeta llamada "${data.name.trim()}"`);
     }
     throw e;
   }
@@ -113,6 +116,7 @@ export async function renameFolder(input: z.infer<typeof folderRenameSchema>) {
 }
 
 export async function deleteFolder(input: z.infer<typeof folderDeleteSchema>) {
+  const prisma = await getTenantPrisma();
   const session = await requireSession();
   const data = folderDeleteSchema.parse(input);
 
@@ -120,12 +124,12 @@ export async function deleteFolder(input: z.infer<typeof folderDeleteSchema>) {
     where: { id: data.id },
     select: { id: true, matterId: true, isDefault: true, _count: { select: { documents: true } } }
   });
-  if (!folder) throw new Error("卷宗不存在");
-  if (folder.isDefault) throw new Error("默认卷宗不可Eliminar，只能改名");
+  if (!folder) throw new Error("La carpeta no existe");
+  if (folder.isDefault) throw new Error("La carpeta por defecto no se puede eliminar, solo renombrar");
   await requireFolderEditor(folder.matterId, session);
   await assertMatterWritable(folder.matterId);
 
-  // 卷宗内的文档不删，移到"散件"（folderId = null）
+  // Los documentos dentro de la carpeta no se eliminan, se mueven a "sueltos" (folderId = null)
   await prisma.$transaction([
     prisma.document.updateMany({
       where: { folderId: data.id },
@@ -147,6 +151,7 @@ export async function deleteFolder(input: z.infer<typeof folderDeleteSchema>) {
 }
 
 export async function reorderFolders(input: z.infer<typeof folderReorderSchema>) {
+  const prisma = await getTenantPrisma();
   const session = await requireSession();
   const data = folderReorderSchema.parse(input);
   await requireFolderEditor(data.matterId, session);
@@ -166,6 +171,7 @@ export async function reorderFolders(input: z.infer<typeof folderReorderSchema>)
 }
 
 export async function moveDocumentToFolder(input: z.infer<typeof moveDocumentToFolderSchema>) {
+  const prisma = await getTenantPrisma();
   const session = await requireSession();
   const data = moveDocumentToFolderSchema.parse(input);
 
@@ -173,16 +179,16 @@ export async function moveDocumentToFolder(input: z.infer<typeof moveDocumentToF
     where: { id: data.documentId },
     select: { id: true, matterId: true }
   });
-  if (!doc || !doc.matterId) throw new Error("文档不存在或未归属Caso");
+  if (!doc || !doc.matterId) throw new Error("El documento no existe o no pertenece a un Caso");
 
-  // 校验目标卷宗y文档同Caso
+  // Verifica que carpeta destino y documento sean del mismo Caso
   if (data.folderId) {
     const folder = await prisma.documentFolder.findUnique({
       where: { id: data.folderId },
       select: { matterId: true }
     });
     if (!folder || folder.matterId !== doc.matterId) {
-      throw new Error("目标卷宗y文档不属于同一Caso");
+      throw new Error("La carpeta destino y el documento no pertenecen al mismo Caso");
     }
   }
   await requireFolderEditor(doc.matterId, session);

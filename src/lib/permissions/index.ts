@@ -1,14 +1,14 @@
-import { Prisma } from "@prisma/client";
+﻿import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 
-/** ADMIN 或 PRINCIPAL_LAWYER — Administrar层，看所有数据 */
+/** ADMIN æˆ– PRINCIPAL_LAWYER â€” Administrarå±‚ï¼Œçœ‹æ‰€æœ‰æ•°æ® */
 export function isManager(role: string): boolean {
   return role === "ADMIN" || role === "PRINCIPAL_LAWYER";
 }
 
-// ============ Caso可见性 ============
+// ============ Casoå¯è§æ€§ ============
 
-/** 列表查询用：Volver Prisma where 片段，AND 到现有 where */
+/** åˆ—è¡¨æŸ¥è¯¢ç”¨ï¼šVolver Prisma where ç‰‡æ®µï¼ŒAND åˆ°çŽ°æœ‰ where */
 export function matterVisibilityFilter(
   userId: string,
   role: string
@@ -26,7 +26,7 @@ export function matterVisibilityFilter(
   return { members: { some: { userId } } };
 }
 
-/** Acciones/关联Caso用：不因 ADMIN / PRINCIPAL_LAWYER / FINANCE Rol放大全所范围 */
+/** Acciones/å…³è”Casoç”¨ï¼šä¸å›  ADMIN / PRINCIPAL_LAWYER / FINANCE Rolæ”¾å¤§å…¨æ‰€èŒƒå›´ */
 export function matterAssociationFilter(userId: string): Prisma.MatterWhereInput {
   return {
     OR: [
@@ -36,7 +36,7 @@ export function matterAssociationFilter(userId: string): Prisma.MatterWhereInput
   };
 }
 
-/** 单条访问断言：查不到或无权限一律 throw "Caso不存在"（避免泄露 ID） */
+/** å•æ¡è®¿é—®æ–­è¨€ï¼šæŸ¥ä¸åˆ°æˆ–æ— æƒé™ä¸€å¾‹ throw "Casoä¸å­˜åœ¨"ï¼ˆé¿å…æ³„éœ² IDï¼‰ */
 export async function assertCanAccessMatter(
   userId: string,
   role: string,
@@ -47,7 +47,7 @@ export async function assertCanAccessMatter(
       where: { id: matterId, deletedAt: null },
       select: { id: true }
     });
-    if (!exists) throw new Error("Caso不存在");
+    if (!exists) throw new Error("Casoä¸å­˜åœ¨");
     return;
   }
   const row = await prisma.matter.findFirst({
@@ -58,10 +58,10 @@ export async function assertCanAccessMatter(
     },
     select: { id: true }
   });
-  if (!row) throw new Error("Caso不存在");
+  if (!row) throw new Error("Casoä¸å­˜åœ¨");
 }
 
-/** Acciones/关联断言：只允许主办或Caso成员，不因AdministrarRol放开 */
+/** Acciones/å…³è”æ–­è¨€ï¼šåªå…è®¸ä¸»åŠžæˆ–Casoæˆå‘˜ï¼Œä¸å› AdministrarRolæ”¾å¼€ */
 export async function assertCanAssociateMatter(
   userId: string,
   matterId: string
@@ -74,10 +74,10 @@ export async function assertCanAssociateMatter(
     },
     select: { id: true }
   });
-  if (!row) throw new Error("Caso不存在或无权关联");
+  if (!row) throw new Error("Casoä¸å­˜åœ¨æˆ–æ— æƒå…³è”");
 }
 
-/** Caso处理断言：只允许主办或Caso成员，不因AdministrarRol放开 */
+/** Casoå¤„ç†æ–­è¨€ï¼šåªå…è®¸ä¸»åŠžæˆ–Casoæˆå‘˜ï¼Œä¸å› AdministrarRolæ”¾å¼€ */
 export async function assertCanHandleMatter(
   userId: string,
   matterId: string
@@ -90,14 +90,14 @@ export async function assertCanHandleMatter(
     },
     select: { id: true }
   });
-  if (!row) throw new Error("Caso不存在或无权处理");
+  if (!row) throw new Error("Casoä¸å­˜åœ¨æˆ–æ— æƒå¤„ç†");
 }
 
-/** 主办/协办断言：用于归档、团队、核心信息、文书生成etc.较敏感处理 */
+/** ä¸»åŠž/ååŠžæ–­è¨€ï¼šç”¨äºŽå½’æ¡£ã€å›¢é˜Ÿã€æ ¸å¿ƒä¿¡æ¯ã€æ–‡ä¹¦ç”Ÿæˆetc.è¾ƒæ•æ„Ÿå¤„ç† */
 export async function assertCanLeadMatter(
   userId: string,
   matterId: string,
-  message = "仅Caso主办/协办可Acciones"
+  message = "ä»…Casoä¸»åŠž/ååŠžå¯Acciones"
 ): Promise<void> {
   const row = await prisma.matter.findFirst({
     where: {
@@ -113,11 +113,11 @@ export async function assertCanLeadMatter(
   if (!row) throw new Error(message);
 }
 
-/** 当前主办Abogado断言：用于变更承办团队、EliminarCasoetc.所有权级Acciones */
+/** å½“å‰ä¸»åŠžAbogadoæ–­è¨€ï¼šç”¨äºŽå˜æ›´æ‰¿åŠžå›¢é˜Ÿã€EliminarCasoetc.æ‰€æœ‰æƒçº§Acciones */
 export async function assertCanOwnMatter(
   userId: string,
   matterId: string,
-  message = "仅Caso主办Abogado可Acciones"
+  message = "ä»…Casoä¸»åŠžAbogadoå¯Acciones"
 ): Promise<void> {
   const row = await prisma.matter.findFirst({
     where: {
@@ -130,7 +130,7 @@ export async function assertCanOwnMatter(
   if (!row) throw new Error(message);
 }
 
-/** 修改断言：只允许主办或Caso成员，不因AdministrarRol放开 */
+/** ä¿®æ”¹æ–­è¨€ï¼šåªå…è®¸ä¸»åŠžæˆ–Casoæˆå‘˜ï¼Œä¸å› AdministrarRolæ”¾å¼€ */
 export async function assertCanModifyMatter(
   userId: string,
   _role: string,
@@ -144,10 +144,10 @@ export async function assertCanModifyMatter(
     },
     select: { id: true }
   });
-  if (!matter) throw new Error("Caso不存在");
+  if (!matter) throw new Error("Casoä¸å­˜åœ¨");
 }
 
-// ============ 收案可见性 ============
+// ============ æ”¶æ¡ˆå¯è§æ€§ ============
 
 export function intakeVisibilityFilter(
   userId: string,
@@ -158,14 +158,14 @@ export function intakeVisibilityFilter(
     OR: [
       { createdById: userId },
       { ownerUserId: userId },
-      { coUserIds: { has: userId } }
+      { coUserIds: { array_contains: userId } }
     ]
   };
 }
 
-// ============ Cliente可见性 ============
+// ============ Clienteå¯è§æ€§ ============
 
-/** ClienteAprobar关联的Caso判断可见性；manager/finance 看Ver todos */
+/** ClienteAprobarå…³è”çš„Casoåˆ¤æ–­å¯è§æ€§ï¼›manager/finance çœ‹Ver todos */
 export function clientVisibilityFilter(
   userId: string,
   role: string
@@ -179,10 +179,11 @@ export function clientVisibilityFilter(
   };
 }
 
-// ============ 通用断言 ============
+// ============ é€šç”¨æ–­è¨€ ============
 
 export function assertManagerOrRole(role: string, ...allowed: string[]): void {
   if (isManager(role)) return;
   if (allowed.includes(role)) return;
-  throw new Error("权限不足");
+  throw new Error("æƒé™ä¸è¶³");
 }
+

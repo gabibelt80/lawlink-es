@@ -21,8 +21,8 @@ import {
 import { normalizeUploadedFilename } from "@/lib/filename";
 import {
   type SealRequestRow,
-  SEAL_STATUS_CN,
-  SEAL_TYPE_CN,
+  SEAL_STATUS_ES,
+  SEAL_TYPE_ES,
 } from "./seal-types";
 
 type Action = "detail" | "approve" | "reject" | "stamp" | "cancel";
@@ -76,10 +76,10 @@ function SealDetailDialog({
         </DialogHeader>
         <div className="min-w-0 space-y-2 rounded border border-border bg-muted/20 p-3 text-[12px]">
           <Field k="Número de serie" v={row.code} mono />
-          <Field k="Estado" v={SEAL_STATUS_CN[row.status] ?? row.status} />
+          <Field k="Estado" v={SEAL_STATUS_ES[row.status] ?? row.status} />
           <Field
             k="Tipo de sello"
-            v={SEAL_TYPE_CN[row.sealType] ?? row.sealType}
+            v={SEAL_TYPE_ES[row.sealType] ?? row.sealType}
           />
           <Field k="Solicitante" v={row.requestedBy.name} />
           {row.matter && (
@@ -178,17 +178,17 @@ function ApprovalDialog({
 
   const submit = () => {
     if (mode === "reject" && !note.trim()) {
-      toast.error("Rechazar需要写明Motivo");
+      toast.error("Para rechazar es necesario escribir el motivo");
       return;
     }
     startTransition(async () => {
       try {
         if (mode === "approve") {
           await approveSealRequest({ id: row.id, note: note.trim() });
-          toast.success("已批准");
+          toast.success("Aprobada");
         } else {
           await rejectSealRequest({ id: row.id, reason: note.trim() });
-          toast.success("Rechazado");
+          toast.success("Rechazada");
         }
         onClose();
       } catch (e) {
@@ -201,22 +201,22 @@ function ApprovalDialog({
     <Dialog open onOpenChange={(o) => !o && onClose()}>
       <DialogContent className="max-h-[88vh] w-[92vw] max-w-2xl overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>AprobaciónSolicitud de sello</DialogTitle>
+          <DialogTitle>Aprobación de solicitud de sello</DialogTitle>
         </DialogHeader>
         <div className="min-w-0 space-y-2 rounded border border-border bg-muted/20 p-3 text-[12px]">
-          <Field k="流水号" v={row.code} mono />
-          <Field k="章种类" v={SEAL_TYPE_CN[row.sealType] ?? row.sealType} />
-          <Field k="申请人" v={row.requestedBy.name} />
+          <Field k="N° de serie" v={row.code} mono />
+          <Field k="Tipo de sello" v={SEAL_TYPE_ES[row.sealType] ?? row.sealType} />
+          <Field k="Solicitante" v={row.requestedBy.name} />
           {row.matter && (
             <Field
-              k="关联Caso"
+              k="Caso relacionado"
               v={`${row.matter.internalCode} ${row.matter.title}`}
             />
           )}
-          <Field k="文件标题" v={row.documentTitle} />
-          <Field k="事由" v={row.purpose} />
-          <Field k="页数 / 份数" v={`${row.pageCount} 页 × ${row.copies} 份`} />
-          {row.requireCrossPageSeal && <Field k="骑缝章" v="是" />}
+          <Field k="Título del documento" v={row.documentTitle} />
+          <Field k="Motivo" v={row.purpose} />
+          <Field k="Páginas / copias" v={`${row.pageCount} páginas × ${row.copies} copias`} />
+          {row.requireCrossPageSeal && <Field k="Sello transversal" v="Sí" />}
           {row.urgency === "URGENT" && (
             <p className="flex items-center gap-1 text-destructive">
               <AlertOctagon className="h-3 w-3" />
@@ -233,7 +233,7 @@ function ApprovalDialog({
             >
               <FileText className="mt-0.5 h-3 w-3 shrink-0" />
               <span className="min-w-0">
-                <span>下载待盖章稿</span>
+                <span>Descargar borrador para estampado</span>
                 <span className="block truncate text-[11px]">
                   ({draftDocName})
                 </span>
@@ -265,7 +265,7 @@ function ApprovalDialog({
           value={note}
           onChange={(e) => setNote(e.target.value)}
           placeholder={
-            mode === "approve" ? "Aprobación意见 (可选)" : "RechazarMotivo (必填)"
+            mode === "approve" ? "Comentario de aprobación (opcional)" : "Motivo de rechazo (obligatorio)"
           }
           rows={2}
           className="mt-2 text-[12px]"
@@ -297,11 +297,11 @@ function StampDialog({
 
   const submit = () => {
     if (!file) {
-      toast.error("请上传盖章后扫描件");
+      toast.error("Subí el escaneo posterior al estampado");
       return;
     }
     if (!isPdfFile(file)) {
-      toast.error("需上传 pdf 格式文件");
+      toast.error("Es necesario subir un archivo PDF");
       return;
     }
     const fd = new FormData();
@@ -313,7 +313,7 @@ function StampDialog({
         toast.success("Completado");
         onClose();
       } catch (e) {
-        toast.error(e instanceof Error ? e.message : "EnviarError");
+        toast.error(e instanceof Error ? e.message : "Error al enviar");
       }
     });
   };
@@ -322,10 +322,10 @@ function StampDialog({
     <Dialog open onOpenChange={(o) => !o && onClose()}>
       <DialogContent className="max-w-md">
         <DialogHeader>
-          <DialogTitle>回填盖章后扫描件</DialogTitle>
+          <DialogTitle>Completar escaneo posterior al estampado</DialogTitle>
         </DialogHeader>
         <p className="text-[12px] text-muted-foreground">
-          {row.code} · {SEAL_TYPE_CN[row.sealType]} · {row.documentTitle}
+          {row.code} · {SEAL_TYPE_ES[row.sealType]} · {row.documentTitle}
         </p>
         <label className="mt-3 flex cursor-pointer items-center gap-2 rounded border border-dashed border-border px-3 py-4 text-[12px] text-muted-foreground hover:bg-muted/30">
           <Paperclip className="h-3.5 w-3.5" />
@@ -335,7 +335,7 @@ function StampDialog({
               {file.name}
             </span>
           ) : (
-            "选择 PDF 文件"
+            "Seleccionar archivo PDF"
           )}
           <input
             type="file"
@@ -344,7 +344,7 @@ function StampDialog({
             onChange={(e) => {
               const picked = e.target.files?.[0] ?? null;
               if (picked && !isPdfFile(picked)) {
-                toast.error("需上传 pdf 格式文件");
+                toast.error("Es necesario subir un archivo PDF");
                 e.target.value = "";
                 setFile(null);
                 return;
@@ -379,10 +379,10 @@ function CancelDialog({
     startTransition(async () => {
       try {
         await cancelSealRequest({ id: row.id });
-        toast.success("已撤销");
+        toast.success("Retirada");
         onClose();
       } catch (e) {
-        toast.error(e instanceof Error ? e.message : "撤销Error");
+        toast.error(e instanceof Error ? e.message : "Error al retirar");
       }
     });
   };
@@ -390,10 +390,10 @@ function CancelDialog({
     <Dialog open onOpenChange={(o) => !o && onClose()}>
       <DialogContent className="max-w-sm">
         <DialogHeader>
-          <DialogTitle>撤销Solicitud de sello</DialogTitle>
+          <DialogTitle>Retirar solicitud de sello</DialogTitle>
         </DialogHeader>
         <p className="text-[12px] text-muted-foreground">
-          Aceptar撤销 {row.code} ？
+          ¿Confirmar retiro de {row.code}?
         </p>
         <DialogFooter>
           <Button variant="outline" onClick={onClose}>
@@ -401,7 +401,7 @@ function CancelDialog({
           </Button>
           <Button variant="destructive" onClick={submit} disabled={pending}>
             {pending && <Loader2 className="mr-1 h-3.5 w-3.5 animate-spin" />}
-            Aceptar撤销
+            Confirmar retiro
           </Button>
         </DialogFooter>
       </DialogContent>

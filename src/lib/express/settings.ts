@@ -1,49 +1,29 @@
-/**
- * Configuración de servicios de mensajería argentinos
- * 
- * SystemSetting con clave `expressSettings`, valor JSON cifrado:
+﻿/**
+ * v0.9.3 å¿«é€’ API é…ç½®ï¼ˆåŒ providerï¼šå¿«é€’é¸Ÿ ä¸» + å¿«é€’100 å¤‡ï¼‰
+ *
+ * SystemSetting å• key `expressSettings`ï¼Œvalueï¼š
  *   {
- *     andreani: { apiKeyCipher: {ct,iv,tag} },
- *     correoArgentino: { apiKeyCipher: {ct,iv,tag} }
+ *     kdniao: { ebusinessId, appKeyCipher: {ct,iv,tag} },
+ *     kuaidi100: { customer, keyCipher: {ct,iv,tag} }
  *   }
+ *
+ * appKey/key ç”¨ storage/crypto åŒå¯†é’¥åŠ å¯†ã€‚
  */
 import { prisma } from "@/lib/prisma";
 import { encryptBuffer, decryptBuffer } from "@/lib/storage/crypto";
-export async function readPublicExpressSettings(): Promise<{
-  andreani: { configured: boolean; apiKeyMasked: string };
-  correoArgentino: { configured: boolean; apiKeyMasked: string };
-}> {
-  const s = await readStoredExpressSettings();
-  const andreaApiKey = dec(s.andreani.apiKeyCipher);
-  const correoApiKey = dec(s.correoArgentino.apiKeyCipher);
-  return {
-    andreani: {
-      configured: !!andreaApiKey,
-      apiKeyMasked: andreaApiKey ? `${andreaApiKey.slice(0, 4)}••••${andreaApiKey.slice(-4)}` : ""
-    },
-    correoArgentino: {
-      configured: !!correoApiKey,
-      apiKeyMasked: correoApiKey ? `${correoApiKey.slice(0, 4)}••••${correoApiKey.slice(-4)}` : ""
-    }
-  };
-}
 
 const EXPRESS_SETTINGS_KEY = "expressSettings";
 
 type Cipher = { ct: string; iv: string; tag: string };
 
 export interface StoredExpressSettings {
-  andreani: { apiKeyCipher: Cipher | null };
-  correoArgentino: { apiKeyCipher: Cipher | null };
+  kdniao: { ebusinessId: string; appKeyCipher: Cipher | null };
+  kuaidi100: { customer: string; keyCipher: Cipher | null };
 }
 
 export interface ResolvedExpressSettings {
-  andreani: { apiKey: string; configured: boolean };
-  correoArgentino: { apiKey: string; configured: boolean };
-  andreaConfigured: boolean;
-  correoConfigured: boolean;
-  andreaApiKey: string;
-  correoApiKey: string;
+  kdniao: { ebusinessId: string; appKey: string; configured: boolean };
+  kuaidi100: { customer: string; key: string; configured: boolean };
 }
 
 function enc(plain: string): Cipher | null {
@@ -65,56 +45,81 @@ export async function readStoredExpressSettings(): Promise<StoredExpressSettings
   const row = await prisma.systemSetting.findUnique({ where: { key: EXPRESS_SETTINGS_KEY } });
   const v = (row?.value as Partial<StoredExpressSettings> | null) ?? {};
   return {
-    andreani: {
-      apiKeyCipher: v.andreani?.apiKeyCipher ?? null
+    kdniao: {
+      ebusinessId: v.kdniao?.ebusinessId ?? "",
+      appKeyCipher: v.kdniao?.appKeyCipher ?? null
     },
-    correoArgentino: {
-      apiKeyCipher: v.correoArgentino?.apiKeyCipher ?? null
+    kuaidi100: {
+      customer: v.kuaidi100?.customer ?? "",
+      keyCipher: v.kuaidi100?.keyCipher ?? null
+    }
+  };
+}
+
+export async function readPublicExpressSettings(): Promise<{
+  kdniao: { ebusinessId: string; configured: boolean; appKeyMasked: string };
+  kuaidi100: { customer: string; configured: boolean; keyMasked: string };
+}> {
+  const s = await readStoredExpressSettings();
+  const kdniaoKey = dec(s.kdniao.appKeyCipher);
+  const kd100Key = dec(s.kuaidi100.keyCipher);
+  return {
+    kdniao: {
+      ebusinessId: s.kdniao.ebusinessId,
+      configured: !!(s.kdniao.ebusinessId && kdniaoKey),
+      appKeyMasked: kdniaoKey ? `${kdniaoKey.slice(0, 4)}â€¢â€¢â€¢â€¢${kdniaoKey.slice(-4)}` : ""
+    },
+    kuaidi100: {
+      customer: s.kuaidi100.customer,
+      configured: !!(s.kuaidi100.customer && kd100Key),
+      keyMasked: kd100Key ? `${kd100Key.slice(0, 4)}â€¢â€¢â€¢â€¢${kd100Key.slice(-4)}` : ""
     }
   };
 }
 
 export async function getExpressSettings(): Promise<ResolvedExpressSettings> {
   const s = await readStoredExpressSettings();
-  const andreaApiKey = dec(s.andreani.apiKeyCipher);
-  const correoApiKey = dec(s.correoArgentino.apiKeyCipher);
+  const kdniaoKey = dec(s.kdniao.appKeyCipher);
+  const kd100Key = dec(s.kuaidi100.keyCipher);
   return {
-    andreani: {
-      apiKey: andreaApiKey,
-      configured: !!andreaApiKey
+    kdniao: {
+      ebusinessId: s.kdniao.ebusinessId,
+      appKey: kdniaoKey,
+      configured: !!(s.kdniao.ebusinessId && kdniaoKey)
     },
-    correoArgentino: {
-      apiKey: correoApiKey,
-      configured: !!correoApiKey
-    },
-    andreaConfigured: !!andreaApiKey,
-    correoConfigured: !!correoApiKey,
-    andreaApiKey,
-    correoApiKey
+    kuaidi100: {
+      customer: s.kuaidi100.customer,
+      key: kd100Key,
+      configured: !!(s.kuaidi100.customer && kd100Key)
+    }
   };
 }
 
 export async function saveExpressSettings(input: {
-  andreaniApiKey?: string;
-  andreaniClearKey?: boolean;
-  correoArgentinoApiKey?: string;
-  correoArgentinoClearKey?: boolean;
+  kdniaoEbusinessId?: string;
+  kdniaoAppKey?: string;
+  kdniaoClearKey?: boolean;
+  kuaidi100Customer?: string;
+  kuaidi100Key?: string;
+  kuaidi100ClearKey?: boolean;
 }) {
   const cur = await readStoredExpressSettings();
   const next: StoredExpressSettings = {
-    andreani: {
-      apiKeyCipher: input.andreaniClearKey
+    kdniao: {
+      ebusinessId: input.kdniaoEbusinessId ?? cur.kdniao.ebusinessId,
+      appKeyCipher: input.kdniaoClearKey
         ? null
-        : input.andreaniApiKey
-          ? enc(input.andreaniApiKey)
-          : cur.andreani.apiKeyCipher
+        : input.kdniaoAppKey
+          ? enc(input.kdniaoAppKey)
+          : cur.kdniao.appKeyCipher
     },
-    correoArgentino: {
-      apiKeyCipher: input.correoArgentinoClearKey
+    kuaidi100: {
+      customer: input.kuaidi100Customer ?? cur.kuaidi100.customer,
+      keyCipher: input.kuaidi100ClearKey
         ? null
-        : input.correoArgentinoApiKey
-          ? enc(input.correoArgentinoApiKey)
-          : cur.correoArgentino.apiKeyCipher
+        : input.kuaidi100Key
+          ? enc(input.kuaidi100Key)
+          : cur.kuaidi100.keyCipher
     }
   };
 
@@ -126,3 +131,4 @@ export async function saveExpressSettings(input: {
 
   return { ok: true };
 }
+

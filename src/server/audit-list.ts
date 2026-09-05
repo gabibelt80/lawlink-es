@@ -1,19 +1,19 @@
-"use server";
+﻿"use server";
 
 /**
- * v0.22: AuditLog 查询（admin-only 审计回放）
+ * v0.22: Consulta de Auditoria (acceso para administradores)
  */
-import { prisma } from "@/lib/prisma";
+import { getTenantPrisma } from "@/lib/tenant-prisma";
 import { requireSession } from "@/lib/auth/session";
 
 export type AuditFilter = {
   userId?: string;
   action?: string;
   targetType?: string;
-  startStr?: string; // yyyy-MM-dd
+  startStr?: string;
   endStr?: string;
   limit?: number;
-  cursor?: string; // 上一页最后一条 id
+  cursor?: string;
 };
 
 export type AuditEntry = {
@@ -35,7 +35,7 @@ export type AuditListResult = {
 async function requireAdmin() {
   const session = await requireSession();
   if (session.user.role !== "ADMIN" && session.user.role !== "PRINCIPAL_LAWYER") {
-    throw new Error("仅Administrar员 / 主任Abogado可访问审计日志");
+    throw new Error("Solo el Administrador / Abogado Principal puede acceder a la auditoria");
   }
   return session;
 }
@@ -49,6 +49,7 @@ function parseDate(s: string | undefined): Date | undefined {
 
 export async function listAuditLogs(filter: AuditFilter): Promise<AuditListResult> {
   await requireAdmin();
+  const prisma = await getTenantPrisma();
   const limit = Math.min(Math.max(filter.limit ?? 50, 1), 200);
 
   const where: Record<string, unknown> = {};
@@ -94,16 +95,13 @@ export async function listAuditLogs(filter: AuditFilter): Promise<AuditListResul
   };
 }
 
-/**
- * 拉所有出现过的 action / targetType / user，用于前端筛选下拉。
- * 直接 distinct 查询，结果数有限（业务里 action 类型有限）。
- */
 export async function getAuditFilterOptions(): Promise<{
   actions: string[];
   targetTypes: string[];
   users: { id: string; name: string }[];
 }> {
   await requireAdmin();
+  const prisma = await getTenantPrisma();
   const [actionsRaw, targetsRaw, users] = await Promise.all([
     prisma.auditLog.findMany({
       select: { action: true },

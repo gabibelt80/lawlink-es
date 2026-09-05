@@ -119,7 +119,7 @@ export function ClientsTable({
                     </span>
                     {c._count.intakes > 0 && (
                       <span className="ml-2 font-mono text-[10.5px] text-muted-foreground tabular">
-                        +{c._count.intakes} 收案
+                        +{c._count.intakes} admisiones
                       </span>
                     )}
                   </td>
@@ -195,7 +195,7 @@ export function ClientsTable({
                     {c.phone}
                   </span>
                 )}
-                <span className="ll-stat">{c._count.matters} 个Caso</span>
+                <span className="ll-stat">{c._count.matters} casos</span>
               </div>
               {c.tags.length > 0 && (
                 <div className="mt-1.5 flex flex-wrap gap-1">

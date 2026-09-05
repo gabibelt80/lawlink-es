@@ -1,4 +1,4 @@
-import { createCipheriv, createDecipheriv, randomBytes, createHash } from "node:crypto";
+﻿import { createCipheriv, createDecipheriv, randomBytes, createHash } from "node:crypto";
 
 const ALGORITHM = "AES-256-GCM" as const;
 const KEY_LENGTH = 32; // 256 bit
@@ -11,12 +11,12 @@ function getKey(): Buffer {
   if (cachedKey) return cachedKey;
   const raw = process.env.STORAGE_ENCRYPTION_KEY;
   if (!raw) {
-    throw new Error("STORAGE_ENCRYPTION_KEY 未Configuración。在 .env 用 openssl rand -base64 32 生成");
+    throw new Error("STORAGE_ENCRYPTION_KEY æœªConfiguraciÃ³nã€‚åœ¨ .env ç”¨ openssl rand -base64 32 ç”Ÿæˆ");
   }
   const buf = Buffer.from(raw, "base64");
   if (buf.length !== KEY_LENGTH) {
     throw new Error(
-      `STORAGE_ENCRYPTION_KEY 长度错误：期望 32 字节（base64 Código后约 44 字符），实际 ${buf.length}`
+      `STORAGE_ENCRYPTION_KEY é•¿åº¦é”™è¯¯ï¼šæœŸæœ› 32 å­—èŠ‚ï¼ˆbase64 CÃ³digoåŽçº¦ 44 å­—ç¬¦ï¼‰ï¼Œå®žé™… ${buf.length}`
     );
   }
   cachedKey = buf;
@@ -24,7 +24,7 @@ function getKey(): Buffer {
 }
 
 /**
- * 加密一个 Buffer，Volver ciphertext / iv / authTag（均为 Buffer，调用者负责 base64）。
+ * åŠ å¯†ä¸€ä¸ª Bufferï¼ŒVolver ciphertext / iv / authTagï¼ˆå‡ä¸º Bufferï¼Œè°ƒç”¨è€…è´Ÿè´£ base64ï¼‰ã€‚
  */
 export function encryptBuffer(plain: Buffer): {
   ciphertext: Buffer;
@@ -42,7 +42,7 @@ export function encryptBuffer(plain: Buffer): {
 }
 
 /**
- * 解密。iv / authTag 是 base64。
+ * è§£å¯†ã€‚iv / authTag æ˜¯ base64ã€‚
  */
 export function decryptBuffer(
   ciphertext: Buffer,
@@ -61,3 +61,4 @@ export function decryptBuffer(
 export function sha256(data: Buffer): string {
   return createHash("sha256").update(data).digest("hex");
 }
+

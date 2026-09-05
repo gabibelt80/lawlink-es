@@ -29,14 +29,14 @@ import {
 } from "@/server/external-contacts/actions";
 
 const CATEGORY_OPTIONS: { value: ExternalContactCategory; label: string }[] = [
-  { value: "COURT", label: "法院" },
-  { value: "PROSECUTOR", label: "检察院" },
-  { value: "POLICE", label: "公安" },
-  { value: "NOTARY", label: "公证处" },
-  { value: "ARBITRATION", label: "仲裁" },
-  { value: "OTHER_FIRM", label: "他所Abogado" },
-  { value: "EXPERT", label: "鉴定专家" },
-  { value: "OTHER", label: "其他" },
+  { value: "COURT", label: "Tribunal" },
+  { value: "PROSECUTOR", label: "Fiscalía" },
+  { value: "POLICE", label: "Policía" },
+  { value: "NOTARY", label: "Notaría" },
+  { value: "ARBITRATION", label: "Arbitraje" },
+  { value: "OTHER_FIRM", label: "Abogado de otro estudio" },
+  { value: "EXPERT", label: "Perito" },
+  { value: "OTHER", label: "Otro" },
 ];
 
 type Editing = {
@@ -139,7 +139,7 @@ export function ExternalContactDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
-          <DialogTitle>{editing ? "Editar联系人" : "新增外部联系人"}</DialogTitle>
+          <DialogTitle>{editing ? "Editar contacto" : "Nuevo contacto externo"}</DialogTitle>
         </DialogHeader>
 
         <div className="space-y-3 py-2">
@@ -152,7 +152,7 @@ export function ExternalContactDialog({
               />
             </div>
             <div className="space-y-1.5">
-              <Label className="text-xs">类别 *</Label>
+              <Label className="text-xs">Categoría *</Label>
               <Select
                 value={form.category}
                 onValueChange={(v) =>
@@ -175,17 +175,17 @@ export function ExternalContactDialog({
 
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
-              <Label className="text-xs">单位 / 机构</Label>
+              <Label className="text-xs">Entidad / Institución</Label>
               <Input
                 value={form.organization}
                 onChange={(e) =>
                   setForm({ ...form, organization: e.target.value })
                 }
-                placeholder="如：上海市浦东新区人民法院"
+                placeholder="Ej.: Tribunal Popular del Nuevo Distrito de Pudong, Shanghái"
               />
             </div>
             <div className="space-y-1.5">
-              <Label className="text-xs">职务 / 庭室</Label>
+              <Label className="text-xs">Cargo / Sala</Label>
               <Input
                 value={form.title}
                 onChange={(e) => setForm({ ...form, title: e.target.value })}
@@ -195,7 +195,7 @@ export function ExternalContactDialog({
 
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
-              <Label className="text-xs">手机</Label>
+              <Label className="text-xs">Teléfono</Label>
               <Input
                 value={form.phone}
                 onChange={(e) => setForm({ ...form, phone: e.target.value })}
@@ -215,14 +215,14 @@ export function ExternalContactDialog({
 
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
-              <Label className="text-xs">微信</Label>
+              <Label className="text-xs">WeChat</Label>
               <Input
                 value={form.wechat}
                 onChange={(e) => setForm({ ...form, wechat: e.target.value })}
               />
             </div>
             <div className="space-y-1.5">
-              <Label className="text-xs">地址</Label>
+              <Label className="text-xs">Dirección</Label>
               <Input
                 value={form.address}
                 onChange={(e) => setForm({ ...form, address: e.target.value })}

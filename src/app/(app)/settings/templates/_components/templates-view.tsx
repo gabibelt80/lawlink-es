@@ -72,7 +72,7 @@ export function TemplatesView({ templates }: { templates: StageTemplate[] }) {
       <header className="flex items-center justify-between gap-3">
         <h2 className="flex items-center gap-2 text-base font-semibold">
           <Layers className="h-4 w-4 text-primary" />
-          阶段模板
+          Plantillas de etapas
         </h2>
         <Select value={selected} onValueChange={(v) => setSelected(v as ProcedureType)}>
           <SelectTrigger className="h-9 w-48 bg-background">
@@ -92,21 +92,21 @@ export function TemplatesView({ templates }: { templates: StageTemplate[] }) {
         <div className="mb-4 flex items-center justify-between">
           <div>
             <h3 className="text-sm font-semibold">
-              {procedureTypeLabel[selected]} — {current?.name ?? "未配置"}
+              {procedureTypeLabel[selected]} — {current?.name ?? "Sin configurar"}
             </h3>
             <p className="mt-0.5 text-xs text-muted-foreground">
-              新建程序时将自动套用此模板的阶段
+              Al crear un nuevo procedimiento se aplicarán automáticamente las etapas de esta plantilla
             </p>
           </div>
           <Button size="sm" onClick={() => setEditing(true)} className="gap-1.5">
             <Pencil className="h-3.5 w-3.5" />
-            {current ? "Editar" : "新建模板"}
+            {current ? "Editar" : "Nueva plantilla"}
           </Button>
         </div>
 
         {!current ? (
           <div className="rounded-md border border-dashed border-border bg-background py-8 text-center text-sm text-muted-foreground">
-            该程序类型还没有默认模板
+            Este tipo de procedimiento todavía no tiene una plantilla predeterminada
           </div>
         ) : (
           <ol className="space-y-2">
@@ -151,7 +151,7 @@ function EditTemplateDialog({
   onClose: () => void;
 }) {
   const [isPending, startTransition] = useTransition();
-  const [name, setName] = useState(existing?.name ?? `${procedureTypeLabel[procedureType]}模板`);
+  const [name, setName] = useState(existing?.name ?? `Plantilla de ${procedureTypeLabel[procedureType]}`);
   const [steps, setSteps] = useState<Step[]>(() => {
     if (existing) {
       return ((existing.steps ?? []) as unknown as Step[])
@@ -182,7 +182,7 @@ function EditTemplateDialog({
       .filter((s) => s.name.trim())
       .map((s, i) => ({ name: s.name.trim(), order: i + 1, defaultTasks: [] }));
     if (cleaned.length === 0) {
-      toast.warning("至少需要一个阶段");
+      toast.warning("Se necesita al menos una etapa");
       return;
     }
     startTransition(async () => {
@@ -192,10 +192,10 @@ function EditTemplateDialog({
           name,
           steps: cleaned
         });
-        toast.success("模板已Guardar");
+        toast.success("Plantilla guardada");
         onClose();
       } catch (err) {
-        toast.error("GuardarError", { description: err instanceof Error ? err.message : "" });
+        toast.error("Error al guardar", { description: err instanceof Error ? err.message : "" });
       }
     });
   }
@@ -204,23 +204,23 @@ function EditTemplateDialog({
     <Dialog open onOpenChange={(o) => !o && onClose()}>
       <DialogContent className="max-w-3xl">
         <DialogHeader>
-          <DialogTitle>Editar模板 — {procedureTypeLabel[procedureType]}</DialogTitle>
+          <DialogTitle>Editar plantilla — {procedureTypeLabel[procedureType]}</DialogTitle>
           <DialogDescription>
-            修改后只影响 <span className="text-foreground">新Crear</span> 的程序，已有程序的阶段不受影响
+            Los cambios solo afectan a los <span className="text-foreground">procedimientos nuevos</span>; las etapas de los procedimientos existentes no se ven afectadas
           </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-1.5">
-          <Label className="text-xs">模板Nombre</Label>
+          <Label className="text-xs">Nombre de la plantilla</Label>
           <Input value={name} onChange={(e) => setName(e.target.value)} />
         </div>
 
         <div>
           <div className="mb-2 flex items-center justify-between">
-            <Label className="text-xs">阶段流程</Label>
+            <Label className="text-xs">Flujo de etapas</Label>
             <Button variant="outline" size="sm" onClick={addStep} className="h-7 gap-1">
               <Plus className="h-3.5 w-3.5" />
-              Agregar阶段
+              Agregar etapa
             </Button>
           </div>
           <ol className="space-y-2 max-h-96 overflow-y-auto pr-1">
@@ -233,7 +233,7 @@ function EditTemplateDialog({
                   <Input
                     value={s.name}
                     onChange={(e) => updateStep(idx, { name: e.target.value })}
-                    placeholder="阶段Nombre"
+                    placeholder="Nombre de la etapa"
                     className="h-8 flex-1"
                   />
                   <Button
@@ -256,7 +256,7 @@ function EditTemplateDialog({
           </Button>
           <Button onClick={handleSave} disabled={isPending} className="gap-1.5">
             {isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
-            Guardar模板
+            Guardar plantilla
           </Button>
         </DialogFooter>
       </DialogContent>

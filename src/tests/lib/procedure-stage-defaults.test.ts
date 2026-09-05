@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+﻿import { describe, expect, it } from "vitest";
 import {
   defaultStageNamesForProcedure,
   optionalStagePresetsForProcedure,
@@ -7,38 +7,39 @@ import {
 
 describe("defaultStageNamesForProcedure", () => {
   it("uses litigation workflow for first instance procedures", () => {
-    expect(defaultStageNamesForProcedure("FIRST_INSTANCE")).toContain("起诉立案");
-    expect(defaultStageNamesForProcedure("FIRST_INSTANCE")).toContain("裁判签收");
-    expect(defaultStageNamesForProcedure("FIRST_INSTANCE")).toContain("Caso归档");
-    expect(defaultStageNamesForProcedure("FIRST_INSTANCE")).not.toContain("财产Preservación");
-    expect(optionalStagePresetsForProcedure("FIRST_INSTANCE").map((preset) => preset.name)).not.toContain("履行/执行衔接");
+    expect(defaultStageNamesForProcedure("FIRST_INSTANCE")).toContain("èµ·è¯‰ç«‹æ¡ˆ");
+    expect(defaultStageNamesForProcedure("FIRST_INSTANCE")).toContain("è£åˆ¤ç­¾æ”¶");
+    expect(defaultStageNamesForProcedure("FIRST_INSTANCE")).toContain("Casoå½’æ¡£");
+    expect(defaultStageNamesForProcedure("FIRST_INSTANCE")).not.toContain("è´¢äº§PreservaciÃ³n");
+    expect(optionalStagePresetsForProcedure("FIRST_INSTANCE").map((preset) => preset.name)).not.toContain("å±¥è¡Œ/æ‰§è¡Œè¡”æŽ¥");
   });
 
   it("keeps optional litigation stages outside the default active workflow", () => {
     const optionalNames = optionalStagePresetsForProcedure("FIRST_INSTANCE").map((preset) => preset.name);
-    expect(optionalNames).toEqual(expect.arrayContaining(["财产Preservación", "管辖权异议", "司法鉴定", "模拟法庭", "庭后补充"]));
-    expect(optionalNames.some((name) => name.includes("执行"))).toBe(false);
-    expect(stagePresetForName("FIRST_INSTANCE", "Caso归档")?.kind).toBe("required");
-    expect(stagePresetForName("FIRST_INSTANCE", "司法鉴定")?.kind).toBe("optional");
+    expect(optionalNames).toEqual(expect.arrayContaining(["è´¢äº§PreservaciÃ³n", "ç®¡è¾–æƒå¼‚è®®", "å¸æ³•é‰´å®š", "æ¨¡æ‹Ÿæ³•åº­", "åº­åŽè¡¥å……"]));
+    expect(optionalNames.some((name) => name.includes("æ‰§è¡Œ"))).toBe(false);
+    expect(stagePresetForName("FIRST_INSTANCE", "Casoå½’æ¡£")?.kind).toBe("required");
+    expect(stagePresetForName("FIRST_INSTANCE", "å¸æ³•é‰´å®š")?.kind).toBe("optional");
   });
 
   it("uses required enforcement stages by default", () => {
     expect(defaultStageNamesForProcedure("ENFORCEMENT")).toEqual([
-      "代理授权",
-      "执行立案",
-      "财产查控",
-      "执行Cerrar caso",
-      "Caso归档"
+      "ä»£ç†æŽˆæƒ",
+      "æ‰§è¡Œç«‹æ¡ˆ",
+      "è´¢äº§æŸ¥æŽ§",
+      "æ‰§è¡ŒCerrar caso",
+      "Casoå½’æ¡£"
     ]);
   });
 
   it("uses criminal investigation workflow for investigation procedures", () => {
     expect(defaultStageNamesForProcedure("INVESTIGATION")).toEqual([
-      "代理授权",
-      "会见",
-      "阅卷线索",
-      "辩护意见",
-      "Caso归档"
+      "ä»£ç†æŽˆæƒ",
+      "ä¼šè§",
+      "é˜…å·çº¿ç´¢",
+      "è¾©æŠ¤æ„è§",
+      "Casoå½’æ¡£"
     ]);
   });
 });
+

@@ -1,4 +1,4 @@
-// MIME → 扩展名映射，用于历史数据没有扩展名时回填，避免下载件无扩展名打不开
+﻿// MIME â†’ æ‰©å±•åæ˜ å°„ï¼Œç”¨äºŽåŽ†å²æ•°æ®æ²¡æœ‰æ‰©å±•åæ—¶å›žå¡«ï¼Œé¿å…ä¸‹è½½ä»¶æ— æ‰©å±•åæ‰“ä¸å¼€
 const MIME_EXT: Record<string, string> = {
   "application/pdf": ".pdf",
   "image/png": ".png",
@@ -51,10 +51,10 @@ const XLSX_MIME =
 const XLS_MIME = "application/vnd.ms-excel";
 
 /**
- * v0.42: 服务端可转 HTML 预览的 Office 文档类型。
- * docx → mammoth；xlsx/xls → exceljs。
- * 老 .doc(application/msword) 无法可靠转换 → 归 null（降级下载）。
- * mime 可能不准，故同时看文件名扩展。
+ * v0.42: æœåŠ¡ç«¯å¯è½¬ HTML é¢„è§ˆçš„ Office æ–‡æ¡£ç±»åž‹ã€‚
+ * docx â†’ mammothï¼›xlsx/xls â†’ exceljsã€‚
+ * è€ .doc(application/msword) æ— æ³•å¯é è½¬æ¢ â†’ å½’ nullï¼ˆé™çº§ä¸‹è½½ï¼‰ã€‚
+ * mime å¯èƒ½ä¸å‡†ï¼Œæ•…åŒæ—¶çœ‹æ–‡ä»¶åæ‰©å±•ã€‚
  */
 export function officePreviewKind(
   mimeType: string | null | undefined,
@@ -68,10 +68,11 @@ export function officePreviewKind(
   return null;
 }
 
-/** 能在线打开查阅（内嵌 inline 或服务端转 HTML），用于前端决定是否给"打开"入口 */
+/** èƒ½åœ¨çº¿æ‰“å¼€æŸ¥é˜…ï¼ˆå†…åµŒ inline æˆ–æœåŠ¡ç«¯è½¬ HTMLï¼‰ï¼Œç”¨äºŽå‰ç«¯å†³å®šæ˜¯å¦ç»™"æ‰“å¼€"å…¥å£ */
 export function canPreview(
   mimeType: string | null | undefined,
   name?: string | null
 ): boolean {
   return isInlinePreviewable(mimeType) || officePreviewKind(mimeType, name) !== null;
 }
+

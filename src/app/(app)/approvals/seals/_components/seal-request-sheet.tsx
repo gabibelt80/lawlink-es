@@ -21,24 +21,24 @@ import { createSealRequest } from "@/server/seals/actions";
 import {
   type SealTypeConfigRow,
   type MatterOption,
-  SEAL_TYPE_CN,
+  SEAL_TYPE_ES,
 } from "./seal-types";
 import { MatterCombobox } from "./matter-combobox";
 
 const PURPOSE_PRESETS = [
-  "委托合同",
-  "法律意见书",
-  "所函",
-  "证明",
-  "其他",
+  "Contrato de mandato",
+  "Dictamen legal",
+  "Carta / oficio",
+  "Constancia / comprobante",
+  "Otro",
 ] as const;
 
 const PURPOSE_PRESET_LABELS: Record<PurposePreset, string> = {
-  委托合同: "Contrato de mandato",
-  法律意见书: "Dictamen legal",
-  所函: "Carta / oficio",
-  证明: "Constancia / comprobante",
-  其他: "Otro",
+  "Contrato de mandato": "Contrato de mandato",
+  "Dictamen legal": "Dictamen legal",
+  "Carta / oficio": "Carta / oficio",
+  "Constancia / comprobante": "Constancia / comprobante",
+  "Otro": "Otro",
 };
 
 type PurposePreset = (typeof PURPOSE_PRESETS)[number];
@@ -104,9 +104,9 @@ export function SealRequestSheet({
 
   // 拼出实际入库的 purpose 字符串
   const resolvedPurpose =
-    purposePreset === "其他"
+    purposePreset === "Otro"
       ? purposeOther.trim()
-        ? `其他：${purposeOther.trim()}`
+        ? `Otro: ${purposeOther.trim()}}`
         : ""
       : purposePreset;
 
@@ -122,7 +122,7 @@ export function SealRequestSheet({
       toast.error("Seleccione el motivo del sello");
       return;
     }
-    if (purposePreset === "其他" && !purposeOther.trim()) {
+    if (purposePreset === "Otro" && !purposeOther.trim()) {
       toast.error("Complete la descripción específica del motivo 'Otro'");
       return;
     }
@@ -206,7 +206,7 @@ export function SealRequestSheet({
               className="mt-2"
               items={enabledConfigs.map((c) => ({
                 value: c.type as string,
-                label: SEAL_TYPE_CN[c.type] ?? c.type,
+                label: SEAL_TYPE_ES[c.type] ?? c.type,
                 description: c.description ?? undefined,
               }))}
               value={sealType}
@@ -270,7 +270,7 @@ export function SealRequestSheet({
               value={purposePreset || null}
               onChange={(v) => setPurposePreset(v as PurposePreset)}
             />
-            {purposePreset === "其他" && (
+            {purposePreset === "Otro" && (
               <Textarea
                 value={purposeOther}
                 onChange={(e) => setPurposeOther(e.target.value)}

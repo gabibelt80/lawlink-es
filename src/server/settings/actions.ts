@@ -1,9 +1,9 @@
-"use server";
+﻿"use server";
 
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import type { ProcedureType, Prisma } from "@prisma/client";
-import { prisma } from "@/lib/prisma";
+import { getTenantPrisma } from "@/lib/tenant-prisma";
 import { requireSession } from "@/lib/auth/session";
 import { audit } from "@/server/audit";
 
@@ -24,11 +24,12 @@ export type TemplateUpdateInput = z.infer<typeof templateUpdateSchema>;
 
 async function requireAdmin() {
   const session = await requireSession();
-  if (session.user.role !== "ADMIN") throw new Error("仅Administrar员可执行");
+  if (session.user.role !== "ADMIN") throw new Error("Solo el administrador puede ejecutar esta accion");
   return session;
 }
 
 export async function listStageTemplates() {
+  const prisma = await getTenantPrisma();
   await requireAdmin();
   return prisma.stageTemplate.findMany({
     orderBy: { procedureType: "asc" }
@@ -36,6 +37,7 @@ export async function listStageTemplates() {
 }
 
 export async function upsertStageTemplate(input: TemplateUpdateInput) {
+  const prisma = await getTenantPrisma();
   const session = await requireAdmin();
   const data = templateUpdateSchema.parse(input);
   const id = `default-${data.procedureType}`;
@@ -77,13 +79,14 @@ const auditQuerySchema = z.object({
 export type AuditQuery = z.infer<typeof auditQuerySchema>;
 
 export async function listAuditLogs(input: Partial<AuditQuery> = {}) {
+  const prisma = await getTenantPrisma();
   await requireAdmin();
   const query = auditQuerySchema.parse(input);
   const since = new Date(Date.now() - query.days * 24 * 60 * 60 * 1000);
 
   const where: Prisma.AuditLogWhereInput = {
     createdAt: { gte: since },
-    ...(query.action ? { action: { contains: query.action, mode: "insensitive" } } : {}),
+    ...(query.action ? { action: { contains: query.action } } : {}),
     ...(query.userId ? { userId: query.userId } : {})
   };
 
@@ -105,3 +108,4 @@ export async function listAuditLogs(input: Partial<AuditQuery> = {}) {
 
   return { items, distinctActions: distinctActions.map((a) => a.action) };
 }
+

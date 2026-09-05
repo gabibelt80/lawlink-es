@@ -1,9 +1,9 @@
-"use server";
+﻿"use server";
 
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { Prisma } from "@prisma/client";
-import { prisma } from "@/lib/prisma";
+import { getTenantPrisma } from "@/lib/tenant-prisma";
 import { requireSession } from "@/lib/auth/session";
 import { audit } from "@/server/audit";
 import { storage } from "@/lib/storage";
@@ -20,6 +20,7 @@ import {
 import { revalidateMatter } from "@/server/matters/route";
 
 export async function listTemplates(input?: z.input<typeof templateListFilterSchema>) {
+  const prisma = await getTenantPrisma();
   await requireSession();
   const filter = templateListFilterSchema.parse(input ?? {});
 
@@ -27,10 +28,10 @@ export async function listTemplates(input?: z.input<typeof templateListFilterSch
   if (filter.onlyEnabled) where.enabled = true;
   if (filter.category) where.category = filter.category;
   if (filter.matterCategory) {
-    // applicableCategories 为空数组 = 全适用；包含目标也Coincidencia
+    // applicableCategories vacio = aplica a todos
     where.OR = [
-      { applicableCategories: { isEmpty: true } },
-      { applicableCategories: { has: filter.matterCategory } }
+      { applicableCategories: { equals: [] } },
+      { applicableCategories: { array_contains: filter.matterCategory } }
     ];
   }
 
@@ -52,6 +53,7 @@ export async function listTemplates(input?: z.input<typeof templateListFilterSch
 }
 
 export async function getTemplate(id: string) {
+  const prisma = await getTenantPrisma();
   await requireSession();
   return prisma.documentTemplate.findUnique({
     where: { id },
@@ -63,9 +65,10 @@ export async function getTemplate(id: string) {
 }
 
 export async function toggleTemplate(input: z.infer<typeof templateToggleSchema>) {
+  const prisma = await getTenantPrisma();
   const session = await requireSession();
   if (session.user.role !== "ADMIN") {
-    throw new Error("仅Administrar员可启用/Deshabilitar模板");
+    throw new Error("Solo el Administrador puede habilitar/deshabilitar plantillas");
   }
   const data = templateToggleSchema.parse(input);
 
@@ -87,68 +90,69 @@ export async function toggleTemplate(input: z.infer<typeof templateToggleSchema>
 }
 
 /**
- * 模板渲染 + 归档
- *   1. 校验输入y权限
- *   2. 读取并解密模板 docx
- *   3. 拼装上下文（含行内补全 overrides 的回写）
- *   4. 渲染 → 加密入库 Document（关联 matter / folder / template / 上下文快照）
- *   5. Volver新 documentId，UI 拿去下载
+ * Render de plantilla + archivo
+ *   1. Valida entrada y permisos
+ *   2. Lee y descifra plantilla docx
+ *   3. Construye contexto
+ *   4. Renderiza -> encripta -> guarda Document
+ *   5. Devuelve documentId
  */
 export async function renderTemplate(input: z.infer<typeof templateRenderSchema>) {
+  const prisma = await getTenantPrisma();
   const session = await requireSession();
   const data = templateRenderSchema.parse(input);
 
   await assertMatterWritable(data.matterId);
-  await assertCanLeadMatter(session.user.id, data.matterId, "仅Caso主办/协办可生成文书");
+  await assertCanLeadMatter(session.user.id, session.user.role, data.matterId, "Solo el responsable/co-responsable puede generar documentos");
 
-  // 取模板 + docxBlob
+  // Obtiene plantilla + docxBlob
   const tmpl = await prisma.documentTemplate.findUnique({
     where: { id: data.templateId },
     include: { docxBlob: true }
   });
-  if (!tmpl || !tmpl.enabled) throw new Error("模板不存在或已Deshabilitar");
-  if (!tmpl.docxBlob) throw new Error("模板源文件缺失");
+  if (!tmpl || !tmpl.enabled) throw new Error("La plantilla no existe o esta deshabilitada");
+  if (!tmpl.docxBlob) throw new Error("Falta el archivo fuente de la plantilla");
 
-  // 校验 folder 同Caso
+  // Verifica folder del mismo Caso
   if (data.folderId) {
     const folder = await prisma.documentFolder.findUnique({
       where: { id: data.folderId },
       select: { matterId: true }
     });
     if (!folder || folder.matterId !== data.matterId) {
-      throw new Error("目标卷宗yCaso不Coincidencia");
+      throw new Error("La carpeta destino y el Caso no coinciden");
     }
   }
 
-  // 取Caso + 模板源文件
+  // Obtiene Caso + archivo fuente
   const matter = await prisma.matter.findUnique({
     where: { id: data.matterId },
     select: { internalCode: true, category: true }
   });
-  if (!matter) throw new Error("Caso不存在");
+  if (!matter) throw new Error("El Caso no existe");
 
   const rawCt = await storage.readFile(tmpl.docxBlob.path);
   const templateBuffer = tmpl.docxBlob.encrypted
     ? decryptBuffer(rawCt, tmpl.docxBlob.iv ?? "", tmpl.docxBlob.authTag ?? "")
     : rawCt;
 
-  // 上下文（应用 overrides 行内补全）
+  // Contexto (aplicando overrides)
   const context = await buildContext({
     matterId: data.matterId,
     userId: session.user.id,
     overrides: data.overrides
   });
 
-  // 检测未填变量（行内补全已落库 → buildContext 会读到；Restan下的是真缺）
+  // Detecta variables faltantes
   const required = Array.isArray(tmpl.variables) ? (tmpl.variables as string[]) : [];
   const missing = detectMissing(required, context);
 
-  // 渲染
+  // Renderiza
   const renderedBuf = renderDocxBuffer(templateBuffer, context);
   const enc = encryptBuffer(renderedBuf);
   const path = await storage.writeFile(`m_${data.matterId}`, enc.ciphertext);
 
-  // 若未指定 folder，按模板大类推荐
+  // Si no se especifico folder, se recomienda por categoria de plantilla
   let folderId = data.folderId;
   if (!folderId) {
     const suggestedName = suggestFolderByTemplateCategory(tmpl.category, matter.category);
@@ -180,7 +184,7 @@ export async function renderTemplate(input: z.infer<typeof templateRenderSchema>
       algorithm: enc.algorithm,
       iv: enc.iv.toString("base64"),
       authTag: enc.authTag.toString("base64"),
-      tags: ["模板生成", tmpl.name],
+      tags: ["Generado por plantilla", tmpl.name],
       uploadedById: session.user.id
     }
   });

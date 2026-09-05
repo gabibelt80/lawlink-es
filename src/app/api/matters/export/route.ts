@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+﻿import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth/options";
 import { audit } from "@/server/audit";
@@ -13,7 +13,7 @@ export const dynamic = "force-dynamic";
 export async function GET(req: Request) {
   const session = await getServerSession(authOptions);
   if (!session?.user) {
-    return NextResponse.json({ error: "未Iniciar sesión" }, { status: 401 });
+    return NextResponse.json({ error: "æœªIniciar sesiÃ³n" }, { status: 401 });
   }
 
   const url = new URL(req.url);
@@ -26,8 +26,8 @@ export async function GET(req: Request) {
       role: session.user.role
     });
   } catch (err) {
-    console.error("[matters/export] 生成Error：", err);
-    return NextResponse.json({ error: "导出Error" }, { status: 500 });
+    console.error("[matters/export] ç”ŸæˆErrorï¼š", err);
+    return NextResponse.json({ error: "å¯¼å‡ºError" }, { status: 500 });
   }
 
   await audit({
@@ -59,3 +59,4 @@ export async function GET(req: Request) {
     }
   });
 }
+

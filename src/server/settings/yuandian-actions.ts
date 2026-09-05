@@ -1,4 +1,4 @@
-"use server";
+﻿"use server";
 
 import { z } from "zod";
 import { requireSession } from "@/lib/auth/session";
@@ -24,7 +24,7 @@ const clearSchema = z.object({ confirm: z.literal(true) });
 async function requireAdmin() {
   const session = await requireSession();
   if (session.user.role !== "ADMIN") {
-    throw new Error("仅Administrar员可修改pesos典配置");
+    throw new Error("ä»…Administrarå‘˜å¯ä¿®æ”¹pesoså…¸é…ç½®");
   }
   return session;
 }
@@ -69,7 +69,7 @@ export async function clearYuandianKeyAction(input: z.infer<typeof clearSchema>)
 }
 
 /**
- * 用最小代价探活：用"民间借贷纠纷 / top_k=1"试探，扣 10 POINT。
+ * ç”¨æœ€å°ä»£ä»·æŽ¢æ´»ï¼šç”¨"æ°‘é—´å€Ÿè´·çº çº· / top_k=1"è¯•æŽ¢ï¼Œæ‰£ 10 POINTã€‚
  */
 export async function testYuandianConnection(): Promise<{
   ok: boolean;
@@ -77,15 +77,17 @@ export async function testYuandianConnection(): Promise<{
 }> {
   await requireAdmin();
   try {
-    const r = await searchPtalCases({ ay: ["民间借贷纠纷"], top_k: 1 });
-    return { ok: true, message: `连接成功，命中 ${r.total} 条（已扣 10 POINT 试调用）` };
+    const r = await searchPtalCases({ ay: ["æ°‘é—´å€Ÿè´·çº çº·"], top_k: 1 });
+    return { ok: true, message: `è¿žæŽ¥æˆåŠŸï¼Œå‘½ä¸­ ${r.total} æ¡ï¼ˆå·²æ‰£ 10 POINT è¯•è°ƒç”¨ï¼‰` };
   } catch (err) {
     if (err instanceof YuandianNotConfiguredError) {
       return { ok: false, message: err.message };
     }
     if (err instanceof YuandianApiError) {
-      return { ok: false, message: `pesos典Volver错误：${err.message}` };
+      return { ok: false, message: `pesoså…¸Volveré”™è¯¯ï¼š${err.message}` };
     }
-    return { ok: false, message: err instanceof Error ? err.message : "Desconocido错误" };
+    return { ok: false, message: err instanceof Error ? err.message : "Desconocidoé”™è¯¯" };
   }
 }
+
+

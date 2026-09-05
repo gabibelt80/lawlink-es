@@ -1,14 +1,14 @@
-/**
- * 上传文件类型校验
+﻿/**
+ * ä¸Šä¼ æ–‡ä»¶ç±»åž‹æ ¡éªŒ
  *
- * 三道闸：
- *   1. 文件名扩展名必须在白名单内（不区分大小写）
- *   2. MIME 不为空时也要在白名单内（浏览器可伪造但作为辅助）
- *   3. 文件大小 ≤ maxBytes
+ * ä¸‰é“é—¸ï¼š
+ *   1. æ–‡ä»¶åæ‰©å±•åå¿…é¡»åœ¨ç™½åå•å†…ï¼ˆä¸åŒºåˆ†å¤§å°å†™ï¼‰
+ *   2. MIME ä¸ä¸ºç©ºæ—¶ä¹Ÿè¦åœ¨ç™½åå•å†…ï¼ˆæµè§ˆå™¨å¯ä¼ªé€ ä½†ä½œä¸ºè¾…åŠ©ï¼‰
+ *   3. æ–‡ä»¶å¤§å° â‰¤ maxBytes
  *
- * 故意不读 magic bytes：sniffing 增加复杂度但绕过门槛只是稍微提高，
- * 投入产出比不高。本Sistema假设是律所内部使用，主要防止意外（误传 .exe）
- * 而非对抗主动攻击。
+ * æ•…æ„ä¸è¯» magic bytesï¼šsniffing å¢žåŠ å¤æ‚åº¦ä½†ç»•è¿‡é—¨æ§›åªæ˜¯ç¨å¾®æé«˜ï¼Œ
+ * æŠ•å…¥äº§å‡ºæ¯”ä¸é«˜ã€‚æœ¬Sistemaå‡è®¾æ˜¯å¾‹æ‰€å†…éƒ¨ä½¿ç”¨ï¼Œä¸»è¦é˜²æ­¢æ„å¤–ï¼ˆè¯¯ä¼  .exeï¼‰
+ * è€Œéžå¯¹æŠ—ä¸»åŠ¨æ”»å‡»ã€‚
  */
 
 export type UploadPurpose = "document" | "invoice" | "seal" | "stamp";
@@ -25,14 +25,14 @@ const DOC_EXT = [
   "mp4", "mov", "avi"
 ];
 
-// Factura / 用章场景更窄：仅图片或 PDF
+// Factura / ç”¨ç« åœºæ™¯æ›´çª„ï¼šä»…å›¾ç‰‡æˆ– PDF
 const NARROW_EXT = ["pdf", "jpg", "jpeg", "png", "gif", "webp", "bmp", "tiff"];
 
 const ALLOWED: Record<UploadPurpose, Set<string>> = {
   document: new Set(DOC_EXT),
   invoice: new Set(NARROW_EXT),
-  seal: new Set(DOC_EXT), // 待盖章稿允许 docx/pdf
-  stamp: new Set(NARROW_EXT) // 盖章后扫描件只允许图片 / PDF
+  seal: new Set(DOC_EXT), // å¾…ç›–ç« ç¨¿å…è®¸ docx/pdf
+  stamp: new Set(NARROW_EXT) // ç›–ç« åŽæ‰«æä»¶åªå…è®¸å›¾ç‰‡ / PDF
 };
 
 const MIME_PREFIX_OK: Record<UploadPurpose, RegExp> = {
@@ -53,29 +53,30 @@ export interface FileValidationOptions {
 }
 
 /**
- * 抛中文异常（前端 toast 直接显示）；AprobarVolver归一化的 ext 给上层用作存储路径或日志。
+ * æŠ›ä¸­æ–‡å¼‚å¸¸ï¼ˆå‰ç«¯ toast ç›´æŽ¥æ˜¾ç¤ºï¼‰ï¼›AprobarVolverå½’ä¸€åŒ–çš„ ext ç»™ä¸Šå±‚ç”¨ä½œå­˜å‚¨è·¯å¾„æˆ–æ—¥å¿—ã€‚
  */
 export function validateUploadedFile(
   file: File,
   opts: FileValidationOptions
 ): { ext: string } {
-  if (file.size === 0) throw new Error("文件为空");
+  if (file.size === 0) throw new Error("æ–‡ä»¶ä¸ºç©º");
   if (file.size > opts.maxBytes) {
     throw new Error(
-      `文件超过 ${Math.round(opts.maxBytes / 1024 / 1024)}MB 限制`
+      `æ–‡ä»¶è¶…è¿‡ ${Math.round(opts.maxBytes / 1024 / 1024)}MB é™åˆ¶`
     );
   }
   const ext = getExt(file.name);
-  if (!ext) throw new Error(`文件名缺少扩展名：${file.name}`);
+  if (!ext) throw new Error(`æ–‡ä»¶åç¼ºå°‘æ‰©å±•åï¼š${file.name}`);
   if (!ALLOWED[opts.purpose].has(ext)) {
     throw new Error(
-      `不允许的文件类型：.${ext}（${opts.purpose}）`
+      `ä¸å…è®¸çš„æ–‡ä»¶ç±»åž‹ï¼š.${ext}ï¼ˆ${opts.purpose}ï¼‰`
     );
   }
   if (file.type && !MIME_PREFIX_OK[opts.purpose].test(file.type)) {
     throw new Error(
-      `MIME 类型y扩展名不一致或不在白名单：${file.type}`
+      `MIME ç±»åž‹yæ‰©å±•åä¸ä¸€è‡´æˆ–ä¸åœ¨ç™½åå•ï¼š${file.type}`
     );
   }
   return { ext };
 }
+

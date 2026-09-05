@@ -24,8 +24,8 @@ import {
 import { cn } from "@/lib/utils";
 
 /**
- * 管辖地三级级联（省 / 市 / 区县）。value 为「省/市/区县」路径串。
- * 区县可不选（只到市）。选择即写回 value。
+ * Selección en cascada de jurisdicción (provincia / ciudad / distrito). value es la ruta «provincia/ciudad/distrito».
+ * El distrito puede no seleccionarse (solo hasta ciudad). Al seleccionar se escribe de vuelta en value.
  */
 export function JurisdictionSelect({
   value,
@@ -71,13 +71,13 @@ export function JurisdictionSelect({
         portalled={false}
         className="w-64 space-y-2 p-2"
       >
-        <Field label="省 / 直辖市">
+        <Field label="Provincia / Municipio">
           <Select
             value={province}
             onValueChange={(v) => onChange(joinJurisdiction(v))}
           >
             <SelectTrigger className="h-8 text-xs">
-              <SelectValue placeholder="选择省 / 直辖市" />
+              <SelectValue placeholder="Seleccionar provincia / municipio" />
             </SelectTrigger>
             <SelectContent className="max-h-72">
               {provinces.map((p) => (
@@ -89,14 +89,14 @@ export function JurisdictionSelect({
           </Select>
         </Field>
 
-        <Field label="市">
+        <Field label="Ciudad">
           <Select
             value={city}
             onValueChange={(v) => onChange(joinJurisdiction(province, v))}
             disabled={!province}
           >
             <SelectTrigger className="h-8 text-xs">
-              <SelectValue placeholder={province ? "选择市" : "请先选省"} />
+              <SelectValue placeholder={province ? "Seleccionar ciudad" : "Primero seleccioná la provincia"} />
             </SelectTrigger>
             <SelectContent className="max-h-72">
               {cities.map((c) => (
@@ -108,14 +108,14 @@ export function JurisdictionSelect({
           </Select>
         </Field>
 
-        <Field label="区 / 县（可选）">
+        <Field label="Distrito / Condado (opcional)">
           <Select
             value={area}
             onValueChange={(v) => onChange(joinJurisdiction(province, city, v))}
             disabled={!city || areas.length === 0}
           >
             <SelectTrigger className="h-8 text-xs">
-              <SelectValue placeholder={city ? "选择区 / 县" : "请先选市"} />
+              <SelectValue placeholder={city ? "Seleccionar distrito / condado" : "Primero seleccioná la ciudad"} />
             </SelectTrigger>
             <SelectContent className="max-h-72">
               {areas.map((a) => (
@@ -133,7 +133,7 @@ export function JurisdictionSelect({
             onClick={() => onChange("")}
             className="w-full rounded-sm border border-border py-1 text-[11px] text-muted-foreground hover:bg-muted"
           >
-            清空
+            Limpiar
           </button>
         )}
       </PopoverContent>

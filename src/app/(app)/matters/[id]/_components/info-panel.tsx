@@ -24,7 +24,7 @@ const EXECUTION_TYPES = [
 
 const dash = (v: string | null | undefined) => v?.trim() || "—";
 
-// 商事仲裁配仲裁秘书，诉讼/劳动仲裁配书记员，不会同时出现
+// Arbitraje comercial usa secretario de arbitraje; litigio/arbitraje laboral usa secretario; no aparecen juntos
 function contactRoleLabels(type: string | undefined) {
   if (type && ARBITRATION_TYPES.includes(type)) {
     return { lead: "Árbitro", assistant: "Secretario de arbitraje" };
@@ -62,13 +62,13 @@ export function InfoPanel({
   canManageRelatedMatters: boolean;
   onEdit: () => void;
 }) {
-  // 关联Caso（双向合并去重）
+  // Casos relacionados (combinación bidireccional sin duplicados)
   const relatedMatters = [
     ...matter.linksFrom.map((l) => l.relatedMatter),
     ...matter.linksTo.map((l) => l.matter),
   ].filter((m, i, arr) => arr.findIndex((x) => x.id === m.id) === i);
 
-  // v0.35: 按Caso类别分叉展示（诉讼/仲裁 vs 非诉/专ítems vs 顾问）
+  // v0.35: La vista cambia según la categoría del caso (litigio/arbitraje vs no contencioso/proyectos vs consultoría)
   const kind = matterCategoryKind(matter.category);
   const period = (s: Date | null, e: Date | null) => {
     if (!s && !e) return "—";
@@ -82,8 +82,8 @@ export function InfoPanel({
     kind === "counsel"
       ? period(matter.serviceStart, matter.serviceEnd)
       : claimText;
-  // v1.1「信息Total览」：只放标题区/侧栏没有的内容——Causa、类别、Estado、Plazo
-  // 已由页头y MatterKeypoints 承载，此处聚焦当前程序的档案字段
+  // v1.1 «Vista general de información»: solo muestra contenido que no está en el encabezado o en los puntos clave
+  // ya cubiertos por el encabezado de página y MatterKeypoints, aquí se enfoca en los campos del expediente del trámite actual
   const contactLabels = contactRoleLabels(currentProcedure?.type);
 
   const standing = currentProcedure?.ourStanding ?? matter.ourStanding;
@@ -98,12 +98,12 @@ export function InfoPanel({
     matter.cause?.name?.trim() || matter.causeFreeText?.trim() || "";
   const clientName =
     matter.primaryClient?.name?.trim() ||
-    matter.clientLinks.map((l) => l.client.name).join("、");
+    matter.clientLinks.map((l) => l.client.name).join(", ");
   const opposingNames = matter.parties
     .filter((p) => p.role === "OPPOSING_PARTY")
     .map((p) => p.name)
-    .join("、");
-  // barFiling 记录的是「是否需向律协备案」，NONE 视为未备案
+    .join(", ");
+  // barFiling registra si debe inscribirse en el colegio de abogados; NONE se considera no registrado
   const barFilingText =
     matter.barFiling && matter.barFiling !== "NONE"
       ? "Registrado"
@@ -240,9 +240,9 @@ export function InfoPanel({
   );
 }
 
-/* —— Sub-components —— */
+/* —— Sub-componentes —— */
 
-/** 长文本默认 4 行截断，可展开/收起（诉讼请求可能很长） */
+/** Texto largo se trunca a 4 líneas por defecto, se puede expandir/contraer (la petición puede ser muy larga) */
 function ClampedText({ text }: { text: string }) {
   const [open, setOpen] = useState(false);
   const isLong = text.length > 120 || text.split("\n").length > 4;
@@ -269,26 +269,26 @@ function ClampedText({ text }: { text: string }) {
   );
 }
 
-/** 数字/案号/Fecha类取值统一etc.宽字体 */
+/** Números / n° de caso / fechas usan fuente monoespaciada */
 function Mono({ children }: { children: React.ReactNode }) {
   return <span className="font-mono tabular">{children}</span>;
 }
 
-/** 人名为空时显示「未录入」 */
+/** Nombre de persona vacío muestra «No ingresado» */
 function personName(name?: string | null): React.ReactNode {
   const n = name?.trim();
   if (!n) return <span className="text-muted-foreground">No ingresado</span>;
   return n;
 }
 
-/** 联系方式（电话etc.）etc.宽展示，空值折叠为「—」 */
+/** Información de contacto (teléfono, etc.) en fuente monoespaciada; vacío se muestra como «—» */
 function ContactText({ value }: { value?: string | null }) {
   const v = value?.trim();
   if (!v) return <>—</>;
   return <span className="font-mono tabular">{v}</span>;
 }
 
-// 一行：移动端纵向堆叠（pair 间横线），md+ 横向排列（pair 间竖线）
+// Una fila: en móvil apila verticalmente (separador horizontal entre pares), en md+ se organiza horizontalmente (separador vertical entre pares)
 export function InfoRow({
   children,
   className,
@@ -308,7 +308,7 @@ export function InfoRow({
   );
 }
 
-// 一个标签-取值对：标签灰底（暗），取值白底（亮）
+// Un par etiqueta-valor: etiqueta con fondo gris (oscuro), valor con fondo blanco (claro)
 export function Pair({
   label,
   grow,
@@ -319,7 +319,7 @@ export function Pair({
   label: string;
   grow?: boolean;
   wide?: boolean;
-  /** 只占内容宽度（值不换行），用于收案时间etc.短字段，避免撑成两行 */
+  /** Solo ocupa el ancho del contenido (el valor no salta de línea), para campos cortos como fecha de admisión */
   tight?: boolean;
   children: React.ReactNode;
 }) {
@@ -336,7 +336,7 @@ export function Pair({
               : "md:flex-1",
       )}
     >
-      <div className="w-[68px] shrink-0 border-r border-border bg-muted/50 px-2 py-2 text-[11.5px] leading-snug text-muted-foreground">
+      <div className="w-[110px] shrink-0 border-r border-border bg-muted/50 px-2 py-2 text-[11.5px] leading-snug text-muted-foreground">
         <AlignedLabel label={label} />
       </div>
       <div
@@ -352,16 +352,5 @@ export function Pair({
 }
 
 function AlignedLabel({ label }: { label: string }) {
-  const chars = Array.from(label);
-  if (chars.length > 1 && chars.length < 4) {
-    return (
-      <span className="flex w-[4em] justify-between whitespace-nowrap">
-        {chars.map((char, index) => (
-          <span key={`${char}-${index}`}>{char}</span>
-        ))}
-      </span>
-    );
-  }
-
   return <span className="whitespace-nowrap">{label}</span>;
 }

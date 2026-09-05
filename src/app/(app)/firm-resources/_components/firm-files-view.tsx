@@ -37,19 +37,19 @@ type FileEntry = {
 };
 
 const CATEGORY_META: Record<FirmFileCategory, { label: string; color: string }> = {
-  POLICY: { label: "制度", color: "#9B7BF7" },
-  GUIDE: { label: "指引", color: "#5B8DEF" },
-  TEMPLATE: { label: "参考模板", color: "#48BB78" },
-  REFERENCE: { label: "其他文件", color: "#F5A742" },
-  CONTRACT: { label: "合同", color: "#5B8DEF" },
-  LETTER: { label: "函件", color: "#48BB78" },
-  LICENSE: { label: "证照", color: "#F5A742" },
-  OTHER_FIRM: { label: "其他", color: "#9B7BF7" }
+  POLICY: { label: "Normas", color: "#9B7BF7" },
+  GUIDE: { label: "Guías", color: "#5B8DEF" },
+  TEMPLATE: { label: "Plantillas", color: "#48BB78" },
+  REFERENCE: { label: "Otros archivos", color: "#F5A742" },
+  CONTRACT: { label: "Contratos", color: "#5B8DEF" },
+  LETTER: { label: "Cartas", color: "#48BB78" },
+  LICENSE: { label: "Licencias", color: "#F5A742" },
+  OTHER_FIRM: { label: "Otros", color: "#9B7BF7" }
 };
 
-/** Documentos del estudio页展示的分类 */
+/** Categorías mostradas en la página Documentos del estudio */
 const FIRM_DOC_CATEGORIES: FirmFileCategory[] = ["CONTRACT", "LETTER", "LICENSE", "OTHER_FIRM"];
-/** 旧分类（兼容已有数据） */
+/** Categorías antiguas (compatibilidad con datos existentes) */
 const LEGACY_CATEGORIES: FirmFileCategory[] = ["POLICY", "GUIDE", "TEMPLATE", "REFERENCE"];
 
 function formatBytes(n: number): string {
@@ -78,18 +78,18 @@ export function FirmFilesView({
   currentCategory?: FirmFileCategory;
   currentSearch: string;
   includeSuperseded: boolean;
-  /** v0.27: 让 service-center 复用同一组件且保留 ?tab= */
+  /** v0.27: Permite que service-center reutilice el mismo componente conservando ?tab= */
   basePath?: string;
   preservedParams?: string[];
-  /** v0.37: 应用页内嵌——隐藏标题/介绍（tab 已标注）*/
+  /** v0.37: Incrustado en página de aplicaciones: oculta título/introducción (la pestaña ya lo indica) */
   hideHeader?: boolean;
-  /** v0.37: 隐藏分类筛选条（如「制度规范」tab 只列 POLICY）*/
+  /** v0.37: Oculta la barra de filtro de categorías (por ejemplo, la pestaña «Normas institucionales» solo lista POLICY) */
   hideCategoryNav?: boolean;
-  /** v0.44: 覆盖默认标题/副标题/图标 */
+  /** v0.44: Sobrescribe título/subtítulo/icono por defecto */
   headerTitle?: string;
   headerSubtitle?: string;
   headerIcon?: React.ReactNode;
-  /** v0.44: 分类集合（"firm"=Documentos del estudio新分类，默认旧分类） */
+  /** v0.44: Conjunto de categorías ("firm" = nueva clasificación de Documentos del estudio, por defecto la antigua) */
   categorySet?: "firm" | "legacy";
 }) {
   const router = useRouter();
@@ -104,12 +104,12 @@ export function FirmFilesView({
 
   function navigate(patch: Record<string, string | undefined>) {
     const next = new URLSearchParams();
-    // 保留指定的 query（如 tab=firm-files）
+    // Conservar los query especificados (como tab=firm-files)
     for (const k of preservedParams) {
       const v = sp.get(k);
       if (v) next.set(k, v);
     }
-    // 合并目前的 firm-file 相关 query（category / q / includeOld）
+    // Combinar los query actuales relacionados con archivos del estudio (category / q / includeOld)
     for (const k of ["category", "q", "includeOld"]) {
       const v = sp.get(k);
       if (v) next.set(k, v);
@@ -128,15 +128,15 @@ export function FirmFilesView({
   }
 
   function handleDelete(f: FileEntry) {
-    if (!confirm(`ConfirmarEliminar「${f.name}」？\n（软Eliminar，可在数据库找回）`)) return;
+    if (!confirm(`¿Confirmar eliminación de «${f.name}»?\n(Eliminación suave, se puede recuperar de la base de datos)`)) return;
     setPendingId(f.id);
     startTransition(async () => {
       try {
         await deleteFirmFile({ id: f.id });
-        toast.success("已Eliminar");
+        toast.success("Eliminado");
         router.refresh();
       } catch (err) {
-        toast.error("EliminarError", { description: err instanceof Error ? err.message : "" });
+        toast.error("Error al eliminar", { description: err instanceof Error ? err.message : "" });
       } finally {
         setPendingId(null);
       }
@@ -164,8 +164,8 @@ export function FirmFilesView({
             <p className="mt-0.5 text-[12px] text-muted-foreground">
               {headerSubtitle ?? (
                 <>
-                  合同 · 函件 · 证照 · 其他。全所共享，
-                  {canUpload ? "Administrar员可上传y版本替代" : "Administrar员上传"}
+                  Contratos · Cartas · Licencias · Otros. Compartido por todo el estudio,
+                  {canUpload ? "el administrador puede subir y reemplazar versiones" : "el administrador sube"}
                 </>
               )}
             </p>
@@ -173,7 +173,7 @@ export function FirmFilesView({
           {canUpload && (
             <Button size="sm" onClick={() => setUploadOpen(true)} className="gap-1.5">
               <Upload className="h-3.5 w-3.5" />
-              上传Material
+              Subir archivo
             </Button>
           )}
         </header>
@@ -182,13 +182,13 @@ export function FirmFilesView({
           <div className="flex justify-end">
             <Button size="sm" onClick={() => setUploadOpen(true)} className="gap-1.5">
               <Upload className="h-3.5 w-3.5" />
-              上传Material
+              Subir archivo
             </Button>
           </div>
         )
       )}
 
-      {/* 筛选条 */}
+      {/* Barra de filtros */}
       <div className="space-y-3">
         {!hideCategoryNav && (
         <div className="flex flex-wrap items-center gap-1.5">
@@ -218,7 +218,7 @@ export function FirmFilesView({
               }
               className="h-3.5 w-3.5 accent-primary"
             />
-            包含旧版
+            Incluir versiones antiguas
           </label>
         </div>
         )}
@@ -229,7 +229,7 @@ export function FirmFilesView({
             <Input
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              placeholder="按Nombre / Descripción / 标签Buscar"
+              placeholder="Buscar por nombre / descripción / etiquetas"
               className="pl-8 text-xs"
             />
             {currentSearch && (
@@ -251,16 +251,16 @@ export function FirmFilesView({
         </form>
       </div>
 
-      {/* 列表 */}
+      {/* Lista */}
       {files.length === 0 ? (
         <div className="rounded-xl border border-dashed border-border bg-card py-16 text-center">
           <FolderArchive className="mx-auto mb-2 h-8 w-8 text-muted-foreground/40" />
           <p className="text-sm text-muted-foreground">
             {currentSearch
-              ? `Sin coincidencias「${currentSearch}」的Material`
+              ? `Sin archivos que coincidan con «${currentSearch}»`
               : currentCategory
-                ? `没有「${CATEGORY_META[currentCategory].label}」类Material`
-                : "还没有上传任何Material"}
+                ? `No hay archivos de categoría «${CATEGORY_META[currentCategory].label}»`
+                : "Todavía no se subió ningún archivo"}
           </p>
         </div>
       ) : (
@@ -279,13 +279,13 @@ export function FirmFilesView({
               >
                 <div className="flex items-start justify-between gap-3">
                   <div className="flex-1 overflow-hidden">
-                    {/* 第一行：文件名 + 标签 + 大小 / 时间 */}
+                    {/* Primera fila: nombre de archivo + etiqueta + tamaño / fecha */}
                     <div className="flex flex-wrap items-center gap-2">
                       <button
                         type="button"
                         onClick={() => setPreviewFile(f)}
                         className="truncate text-left text-sm font-medium text-foreground transition-colors hover:text-primary hover:underline"
-                        title="点击预览"
+                        title="Clic para previsualizar"
                       >
                         {f.name}
                       </button>
@@ -301,13 +301,13 @@ export function FirmFilesView({
                       </span>
                       {f.hasNewerVersion && (
                         <span className="shrink-0 rounded border border-amber-400 bg-amber-100 px-1 py-0.5 text-[9px] text-amber-700">
-                          旧版
+                          Versión antigua
                         </span>
                       )}
                       {f.supersedesCount > 0 && (
                         <span
                           className="shrink-0 inline-flex items-center gap-0.5 rounded border border-violet-300 bg-violet-50 px-1 py-0.5 text-[9px] text-violet-700"
-                          title={`已替代 ${f.supersedesCount} 个旧版`}
+                          title={`Reemplazó ${f.supersedesCount} versiones antiguas`}
                         >
                           <History className="h-2.5 w-2.5" />v{f.supersedesCount + 1}
                         </span>
@@ -315,7 +315,7 @@ export function FirmFilesView({
                       <span className="ml-auto flex shrink-0 items-center gap-1.5 text-[10px] text-muted-foreground">
                         <span className="font-mono tabular">{formatBytes(f.size)}</span>
                         <span className="opacity-50">·</span>
-                        <span>{new Date(f.createdAt).toLocaleDateString("zh-CN")}</span>
+                        <span>{new Date(f.createdAt).toLocaleDateString("es-AR")}</span>
                         <span className="opacity-50">·</span>
                         <span>{f.uploadedBy.name}</span>
                         {f.tags.length > 0 && (
@@ -329,21 +329,21 @@ export function FirmFilesView({
                         )}
                       </span>
                     </div>
-                    {/* 第二行：简介；没填时给个 placeholder，避免视觉空缺 */}
+                    {/* Segunda fila: descripción; si está vacía se muestra un placeholder para evitar el vacío visual */}
                     <p
                       className={cn(
                         "mt-1.5 line-clamp-2 text-[11.5px] leading-relaxed",
                         f.description ? "text-muted-foreground" : "text-muted-foreground/50"
                       )}
                     >
-                      {f.description || "（未填写简介）"}
+                      {f.description || "(Sin descripción)"}
                     </p>
                   </div>
                   <div className="flex shrink-0 items-center gap-1">
                     <a
                       href={`/api/firm-files/${f.id}/download`}
                       className="rounded-md p-1.5 text-muted-foreground hover:bg-popover hover:text-primary"
-                      title="下载"
+                      title="Descargar"
                     >
                       <Download className="h-3.5 w-3.5" />
                     </a>

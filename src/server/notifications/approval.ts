@@ -1,5 +1,5 @@
-// 内部 helper：仅供 server action / cron 调用，不做鉴权。
-// 不能标 "use server"，否则任何Cliente端可直接调用给AprobaciónRol伪造Notificaciones。
+﻿// å†…éƒ¨ helperï¼šä»…ä¾› server action / cron è°ƒç”¨ï¼Œä¸åšé‰´æƒã€‚
+// ä¸èƒ½æ ‡ "use server"ï¼Œå¦åˆ™ä»»ä½•Clienteç«¯å¯ç›´æŽ¥è°ƒç”¨ç»™AprobaciÃ³nRolä¼ªé€ Notificacionesã€‚
 import type { NotificationPriority, UserRole } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { createNotification } from "@/server/notifications/create";
@@ -70,3 +70,5 @@ export async function notifyDirectApprovers(input: DirectApprovalNotificationInp
     userIds: users.map((user) => user.id)
   });
 }
+
+

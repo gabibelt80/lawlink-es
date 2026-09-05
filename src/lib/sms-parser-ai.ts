@@ -1,35 +1,35 @@
-/**
- * v0.9.1 SMS AI 增强（server-only）
+﻿/**
+ * v0.9.1 SMS AI å¢žå¼ºï¼ˆserver-onlyï¼‰
  *
- * 抽 enrichWithAi 出来单独成文件，避免 client 组件 import sms-parser
- * 时把 ai/client → ai/settings → storage/crypto → node:crypto 拉到
- * Cliente端 bundle 报 UnhandledSchemeError。
+ * æŠ½ enrichWithAi å‡ºæ¥å•ç‹¬æˆæ–‡ä»¶ï¼Œé¿å… client ç»„ä»¶ import sms-parser
+ * æ—¶æŠŠ ai/client â†’ ai/settings â†’ storage/crypto â†’ node:crypto æ‹‰åˆ°
+ * Clienteç«¯ bundle æŠ¥ UnhandledSchemeErrorã€‚
  *
- * 调用方：server/sms/actions.ts → parseAndSaveSms（仅 server）
+ * è°ƒç”¨æ–¹ï¼šserver/sms/actions.ts â†’ parseAndSaveSmsï¼ˆä»… serverï¼‰
  */
 import { aiChat, extractJson, AiNotConfiguredError } from "@/lib/ai/client";
 import type { ParsedSms } from "./sms-parser";
 
 /**
- * 调用 AI 抽正则做不好的字段：summary 改写 / action Abogado动作 / urgency。
- * 不覆盖正则已抽出的硬字段（案号 / 法院 / Fecha / 法庭 / 法官 / 书记员 / 电话 / 上诉期）。
- * AI Error / 未配置 / 超时 → 静默Volver原 parsed（不抛错）。
+ * è°ƒç”¨ AI æŠ½æ­£åˆ™åšä¸å¥½çš„å­—æ®µï¼šsummary æ”¹å†™ / action AbogadoåŠ¨ä½œ / urgencyã€‚
+ * ä¸è¦†ç›–æ­£åˆ™å·²æŠ½å‡ºçš„ç¡¬å­—æ®µï¼ˆæ¡ˆå· / æ³•é™¢ / Fecha / æ³•åº­ / æ³•å®˜ / ä¹¦è®°å‘˜ / ç”µè¯ / ä¸Šè¯‰æœŸï¼‰ã€‚
+ * AI Error / æœªé…ç½® / è¶…æ—¶ â†’ é™é»˜VolveråŽŸ parsedï¼ˆä¸æŠ›é”™ï¼‰ã€‚
  */
 export async function enrichWithAi(rawText: string, base: ParsedSms): Promise<ParsedSms> {
-  const prompt = `下面是Abogado收到的一条法院/12368/电子送达SMS。请输出 JSON，**只填 3 个字段**：
+  const prompt = `ä¸‹é¢æ˜¯Abogadoæ”¶åˆ°çš„ä¸€æ¡æ³•é™¢/12368/ç”µå­é€è¾¾SMSã€‚è¯·è¾“å‡º JSONï¼Œ**åªå¡« 3 ä¸ªå­—æ®µ**ï¼š
 
 {
-  "summary": "用一句话准确概括SMS要点（≤ 40 字，不要复读法院名/案号/Fecha）",
-  "action": "Abogado应采取的具体动作（≤ 25 字，如：准时出庭、缴纳诉讼费、下载文书、补充证据；如无需动作填 null）",
-  "urgency": "HIGH / MEDIUM / LOW（HIGH=72h 内必须处理，MEDIUM=本周处理，LOW=知悉即可）"
+  "summary": "ç”¨ä¸€å¥è¯å‡†ç¡®æ¦‚æ‹¬SMSè¦ç‚¹ï¼ˆâ‰¤ 40 å­—ï¼Œä¸è¦å¤è¯»æ³•é™¢å/æ¡ˆå·/Fechaï¼‰",
+  "action": "Abogadoåº”é‡‡å–çš„å…·ä½“åŠ¨ä½œï¼ˆâ‰¤ 25 å­—ï¼Œå¦‚ï¼šå‡†æ—¶å‡ºåº­ã€ç¼´çº³è¯‰è®¼è´¹ã€ä¸‹è½½æ–‡ä¹¦ã€è¡¥å……è¯æ®ï¼›å¦‚æ— éœ€åŠ¨ä½œå¡« nullï¼‰",
+  "urgency": "HIGH / MEDIUM / LOWï¼ˆHIGH=72h å†…å¿…é¡»å¤„ç†ï¼ŒMEDIUM=æœ¬å‘¨å¤„ç†ï¼ŒLOW=çŸ¥æ‚‰å³å¯ï¼‰"
 }
 
-SMS原文：
+SMSåŽŸæ–‡ï¼š
 """
 ${rawText.slice(0, 1500)}
 """
 
-只回复 JSON，不要其他文字。`;
+åªå›žå¤ JSONï¼Œä¸è¦å…¶ä»–æ–‡å­—ã€‚`;
 
   try {
     const res = await aiChat({
@@ -59,10 +59,11 @@ ${rawText.slice(0, 1500)}
     };
   } catch (e) {
     if (e instanceof AiNotConfiguredError) {
-      // 未配置 = 用户没启用 AI；不抛错，直接Volver正则结果
+      // æœªé…ç½® = ç”¨æˆ·æ²¡å¯ç”¨ AIï¼›ä¸æŠ›é”™ï¼Œç›´æŽ¥Volveræ­£åˆ™ç»“æžœ
       return base;
     }
-    // 网络/超时/解析错也降级
+    // ç½‘ç»œ/è¶…æ—¶/è§£æžé”™ä¹Ÿé™çº§
     return base;
   }
 }
+

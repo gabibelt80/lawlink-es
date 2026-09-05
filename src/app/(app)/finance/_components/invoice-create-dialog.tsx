@@ -69,7 +69,7 @@ export function InvoiceCreateDialog({
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
 
-  // 关联模式
+  // Modo de asociación
   const [noMatter, setNoMatter] = useState(false);
   const [noMatterReason, setNoMatterReason] = useState("");
   const [matterQuery, setMatterQuery] = useState("");
@@ -78,7 +78,7 @@ export function InvoiceCreateDialog({
   const [matterLoading, setMatterLoading] = useState(false);
   const [clientOptions, setClientOptions] = useState<ClientOption[]>([]);
 
-  // 开票字段
+  // Campos de facturación
   const [amount, setAmount] = useState("");
   const [invoiceType, setInvoiceType] = useState<InvoiceType | null>(null);
   const [invoiceItem, setInvoiceItem] = useState<InvoiceItem>("LAWYER_FEE");
@@ -181,16 +181,16 @@ export function InvoiceCreateDialog({
 
   function submit() {
     const amt = Number(amount);
-    if (!amt || amt <= 0) return toast.warning("Ingrese el monto");
+    if (!amt || amt <= 0) return toast.warning("Ingresá el monto");
     if (!noMatter && !selectedMatter)
       return toast.warning(
-        "Seleccione un caso relacionado o marque «Sin caso relacionado»",
+        "Seleccioná un caso relacionado o marcá «Sin caso relacionado»",
       );
     if (noMatter && !noMatterReason.trim())
-      return toast.warning("Indique el motivo si no hay caso relacionado");
-    if (!invoiceType) return toast.warning("Seleccione el tipo de factura");
+      return toast.warning("Indicá el motivo si no hay caso relacionado");
+    if (!invoiceType) return toast.warning("Seleccioná el tipo de factura");
     if (!buyerName.trim())
-      return toast.warning("Ingrese el nombre del titular de la factura");
+      return toast.warning("Ingresá el nombre del titular de la factura");
     if (invoiceType === "SPECIAL") {
       if (!buyerTaxNo.trim())
         return toast.warning(
@@ -213,7 +213,7 @@ export function InvoiceCreateDialog({
     }
     if (!noMatter && evidenceFiles.length === 0) {
       return toast.warning(
-        "Adjunte la base de la factura (contrato de mandato escaneado, etc.)",
+        "Adjuntá la base de la factura (contrato de mandato escaneado, etc.)",
       );
     }
 
@@ -221,7 +221,7 @@ export function InvoiceCreateDialog({
       try {
         const isSpecial = invoiceType === "SPECIAL";
         const docIds: string[] = [];
-        // 仅关联Caso时上传依据（依据须绑定Caso）
+        // Solo se suben los respaldos cuando hay caso asociado (los respaldos deben estar vinculados a un caso)
         if (!noMatter && selectedMatter) {
           for (const file of evidenceFiles) {
             const fd = new FormData();
@@ -271,13 +271,13 @@ export function InvoiceCreateDialog({
           </DialogTitle>
           <DialogDescription className="text-xs">
             {canCreateUnlinkedInvoice
-              ? "Seleccione un caso relacionado con usted o emita una factura sin caso relacionado (debe indicar el motivo)"
-              : "Seleccione un caso relacionado con usted para enviar la solicitud de factura"}
+              ? "Seleccioná un caso relacionado con vos o emití una factura sin caso relacionado (debés indicar el motivo)"
+              : "Seleccioná un caso relacionado con vos para enviar la solicitud de factura"}
           </DialogDescription>
         </DialogHeader>
 
         <div className="flex-1 space-y-4 overflow-y-auto px-5 py-4">
-          {/* 关联Caso */}
+          {/* Caso relacionado */}
           <Field label="Caso relacionado" required>
             <div className="space-y-2">
               {canCreateUnlinkedInvoice && (
@@ -302,7 +302,7 @@ export function InvoiceCreateDialog({
               {canCreateUnlinkedInvoice && noMatter ? (
                 <Textarea
                   rows={2}
-                  placeholder="Describa el motivo específico para no tener un caso relacionado (obligatorio)"
+                  placeholder="Describí el motivo específico para no tener un caso relacionado (obligatorio)"
                   value={noMatterReason}
                   onChange={(e) => setNoMatterReason(e.target.value)}
                 />
@@ -366,7 +366,7 @@ export function InvoiceCreateDialog({
             </div>
           </Field>
 
-          {/* Monto + 类型 */}
+          {/* Monto + Tipo */}
           <div className="grid grid-cols-2 gap-3">
             <Field label="Monto de la factura ($)" required>
               <Input
@@ -385,7 +385,7 @@ export function InvoiceCreateDialog({
                 onValueChange={(v) => setInvoiceType(v as InvoiceType)}
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="Seleccione" />
+                  <SelectValue placeholder="Seleccioná" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="PLAIN">Factura ordinaria</SelectItem>
@@ -405,7 +405,7 @@ export function InvoiceCreateDialog({
             />
           </Field>
 
-          {/* 抬头 */}
+          {/* Titular */}
           <Field
             label="Titular de la factura (cliente)"
             required
@@ -418,7 +418,7 @@ export function InvoiceCreateDialog({
             {!noMatter && clientOptions.length > 0 ? (
               <Select onValueChange={pickClient}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Seleccione el titular de la factura" />
+                  <SelectValue placeholder="Seleccioná el titular de la factura" />
                 </SelectTrigger>
                 <SelectContent>
                   {clientOptions.map((c) => (
@@ -438,7 +438,7 @@ export function InvoiceCreateDialog({
             )}
           </Field>
 
-          {/* 专票六要素 */}
+          {/* Seis elementos de la factura especial */}
           {invoiceType === "SPECIAL" && (
             <div className="space-y-3 rounded-md border border-primary/30 bg-primary/5 p-3">
               <Field label="Número de identificación fiscal" required>
@@ -481,7 +481,7 @@ export function InvoiceCreateDialog({
             </div>
           )}
 
-          {/* 依据：仅关联Caso时必传 */}
+          {/* Respaldo: obligatorio solo cuando hay caso asociado */}
           {!noMatter && (
             <Field
               label="Base de la factura"

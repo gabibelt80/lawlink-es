@@ -1,13 +1,13 @@
-/**
- * v0.42 律所信息 / 编号体系配置（ítems 1 + ítems 11）
+﻿/**
+ * v0.42 ConfiguraciÃ³n de informaciÃ³n del estudio / sistema de numeraciÃ³n (Ã­tems 1 + Ã­tems 11)
  *
- * 单 SystemSetting key `firmProfile`，value 为 JSON：
- *   - firmName / firmSubtitle / logoDataUrl：侧栏品牌（默认 LawLink / AbogadoPanel de trabajo）
- *   - matterCodePrefix：内部编号前缀（internalCode 的 LL 段，默认 LL）
- *   - firmShortName / caseNoTemplate / categoryWords：所内案号模板y各段映射
+ * Una sola clave SystemSetting `firmProfile`, value es JSON:
+ *   - firmName / firmSubtitle / logoDataUrl: marca de la barra lateral (por defecto Juridictas / Panel de trabajo jurÃ­dico)
+ *   - matterCodePrefix: prefijo de numeraciÃ³n interna (segmento LL del internalCode, por defecto LL)
+ *   - firmShortName / caseNoTemplate / categoryWords: plantilla de nÃºmero interno del estudio y mapeo de cada segmento
  *
- * 沿用 src/lib/ai/settings.ts 的「单 key + 类型化读写」范式。logo 直接以
- * base64 data URL 内联存储（律所 logo 体积小），避免引入额外存储/服务路由。
+ * Sigue el patrÃ³n de Â«clave Ãºnica + lectura/escritura tipadaÂ» de src/lib/ai/settings.ts. El logo se guarda
+ * directamente como data URL base64 (el logo del estudio es pequeÃ±o), evitando almacenamiento o rutas de servicio adicionales.
  */
 import type { MatterCategory } from "@prisma/client";
 
@@ -15,28 +15,28 @@ import { prisma } from "@/lib/prisma";
 
 const FIRM_PROFILE_KEY = "firmProfile";
 
-/** {类词} 默认映射：可在Configuración页逐类Editar */
+/** Mapeo por defecto de {palabraCat}: se puede editar por categorÃ­a en la pÃ¡gina de ConfiguraciÃ³n */
 export const CATEGORY_WORD_DEFAULTS: Record<MatterCategory, string> = {
-  CIVIL_COMMERCIAL: "民诉",
-  LABOR_ARBITRATION: "劳仲",
-  COMMERCIAL_ARBITRATION: "商仲",
-  CRIMINAL: "刑辩",
-  ADMINISTRATIVE: "行诉",
-  NON_LITIGATION: "非诉",
-  LEGAL_COUNSEL: "顾问",
-  SPECIAL_PROJECT: "专ítems"
+  CIVIL_COMMERCIAL: "Civil",
+  LABOR_ARBITRATION: "Laboral",
+  COMMERCIAL_ARBITRATION: "Comercial",
+  CRIMINAL: "Penal",
+  ADMINISTRATIVE: "Admin",
+  NON_LITIGATION: "NoCont",
+  LEGAL_COUNSEL: "AsesorÃ­a",
+  SPECIAL_PROJECT: "Proyecto"
 };
 
-/** {类} 单字简称（固定，不可Editar） */
+/** Abreviatura de una letra de {cat} (fija, no editable) */
 export const CATEGORY_ABBR: Record<MatterCategory, string> = {
-  CIVIL_COMMERCIAL: "民",
-  LABOR_ARBITRATION: "劳",
-  COMMERCIAL_ARBITRATION: "商",
-  CRIMINAL: "刑",
-  ADMINISTRATIVE: "行",
-  NON_LITIGATION: "非",
-  LEGAL_COUNSEL: "顾",
-  SPECIAL_PROJECT: "专"
+  CIVIL_COMMERCIAL: "C",
+  LABOR_ARBITRATION: "L",
+  COMMERCIAL_ARBITRATION: "A",
+  CRIMINAL: "P",
+  ADMINISTRATIVE: "D",
+  NON_LITIGATION: "N",
+  LEGAL_COUNSEL: "G",
+  SPECIAL_PROJECT: "E"
 };
 
 export interface FirmProfile {
@@ -50,12 +50,12 @@ export interface FirmProfile {
 }
 
 export const FIRM_PROFILE_DEFAULTS: FirmProfile = {
-  firmName: "LawLink",
-  firmSubtitle: "AbogadoPanel de trabajo",
+  firmName: "Juridictas",
+  firmSubtitle: "Panel de trabajo jurÃ­dico",
   logoDataUrl: null,
   matterCodePrefix: "LL",
   firmShortName: "",
-  caseNoTemplate: "{年}-{所}{类词}-{序3}",
+  caseNoTemplate: "{aÃ±o}-{est}{palabraCat}-{sec3}",
   categoryWords: CATEGORY_WORD_DEFAULTS
 };
 
@@ -75,8 +75,8 @@ export async function getFirmProfile(): Promise<FirmProfile> {
 
 export async function saveFirmProfile(patch: Partial<FirmProfile>): Promise<FirmProfile> {
   const current = await getFirmProfile();
-  // 显式逐字段合并：undefined 表示「不改」（对象展开会把 undefined 一并覆盖，故不用 spread）。
-  // logoDataUrl 特殊：undefined=保留，null=清除。
+  // FusiÃ³n explÃ­cita campo por campo: undefined significa Â«no cambiarÂ» (el spread de objetos sobrescribirÃ­a con undefined, por eso no se usa).
+  // logoDataUrl es especial: undefined = conservar, null = eliminar.
   const next: FirmProfile = {
     firmName: patch.firmName ?? current.firmName,
     firmSubtitle: patch.firmSubtitle ?? current.firmSubtitle,
@@ -93,3 +93,4 @@ export async function saveFirmProfile(patch: Partial<FirmProfile>): Promise<Firm
   });
   return next;
 }
+

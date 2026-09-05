@@ -12,12 +12,12 @@ import { ArchiveTabs } from "./_components/archive-tabs";
 import { matterHref } from "@/lib/matters/route";
 
 const CATEGORY_CN: Record<string, string> = {
-  CIVIL_COMMERCIAL: "民商",
+  CIVIL_COMMERCIAL: "Civil/Comercial",
   CRIMINAL: "Penal",
   ADMINISTRATIVE: "Administrativo",
-  NON_LITIGATION: "非诉",
-  LEGAL_COUNSEL: "顾问",
-  SPECIAL_PROJECT: "专ítems"
+  NON_LITIGATION: "No contencioso",
+  LEGAL_COUNSEL: "Consultoría",
+  SPECIAL_PROJECT: "Proyecto especial"
 };
 
 export default async function ArchivePage({
@@ -41,18 +41,18 @@ export default async function ArchivePage({
         <div>
           <h1 className="text-xl font-medium flex items-center gap-2">
             <Lock className="h-5 w-5 text-[#9B7BF7]" />
-            归档Administrar
+            Gestión de archivo
           </h1>
           <p className="text-xs text-muted-foreground mt-1">
             {isAdmin
-              ? "Administrar员视角：Aprobación待归档申请 + Ver已归档Caso。"
-              : "已归档Caso按归档Fecha降序排列。点击进入Caso详情可Ver卷宗封皮y目录，或导出归档包。"}
+              ? "Vista de administrador: aprobación de solicitudes pendientes de archivo + ver casos archivados."
+              : "Los casos archivados se ordenan por fecha de archivo descendente. Al entrar al detalle del caso podés ver la portada y el índice del expediente, o exportar el paquete de archivo."}
           </p>
         </div>
         <span className="text-xs text-muted-foreground">
           {activeTab === "pending"
-            ? `待Aprobación ${pending.length} 件`
-            : `已归档 ${items.length} 件`}
+            ? `Pendientes de aprobación ${pending.length} casos`
+            : `Archivados ${items.length} casos`}
         </span>
       </header>
 
@@ -64,23 +64,23 @@ export default async function ArchivePage({
         <PendingArchiveTable records={pending} />
       ) : items.length === 0 ? (
         <div className="rounded-lg border border-dashed border-border/60 py-16 text-center text-sm text-muted-foreground">
-          暂无已归档Caso。在Caso详情顶部&ldquo;Estado → 归档&rdquo;完成归档流程后，会出现在这里。
+          No hay casos archivados. Completá el flujo de archivo en la parte superior del detalle del caso («Estado → Archivar») y aparecerán aquí.
         </div>
       ) : (
         <div className="rounded-lg border border-border/60 overflow-hidden">
           <table className="w-full text-sm">
             <thead className="bg-muted/30 text-xs text-muted-foreground">
               <tr>
-                <th className="px-3 py-2 text-left font-normal w-32">所内案号</th>
+                <th className="px-3 py-2 text-left font-normal w-32">N° interno</th>
                 <th className="px-3 py-2 text-left font-normal">Caso</th>
-                <th className="px-3 py-2 text-left font-normal w-20">类别</th>
-                <th className="px-3 py-2 text-left font-normal w-24">委托方</th>
-                <th className="px-3 py-2 text-left font-normal w-20">Cerrar caso方式</th>
-                <th className="px-3 py-2 text-left font-normal w-28">Cerrar casoFecha</th>
-                <th className="px-3 py-2 text-left font-normal w-28">归档Fecha</th>
-                <th className="px-3 py-2 text-left font-normal w-20">归档人</th>
-                <th className="px-3 py-2 text-left font-normal w-16">缺ítems</th>
-                <th className="px-3 py-2 text-left font-normal w-16">导出</th>
+                <th className="px-3 py-2 text-left font-normal w-20">Categoría</th>
+                <th className="px-3 py-2 text-left font-normal w-24">Cliente</th>
+                <th className="px-3 py-2 text-left font-normal w-20">Modo de cierre</th>
+                <th className="px-3 py-2 text-left font-normal w-28">Fecha de cierre</th>
+                <th className="px-3 py-2 text-left font-normal w-28">Fecha de archivo</th>
+                <th className="px-3 py-2 text-left font-normal w-20">Archivado por</th>
+                <th className="px-3 py-2 text-left font-normal w-16">Faltantes</th>
+                <th className="px-3 py-2 text-left font-normal w-16">Exportar</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-border/60">
@@ -122,14 +122,14 @@ export default async function ArchivePage({
                         {rec.missingItems.length} ítems
                       </Badge>
                     ) : (
-                      <span className="text-xs text-muted-foreground">齐</span>
+                      <span className="text-xs text-muted-foreground">Completo</span>
                     )}
                   </td>
                   <td className="px-3 py-2.5">
                     <a
                       href={`/api/archive/${rec.matter.id}/export`}
                       className="inline-flex items-center gap-1 text-xs text-[#5B8DEF] hover:text-[#5B8DEF]/80"
-                      title="导出归档 ZIP"
+                      title="Exportar ZIP de archivo"
                     >
                       <Download className="h-3 w-3" />
                       ZIP

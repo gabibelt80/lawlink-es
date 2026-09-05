@@ -1,6 +1,6 @@
 /**
- * v0.38: Documentos del estudio恢复独立页（v0.37 曾并入 /service-center，现拆回真实页面）
- * v0.44: 分类改为合同/函件/证照/其他
+ * v0.38: Documentos del estudio volvió a ser página independiente (en v0.37 se había integrado a /service-center, ahora se separa de nuevo como página real)
+ * v0.44: La clasificación cambió a contratos/cartas/licencias/otros
  */
 import type { FirmFileCategory } from "@prisma/client";
 import { redirect } from "next/navigation";

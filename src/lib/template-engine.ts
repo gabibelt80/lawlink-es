@@ -1,12 +1,12 @@
-/**
- * v0.8 文档模板引擎
+﻿/**
+ * v0.8 æ–‡æ¡£æ¨¡æ¿å¼•æ“Ž
  *
- * 流程：
- *   1. buildContext(matterId, userId, overrides?) 从 DB 拼装变量上下文
- *   2. renderDocxBuffer(templateBuffer, context) 用 docxtemplater 渲染
- *   3. 渲染前 detectMissing(variables, context) 找出未填写的变量，由 UI 弹窗补全
+ * æµç¨‹ï¼š
+ *   1. buildContext(matterId, userId, overrides?) ä»Ž DB æ‹¼è£…å˜é‡ä¸Šä¸‹æ–‡
+ *   2. renderDocxBuffer(templateBuffer, context) ç”¨ docxtemplater æ¸²æŸ“
+ *   3. æ¸²æŸ“å‰ detectMissing(variables, context) æ‰¾å‡ºæœªå¡«å†™çš„å˜é‡ï¼Œç”± UI å¼¹çª—è¡¥å…¨
  *
- * 模板变量使用双大括号语法：{{firm.name}} / {{client.idNumber}}。
+ * æ¨¡æ¿å˜é‡ä½¿ç”¨åŒå¤§æ‹¬å·è¯­æ³•ï¼š{{firm.name}} / {{client.idNumber}}ã€‚
  */
 import PizZip from "pizzip";
 import Docxtemplater from "docxtemplater";
@@ -27,7 +27,7 @@ export interface PartySnapshot {
 export interface RenderContext {
   firm: { name: string; address: string; phone: string };
   today: string; // YYYY-MM-DD
-  todayCN: string; // 二〇二六年Mayo二十三日
+  todayCN: string; // äºŒã€‡äºŒå…­å¹´MayoäºŒåä¸‰æ—¥
   lawyer: { name: string; phone: string };
   matter: {
     code: string;
@@ -35,14 +35,14 @@ export interface RenderContext {
     category: string;
     causeText: string;
     intakeDate: string;
-    claimAmount: string; // 中文Monto / "—"
+    claimAmount: string; // ä¸­æ–‡Monto / "â€”"
     ourStanding: string;
   };
   client: PartySnapshot;
-  opposing: PartySnapshot; // 第一个对方
-  third: PartySnapshot; // 第一个第三人
+  opposing: PartySnapshot; // ç¬¬ä¸€ä¸ªå¯¹æ–¹
+  third: PartySnapshot; // ç¬¬ä¸€ä¸ªç¬¬ä¸‰äºº
   proceeding: { type: string; caseNo: string; court: string };
-  // 数组循环用
+  // æ•°ç»„å¾ªçŽ¯ç”¨
   plaintiffs: PartySnapshot[];
   defendants: PartySnapshot[];
   thirds: PartySnapshot[];
@@ -58,53 +58,53 @@ const EMPTY_PARTY: PartySnapshot = {
 };
 
 const STANDING_CN: Record<string, string> = {
-  PLAINTIFF: "原告",
-  JOINT_PLAINTIFF: "共同原告",
-  DEFENDANT: "被告",
-  JOINT_DEFENDANT: "共同被告",
-  THIRD_PARTY: "第三人",
-  APPELLANT: "上诉人",
-  APPELLEE: "被上诉人",
-  RETRIAL_APPLICANT: "再审申请人",
-  RETRIAL_RESPONDENT: "再审被申请人",
-  ENFORCEMENT_APPLICANT: "申请执行人",
-  EXECUTED_PERSON: "被执行人",
-  COUNTERCLAIM_PLAINTIFF: "反诉原告",
-  COUNTERCLAIM_DEFENDANT: "反诉被告",
-  CRIMINAL_DEFENDANT: "被告人",
-  CRIMINAL_VICTIM: "被害人",
-  PRIVATE_PROSECUTOR: "自诉人",
-  CRIMINAL_INCIDENTAL_PLAINTIFF: "附带民事诉讼原告人",
-  ARBITRATION_CLAIMANT: "仲裁申请人",
-  ARBITRATION_RESPONDENT: "仲裁被申请人",
-  ADMIN_PLAINTIFF: "Administrativo诉讼原告",
-  ADMIN_DEFENDANT: "Administrativo诉讼被告",
-  ADMIN_RECONSIDERATION_APPLICANT: "Administrativo复议申请人",
-  ADMIN_RECONSIDERATION_RESPONDENT: "Administrativo复议被申请人",
-  NON_LITIGATION_PARTY: "ítems目当事人"
+  PLAINTIFF: "åŽŸå‘Š",
+  JOINT_PLAINTIFF: "å…±åŒåŽŸå‘Š",
+  DEFENDANT: "è¢«å‘Š",
+  JOINT_DEFENDANT: "å…±åŒè¢«å‘Š",
+  THIRD_PARTY: "ç¬¬ä¸‰äºº",
+  APPELLANT: "ä¸Šè¯‰äºº",
+  APPELLEE: "è¢«ä¸Šè¯‰äºº",
+  RETRIAL_APPLICANT: "å†å®¡ç”³è¯·äºº",
+  RETRIAL_RESPONDENT: "å†å®¡è¢«ç”³è¯·äºº",
+  ENFORCEMENT_APPLICANT: "ç”³è¯·æ‰§è¡Œäºº",
+  EXECUTED_PERSON: "è¢«æ‰§è¡Œäºº",
+  COUNTERCLAIM_PLAINTIFF: "åè¯‰åŽŸå‘Š",
+  COUNTERCLAIM_DEFENDANT: "åè¯‰è¢«å‘Š",
+  CRIMINAL_DEFENDANT: "è¢«å‘Šäºº",
+  CRIMINAL_VICTIM: "è¢«å®³äºº",
+  PRIVATE_PROSECUTOR: "è‡ªè¯‰äºº",
+  CRIMINAL_INCIDENTAL_PLAINTIFF: "é™„å¸¦æ°‘äº‹è¯‰è®¼åŽŸå‘Šäºº",
+  ARBITRATION_CLAIMANT: "ä»²è£ç”³è¯·äºº",
+  ARBITRATION_RESPONDENT: "ä»²è£è¢«ç”³è¯·äºº",
+  ADMIN_PLAINTIFF: "Administrativoè¯‰è®¼åŽŸå‘Š",
+  ADMIN_DEFENDANT: "Administrativoè¯‰è®¼è¢«å‘Š",
+  ADMIN_RECONSIDERATION_APPLICANT: "Administrativoå¤è®®ç”³è¯·äºº",
+  ADMIN_RECONSIDERATION_RESPONDENT: "Administrativoå¤è®®è¢«ç”³è¯·äºº",
+  NON_LITIGATION_PARTY: "Ã­temsç›®å½“äº‹äºº"
 };
 
 const CATEGORY_CN: Record<string, string> = {
   CIVIL_COMMERCIAL: "Civil/Comercial",
   CRIMINAL: "Penal",
   ADMINISTRATIVE: "Administrativo",
-  NON_LITIGATION: "非诉",
-  LEGAL_COUNSEL: "法律顾问",
-  SPECIAL_PROJECT: "专ítems法律服务"
+  NON_LITIGATION: "éžè¯‰",
+  LEGAL_COUNSEL: "æ³•å¾‹é¡¾é—®",
+  SPECIAL_PROJECT: "ä¸“Ã­temsæ³•å¾‹æœåŠ¡"
 };
 
 function toCNDate(d: Date): string {
-  const cnDigits = "〇一二三四五六七八九";
+  const cnDigits = "ã€‡ä¸€äºŒä¸‰å››äº”å…­ä¸ƒå…«ä¹";
   const y = String(d.getFullYear()).split("").map((c) => cnDigits[+c]).join("");
   const m = d.getMonth() + 1;
   const day = d.getDate();
   const cnNum = (n: number) => {
-    if (n <= 10) return ["〇", "一", "二", "三", "四", "五", "六", "七", "八", "九", "十"][n];
-    if (n < 20) return "十" + cnDigits[n - 10];
-    if (n < 30) return "二十" + (n === 20 ? "" : cnDigits[n - 20]);
-    return "三十" + (n === 30 ? "" : cnDigits[n - 30]);
+    if (n <= 10) return ["ã€‡", "ä¸€", "äºŒ", "ä¸‰", "å››", "äº”", "å…­", "ä¸ƒ", "å…«", "ä¹", "å"][n];
+    if (n < 20) return "å" + cnDigits[n - 10];
+    if (n < 30) return "äºŒå" + (n === 20 ? "" : cnDigits[n - 20]);
+    return "ä¸‰å" + (n === 30 ? "" : cnDigits[n - 30]);
   };
-  return `${y}年${cnNum(m)}月${cnNum(day)}日`;
+  return `${y}å¹´${cnNum(m)}æœˆ${cnNum(day)}æ—¥`;
 }
 
 function partyToSnapshot(p: {
@@ -129,16 +129,16 @@ async function getFirmInfo(): Promise<{ name: string; address: string; phone: st
   });
   const dict = new Map(rows.map((r) => [r.key, (r.value as { value?: string })?.value ?? ""]));
   return {
-    name: dict.get(FIRM_NAME_KEY) || "LawLink Abogado事务所",
+    name: dict.get(FIRM_NAME_KEY) || "LawLink Abogadoäº‹åŠ¡æ‰€",
     address: dict.get(FIRM_ADDRESS_KEY) || "",
     phone: dict.get(FIRM_PHONE_KEY) || ""
   };
 }
 
 /**
- * 应用 overrides（来自 UI 的行内补全），路径键如 "client.idNumber" 写回源表。
- * 注意：只回写 v0.8 高频缺失字段（client.idNumber / client.address / opposing.idNumber etc.）。
- * 其他字段一律忽略，避免误Acciones。
+ * åº”ç”¨ overridesï¼ˆæ¥è‡ª UI çš„è¡Œå†…è¡¥å…¨ï¼‰ï¼Œè·¯å¾„é”®å¦‚ "client.idNumber" å†™å›žæºè¡¨ã€‚
+ * æ³¨æ„ï¼šåªå›žå†™ v0.8 é«˜é¢‘ç¼ºå¤±å­—æ®µï¼ˆclient.idNumber / client.address / opposing.idNumber etc.ï¼‰ã€‚
+ * å…¶ä»–å­—æ®µä¸€å¾‹å¿½ç•¥ï¼Œé¿å…è¯¯Accionesã€‚
  */
 async function applyOverrides(matterId: string | undefined, overrides: Record<string, string>) {
   if (!matterId) return;
@@ -148,7 +148,7 @@ async function applyOverrides(matterId: string | undefined, overrides: Record<st
   });
   if (!matter) return;
 
-  // client.* → Client 表
+  // client.* â†’ Client è¡¨
   if (matter.primaryClientId) {
     const clientPatch: Record<string, string> = {};
     if (overrides["client.idNumber"]) clientPatch.idNumber = overrides["client.idNumber"];
@@ -162,7 +162,7 @@ async function applyOverrides(matterId: string | undefined, overrides: Record<st
     }
   }
 
-  // opposing.* → 第一个 OPPOSING_PARTY
+  // opposing.* â†’ ç¬¬ä¸€ä¸ª OPPOSING_PARTY
   const opposingPatch: Record<string, string> = {};
   if (overrides["opposing.idNumber"]) opposingPatch.idNumber = overrides["opposing.idNumber"];
   if (overrides["opposing.address"]) opposingPatch.address = overrides["opposing.address"];
@@ -207,7 +207,7 @@ export async function buildContext(opts: {
         category: "",
         causeText: "",
         intakeDate: "",
-        claimAmount: "—",
+        claimAmount: "â€”",
         ourStanding: ""
       },
       client: EMPTY_PARTY,
@@ -229,7 +229,7 @@ export async function buildContext(opts: {
       procedures: { orderBy: { order: "asc" }, where: { engagement: "ENGAGED" }, take: 1 }
     }
   });
-  if (!matter) throw new Error("Caso不存在");
+  if (!matter) throw new Error("Casoä¸å­˜åœ¨");
 
   const causeText = matter.cause?.name ?? matter.causeFreeText ?? "";
   const clientParty = matter.primaryClient
@@ -252,7 +252,7 @@ export async function buildContext(opts: {
     .filter((p) => p.role === "CLIENT_PARTY")
     .map(partyToSnapshot);
 
-  // 根据 standing 区分 plaintiff / defendant（兜底按 role）
+  // æ ¹æ® standing åŒºåˆ† plaintiff / defendantï¼ˆå…œåº•æŒ‰ roleï¼‰
   const plaintiffs = clientPartiesFromParty.length > 0 ? clientPartiesFromParty : [clientParty];
   const defendants = opposingParties;
 
@@ -269,7 +269,7 @@ export async function buildContext(opts: {
       category: CATEGORY_CN[matter.category] ?? matter.category,
       causeText,
       intakeDate: matter.intakeDate ? matter.intakeDate.toISOString().slice(0, 10) : "",
-      claimAmount: matter.claimAmount ? `${matter.claimAmount} pesos` : "—",
+      claimAmount: matter.claimAmount ? `${matter.claimAmount} pesos` : "â€”",
       ourStanding: matter.ourStanding ? STANDING_CN[matter.ourStanding] ?? matter.ourStanding : ""
     },
     client: clientParty,
@@ -287,8 +287,8 @@ export async function buildContext(opts: {
 }
 
 /**
- * docxtemplater 错误结构（Errors[].properties.explanation 含具体 tag）。
- * 用类型断言读取，避免引入额外依赖。
+ * docxtemplater é”™è¯¯ç»“æž„ï¼ˆErrors[].properties.explanation å«å…·ä½“ tagï¼‰ã€‚
+ * ç”¨ç±»åž‹æ–­è¨€è¯»å–ï¼Œé¿å…å¼•å…¥é¢å¤–ä¾èµ–ã€‚
  */
 interface DocxTagError {
   message?: string;
@@ -322,10 +322,10 @@ function formatDocxError(err: unknown): string {
 }
 
 /**
- * 渲染 docx：传入模板 Buffer + 上下文 → Volver填充后的 Buffer。
- * 模板用 {{var}} 语法（双大括号），避免y docx 内嵌 "{" 冲突。
+ * æ¸²æŸ“ docxï¼šä¼ å…¥æ¨¡æ¿ Buffer + ä¸Šä¸‹æ–‡ â†’ Volverå¡«å……åŽçš„ Bufferã€‚
+ * æ¨¡æ¿ç”¨ {{var}} è¯­æ³•ï¼ˆåŒå¤§æ‹¬å·ï¼‰ï¼Œé¿å…y docx å†…åµŒ "{" å†²çªã€‚
  *
- * 出错时抛出含具体 tag / Motivo的中文异常，方便Abogado定位是哪个模板字段坏了。
+ * å‡ºé”™æ—¶æŠ›å‡ºå«å…·ä½“ tag / Motivoçš„ä¸­æ–‡å¼‚å¸¸ï¼Œæ–¹ä¾¿Abogadoå®šä½æ˜¯å“ªä¸ªæ¨¡æ¿å­—æ®µåäº†ã€‚
  */
 export function renderDocxBuffer(
   templateBuffer: Buffer,
@@ -335,7 +335,7 @@ export function renderDocxBuffer(
   try {
     zip = new PizZip(templateBuffer);
   } catch (err) {
-    throw new Error(`模板文件损坏，无法解压：${err instanceof Error ? err.message : String(err)}`);
+    throw new Error(`æ¨¡æ¿æ–‡ä»¶æŸåï¼Œæ— æ³•è§£åŽ‹ï¼š${err instanceof Error ? err.message : String(err)}`);
   }
 
   const doc = new Docxtemplater(zip, {
@@ -347,15 +347,15 @@ export function renderDocxBuffer(
   try {
     doc.render(context as unknown as Record<string, unknown>);
   } catch (err) {
-    throw new Error(`模板渲染Error：\n${formatDocxError(err)}`);
+    throw new Error(`æ¨¡æ¿æ¸²æŸ“Errorï¼š\n${formatDocxError(err)}`);
   }
 
   return doc.getZip().generate({ type: "nodebuffer" }) as Buffer;
 }
 
 /**
- * 检查上下文中哪些变量为空，Volver缺失变量路径列表（UI 弹窗用）。
- * @param required 模板声明的变量清单（DocumentTemplate.variables）
+ * æ£€æŸ¥ä¸Šä¸‹æ–‡ä¸­å“ªäº›å˜é‡ä¸ºç©ºï¼ŒVolverç¼ºå¤±å˜é‡è·¯å¾„åˆ—è¡¨ï¼ˆUI å¼¹çª—ç”¨ï¼‰ã€‚
+ * @param required æ¨¡æ¿å£°æ˜Žçš„å˜é‡æ¸…å•ï¼ˆDocumentTemplate.variablesï¼‰
  */
 export function detectMissing(required: string[], context: RenderContext): string[] {
   const missing: string[] = [];
@@ -380,3 +380,4 @@ function readPath(obj: unknown, path: string): unknown {
   }
   return cur;
 }
+

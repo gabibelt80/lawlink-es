@@ -1,14 +1,14 @@
-"use server";
+﻿"use server";
 
 /**
- * v0.22: 律所Material库（FirmFile）
+ * v0.22: Archivos del estudio (FirmFile)
  *
- * 全所共享：所有 active 用户可读；admin / PRINCIPAL_LAWYER 可上传 / 替代 / Eliminar。
- * 4 分类：制度 / 指引 / 参考模板 / 其他文件。
- * 版本：supersededById Enlace旧→新；列表默认只显示"最新"。
- * Buscar：ILIKE name + description + tags 多字段模糊Coincidencia（不用 tsvector）。
+ * Compartidos en todo el estudio: todos los usuarios activos pueden leer;
+ * admin / PRINCIPAL_LAWYER pueden subir / reemplazar / eliminar.
+ * 4 categorias: normativa / guias / plantillas de referencia / otros.
+ * Versiones: supersededById enlaza version anterior a nueva.
  */
-import { prisma } from "@/lib/prisma";
+import { getTenantPrisma } from "@/lib/tenant-prisma";
 import { requireSession } from "@/lib/auth/session";
 import { storage } from "@/lib/storage";
 import { sha256 } from "@/lib/storage/crypto";
@@ -36,7 +36,7 @@ export type FirmFileEntry = {
 async function requireUploader() {
   const session = await requireSession();
   if (session.user.role !== "ADMIN" && session.user.role !== "PRINCIPAL_LAWYER") {
-    throw new Error("仅Administrar员 / 主任Abogado可Administrar律所Material");
+    throw new Error("Solo el Administrador / Abogado Principal puede administrar archivos del estudio");
   }
   return session;
 }
@@ -44,9 +44,9 @@ async function requireUploader() {
 const CATEGORY_VALUES: FirmFileCategory[] = ["POLICY", "GUIDE", "TEMPLATE", "REFERENCE"];
 
 function parseCategory(raw: unknown): FirmFileCategory {
-  if (typeof raw !== "string") throw new Error("分类必填");
+  if (typeof raw !== "string") throw new Error("La categoria es obligatoria");
   if ((CATEGORY_VALUES as string[]).includes(raw)) return raw as FirmFileCategory;
-  throw new Error(`无效分类：${raw}`);
+  throw new Error(`Categoria invalida: ${raw}`);
 }
 
 function parseTags(raw: unknown): string[] {
@@ -63,6 +63,7 @@ export async function listFirmFiles(input: {
   search?: string;
   includeSuperseded?: boolean;
 }): Promise<FirmFileEntry[]> {
+  const prisma = await getTenantPrisma();
   await requireSession();
 
   const where: Prisma.FirmFileWhereInput = {
@@ -74,9 +75,9 @@ export async function listFirmFiles(input: {
   if (input.search?.trim()) {
     const q = input.search.trim();
     where.OR = [
-      { name: { contains: q, mode: "insensitive" } },
-      { description: { contains: q, mode: "insensitive" } },
-      { tags: { has: q } }
+      { name: { contains: q } },
+      { description: { contains: q } },
+      { tags: { array_contains: q } }
     ];
   }
 
@@ -114,8 +115,8 @@ export async function listFirmFiles(input: {
 }
 
 export async function getFirmFileVersionHistory(input: { id: string }) {
+  const prisma = await getTenantPrisma();
   await requireSession();
-  // 沿着 supersedes 链向旧版深挖（理论是树，业务上单链）
   type Node = {
     id: string;
     name: string;
@@ -157,6 +158,7 @@ export async function uploadFirmFile(formData: FormData): Promise<{
   id: string;
   name: string;
 }> {
+  const prisma = await getTenantPrisma();
   const session = await requireUploader();
 
   const file = formData.get("file");
@@ -166,32 +168,31 @@ export async function uploadFirmFile(formData: FormData): Promise<{
   const tags = parseTags(formData.get("tags"));
   const supersedesRaw = formData.get("supersedesId");
 
-  if (!(file instanceof File)) throw new Error("缺少文件");
-  if (file.size === 0) throw new Error("空文件");
+  if (!(file instanceof File)) throw new Error("Falta el archivo");
+  if (file.size === 0) throw new Error("El archivo esta vacio");
   if (file.size > FIRM_FILE_MAX_BYTES)
-    throw new Error(`文件超过 ${Math.round(FIRM_FILE_MAX_BYTES / 1024 / 1024)}MB`);
-  if (typeof name !== "string" || !name.trim()) throw new Error("Nombre必填");
+    throw new Error(`El archivo supera los ${Math.round(FIRM_FILE_MAX_BYTES / 1024 / 1024)}MB`);
+  if (typeof name !== "string" || !name.trim()) throw new Error("El nombre es obligatorio");
 
   const supersedesId =
     typeof supersedesRaw === "string" && supersedesRaw ? supersedesRaw : null;
 
-  // 替代旧版的合法性
+  // Validacion de reemplazo de version anterior
   if (supersedesId) {
     const old = await prisma.firmFile.findUnique({
       where: { id: supersedesId },
       select: { id: true, supersededById: true, archivedAt: true }
     });
-    if (!old) throw new Error("被替代的旧版不存在");
-    if (old.supersededById) throw new Error("该旧版已被其他新版替代");
-    if (old.archivedAt) throw new Error("该旧版已Eliminar，无法被替代");
+    if (!old) throw new Error("La version anterior no existe");
+    if (old.supersededById) throw new Error("La version anterior ya fue reemplazada");
+    if (old.archivedAt) throw new Error("La version anterior esta eliminada");
   }
 
   const buf = Buffer.from(await file.arrayBuffer());
   const path = await storage.writeFile("firm-files", buf);
   const hash = sha256(buf);
 
-  // 用户填的 name 可能不含扩展名（如"员工手册 v2.4"），下载时浏览器要靠扩展名识别程序，
-  // 这里优先取原始文件名的扩展名兜底，其次用 mimeType 推断
+  // Asegura que el nombre tenga extension
   const trimmedName = name.trim().slice(0, 200);
   const userHasExt = /\.[A-Za-z0-9]{1,5}$/.test(trimmedName);
   let nameWithFileExt = trimmedName;
@@ -246,13 +247,14 @@ export async function updateFirmFile(input: {
   tags?: string[];
   category?: FirmFileCategory;
 }) {
+  const prisma = await getTenantPrisma();
   const session = await requireUploader();
   const existing = await prisma.firmFile.findUnique({
     where: { id: input.id },
     select: { id: true, archivedAt: true }
   });
-  if (!existing) throw new Error("Material不存在");
-  if (existing.archivedAt) throw new Error("已Eliminar的Material不可Editar");
+  if (!existing) throw new Error("El archivo no existe");
+  if (existing.archivedAt) throw new Error("No se puede editar un archivo eliminado");
 
   const data: Prisma.FirmFileUpdateInput = {};
   if (input.name !== undefined) data.name = input.name.trim().slice(0, 200);
@@ -275,6 +277,7 @@ export async function updateFirmFile(input: {
 }
 
 export async function deleteFirmFile(input: { id: string }) {
+  const prisma = await getTenantPrisma();
   const session = await requireUploader();
   await prisma.firmFile.update({
     where: { id: input.id },

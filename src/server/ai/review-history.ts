@@ -1,9 +1,9 @@
-"use server";
+﻿"use server";
 
 /**
- * v0.21: 文书 AI 审查历史查询
+ * v0.21: Consulta de historial de revisiÃ³n de IA de documentos
  */
-import { prisma } from "@/lib/prisma";
+import { getTenantPrisma } from "@/lib/tenant-prisma";
 import { requireSession } from "@/lib/auth/session";
 import { assertCanAccessMatter } from "@/lib/permissions";
 import type {
@@ -18,7 +18,7 @@ export type ReviewHistoryEntry = {
   itemCount: number;
   truncated: boolean;
   textPreviewChars: number;
-  /** 按 severity 统计：{ HIGH: 2, MEDIUM: 3, LOW: 0 } */
+  /** EstadÃ­sticas por severidad: { HIGH: 2, MEDIUM: 3, LOW: 0 } */
   severityCounts: Record<ReviewSeverity, number>;
 };
 
@@ -26,6 +26,7 @@ export async function listReviewHistory(input: {
   documentId: string;
 }): Promise<ReviewHistoryEntry[]> {
   const session = await requireSession();
+  const prisma = await getTenantPrisma();
 
   const doc = await prisma.document.findFirst({
     where: { id: input.documentId, deletedAt: null },
@@ -80,6 +81,7 @@ export async function getReviewRecord(input: {
   items: ReviewItem[];
 } | null> {
   const session = await requireSession();
+  const prisma = await getTenantPrisma();
   const rec = await prisma.reviewRecord.findUnique({
     where: { id: input.recordId },
     select: {
@@ -105,3 +107,4 @@ export async function getReviewRecord(input: {
     items: (Array.isArray(rec.itemsJson) ? rec.itemsJson : []) as ReviewItem[]
   };
 }
+

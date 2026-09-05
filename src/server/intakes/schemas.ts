@@ -1,4 +1,4 @@
-import { z } from "zod";
+﻿import { z } from "zod";
 import { matterCategorySchema, partyInputSchema, procedureTypeSchema } from "@/server/matters/schemas";
 
 export const intakeStatusSchema = z.enum([
@@ -48,16 +48,16 @@ const litigationIntakeCategories = new Set([
   "ADMINISTRATIVE"
 ]);
 
-// HTML number 输入框留空时，react-hook-form 的 valueAsNumber 会产生 NaN。
-// 可选Monto应将其视为“未填写”，否则 resolver 会在用户看不到的字段上阻断Enviar。
+// Cuando el input HTML number queda vacÃ­o, valueAsNumber de react-hook-form produce NaN.
+// Los montos opcionales deben tratarse como "sin completar", si no el resolver bloquearÃ­a el envÃ­o en campos que el usuario no ve.
 const optionalNonnegativeNumberSchema = z.preprocess(
   (value) => (typeof value === "number" && Number.isNaN(value) ? undefined : value),
-  z.coerce.number().nonnegative("Monto不能为负数").optional()
+  z.coerce.number().nonnegative("El monto no puede ser negativo").optional()
 );
 
 const intakeCreateBaseSchema = z.object({
-  // 基础
-  // CasoNombre去除所有空白字符（产品要求，避免列表/详情显示空格）
+  // BÃ¡sico
+  // El nombre del caso elimina todos los espacios en blanco (requisito del producto, para evitar espacios en listas/detalles)
   title: z.preprocess(
     (v) => (typeof v === "string" ? v.replace(/\s+/g, "") : v),
     z.string().max(200).optional().or(z.literal(""))
@@ -68,7 +68,7 @@ const intakeCreateBaseSchema = z.object({
   description: z.string().max(2000).optional().or(z.literal("")),
   receivedAt: z.coerce.date().optional(),
 
-  // 程序 + 诉讼地位 + 机构 + 标的
+  // Procedimiento + posiciÃ³n procesal + organismo + objeto
   firstProcedureType: procedureTypeSchema.optional(),
   firstAgency: z.string().max(120).optional().or(z.literal("")),
   jurisdiction: z.string().max(120).optional().or(z.literal("")),
@@ -76,11 +76,11 @@ const intakeCreateBaseSchema = z.object({
   claimAmount: optionalNonnegativeNumberSchema,
   claimDescription: z.string().max(500).optional().or(z.literal("")),
 
-  // v0.30: 律协备案 + 是否反诉
+  // v0.30: InscripciÃ³n en colegio + reconvenciÃ³n
   barFiling: z.enum(["NONE", "COLLECTIVE", "SENSITIVE", "MAJOR", "OTHER"]).optional(),
   counterclaim: z.boolean().default(false),
 
-  // v0.31: 非诉 / 顾问 / 专ítems 专属
+  // v0.31: No contencioso / consultorÃ­a / proyecto especial
   businessType: z.string().max(60).optional().or(z.literal("")),
   serviceScope: z.string().max(1000).optional().or(z.literal("")),
   deliverables: z.string().max(500).optional().or(z.literal("")),
@@ -88,30 +88,30 @@ const intakeCreateBaseSchema = z.object({
   serviceStart: z.coerce.date().optional(),
   serviceEnd: z.coerce.date().optional(),
 
-  // 委托方 + 联系人
+  // Cliente + contacto
   clientId: z.string().cuid().optional().or(z.literal("")),
   clientName: z.string().max(120).optional().or(z.literal("")),
   clientType: clientTypeSchema.optional(),
   contactName: z.string().max(40).optional().or(z.literal("")),
   contactPhone: z.string().max(30).optional().or(z.literal("")),
 
-  // 企业自动填充（pesos典查询结果，透传到 Client Crear）
+  // Autocompletado empresarial (resultado de consulta Yuandian, se pasa al crear Cliente)
   clientIdNumber: z.string().max(50).optional().or(z.literal("")),
   clientAddress: z.string().max(200).optional().or(z.literal("")),
   clientLegalRep: z.string().max(40).optional().or(z.literal("")),
 
-  // Abogado费
+  // Honorarios
   feeType: feeTypeSchema.optional(),
-  feeAmount: optionalNonnegativeNumberSchema, // FIXED: TotalMonto；CONTINGENCY: 基础办案费
-  contingencyTerms: z.string().max(1000).optional().or(z.literal("")), // CONTINGENCY 收费方式
+  feeAmount: optionalNonnegativeNumberSchema, // FIXED: Monto total; CONTINGENCY: honorario base
+  contingencyTerms: z.string().max(1000).optional().or(z.literal("")), // Modalidad CONTINGENCY
   feeSchedule: z.string().max(500).optional().or(z.literal("")),
   feeNote: z.string().max(500).optional().or(z.literal("")),
 
-  // 团队
+  // Equipo
   ownerUserId: z.string().cuid().optional().or(z.literal("")),
   coUserIds: z.array(z.string().cuid()).default([]),
 
-  // 对方 / 第三人（其中可能有 standing）
+  // Contraparte / terceros (pueden tener standing)
   parties: z.array(partyInputSchema).default([])
 });
 
@@ -125,19 +125,20 @@ function requireLitigationStandings(
     ctx.addIssue({
       path: ["ourStanding"],
       code: z.ZodIssueCode.custom,
-      message: "请选择委托方诉讼地位"
+      message: "SeleccionÃ¡ la posiciÃ³n procesal del cliente"
     });
   }
 
-  data.parties.forEach((party, index) => {
-    if (!party.standing) {
-      ctx.addIssue({
-        path: ["parties", index, "standing"],
-        code: z.ZodIssueCode.custom,
-        message: "请选择诉讼地位"
-      });
-    }
-  });
+    data.parties.forEach((party, index) => {
+      if (party.role === "CLIENT_PARTY") return;
+      if (!party.standing) {
+        ctx.addIssue({
+          path: ["parties", index, "standing"],
+          code: z.ZodIssueCode.custom,
+          message: "SeleccionÃ¡ la posiciÃ³n procesal"
+        });
+      }
+    });
 }
 
 export const intakeCreateSchema = intakeCreateBaseSchema.superRefine(requireLitigationStandings);
@@ -161,9 +162,10 @@ export const intakeListQuerySchema = z.object({
 
 export const declineIntakeSchema = z.object({
   id: z.string().cuid(),
-  reason: z.string().min(1, "请填写No aceptar casoMotivo").max(500)
+  reason: z.string().min(1, "CompletÃ¡ el motivo de rechazo").max(500)
 });
 
 export type IntakeCreateInput = z.infer<typeof intakeCreateSchema>;
 export type IntakeListQuery = z.infer<typeof intakeListQuerySchema>;
 export type DeclineIntakeInput = z.infer<typeof declineIntakeSchema>;
+

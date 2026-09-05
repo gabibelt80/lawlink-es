@@ -85,19 +85,19 @@ const severityStyle: Record<
 };
 
 const queryRoleOptions: { value: QueryRole; label: string }[] = [
-  { value: "CLIENT_PARTY", label: "拟委托方" },
-  { value: "OPPOSING_PARTY", label: "相对方" },
-  { value: "THIRD_PARTY", label: "第三人" },
+  { value: "CLIENT_PARTY", label: "Futuro cliente" },
+  { value: "OPPOSING_PARTY", label: "Parte contraria" },
+  { value: "THIRD_PARTY", label: "Tercero" },
 ];
 
 const partyRoleLabel: Record<PartyRole, string> = {
-  CLIENT_PARTY: "委托方",
-  OPPOSING_PARTY: "对方",
-  THIRD_PARTY: "第三人",
-  CO_LITIGANT: "共同诉讼人",
-  AGENT: "代理人",
-  WITNESS: "证人",
-  OTHER: "其他",
+  CLIENT_PARTY: "Cliente",
+  OPPOSING_PARTY: "Contraria",
+  THIRD_PARTY: "Tercero",
+  CO_LITIGANT: "Colitigante",
+  AGENT: "Representante",
+  WITNESS: "Testigo",
+  OTHER: "Otro",
 };
 
 function emptyQuery(): QueryRow {
@@ -134,7 +134,7 @@ export function ConflictsView() {
       }))
       .filter((q) => q.name || q.idNumber);
     if (cleaned.length === 0) {
-      toast.warning("请至少填写一个Nombre y apellido或证件号");
+      toast.warning("Completá al menos un nombre o número de documento");
       return;
     }
 
@@ -143,9 +143,9 @@ export function ConflictsView() {
         const res = await runCheckAndSave({ queries: cleaned });
         setResults(res.hits);
         setHasRun(true);
-        toast.success(`检索完成，命中 ${res.hits.length} 条`);
+        toast.success(`Búsqueda completada, ${res.hits.length} coincidencias`);
       } catch (err) {
-        toast.error("检索Error", {
+        toast.error("Error de búsqueda", {
           description: err instanceof Error ? err.message : "",
         });
       }
@@ -157,16 +157,16 @@ export function ConflictsView() {
       <header className="ll-hero-surface px-5 py-4">
         <h1 className="relative z-[1] flex items-center gap-2 text-[20px] font-semibold">
           <ShieldCheck className="h-5 w-5 text-primary" strokeWidth={1.8} />
-          冲突检索
+          Búsqueda de conflictos
         </h1>
         <p className="relative z-[1] mt-2 max-w-2xl text-[13px] text-muted-foreground">
-          拟代理的委托方、相对方或第三人，必须先y历史Cliente和Caso主体比对。命中阻塞冲突时，建议停止收案并形成留痕结论。
+          El futuro cliente, la parte contraria o el tercero que se pretenda representar deben compararse primero con los sujetos de clientes y casos históricos. Si se detecta un conflicto bloqueante, se recomienda detener la admisión y dejar constancia de la conclusión.
         </p>
       </header>
 
       <section className="ll-surface p-4">
         <div className="mb-3 flex items-center justify-between">
-          <h2 className="ll-panel-title">检索ítems</h2>
+          <h2 className="ll-panel-title">Ítems de búsqueda</h2>
           <Button
             variant="outline"
             size="sm"
@@ -174,7 +174,7 @@ export function ConflictsView() {
             className="h-7 gap-1"
           >
             <Plus className="h-3.5 w-3.5" />
-            Agregar检索ítems
+            Agregar ítem de búsqueda
           </Button>
         </div>
 
@@ -186,7 +186,7 @@ export function ConflictsView() {
             >
               <div className="col-span-3">
                 <Label className="text-[10px] uppercase tracking-wider text-muted-foreground">
-                  主体身份
+                  Tipo de sujeto
                 </Label>
                 <Select
                   value={q.role}
@@ -208,25 +208,25 @@ export function ConflictsView() {
               </div>
               <div className="col-span-4">
                 <Label className="text-[10px] uppercase tracking-wider text-muted-foreground">
-                  Nombre y apellido / Nombre
+                  Nombre y apellido / Razón social
                 </Label>
                 <Input
                   value={q.name}
                   onChange={(e) => updateQuery(idx, { name: e.target.value })}
-                  placeholder="如：华东置业集团有限公司"
+                  placeholder="Ej.: Grupo Inmobiliario Huadong S.A."
                   className="mt-1 h-[34px] bg-card"
                 />
               </div>
               <div className="col-span-4">
                 <Label className="text-[10px] uppercase tracking-wider text-muted-foreground">
-                  身份证 / 统一社会信用代码
+                  DNI / código de crédito social unificado
                 </Label>
                 <Input
                   value={q.idNumber}
                   onChange={(e) =>
                     updateQuery(idx, { idNumber: e.target.value })
                   }
-                  placeholder="yNombre y apellido至少填一ítems"
+                  placeholder="Completá al menos nombre o documento"
                   className="mt-1 h-[34px] bg-card font-mono"
                 />
               </div>
@@ -237,7 +237,7 @@ export function ConflictsView() {
                     size="sm"
                     onClick={() => removeQuery(idx)}
                     className="h-9 w-9 p-0 text-destructive"
-                    aria-label="移除"
+                    aria-label="Quitar"
                   >
                     <Trash2 className="h-3.5 w-3.5" />
                   </Button>
@@ -254,7 +254,7 @@ export function ConflictsView() {
             ) : (
               <Search className="h-4 w-4" />
             )}
-            开始检索
+            Iniciar búsqueda
           </Button>
         </div>
       </section>
@@ -262,7 +262,7 @@ export function ConflictsView() {
       {hasRun && (
         <section className="ll-surface p-4">
           <h2 className="mb-3 text-sm font-semibold">
-            检索结果{" "}
+            Resultados de búsqueda{" "}
             <span className="font-mono text-xs text-muted-foreground tabular">
               ({results?.length ?? 0})
             </span>
@@ -273,7 +273,7 @@ export function ConflictsView() {
             <div className="rounded-md border border-[#15803D]/30 bg-[#E6F2EC] p-4 text-sm">
               <div className="flex items-center gap-2">
                 <CheckCircle2 className="h-4 w-4 text-[#15803D]" />
-                <span>未命中任何历史Cliente或Caso</span>
+                <span>No se encontraron coincidencias con clientes o casos históricos</span>
               </div>
             </div>
           ) : (
@@ -316,8 +316,8 @@ export function ConflictsView() {
                           </span>
                           <span className="text-xs text-muted-foreground">
                             {h.hitType === "HISTORICAL_CLIENT"
-                              ? "历史Cliente"
-                              : "历史Caso"}
+                              ? "Cliente histórico"
+                              : "Caso histórico"}
                           </span>
                         </div>
                         <p className="mt-1.5 text-sm">{h.reason}</p>
@@ -325,10 +325,10 @@ export function ConflictsView() {
                           <MatterContext info={h.matterInfo} hit={h} />
                         )}
                         <div className="mt-1 font-mono text-[11px] text-muted-foreground">
-                          Coincidencia字段：{h.matchedField} = {h.matchedValue}
+                          Campo coincidente: {h.matchedField} = {h.matchedValue}
                           {h.matchedRatio !== null && h.matchedRatio < 1 && (
                             <span className="ml-2">
-                              相似度 {(h.matchedRatio * 100).toFixed(0)}%
+                              Similitud {(h.matchedRatio * 100).toFixed(0)}%
                             </span>
                           )}
                         </div>
@@ -377,17 +377,17 @@ function ConflictSummaryBar({
 
   return (
     <div className="mb-3 flex flex-wrap items-center gap-3 rounded-md border border-border bg-muted/55 px-3 py-2 text-xs">
-      <span className="font-semibold">风险汇Total</span>
-      <RiskCount severity="BLOCKING" label="阻塞" count={counts.BLOCKING} />
-      <RiskCount severity="HIGH" label="高风险" count={counts.HIGH} />
-      <RiskCount severity="MEDIUM" label="中风险" count={counts.MEDIUM} />
-      <RiskCount severity="LOW" label="低风险" count={counts.LOW} />
+      <span className="font-semibold">Resumen de riesgos</span>
+      <RiskCount severity="BLOCKING" label="Bloqueante" count={counts.BLOCKING} />
+      <RiskCount severity="HIGH" label="Alto" count={counts.HIGH} />
+      <RiskCount severity="MEDIUM" label="Medio" count={counts.MEDIUM} />
+      <RiskCount severity="LOW" label="Bajo" count={counts.LOW} />
       <span className="ml-auto rounded-full border border-border bg-card px-2 py-1 text-[11px] text-muted-foreground">
         {total === 0
-          ? "未命中历史冲突"
+          ? "Sin conflictos históricos"
           : hasBlocking
-            ? "存在阻塞冲突，谨慎收案"
-            : "存在风险命中，需进一步核实"}
+            ? "Existe conflicto bloqueante, admisión con precaución"
+            : "Existen coincidencias de riesgo, se requiere verificación adicional"}
       </span>
     </div>
   );
@@ -439,17 +439,17 @@ function MatterContext({
         </span>
       </div>
       <div className="grid grid-cols-2 gap-x-4 gap-y-1.5 text-muted-foreground md:grid-cols-3">
-        <Field label="Sistema收案">{formatDate(info.intakeDate)}</Field>
-        <Field label="当前Estado">{matterStatusLabel[info.status]}</Field>
-        <Field label="Causa/类型">{causeOrCategory}</Field>
-        <Field label="主办Abogado">{info.ownerName ?? "—"}</Field>
-        <Field label="命中Rol">
+        <Field label="Admisión al sistema">{formatDate(info.intakeDate)}</Field>
+        <Field label="Estado actual">{matterStatusLabel[info.status]}</Field>
+        <Field label="Causa/tipo">{causeOrCategory}</Field>
+        <Field label="Abogado principal">{info.ownerName ?? "—"}</Field>
+        <Field label="Rol coincidente">
           {partyRoleLabel[info.partyRole]}
           {info.partyStanding
             ? ` · ${litigationStandingLabel[info.partyStanding]}`
             : ""}
         </Field>
-        <Field label="命中主体">{hit.matchedName}</Field>
+        <Field label="Sujeto coincidente">{hit.matchedName}</Field>
       </div>
     </div>
   );
@@ -464,7 +464,7 @@ function Field({
 }) {
   return (
     <div className="flex min-w-0 gap-1.5">
-      <span className="shrink-0 text-muted-foreground/70">{label}：</span>
+      <span className="shrink-0 text-muted-foreground/70">{label}:</span>
       <span className="truncate text-foreground/85">{children}</span>
     </div>
   );
@@ -474,5 +474,5 @@ function formatDate(value: string | null) {
   if (!value) return "—";
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return "—";
-  return date.toLocaleDateString("zh-CN");
+  return date.toLocaleDateString("es-AR");
 }

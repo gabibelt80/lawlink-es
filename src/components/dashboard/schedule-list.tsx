@@ -8,7 +8,7 @@ import { matterHref } from "@/lib/matters/route";
 
 const typeMeta = {
   deadline: { icon: AlertTriangle, color: "text-amber-600", label: "Plazo" },
-  hearing: { icon: Calendar, color: "text-primary", label: "开庭" },
+  hearing: { icon: Calendar, color: "text-primary", label: "Audiencia" },
 };
 
 export function ScheduleList({ data }: { data: ScheduleItem[] }) {
@@ -76,7 +76,7 @@ function ScheduleRow({ item }: { item: ScheduleItem }) {
       ? "Hoy"
       : item.daysUntil === 1
         ? "Mañana"
-        : `${item.daysUntil}días后`;
+        : "${item.daysUntil} días";
   const urgent = item.daysUntil <= 3;
 
   const inner = (

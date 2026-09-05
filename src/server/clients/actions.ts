@@ -1,8 +1,8 @@
-"use server";
+﻿"use server";
 
 import { revalidatePath } from "next/cache";
 import { Prisma } from "@prisma/client";
-import { prisma } from "@/lib/prisma";
+import { getTenantPrisma } from "@/lib/tenant-prisma";
 import { requireSession } from "@/lib/auth/session";
 import { audit } from "@/server/audit";
 import { clientVisibilityFilter, isManager } from "@/lib/permissions";
@@ -18,7 +18,7 @@ import {
   type ClientListQuery,
 } from "./schemas";
 
-// 空字符串归 null（Prisma 不接受 "" 给可空字段）
+// Los strings vacios se convierten a null (Prisma no acepta "" en campos anulables)
 function emptyToNull<T extends Record<string, unknown>>(obj: T): T {
   const out: Record<string, unknown> = {};
   for (const [k, v] of Object.entries(obj)) {
@@ -28,6 +28,7 @@ function emptyToNull<T extends Record<string, unknown>>(obj: T): T {
 }
 
 export async function listClients(input: Partial<ClientListQuery> = {}) {
+  const prisma = await getTenantPrisma();
   const session = await requireSession();
   const query = clientListQuerySchema.parse(input);
 
@@ -35,14 +36,14 @@ export async function listClients(input: Partial<ClientListQuery> = {}) {
     ...clientVisibilityFilter(session.user.id, session.user.role),
     deletedAt: null,
     ...(query.type ? { type: query.type } : {}),
-    ...(query.tag ? { tags: { has: query.tag } } : {}),
+    ...(query.tag ? { tags: { array_contains: query.tag } } : {}),
     ...(query.search
       ? {
           OR: [
-            { name: { contains: query.search, mode: "insensitive" } },
+            { name: { contains: query.search } },
             { idNumber: { contains: query.search } },
             { phone: { contains: query.search } },
-            { email: { contains: query.search, mode: "insensitive" } },
+            { email: { contains: query.search } },
           ],
         }
       : {}),
@@ -66,8 +67,9 @@ export async function listClients(input: Partial<ClientListQuery> = {}) {
 }
 
 export async function getClientById(id: string) {
+  const prisma = await getTenantPrisma();
   const session = await requireSession();
-  // 权限检查：manager/finance 看Ver todos，其他人需有关联Caso
+  // Control de permisos: manager/finance ven todo, los demas necesitan casos asociados
   if (!isManager(session.user.role) && session.user.role !== "FINANCE") {
     const accessible = await prisma.client.findFirst({
       where: {
@@ -110,10 +112,11 @@ export async function getClientById(id: string) {
   return client;
 }
 
-// v0.37: ClienteFinanzas汇Total —— 跨该Cliente名下所有Caso聚合合同/应收/已收
+// v0.37: Resumen financiero del cliente - agrega contratos/por cobrar/cobrado de todos los casos del cliente
 export async function getClientFinanceSummary(clientId: string) {
+  const prisma = await getTenantPrisma();
   const session = await requireSession();
-  // 权限：y getClientById 一致
+  // Permisos: igual que getClientById
   if (!isManager(session.user.role) && session.user.role !== "FINANCE") {
     const accessible = await prisma.client.findFirst({
       where: {
@@ -171,6 +174,7 @@ export async function getClientFinanceSummary(clientId: string) {
 }
 
 export async function createClient(input: ClientCreateInput) {
+  const prisma = await getTenantPrisma();
   const session = await requireSession();
   const data = clientCreateSchema.parse(input);
 
@@ -222,16 +226,17 @@ export async function createClient(input: ClientCreateInput) {
 }
 
 export async function updateClient(input: ClientUpdateInput) {
+  const prisma = await getTenantPrisma();
   const session = await requireSession();
   if (!isManager(session.user.role)) {
     throw new Error(
-      "Solo el Administrador o el Abogado Principal puede editar la información del cliente",
+      "Solo el Administrador o el Abogado Principal puede editar la informacion del cliente",
     );
   }
   const data = clientUpdateSchema.parse(input);
   const { id, contacts, gender, ...rest } = data;
 
-  // 简单策略：Eliminar所有联系人 + 重新Crear。后续可优化为 diff
+  // Estrategia simple: eliminar todos los contactos + crearlos de nuevo
   await prisma.$transaction([
     prisma.contact.deleteMany({ where: { clientId: id } }),
     prisma.client.update({
@@ -270,6 +275,7 @@ export async function updateClient(input: ClientUpdateInput) {
 }
 
 export async function softDeleteClient(id: string) {
+  const prisma = await getTenantPrisma();
   const session = await requireSession();
   if (
     session.user.role !== "ADMIN" &&
@@ -296,8 +302,9 @@ export async function softDeleteClient(id: string) {
   return { ok: true };
 }
 
-// 单独的 contact Acciones（用于详情页快速Editar联系人，不Aprobar整 client 重写）
+// Acciones de contacto separadas
 export async function addContact(clientId: string, input: ContactInput) {
+  const prisma = await getTenantPrisma();
   const session = await requireSession();
   if (!isManager(session.user.role)) {
     throw new Error(
@@ -320,6 +327,7 @@ export async function addContact(clientId: string, input: ContactInput) {
 }
 
 export async function deleteContact(id: string) {
+  const prisma = await getTenantPrisma();
   const session = await requireSession();
   if (!isManager(session.user.role)) {
     throw new Error(

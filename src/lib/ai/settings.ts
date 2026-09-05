@@ -1,5 +1,5 @@
-/**
- * v0.9.1 Configuración de IA (protocolo compatible con OpenAI)
+﻿/**
+ * v0.9.1 ConfiguraciÃ³n de IA (protocolo compatible con OpenAI)
  *
  * SystemSetting con clave `aiSettings`, valor JSON cifrado:
  *   { apiKeyCipher, baseUrl, textModel, visionModel }
@@ -62,7 +62,7 @@ export async function readStoredAiSettings(): Promise<StoredAiSettings> {
   };
 }
 
-/** Datos para la UI: estado de configuración + valores (clave ofuscada) */
+/** Datos para la UI: estado de configuraciÃ³n + valores (clave ofuscada) */
 export async function readPublicAiSettings(): Promise<{
   configured: boolean;
   baseUrl: string;
@@ -77,11 +77,11 @@ export async function readPublicAiSettings(): Promise<{
     baseUrl: s.baseUrl,
     textModel: s.textModel,
     visionModel: s.visionModel,
-    apiKeyMasked: key ? `${key.slice(0, 4)}••••${key.slice(-4)}` : ""
+    apiKeyMasked: key ? `${key.slice(0, 4)}â€¢â€¢â€¢â€¢${key.slice(-4)}` : ""
   };
 }
 
-/** Para uso interno del servidor: configuración descifrada y lista para usar */
+/** Para uso interno del servidor: configuraciÃ³n descifrada y lista para usar */
 export async function getAiSettings(): Promise<ResolvedAiSettings> {
   const s = await readStoredAiSettings();
   const apiKey = decryptKey(s.apiKeyCipher);

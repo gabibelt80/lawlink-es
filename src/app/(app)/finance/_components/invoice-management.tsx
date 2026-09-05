@@ -351,7 +351,7 @@ function ProcessDialog({
     }
     if (file.size > 6 * 1024 * 1024) {
       toast.warning(
-        "El archivo de factura supera 6 MB; se seleccionó el archivo, complete el número de factura manualmente.",
+        "El archivo de factura supera 6 MB; se seleccionó el archivo, completá el número de factura manualmente.",
       );
       return;
     }
@@ -384,12 +384,12 @@ function ProcessDialog({
 
   function handleSubmit() {
     if (request.status === "APPROVED" && !invoiceFile && !request.invoiceFile) {
-      toast.warning("Suba la factura electrónica");
+      toast.warning("Subí la factura electrónica");
       return;
     }
     if (invoiceFile && !invoiceNo.trim()) {
       toast.warning(
-        "Complete el número de factura al subir la factura electrónica",
+        "Completá el número de factura al subir la factura electrónica",
       );
       return;
     }
@@ -678,7 +678,7 @@ function OcrPreview({
       </div>
       {mismatch && (
         <div className="mt-2 rounded-md border border-amber-500/30 bg-amber-500/10 px-2 py-1 text-[11px] text-amber-700 dark:text-amber-300">
-          El monto reconocido no coincide con el monto de la solicitud; revíselo
+          El monto reconocido no coincide con el monto de la solicitud; revisalo
           antes de emitir.
         </div>
       )}
@@ -810,7 +810,7 @@ function RejectDialog({
 
   function handleSubmit() {
     if (!reason.trim()) {
-      toast.warning("Ingrese el motivo de rechazo");
+      toast.warning("Ingresá el motivo de rechazo");
       return;
     }
     startTransition(async () => {

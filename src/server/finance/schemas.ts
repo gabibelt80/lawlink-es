@@ -1,4 +1,4 @@
-import { z } from "zod";
+﻿import { z } from "zod";
 
 export const feeEntryTypeSchema = z.enum([
   "RECEIVABLE",
@@ -12,7 +12,7 @@ export const billingStatusSchema = z.enum(["DRAFT", "ACTIVE", "CLOSED"]);
 
 export const billingCreateSchema = z.object({
   matterId: z.string().cuid(),
-  title: z.string().min(1, "合同Nombre必填").max(120),
+  title: z.string().min(1, "åˆåŒNombreå¿…å¡«").max(120),
   contractAmount: z.coerce.number().nonnegative(),
   schedule: z.string().max(1000).optional().or(z.literal("")),
   status: billingStatusSchema.default("DRAFT"),
@@ -47,3 +47,5 @@ export const commissionPlanSetSchema = z.object({
 export type BillingCreateInput = z.infer<typeof billingCreateSchema>;
 export type FeeEntryCreateInput = z.infer<typeof feeEntryCreateSchema>;
 export type CommissionPlanSetInput = z.infer<typeof commissionPlanSetSchema>;
+
+

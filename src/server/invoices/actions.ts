@@ -1,9 +1,9 @@
-"use server";
+﻿"use server";
 
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { Prisma } from "@prisma/client";
-import { prisma } from "@/lib/prisma";
+import { getTenantPrisma } from "@/lib/tenant-prisma";
 import { requireSession } from "@/lib/auth/session";
 import { audit } from "@/server/audit";
 import { assertMatterWritable } from "@/lib/archive/guard";
@@ -25,7 +25,7 @@ const MAX_FILE_SIZE = 20 * 1024 * 1024;
 
 function requireFinanceOrApprover(role: string) {
   if (role !== "FINANCE" && role !== "ADMIN" && role !== "PRINCIPAL_LAWYER") {
-    throw new Error("仅Finanzas / Administrar员 / 主任Abogado可处理开票");
+    throw new Error("Solo Finanzas / Administrador / Abogado Principal pueden procesar facturas");
   }
 }
 
@@ -51,21 +51,22 @@ function invoiceRequestVisibilityWhere(
   };
 }
 
-/** Abogado在Caso详情Enviar开票申请 */
+/** Abogado envia solicitud de factura desde el detalle del Caso */
 const createSchema = z.object({
   matterId: z.string().cuid(),
-  amount: z.coerce.number().positive("Monto需大于 0"),
+  amount: z.coerce.number().positive("El monto debe ser mayor a 0"),
   title: z.string().max(120).optional().or(z.literal("")),
   requestNote: z.string().max(500).optional().or(z.literal(""))
 });
 
 export async function createInvoiceRequest(input: z.infer<typeof createSchema>) {
+  const prisma = await getTenantPrisma();
   const session = await requireSession();
   const data = createSchema.parse(input);
-  await assertCanAssociateMatter(session.user.id, data.matterId);
+  await assertCanAssociateMatter(session.user.id, session.user.role, data.matterId);
   await assertMatterWritable(data.matterId);
 
-  await assertCanLeadMatter(session.user.id, data.matterId, "仅Caso主办/协办Abogado可申请开票");
+  await assertCanLeadMatter(session.user.id, session.user.role, data.matterId, "Solo el responsable/co-responsable puede solicitar factura");
 
   const created = await prisma.invoiceRequest.create({
     data: {
@@ -94,10 +95,10 @@ export async function createInvoiceRequest(input: z.infer<typeof createSchema>) 
   await notifyRoleApprovers({
     roles: ["ADMIN", "PRINCIPAL_LAWYER", "FINANCE"],
     excludeUserId: session.user.id,
-    title: "新的FacturaAprobación待处理",
-    content: `${session.user.name ?? "有用户"} Enviar了开票申请：${
-      matter ? `${matter.internalCode} ${matter.title}` : "关联Caso"
-    }，Monto ${data.amount.toLocaleString("zh-CN")} pesos`,
+    title: "Nueva solicitud de factura pendiente",
+    content: `${session.user.name ?? "Un usuario"} envio una solicitud de factura: ${
+      matter ? `${matter.internalCode} ${matter.title}` : "Caso asociado"
+    }, Monto ${data.amount.toLocaleString("es-AR")} pesos`,
     href: "/finance",
     refType: "InvoiceRequest",
     refId: created.id,
@@ -110,6 +111,7 @@ export async function createInvoiceRequest(input: z.infer<typeof createSchema>) 
 }
 
 export async function listInvoiceRequests(filter?: { status?: "PENDING" | "ISSUED" | "REJECTED" | "APPROVED" }) {
+  const prisma = await getTenantPrisma();
   const session = await requireSession();
   const where: Prisma.InvoiceRequestWhereInput = {
     ...invoiceRequestVisibilityWhere(session.user.id, session.user.role),
@@ -146,6 +148,7 @@ export async function listInvoiceRequests(filter?: { status?: "PENDING" | "ISSUE
 }
 
 export async function listInvoiceRequestsByMatter(matterId: string) {
+  const prisma = await getTenantPrisma();
   const session = await requireSession();
   await assertCanAccessMatter(session.user.id, session.user.role, matterId);
   const rows = await prisma.invoiceRequest.findMany({
@@ -162,38 +165,35 @@ export async function listInvoiceRequestsByMatter(matterId: string) {
 }
 
 /**
- * Finanzas批准 + 上传电子Factura。FormData：
+ * Finanzas aprueba y sube factura electronica. FormData:
  *   requestId, processNote?, contractScan(File?), invoiceFile(File?)
- * - 不传 invoiceFile：Estado APPROVED
- * - 传 invoiceFile：Estado ISSUED
- *
- * contractScan 仅保留兼容旧数据流；申请依据应由申请人上传到 evidenceDocIds。
+ * - Sin invoiceFile: estado APPROVED
+ * - Con invoiceFile: estado ISSUED
  */
 export async function approveInvoiceRequest(formData: FormData) {
+  const prisma = await getTenantPrisma();
   const session = await requireSession();
   requireFinanceOrApprover(session.user.role);
 
   const requestId = formData.get("requestId");
-  if (typeof requestId !== "string" || !requestId) throw new Error("requestId 缺失");
+  if (typeof requestId !== "string" || !requestId) throw new Error("Falta requestId");
 
   const existing = await prisma.invoiceRequest.findUnique({
     where: { id: requestId },
     select: { id: true, matterId: true, status: true }
   });
-  if (!existing) throw new Error("申请不存在");
-  if (existing.status === "ISSUED") throw new Error("此申请已开具");
-  if (existing.status === "REJECTED") throw new Error("此申请Rechazado");
+  if (!existing) throw new Error("La solicitud no existe");
+  if (existing.status === "ISSUED") throw new Error("Esta solicitud ya fue emitida");
+  if (existing.status === "REJECTED") throw new Error("Esta solicitud fue rechazada");
 
   const processNote = formData.get("processNote");
   const contractScan = formData.get("contractScan");
   const invoiceFile = formData.get("invoiceFile");
-  // v0.14: 真实Factura号（Finanzas批准/开具时回填）
   const invoiceNo = formData.get("invoiceNo");
 
   let contractScanDocId: string | undefined;
   let invoiceFileDocId: string | undefined;
 
-  // 兼容旧流程：历史上允许Finanzas补传扫描件合同；新流程由申请人上传 evidenceDocIds。
   if (contractScan instanceof File && contractScan.size > 0) {
     validateUploadedFile(contractScan, { purpose: "invoice", maxBytes: MAX_FILE_SIZE });
     const raw = Buffer.from(await contractScan.arrayBuffer());
@@ -212,14 +212,13 @@ export async function approveInvoiceRequest(formData: FormData) {
         algorithm: enc.algorithm,
         iv: enc.iv.toString("base64"),
         authTag: enc.authTag.toString("base64"),
-        tags: ["Factura申请"],
+        tags: ["Solicitud de factura"],
         uploadedById: session.user.id
       }
     });
     contractScanDocId = doc.id;
   }
 
-  // 上传电子Factura
   if (invoiceFile instanceof File && invoiceFile.size > 0) {
     validateUploadedFile(invoiceFile, { purpose: "invoice", maxBytes: MAX_FILE_SIZE });
     const raw = Buffer.from(await invoiceFile.arrayBuffer());
@@ -238,7 +237,7 @@ export async function approveInvoiceRequest(formData: FormData) {
         algorithm: enc.algorithm,
         iv: enc.iv.toString("base64"),
         authTag: enc.authTag.toString("base64"),
-        tags: ["电子Factura"],
+        tags: ["Factura electronica"],
         uploadedById: session.user.id
       }
     });
@@ -247,9 +246,7 @@ export async function approveInvoiceRequest(formData: FormData) {
 
   const finalStatus = invoiceFileDocId
     ? ("ISSUED" as const)
-    : contractScanDocId
-      ? ("APPROVED" as const)
-      : ("APPROVED" as const);
+    : ("APPROVED" as const);
 
   const invoiceNoStr =
     typeof invoiceNo === "string" && invoiceNo.trim() ? invoiceNo.trim() : null;
@@ -263,7 +260,6 @@ export async function approveInvoiceRequest(formData: FormData) {
       processedAt: new Date(),
       ...(contractScanDocId ? { contractScanId: contractScanDocId } : {}),
       ...(invoiceFileDocId ? { invoiceFileId: invoiceFileDocId } : {}),
-      // v0.14: 开票完成（ISSUED）时回填真实Factura号 + 时间
       ...(finalStatus === "ISSUED" && invoiceNoStr
         ? { invoiceNo: invoiceNoStr, issuedAt: new Date() }
         : {})
@@ -293,10 +289,11 @@ function storageScope(matterId: string | null, requestId: string) {
 
 const rejectSchema = z.object({
   requestId: z.string().cuid(),
-  reason: z.string().min(1, "请说明RechazarMotivo").max(500)
+  reason: z.string().min(1, "Ingrese el motivo del rechazo").max(500)
 });
 
 export async function rejectInvoiceRequest(input: z.infer<typeof rejectSchema>) {
+  const prisma = await getTenantPrisma();
   const session = await requireSession();
   requireFinanceOrApprover(session.user.role);
   const data = rejectSchema.parse(input);
@@ -305,8 +302,8 @@ export async function rejectInvoiceRequest(input: z.infer<typeof rejectSchema>) 
     where: { id: data.requestId },
     select: { matterId: true, status: true }
   });
-  if (!existing) throw new Error("申请不存在");
-  if (existing.status === "ISSUED") throw new Error("已开具的申请不可Rechazar");
+  if (!existing) throw new Error("La solicitud no existe");
+  if (existing.status === "ISSUED") throw new Error("No se puede rechazar una solicitud ya emitida");
 
   await prisma.invoiceRequest.update({
     where: { id: data.requestId },
@@ -331,8 +328,9 @@ export async function rejectInvoiceRequest(input: z.infer<typeof rejectSchema>) 
   return { ok: true };
 }
 
-/** Finanzas页 KPI：本月已开票合计 */
+/** KPI de Finanzas: total facturado del mes */
 export async function getInvoiceStats() {
+  const prisma = await getTenantPrisma();
   const session = await requireSession();
   const now = new Date();
   const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);

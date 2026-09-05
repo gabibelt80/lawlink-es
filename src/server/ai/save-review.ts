@@ -1,9 +1,9 @@
-"use server";
+﻿"use server";
 
 /**
- * v0.20: 文书 AI 审查结果Guardar为Caso Document（y A3 类案存档对称的模式）
+ * v0.20: Guardar el resultado de revisiÃ³n de IA de un documento como Document del caso (modelo simÃ©trico al archivo de casos similares A3)
  */
-import { prisma } from "@/lib/prisma";
+import { getTenantPrisma } from "@/lib/tenant-prisma";
 import { requireSession } from "@/lib/auth/session";
 import { assertCanAccessMatter } from "@/lib/permissions";
 import { storage } from "@/lib/storage";
@@ -19,7 +19,7 @@ import { revalidateMatter } from "@/server/matters/route";
 const TYPE_CN: Record<ReviewType, string> = {
   MISSING: "Elementos faltantes",
   RISK: "Riesgo legal",
-  ISSUE: "Problemas de cláusulas",
+  ISSUE: "Problemas de clÃ¡usulas",
   SUGGESTION: "Sugerencias de mejora",
 };
 
@@ -34,26 +34,26 @@ function safeFileName(name: string): string {
 }
 
 function buildMarkdown(reviewedDocName: string, items: ReviewItem[]): string {
-  const now = new Date().toLocaleString("zh-CN");
+  const now = new Date().toLocaleString("es-AR");
   const lines: string[] = [
-    `# AI 审查结果：${reviewedDocName}`,
+    `# Resultado de revisiÃ³n de IA: ${reviewedDocName}`,
     "",
-    `- **审查时间**：${now}`,
-    `- **审查条数**：${items.length}`,
+    `- **Fecha de revisiÃ³n**: ${now}`,
+    `- **Cantidad de hallazgos**: ${items.length}`,
     "",
     "---",
     "",
   ];
   if (items.length === 0) {
-    lines.push("> AI 未发现明显问题。");
+    lines.push("> La IA no encontrÃ³ problemas evidentes.");
     return lines.join("\n");
   }
-  // 按 type 分组输出
+  // Agrupar por tipo
   const groups: ReviewType[] = ["MISSING", "RISK", "ISSUE", "SUGGESTION"];
   for (const t of groups) {
     const sub = items.filter((i) => i.type === t);
     if (sub.length === 0) continue;
-    lines.push(`## ${TYPE_CN[t]}（${sub.length}）`, "");
+    lines.push(`## ${TYPE_CN[t]} (${sub.length})`, "");
     for (const it of sub) {
       lines.push(`- **${it.title}** \`${SEV_CN[it.severity]}\``);
       lines.push(`  - ${it.detail}`);
@@ -70,6 +70,7 @@ export async function saveReviewToMatter(input: {
   items: ReviewItem[];
 }): Promise<{ ok: true; documentId: string; documentName: string }> {
   const session = await requireSession();
+  const prisma = await getTenantPrisma();
   await assertCanAccessMatter(
     session.user.id,
     session.user.role,
@@ -80,9 +81,9 @@ export async function saveReviewToMatter(input: {
     where: { id: input.matterId, deletedAt: null },
     select: { id: true, status: true },
   });
-  if (!matter) throw new Error("Caso不存在");
+  if (!matter) throw new Error("Caso no encontrado");
   if (matter.status === "ARCHIVED") {
-    throw new Error("Caso已归档（只读），不能再Guardar审查结果");
+    throw new Error("Caso archivado (solo lectura), no se puede guardar el resultado de revisiÃ³n");
   }
 
   const md = buildMarkdown(input.reviewedDocName, input.items);
@@ -90,7 +91,7 @@ export async function saveReviewToMatter(input: {
   const path = await storage.writeFile(`m_${input.matterId}`, buf);
   const hash = sha256(buf);
   const ts = new Date().toISOString().slice(0, 10);
-  const docName = `AI审查_${safeFileName(input.reviewedDocName)}_${ts}.md`;
+  const docName = `RevisionIA_${safeFileName(input.reviewedDocName)}_${ts}.md`;
 
   const doc = await prisma.document.create({
     data: {
@@ -103,7 +104,7 @@ export async function saveReviewToMatter(input: {
       size: buf.byteLength,
       sha256: hash,
       encrypted: false,
-      tags: ["AI审查", "存档"],
+      tags: ["RevisiÃ³n IA", "Archivo"],
     },
     select: { id: true, name: true },
   });
@@ -124,3 +125,4 @@ export async function saveReviewToMatter(input: {
   await revalidateMatter(input.matterId);
   return { ok: true, documentId: doc.id, documentName: doc.name };
 }
+

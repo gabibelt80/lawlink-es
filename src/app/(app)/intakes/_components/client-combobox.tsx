@@ -145,13 +145,13 @@ export function ClientCombobox({
       >
         <Command shouldFilter={false}>
           <CommandInput
-            placeholder="输入Nombre y apellido / 公司名"
+            placeholder="Ingresá nombre / razón social"
             value={query}
             onValueChange={setQuery}
           />
           <CommandList>
             {query.trim() && !hasExactMatch && (
-              <CommandGroup heading="作为新Cliente使用">
+              <CommandGroup heading="Usar como cliente nuevo">
                 <CommandItem
                   value={`__new__${query}`}
                   onSelect={() => {
@@ -162,15 +162,15 @@ export function ClientCombobox({
                 >
                   <Plus className="h-3.5 w-3.5 text-primary" />
                   <span>
-                    新建 <span className="text-primary">{query.trim()}</span>{" "}
-                    为委托方
+                    Crear <span className="text-primary">{query.trim()}</span>{" "}
+                    como parte cliente
                   </span>
                 </CommandItem>
               </CommandGroup>
             )}
 
             {filtered.length > 0 && (
-              <CommandGroup heading="已有Cliente">
+              <CommandGroup heading="Clientes existentes">
                 {filtered.map((o) => (
                   <CommandItem
                     key={o.id}
@@ -194,11 +194,11 @@ export function ClientCombobox({
 
             {(yuandianLoading || yuandianResults.length > 0) &&
               yuandianConfigured && (
-                <CommandGroup heading="企业信息库（pesos典）">
+                <CommandGroup heading="Base de datos empresarial (Yuandian)">
                   {yuandianLoading && yuandianResults.length === 0 && (
                     <div className="flex items-center gap-2 px-2 py-3 text-xs text-muted-foreground">
                       <Loader2 className="h-3 w-3 animate-spin" />
-                      Buscar中…
+                      Buscando…
                     </div>
                   )}
                   {yuandianResults.map((c) => (
@@ -225,7 +225,7 @@ export function ClientCombobox({
 
             {!query && filtered.length === 0 && (
               <div className="py-4 text-center text-xs text-muted-foreground">
-                开始输入以Buscar / 新建
+                Empezá a escribir para buscar / crear
               </div>
             )}
 
@@ -239,7 +239,7 @@ export function ClientCombobox({
                   }}
                   className="text-xs text-muted-foreground"
                 >
-                  清除选择
+                  Limpiar selección
                 </CommandItem>
               </CommandGroup>
             )}

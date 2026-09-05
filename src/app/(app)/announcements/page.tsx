@@ -1,5 +1,5 @@
 /**
- * v0.38: Anuncio指引独立页（v0.37 曾并入 /service-center，现拆回）
+ * v0.38: Página independiente de anuncios (en v0.37 estaba integrada en /service-center, ahora separada)
  */
 import { redirect } from "next/navigation";
 import { getSession } from "@/lib/auth/session";

@@ -1,10 +1,10 @@
-/**
- * v1.0 P3：内置模板扩容（第二批 12 个，PRD §11.3 / §二十三）。
+﻿/**
+ * v1.0 P3ï¼šå†…ç½®æ¨¡æ¿æ‰©å®¹ï¼ˆç¬¬äºŒæ‰¹ 12 ä¸ªï¼ŒPRD Â§11.3 / Â§äºŒåä¸‰ï¼‰ã€‚
  *
- * y v0.8 首批同一套 docx 生成方式y {{var}} 占位符体系；
- * 变量名以 src/lib/template-engine.ts 的渲染上下文为准
- * （firm / matter / client / opposing / proceeding / lawyer / todayCN）。
- * 律所部署后可在 /settings/templates 上传自定义版本替换。
+ * y v0.8 é¦–æ‰¹åŒä¸€å¥— docx ç”Ÿæˆæ–¹å¼y {{var}} å ä½ç¬¦ä½“ç³»ï¼›
+ * å˜é‡åä»¥ src/lib/template-engine.ts çš„æ¸²æŸ“ä¸Šä¸‹æ–‡ä¸ºå‡†
+ * ï¼ˆfirm / matter / client / opposing / proceeding / lawyer / todayCNï¼‰ã€‚
+ * å¾‹æ‰€éƒ¨ç½²åŽå¯åœ¨ /settings/templates ä¸Šä¼ è‡ªå®šä¹‰ç‰ˆæœ¬æ›¿æ¢ã€‚
  */
 import { AlignmentType } from "docx";
 import {
@@ -17,7 +17,7 @@ import {
 } from "./template-builder";
 
 // ============================================================
-// T11 授权委托书（单位）
+// T11 æŽˆæƒå§”æ‰˜ä¹¦ï¼ˆå•ä½ï¼‰
 // ============================================================
 const T11_VARS = [
   "client.name",
@@ -32,35 +32,35 @@ const T11_VARS = [
 
 async function buildT11(): Promise<Buffer> {
   return pack([
-    title("授权委托书"),
+    title("æŽˆæƒå§”æ‰˜ä¹¦"),
     blank(),
-    body("委托人：{{client.name}}"),
-    body("统一社会信用代码：{{client.idNumber}}"),
-    body("住所地：{{client.address}}"),
-    body("法定代表人 / 负责人：________________"),
+    body("å§”æ‰˜äººï¼š{{client.name}}"),
+    body("ç»Ÿä¸€ç¤¾ä¼šä¿¡ç”¨ä»£ç ï¼š{{client.idNumber}}"),
+    body("ä½æ‰€åœ°ï¼š{{client.address}}"),
+    body("æ³•å®šä»£è¡¨äºº / è´Ÿè´£äººï¼š________________"),
     blank(),
-    body("受委托人：{{lawyer.name}}，{{firm.name}}Abogado。"),
+    body("å—å§”æ‰˜äººï¼š{{lawyer.name}}ï¼Œ{{firm.name}}Abogadoã€‚"),
     blank(),
-    body("现委托上列受委托人在本单位y {{opposing.name}} {{matter.causeText}} 一案中，作为本单位的诉讼（仲裁）代理人。", { indent: true }),
+    body("çŽ°å§”æ‰˜ä¸Šåˆ—å—å§”æ‰˜äººåœ¨æœ¬å•ä½y {{opposing.name}} {{matter.causeText}} ä¸€æ¡ˆä¸­ï¼Œä½œä¸ºæœ¬å•ä½çš„è¯‰è®¼ï¼ˆä»²è£ï¼‰ä»£ç†äººã€‚", { indent: true }),
     blank(),
-    body("代理权限为(请勾选)：", { bold: true }),
-    body("☐ 一般代理。"),
-    body("☐ 特别代理。包括：代为承认、放弃、变更诉讼请求；代为提起反诉、上诉；代为申请执行；代为和解、调解；代为签收法律文书。"),
+    body("ä»£ç†æƒé™ä¸º(è¯·å‹¾é€‰)ï¼š", { bold: true }),
+    body("â˜ ä¸€èˆ¬ä»£ç†ã€‚"),
+    body("â˜ ç‰¹åˆ«ä»£ç†ã€‚åŒ…æ‹¬ï¼šä»£ä¸ºæ‰¿è®¤ã€æ”¾å¼ƒã€å˜æ›´è¯‰è®¼è¯·æ±‚ï¼›ä»£ä¸ºæèµ·åè¯‰ã€ä¸Šè¯‰ï¼›ä»£ä¸ºç”³è¯·æ‰§è¡Œï¼›ä»£ä¸ºå’Œè§£ã€è°ƒè§£ï¼›ä»£ä¸ºç­¾æ”¶æ³•å¾‹æ–‡ä¹¦ã€‚"),
     blank(),
-    body("委托Plazo：自签署之日起至本案代理事ítems终结。"),
+    body("å§”æ‰˜Plazoï¼šè‡ªç­¾ç½²ä¹‹æ—¥èµ·è‡³æœ¬æ¡ˆä»£ç†äº‹Ã­temsç»ˆç»“ã€‚"),
     blank(),
     blank(),
-    body("委托人(盖章)：________________"),
-    body("法定代表人(签字)：________________"),
+    body("å§”æ‰˜äºº(ç›–ç« )ï¼š________________"),
+    body("æ³•å®šä»£è¡¨äºº(ç­¾å­—)ï¼š________________"),
     blank(),
-    body("受委托人(签字)：{{lawyer.name}}"),
+    body("å—å§”æ‰˜äºº(ç­¾å­—)ï¼š{{lawyer.name}}"),
     blank(),
     body("{{todayCN}}", { align: AlignmentType.RIGHT })
   ]);
 }
 
 // ============================================================
-// T12 民事上诉状
+// T12 æ°‘äº‹ä¸Šè¯‰çŠ¶
 // ============================================================
 const T12_VARS = [
   "client.name",
@@ -77,42 +77,42 @@ const T12_VARS = [
 
 async function buildT12(): Promise<Buffer> {
   return pack([
-    title("民事上诉状"),
+    title("æ°‘äº‹ä¸Šè¯‰çŠ¶"),
     blank(),
-    body("上诉人（原审________）：{{client.name}}"),
-    body("身份证号 / 统一社会信用代码：{{client.idNumber}}"),
-    body("住址：{{client.address}}"),
+    body("ä¸Šè¯‰äººï¼ˆåŽŸå®¡________ï¼‰ï¼š{{client.name}}"),
+    body("èº«ä»½è¯å· / ç»Ÿä¸€ç¤¾ä¼šä¿¡ç”¨ä»£ç ï¼š{{client.idNumber}}"),
+    body("ä½å€ï¼š{{client.address}}"),
     blank(),
-    body("被上诉人（原审________）：{{opposing.name}}"),
-    body("住址：{{opposing.address}}"),
+    body("è¢«ä¸Šè¯‰äººï¼ˆåŽŸå®¡________ï¼‰ï¼š{{opposing.name}}"),
+    body("ä½å€ï¼š{{opposing.address}}"),
     blank(),
-    body("上诉人因y被上诉人 {{matter.causeText}} 一案，不服 {{proceeding.court}} 作出的（________）号民事判决/裁定，现提起上诉。", { indent: true }),
-    body("原审案号：{{proceeding.caseNo}}", { bold: true }),
+    body("ä¸Šè¯‰äººå› yè¢«ä¸Šè¯‰äºº {{matter.causeText}} ä¸€æ¡ˆï¼Œä¸æœ {{proceeding.court}} ä½œå‡ºçš„ï¼ˆ________ï¼‰å·æ°‘äº‹åˆ¤å†³/è£å®šï¼ŒçŽ°æèµ·ä¸Šè¯‰ã€‚", { indent: true }),
+    body("åŽŸå®¡æ¡ˆå·ï¼š{{proceeding.caseNo}}", { bold: true }),
     blank(),
-    body("上诉请求：", { bold: true }),
-    body("1. 依法撤销原审判决第____ítems，改判________________；", { indent: true }),
-    body("2. 本案一、二审诉讼Gastos由被上诉人承担。", { indent: true }),
+    body("ä¸Šè¯‰è¯·æ±‚ï¼š", { bold: true }),
+    body("1. ä¾æ³•æ’¤é”€åŽŸå®¡åˆ¤å†³ç¬¬____Ã­temsï¼Œæ”¹åˆ¤________________ï¼›", { indent: true }),
+    body("2. æœ¬æ¡ˆä¸€ã€äºŒå®¡è¯‰è®¼Gastosç”±è¢«ä¸Šè¯‰äººæ‰¿æ‹…ã€‚", { indent: true }),
     blank(),
-    body("上诉理由：", { bold: true }),
-    body("一、原审判决认定事实错误。________________________________________", { indent: true }),
-    body("二、原审判决适用法律错误。________________________________________", { indent: true }),
-    body("三、________________________________________________________________", { indent: true }),
+    body("ä¸Šè¯‰ç†ç”±ï¼š", { bold: true }),
+    body("ä¸€ã€åŽŸå®¡åˆ¤å†³è®¤å®šäº‹å®žé”™è¯¯ã€‚________________________________________", { indent: true }),
+    body("äºŒã€åŽŸå®¡åˆ¤å†³é€‚ç”¨æ³•å¾‹é”™è¯¯ã€‚________________________________________", { indent: true }),
+    body("ä¸‰ã€________________________________________________________________", { indent: true }),
     blank(),
-    body("综上，请求二审法院依法支持上诉人的上诉请求。", { indent: true }),
+    body("ç»¼ä¸Šï¼Œè¯·æ±‚äºŒå®¡æ³•é™¢ä¾æ³•æ”¯æŒä¸Šè¯‰äººçš„ä¸Šè¯‰è¯·æ±‚ã€‚", { indent: true }),
     blank(),
-    body("此致"),
-    body("________人民法院", { bold: true }),
+    body("æ­¤è‡´"),
+    body("________äººæ°‘æ³•é™¢", { bold: true }),
     blank(),
     blank(),
-    body("上诉人(签字/盖章)：________________"),
-    body("                                                            代理Abogado：{{lawyer.name}}"),
+    body("ä¸Šè¯‰äºº(ç­¾å­—/ç›–ç« )ï¼š________________"),
+    body("                                                            ä»£ç†Abogadoï¼š{{lawyer.name}}"),
     blank(),
     body("{{todayCN}}", { align: AlignmentType.RIGHT })
   ]);
 }
 
 // ============================================================
-// T13 仲裁申请书
+// T13 ä»²è£ç”³è¯·ä¹¦
 // ============================================================
 const T13_VARS = [
   "client.name",
@@ -131,43 +131,43 @@ const T13_VARS = [
 
 async function buildT13(): Promise<Buffer> {
   return pack([
-    title("仲裁申请书"),
+    title("ä»²è£ç”³è¯·ä¹¦"),
     blank(),
-    body("申请人：{{client.name}}"),
-    body("身份证号 / 统一社会信用代码：{{client.idNumber}}"),
-    body("住址：{{client.address}}"),
-    body("联系电话：{{client.phone}}"),
+    body("ç”³è¯·äººï¼š{{client.name}}"),
+    body("èº«ä»½è¯å· / ç»Ÿä¸€ç¤¾ä¼šä¿¡ç”¨ä»£ç ï¼š{{client.idNumber}}"),
+    body("ä½å€ï¼š{{client.address}}"),
+    body("è”ç³»ç”µè¯ï¼š{{client.phone}}"),
     blank(),
-    body("被申请人：{{opposing.name}}"),
-    body("身份证号 / 统一社会信用代码：{{opposing.idNumber}}"),
-    body("住址：{{opposing.address}}"),
+    body("è¢«ç”³è¯·äººï¼š{{opposing.name}}"),
+    body("èº«ä»½è¯å· / ç»Ÿä¸€ç¤¾ä¼šä¿¡ç”¨ä»£ç ï¼š{{opposing.idNumber}}"),
+    body("ä½å€ï¼š{{opposing.address}}"),
     blank(),
-    body("Causa：{{matter.causeText}}", { bold: true }),
-    body("争议Monto：{{matter.claimAmount}}", { bold: true }),
-    body("仲裁依据：双方于____年__月__日签订的《________________》第____条仲裁条款。", { indent: true }),
+    body("Causaï¼š{{matter.causeText}}", { bold: true }),
+    body("äº‰è®®Montoï¼š{{matter.claimAmount}}", { bold: true }),
+    body("ä»²è£ä¾æ®ï¼šåŒæ–¹äºŽ____å¹´__æœˆ__æ—¥ç­¾è®¢çš„ã€Š________________ã€‹ç¬¬____æ¡ä»²è£æ¡æ¬¾ã€‚", { indent: true }),
     blank(),
-    body("仲裁请求：", { bold: true }),
-    body("1. ________________；", { indent: true }),
-    body("2. ________________；", { indent: true }),
-    body("3. 本案仲裁Gastos由被申请人承担。", { indent: true }),
+    body("ä»²è£è¯·æ±‚ï¼š", { bold: true }),
+    body("1. ________________ï¼›", { indent: true }),
+    body("2. ________________ï¼›", { indent: true }),
+    body("3. æœ¬æ¡ˆä»²è£Gastosç”±è¢«ç”³è¯·äººæ‰¿æ‹…ã€‚", { indent: true }),
     blank(),
-    body("事实y理由：", { bold: true }),
+    body("äº‹å®žyç†ç”±ï¼š", { bold: true }),
     body("________________________________________________________________________", { indent: true }),
     body("________________________________________________________________________", { indent: true }),
     blank(),
-    body("此致"),
+    body("æ­¤è‡´"),
     body("{{proceeding.court}}", { bold: true }),
     blank(),
     blank(),
-    body("申请人(签字/盖章)：________________"),
-    body("                                                            代理Abogado：{{lawyer.name}}"),
+    body("ç”³è¯·äºº(ç­¾å­—/ç›–ç« )ï¼š________________"),
+    body("                                                            ä»£ç†Abogadoï¼š{{lawyer.name}}"),
     blank(),
     body("{{todayCN}}", { align: AlignmentType.RIGHT })
   ]);
 }
 
 // ============================================================
-// T14 财产Preservación申请书
+// T14 è´¢äº§PreservaciÃ³nç”³è¯·ä¹¦
 // ============================================================
 const T14_VARS = [
   "client.name",
@@ -184,38 +184,38 @@ const T14_VARS = [
 
 async function buildT14(): Promise<Buffer> {
   return pack([
-    title("财产Preservación申请书"),
+    title("è´¢äº§PreservaciÃ³nç”³è¯·ä¹¦"),
     blank(),
-    body("申请人：{{client.name}}"),
-    body("住址：{{client.address}}"),
+    body("ç”³è¯·äººï¼š{{client.name}}"),
+    body("ä½å€ï¼š{{client.address}}"),
     blank(),
-    body("被申请人：{{opposing.name}}"),
-    body("住址：{{opposing.address}}"),
+    body("è¢«ç”³è¯·äººï¼š{{opposing.name}}"),
+    body("ä½å€ï¼š{{opposing.address}}"),
     blank(),
-    body("Causa：{{matter.causeText}}    案号：{{proceeding.caseNo}}", { bold: true }),
+    body("Causaï¼š{{matter.causeText}}    æ¡ˆå·ï¼š{{proceeding.caseNo}}", { bold: true }),
     blank(),
-    body("请求事ítems：", { bold: true }),
-    body("1. 依法查封、冻结、扣押被申请人名下价值 {{matter.claimAmount}} 的财产；", { indent: true }),
-    body("2. 具体财产线索：详见Adjunto《财产线索清单》。", { indent: true }),
+    body("è¯·æ±‚äº‹Ã­temsï¼š", { bold: true }),
+    body("1. ä¾æ³•æŸ¥å°ã€å†»ç»“ã€æ‰£æŠ¼è¢«ç”³è¯·äººåä¸‹ä»·å€¼ {{matter.claimAmount}} çš„è´¢äº§ï¼›", { indent: true }),
+    body("2. å…·ä½“è´¢äº§çº¿ç´¢ï¼šè¯¦è§Adjuntoã€Šè´¢äº§çº¿ç´¢æ¸…å•ã€‹ã€‚", { indent: true }),
     blank(),
-    body("事实y理由：", { bold: true }),
-    body("申请人y被申请人 {{matter.causeText}} 一案，因被申请人存在转移、隐匿财产的可能，不采取Preservación措施将导致生效裁判难以执行。根据《中华人民共和国民事诉讼法》第一百〇三条、第一百〇四条之规定，特申请财产Preservación。", { indent: true }),
+    body("äº‹å®žyç†ç”±ï¼š", { bold: true }),
+    body("ç”³è¯·äººyè¢«ç”³è¯·äºº {{matter.causeText}} ä¸€æ¡ˆï¼Œå› è¢«ç”³è¯·äººå­˜åœ¨è½¬ç§»ã€éšåŒ¿è´¢äº§çš„å¯èƒ½ï¼Œä¸é‡‡å–PreservaciÃ³næŽªæ–½å°†å¯¼è‡´ç”Ÿæ•ˆè£åˆ¤éš¾ä»¥æ‰§è¡Œã€‚æ ¹æ®ã€Šä¸­åŽäººæ°‘å…±å’Œå›½æ°‘äº‹è¯‰è®¼æ³•ã€‹ç¬¬ä¸€ç™¾ã€‡ä¸‰æ¡ã€ç¬¬ä¸€ç™¾ã€‡å››æ¡ä¹‹è§„å®šï¼Œç‰¹ç”³è¯·è´¢äº§PreservaciÃ³nã€‚", { indent: true }),
     blank(),
-    body("担保方式：☐ 现金担保  ☐ 保险公司保函  ☐ 财产担保（详见担保材料）", { indent: true }),
+    body("æ‹…ä¿æ–¹å¼ï¼šâ˜ çŽ°é‡‘æ‹…ä¿  â˜ ä¿é™©å…¬å¸ä¿å‡½  â˜ è´¢äº§æ‹…ä¿ï¼ˆè¯¦è§æ‹…ä¿ææ–™ï¼‰", { indent: true }),
     blank(),
-    body("此致"),
+    body("æ­¤è‡´"),
     body("{{proceeding.court}}", { bold: true }),
     blank(),
     blank(),
-    body("申请人(签字/盖章)：________________"),
-    body("                                                            代理Abogado：{{lawyer.name}}"),
+    body("ç”³è¯·äºº(ç­¾å­—/ç›–ç« )ï¼š________________"),
+    body("                                                            ä»£ç†Abogadoï¼š{{lawyer.name}}"),
     blank(),
     body("{{todayCN}}", { align: AlignmentType.RIGHT })
   ]);
 }
 
 // ============================================================
-// T15 Abogado函
+// T15 Abogadoå‡½
 // ============================================================
 const T15_VARS = [
   "firm.name",
@@ -231,35 +231,35 @@ const T15_VARS = [
 async function buildT15(): Promise<Buffer> {
   return pack([
     body("{{firm.name}}", { align: AlignmentType.CENTER, bold: true }),
-    body("地址：{{firm.address}}    电话：{{firm.phone}}", { align: AlignmentType.CENTER }),
+    body("åœ°å€ï¼š{{firm.address}}    ç”µè¯ï¼š{{firm.phone}}", { align: AlignmentType.CENTER }),
     blank(),
-    title("律 师 函"),
-    body("（____）____律函字第____号", { align: AlignmentType.RIGHT }),
+    title("å¾‹ å¸ˆ å‡½"),
+    body("ï¼ˆ____ï¼‰____å¾‹å‡½å­—ç¬¬____å·", { align: AlignmentType.RIGHT }),
     blank(),
-    body("{{opposing.name}}："),
+    body("{{opposing.name}}ï¼š"),
     blank(),
-    body("{{firm.name}}接受 {{client.name}} 的委托，指派本Abogado就 {{matter.causeText}} 相关事宜致函贵方。", { indent: true }),
+    body("{{firm.name}}æŽ¥å— {{client.name}} çš„å§”æ‰˜ï¼ŒæŒ‡æ´¾æœ¬Abogadoå°± {{matter.causeText}} ç›¸å…³äº‹å®œè‡´å‡½è´µæ–¹ã€‚", { indent: true }),
     blank(),
-    body("一、基本事实", { bold: true }),
+    body("ä¸€ã€åŸºæœ¬äº‹å®ž", { bold: true }),
     body("________________________________________________________________________", { indent: true }),
     blank(),
-    body("二、Abogado意见", { bold: true }),
+    body("äºŒã€Abogadoæ„è§", { bold: true }),
     body("________________________________________________________________________", { indent: true }),
     blank(),
-    body("三、要求yPlazo", { bold: true }),
-    body("请贵方于收到本函之日起____日内________________；Vencido，本Abogado将建议委托人依法采取诉讼、仲裁、Preservaciónetc.法律措施，由此产生的一切法律后果由贵方承担。", { indent: true }),
+    body("ä¸‰ã€è¦æ±‚yPlazo", { bold: true }),
+    body("è¯·è´µæ–¹äºŽæ”¶åˆ°æœ¬å‡½ä¹‹æ—¥èµ·____æ—¥å†…________________ï¼›Vencidoï¼Œæœ¬Abogadoå°†å»ºè®®å§”æ‰˜äººä¾æ³•é‡‡å–è¯‰è®¼ã€ä»²è£ã€PreservaciÃ³netc.æ³•å¾‹æŽªæ–½ï¼Œç”±æ­¤äº§ç”Ÿçš„ä¸€åˆ‡æ³•å¾‹åŽæžœç”±è´µæ–¹æ‰¿æ‹…ã€‚", { indent: true }),
     blank(),
-    body("特此函告。", { indent: true }),
+    body("ç‰¹æ­¤å‡½å‘Šã€‚", { indent: true }),
     blank(),
     blank(),
     body("{{firm.name}}", { align: AlignmentType.RIGHT }),
-    body("Abogado：{{lawyer.name}}", { align: AlignmentType.RIGHT }),
+    body("Abogadoï¼š{{lawyer.name}}", { align: AlignmentType.RIGHT }),
     body("{{todayCN}}", { align: AlignmentType.RIGHT })
   ]);
 }
 
 // ============================================================
-// T16 法律意见书
+// T16 æ³•å¾‹æ„è§ä¹¦
 // ============================================================
 const T16_VARS = [
   "firm.name",
@@ -273,37 +273,37 @@ const T16_VARS = [
 async function buildT16(): Promise<Buffer> {
   return pack([
     body("{{firm.name}}", { align: AlignmentType.CENTER, bold: true }),
-    title("法律意见书"),
-    body("（____）____法意字第____号", { align: AlignmentType.RIGHT }),
+    title("æ³•å¾‹æ„è§ä¹¦"),
+    body("ï¼ˆ____ï¼‰____æ³•æ„å­—ç¬¬____å·", { align: AlignmentType.RIGHT }),
     blank(),
-    body("致：{{client.name}}"),
+    body("è‡´ï¼š{{client.name}}"),
     blank(),
-    body("{{firm.name}}接受贵方委托，指派本Abogado就「{{matter.title}}」相关法律事ítems出具本法律意见书。", { indent: true }),
+    body("{{firm.name}}æŽ¥å—è´µæ–¹å§”æ‰˜ï¼ŒæŒ‡æ´¾æœ¬Abogadoå°±ã€Œ{{matter.title}}ã€ç›¸å…³æ³•å¾‹äº‹Ã­temså‡ºå…·æœ¬æ³•å¾‹æ„è§ä¹¦ã€‚", { indent: true }),
     blank(),
-    body("一、委托事ítemsy审查范围", { bold: true }),
+    body("ä¸€ã€å§”æ‰˜äº‹Ã­temsyå®¡æŸ¥èŒƒå›´", { bold: true }),
     body("________________________________________________________________________", { indent: true }),
     blank(),
-    body("二、基本事实", { bold: true }),
+    body("äºŒã€åŸºæœ¬äº‹å®ž", { bold: true }),
     body("________________________________________________________________________", { indent: true }),
     blank(),
-    body("三、法律分析", { bold: true }),
+    body("ä¸‰ã€æ³•å¾‹åˆ†æž", { bold: true }),
     body("________________________________________________________________________", { indent: true }),
     body("________________________________________________________________________", { indent: true }),
     blank(),
-    body("四、结论意见y风险提示", { bold: true }),
+    body("å››ã€ç»“è®ºæ„è§yé£Žé™©æç¤º", { bold: true }),
     body("________________________________________________________________________", { indent: true }),
     blank(),
-    body("本意见书仅基于截至出具之日委托人提供的材料作出，仅供委托人就本次委托事ítems使用。", { indent: true }),
+    body("æœ¬æ„è§ä¹¦ä»…åŸºäºŽæˆªè‡³å‡ºå…·ä¹‹æ—¥å§”æ‰˜äººæä¾›çš„ææ–™ä½œå‡ºï¼Œä»…ä¾›å§”æ‰˜äººå°±æœ¬æ¬¡å§”æ‰˜äº‹Ã­temsä½¿ç”¨ã€‚", { indent: true }),
     blank(),
     blank(),
     body("{{firm.name}}", { align: AlignmentType.RIGHT }),
-    body("经办Abogado：{{lawyer.name}}", { align: AlignmentType.RIGHT }),
+    body("ç»åŠžAbogadoï¼š{{lawyer.name}}", { align: AlignmentType.RIGHT }),
     body("{{todayCN}}", { align: AlignmentType.RIGHT })
   ]);
 }
 
 // ============================================================
-// T17 代理词
+// T17 ä»£ç†è¯
 // ============================================================
 const T17_VARS = [
   "client.name",
@@ -317,115 +317,115 @@ const T17_VARS = [
 
 async function buildT17(): Promise<Buffer> {
   return pack([
-    title("代 理 词"),
+    title("ä»£ ç† è¯"),
     blank(),
-    body("审判长、审判员："),
+    body("å®¡åˆ¤é•¿ã€å®¡åˆ¤å‘˜ï¼š"),
     blank(),
-    body("{{firm.name}}接受 {{client.name}} 的委托，指派本Abogado担任其y对方当事人 {{matter.causeText}} 一案（案号：{{proceeding.caseNo}}）的诉讼代理人。经庭前阅卷、调查取证并参加法庭审理，现发表如下代理意见：", { indent: true }),
+    body("{{firm.name}}æŽ¥å— {{client.name}} çš„å§”æ‰˜ï¼ŒæŒ‡æ´¾æœ¬Abogadoæ‹…ä»»å…¶yå¯¹æ–¹å½“äº‹äºº {{matter.causeText}} ä¸€æ¡ˆï¼ˆæ¡ˆå·ï¼š{{proceeding.caseNo}}ï¼‰çš„è¯‰è®¼ä»£ç†äººã€‚ç»åº­å‰é˜…å·ã€è°ƒæŸ¥å–è¯å¹¶å‚åŠ æ³•åº­å®¡ç†ï¼ŒçŽ°å‘è¡¨å¦‚ä¸‹ä»£ç†æ„è§ï¼š", { indent: true }),
     blank(),
-    body("一、关于本案事实", { bold: true }),
+    body("ä¸€ã€å…³äºŽæœ¬æ¡ˆäº‹å®ž", { bold: true }),
     body("________________________________________________________________________", { indent: true }),
     blank(),
-    body("二、关于证据y质证意见", { bold: true }),
+    body("äºŒã€å…³äºŽè¯æ®yè´¨è¯æ„è§", { bold: true }),
     body("________________________________________________________________________", { indent: true }),
     blank(),
-    body("三、关于法律适用", { bold: true }),
+    body("ä¸‰ã€å…³äºŽæ³•å¾‹é€‚ç”¨", { bold: true }),
     body("________________________________________________________________________", { indent: true }),
     blank(),
-    body("综上所述，请合议庭采纳代理人的意见，依法支持委托人的主张。", { indent: true }),
+    body("ç»¼ä¸Šæ‰€è¿°ï¼Œè¯·åˆè®®åº­é‡‡çº³ä»£ç†äººçš„æ„è§ï¼Œä¾æ³•æ”¯æŒå§”æ‰˜äººçš„ä¸»å¼ ã€‚", { indent: true }),
     blank(),
-    body("此致"),
+    body("æ­¤è‡´"),
     body("{{proceeding.court}}", { bold: true }),
     blank(),
     blank(),
-    body("代理Abogado：{{lawyer.name}}", { align: AlignmentType.RIGHT }),
+    body("ä»£ç†Abogadoï¼š{{lawyer.name}}", { align: AlignmentType.RIGHT }),
     body("{{todayCN}}", { align: AlignmentType.RIGHT })
   ]);
 }
 
 // ============================================================
-// T18 谈话笔录
+// T18 è°ˆè¯ç¬”å½•
 // ============================================================
 const T18_VARS = ["firm.name", "matter.code", "matter.title", "lawyer.name", "todayCN"];
 
 async function buildT18(): Promise<Buffer> {
   return pack([
     body("{{firm.name}}", { align: AlignmentType.CENTER, bold: true }),
-    title("谈 话 笔 录"),
+    title("è°ˆ è¯ ç¬” å½•"),
     blank(),
     kvTable([
-      ["Caso", "{{matter.title}}（{{matter.code}}）"],
-      ["时间", "____年__月__日 __时__分 至 __时__分"],
-      ["地点", ""],
-      ["谈话人", "{{lawyer.name}}"],
-      ["记录人", ""],
-      ["被谈话人", ""],
-      ["身份/联系方式", ""]
+      ["Caso", "{{matter.title}}ï¼ˆ{{matter.code}}ï¼‰"],
+      ["æ—¶é—´", "____å¹´__æœˆ__æ—¥ __æ—¶__åˆ† è‡³ __æ—¶__åˆ†"],
+      ["åœ°ç‚¹", ""],
+      ["è°ˆè¯äºº", "{{lawyer.name}}"],
+      ["è®°å½•äºº", ""],
+      ["è¢«è°ˆè¯äºº", ""],
+      ["èº«ä»½/è”ç³»æ–¹å¼", ""]
     ]),
     blank(),
-    body("谈话内容：", { bold: true }),
-    body("问：________________________________________________________________"),
-    body("答：________________________________________________________________"),
+    body("è°ˆè¯å†…å®¹ï¼š", { bold: true }),
+    body("é—®ï¼š________________________________________________________________"),
+    body("ç­”ï¼š________________________________________________________________"),
     blank(),
-    body("问：________________________________________________________________"),
-    body("答：________________________________________________________________"),
+    body("é—®ï¼š________________________________________________________________"),
+    body("ç­”ï¼š________________________________________________________________"),
     blank(),
-    body("问：________________________________________________________________"),
-    body("答：________________________________________________________________"),
+    body("é—®ï¼š________________________________________________________________"),
+    body("ç­”ï¼š________________________________________________________________"),
     blank(),
     blank(),
-    body("以上笔录经被谈话人核对无误。"),
+    body("ä»¥ä¸Šç¬”å½•ç»è¢«è°ˆè¯äººæ ¸å¯¹æ— è¯¯ã€‚"),
     blank(),
-    body("被谈话人(签字按印)：________________    谈话人(签字)：________________"),
+    body("è¢«è°ˆè¯äºº(ç­¾å­—æŒ‰å°)ï¼š________________    è°ˆè¯äºº(ç­¾å­—)ï¼š________________"),
     blank(),
     body("{{todayCN}}", { align: AlignmentType.RIGHT })
   ]);
 }
 
 // ============================================================
-// T19 会见笔录（Penal）
+// T19 ä¼šè§ç¬”å½•ï¼ˆPenalï¼‰
 // ============================================================
 const T19_VARS = ["firm.name", "matter.code", "matter.title", "client.name", "lawyer.name", "todayCN"];
 
 async function buildT19(): Promise<Buffer> {
   return pack([
     body("{{firm.name}}", { align: AlignmentType.CENTER, bold: true }),
-    title("会 见 笔 录"),
+    title("ä¼š è§ ç¬” å½•"),
     blank(),
     kvTable([
-      ["Caso", "{{matter.title}}（{{matter.code}}）"],
-      ["会见时间", "____年__月__日 __时__分 至 __时__分"],
-      ["会见地点", "________看守所 / 监狱"],
-      ["会见Abogado", "{{lawyer.name}}"],
-      ["被会见人", "{{client.name}}"],
-      ["涉嫌罪名 / 诉讼阶段", ""],
-      ["羁押Plazo情况", ""]
+      ["Caso", "{{matter.title}}ï¼ˆ{{matter.code}}ï¼‰"],
+      ["ä¼šè§æ—¶é—´", "____å¹´__æœˆ__æ—¥ __æ—¶__åˆ† è‡³ __æ—¶__åˆ†"],
+      ["ä¼šè§åœ°ç‚¹", "________çœ‹å®ˆæ‰€ / ç›‘ç‹±"],
+      ["ä¼šè§Abogado", "{{lawyer.name}}"],
+      ["è¢«ä¼šè§äºº", "{{client.name}}"],
+      ["æ¶‰å«Œç½ªå / è¯‰è®¼é˜¶æ®µ", ""],
+      ["ç¾æŠ¼Plazoæƒ…å†µ", ""]
     ]),
     blank(),
-    body("会见内容：", { bold: true }),
-    body("一、告知事ítems（Abogado身份、委托手续、权利义务）：", { bold: true }),
+    body("ä¼šè§å†…å®¹ï¼š", { bold: true }),
+    body("ä¸€ã€å‘ŠçŸ¥äº‹Ã­temsï¼ˆAbogadoèº«ä»½ã€å§”æ‰˜æ‰‹ç»­ã€æƒåˆ©ä¹‰åŠ¡ï¼‰ï¼š", { bold: true }),
     body("________________________________________________________________________"),
     blank(),
-    body("二、Caso事实了解：", { bold: true }),
+    body("äºŒã€Casoäº‹å®žäº†è§£ï¼š", { bold: true }),
     body("________________________________________________________________________"),
     body("________________________________________________________________________"),
     blank(),
-    body("三、程序性事ítems（强制措施、讯问情况、身体状况、家属转达）：", { bold: true }),
+    body("ä¸‰ã€ç¨‹åºæ€§äº‹Ã­temsï¼ˆå¼ºåˆ¶æŽªæ–½ã€è®¯é—®æƒ…å†µã€èº«ä½“çŠ¶å†µã€å®¶å±žè½¬è¾¾ï¼‰ï¼š", { bold: true }),
     body("________________________________________________________________________"),
     blank(),
-    body("四、Siguiente辩护安排：", { bold: true }),
+    body("å››ã€Siguienteè¾©æŠ¤å®‰æŽ’ï¼š", { bold: true }),
     body("________________________________________________________________________"),
     blank(),
-    body("以上笔录经被会见人核对无误。"),
+    body("ä»¥ä¸Šç¬”å½•ç»è¢«ä¼šè§äººæ ¸å¯¹æ— è¯¯ã€‚"),
     blank(),
-    body("被会见人(签字按印)：________________    会见Abogado(签字)：{{lawyer.name}}"),
+    body("è¢«ä¼šè§äºº(ç­¾å­—æŒ‰å°)ï¼š________________    ä¼šè§Abogado(ç­¾å­—)ï¼š{{lawyer.name}}"),
     blank(),
     body("{{todayCN}}", { align: AlignmentType.RIGHT })
   ]);
 }
 
 // ============================================================
-// T20 Cerrar caso登记表
+// T20 Cerrar casoç™»è®°è¡¨
 // ============================================================
 const T20_VARS = [
   "firm.name",
@@ -445,39 +445,39 @@ const T20_VARS = [
 async function buildT20(): Promise<Buffer> {
   return pack([
     body("{{firm.name}}", { align: AlignmentType.CENTER, bold: true }),
-    title("Cerrar caso登记表"),
+    title("Cerrar casoç™»è®°è¡¨"),
     blank(),
     kvTable([
-      ["Caso编号", "{{matter.code}}"],
+      ["Casoç¼–å·", "{{matter.code}}"],
       ["CasoNombre", "{{matter.title}}"],
-      ["Caso类别", "{{matter.category}}"],
+      ["Casoç±»åˆ«", "{{matter.category}}"],
       ["Causa", "{{matter.causeText}}"],
-      ["委托人", "{{client.name}}"],
-      ["对方当事人", "{{opposing.name}}"],
-      ["办理机关", "{{proceeding.court}}"],
-      ["案号", "{{proceeding.caseNo}}"],
-      ["标的Monto", "{{matter.claimAmount}}"],
-      ["承办Abogado", "{{lawyer.name}}"],
+      ["å§”æ‰˜äºº", "{{client.name}}"],
+      ["å¯¹æ–¹å½“äº‹äºº", "{{opposing.name}}"],
+      ["åŠžç†æœºå…³", "{{proceeding.court}}"],
+      ["æ¡ˆå·", "{{proceeding.caseNo}}"],
+      ["æ ‡çš„Monto", "{{matter.claimAmount}}"],
+      ["æ‰¿åŠžAbogado", "{{lawyer.name}}"],
       ["Cerrar casoFecha", "{{todayCN}}"]
     ]),
     blank(),
-    body("Cerrar caso方式：☐ 判决  ☐ 调解  ☐ 仲裁裁决  ☐ 和解撤诉  ☐ 执行完毕  ☐ 其他________", { bold: true }),
+    body("Cerrar casoæ–¹å¼ï¼šâ˜ åˆ¤å†³  â˜ è°ƒè§£  â˜ ä»²è£è£å†³  â˜ å’Œè§£æ’¤è¯‰  â˜ æ‰§è¡Œå®Œæ¯•  â˜ å…¶ä»–________", { bold: true }),
     blank(),
-    body("办理结果摘要：", { bold: true }),
+    body("åŠžç†ç»“æžœæ‘˜è¦ï¼š", { bold: true }),
     body("________________________________________________________________________"),
     body("________________________________________________________________________"),
     blank(),
-    body("Abogado费收取情况：☐ 已结清  ☐ 未结清（余额________pesos）"),
-    body("原件材料退还情况：☐ 已退还并签收  ☐ 无需退还"),
+    body("Abogadoè´¹æ”¶å–æƒ…å†µï¼šâ˜ å·²ç»“æ¸…  â˜ æœªç»“æ¸…ï¼ˆä½™é¢________pesosï¼‰"),
+    body("åŽŸä»¶ææ–™é€€è¿˜æƒ…å†µï¼šâ˜ å·²é€€è¿˜å¹¶ç­¾æ”¶  â˜ æ— éœ€é€€è¿˜"),
     blank(),
-    body("承办Abogado(签字)：________________    主任审核(签字)：________________"),
+    body("æ‰¿åŠžAbogado(ç­¾å­—)ï¼š________________    ä¸»ä»»å®¡æ ¸(ç­¾å­—)ï¼š________________"),
     blank(),
     body("{{todayCN}}", { align: AlignmentType.RIGHT })
   ]);
 }
 
 // ============================================================
-// T21 证据目录
+// T21 è¯æ®ç›®å½•
 // ============================================================
 const T21_VARS = [
   "client.name",
@@ -490,38 +490,38 @@ const T21_VARS = [
 
 async function buildT21(): Promise<Buffer> {
   return pack([
-    title("证 据 目 录"),
+    title("è¯ æ® ç›® å½•"),
     blank(),
-    body("Enviar人：{{client.name}}    Causa：{{matter.causeText}}"),
-    body("受理机关：{{proceeding.court}}    案号：{{proceeding.caseNo}}"),
+    body("Enviaräººï¼š{{client.name}}    Causaï¼š{{matter.causeText}}"),
+    body("å—ç†æœºå…³ï¼š{{proceeding.court}}    æ¡ˆå·ï¼š{{proceeding.caseNo}}"),
     blank(),
     kvTable([
-      ["序号 / 证据Nombre", "证明目的 / 来源 / 页数"],
-      ["证据一：", ""],
-      ["证据二：", ""],
-      ["证据三：", ""],
-      ["证据四：", ""],
-      ["证据五：", ""],
-      ["证据六：", ""]
+      ["åºå· / è¯æ®Nombre", "è¯æ˜Žç›®çš„ / æ¥æº / é¡µæ•°"],
+      ["è¯æ®ä¸€ï¼š", ""],
+      ["è¯æ®äºŒï¼š", ""],
+      ["è¯æ®ä¸‰ï¼š", ""],
+      ["è¯æ®å››ï¼š", ""],
+      ["è¯æ®äº”ï¼š", ""],
+      ["è¯æ®å…­ï¼š", ""]
     ]),
     blank(),
-    body("以上证据均Enviar复印件，原件当庭核对。", { indent: true }),
+    body("ä»¥ä¸Šè¯æ®å‡Enviarå¤å°ä»¶ï¼ŒåŽŸä»¶å½“åº­æ ¸å¯¹ã€‚", { indent: true }),
     blank(),
-    body("Enviar人(签字/盖章)：________________    代理Abogado：{{lawyer.name}}"),
+    body("Enviaräºº(ç­¾å­—/ç›–ç« )ï¼š________________    ä»£ç†Abogadoï¼š{{lawyer.name}}"),
     blank(),
     body("{{todayCN}}", { align: AlignmentType.RIGHT })
   ]);
 }
 
 // ============================================================
-// T22 空白文档（律所抬头）
+// T22 ç©ºç™½æ–‡æ¡£ï¼ˆå¾‹æ‰€æŠ¬å¤´ï¼‰
 // ============================================================
 const T22_VARS = ["firm.name", "firm.address", "firm.phone", "lawyer.name", "todayCN"];
 
 async function buildT22(): Promise<Buffer> {
   return pack([
     body("{{firm.name}}", { align: AlignmentType.CENTER, bold: true }),
-    body("地址：{{firm.address}}    电话：{{firm.phone}}", { align: AlignmentType.CENTER }),
+    body("åœ°å€ï¼š{{firm.address}}    ç”µè¯ï¼š{{firm.phone}}", { align: AlignmentType.CENTER }),
     blank(),
     blank(),
     body(""),
@@ -534,121 +534,122 @@ async function buildT22(): Promise<Buffer> {
     body(""),
     blank(),
     blank(),
-    body("经办Abogado：{{lawyer.name}}", { align: AlignmentType.RIGHT }),
+    body("ç»åŠžAbogadoï¼š{{lawyer.name}}", { align: AlignmentType.RIGHT }),
     body("{{todayCN}}", { align: AlignmentType.RIGHT })
   ]);
 }
 
 // ============================================================
-// Registrarse表（第二批）
+// Registrarseè¡¨ï¼ˆç¬¬äºŒæ‰¹ï¼‰
 // ============================================================
 export const V1_TEMPLATES: BuiltInTemplate[] = [
   {
     key: "power_of_attorney_organization",
-    name: "授权委托书(单位)",
+    name: "æŽˆæƒå§”æ‰˜ä¹¦(å•ä½)",
     category: "RETAINER",
-    description: "法人或非法人组织授权委托书，含一般代理 / 特别代理勾选。",
+    description: "æ³•äººæˆ–éžæ³•äººç»„ç»‡æŽˆæƒå§”æ‰˜ä¹¦ï¼Œå«ä¸€èˆ¬ä»£ç† / ç‰¹åˆ«ä»£ç†å‹¾é€‰ã€‚",
     applicableCategories: [],
     variables: T11_VARS,
     buildBuffer: buildT11
   },
   {
     key: "civil_appeal",
-    name: "民事上诉状",
+    name: "æ°‘äº‹ä¸Šè¯‰çŠ¶",
     category: "LITIGATION",
-    description: "不服一审判决/裁定的上诉状标准格式。上诉请求y理由需Abogado填充。",
+    description: "ä¸æœä¸€å®¡åˆ¤å†³/è£å®šçš„ä¸Šè¯‰çŠ¶æ ‡å‡†æ ¼å¼ã€‚ä¸Šè¯‰è¯·æ±‚yç†ç”±éœ€Abogadoå¡«å……ã€‚",
     applicableCategories: ["CIVIL_COMMERCIAL"],
     variables: T12_VARS,
     buildBuffer: buildT12
   },
   {
     key: "arbitration_application",
-    name: "仲裁申请书",
+    name: "ä»²è£ç”³è¯·ä¹¦",
     category: "LITIGATION",
-    description: "商事/劳动仲裁申请书标准格式，含仲裁条款援引。",
+    description: "å•†äº‹/åŠ³åŠ¨ä»²è£ç”³è¯·ä¹¦æ ‡å‡†æ ¼å¼ï¼Œå«ä»²è£æ¡æ¬¾æ´å¼•ã€‚",
     applicableCategories: ["CIVIL_COMMERCIAL", "COMMERCIAL_ARBITRATION", "LABOR_ARBITRATION"],
     variables: T13_VARS,
     buildBuffer: buildT13
   },
   {
     key: "property_preservation_application",
-    name: "财产Preservación申请书",
+    name: "è´¢äº§PreservaciÃ³nç”³è¯·ä¹¦",
     category: "LITIGATION",
-    description: "诉前/诉中财产Preservación申请，含担保方式勾选（依据民诉法 103/104 条）。",
+    description: "è¯‰å‰/è¯‰ä¸­è´¢äº§PreservaciÃ³nç”³è¯·ï¼Œå«æ‹…ä¿æ–¹å¼å‹¾é€‰ï¼ˆä¾æ®æ°‘è¯‰æ³• 103/104 æ¡ï¼‰ã€‚",
     applicableCategories: ["CIVIL_COMMERCIAL", "COMMERCIAL_ARBITRATION"],
     variables: T14_VARS,
     buildBuffer: buildT14
   },
   {
     key: "lawyer_letter",
-    name: "Abogado函",
+    name: "Abogadoå‡½",
     category: "WORK_PRODUCT",
-    description: "对外催告/告知函，套律所抬头，含要求yPlazo段落。",
+    description: "å¯¹å¤–å‚¬å‘Š/å‘ŠçŸ¥å‡½ï¼Œå¥—å¾‹æ‰€æŠ¬å¤´ï¼Œå«è¦æ±‚yPlazoæ®µè½ã€‚",
     applicableCategories: [],
     variables: T15_VARS,
     buildBuffer: buildT15
   },
   {
     key: "legal_opinion",
-    name: "法律意见书",
+    name: "æ³•å¾‹æ„è§ä¹¦",
     category: "WORK_PRODUCT",
-    description: "四段式法律意见书（委托事ítems/事实/分析/结论y风险提示）。",
+    description: "å››æ®µå¼æ³•å¾‹æ„è§ä¹¦ï¼ˆå§”æ‰˜äº‹Ã­tems/äº‹å®ž/åˆ†æž/ç»“è®ºyé£Žé™©æç¤ºï¼‰ã€‚",
     applicableCategories: [],
     variables: T16_VARS,
     buildBuffer: buildT16
   },
   {
     key: "agency_opinion",
-    name: "代理词",
+    name: "ä»£ç†è¯",
     category: "WORK_PRODUCT",
-    description: "庭审代理词标准结构（事实/证据/法律适用三段）。",
+    description: "åº­å®¡ä»£ç†è¯æ ‡å‡†ç»“æž„ï¼ˆäº‹å®ž/è¯æ®/æ³•å¾‹é€‚ç”¨ä¸‰æ®µï¼‰ã€‚",
     applicableCategories: ["CIVIL_COMMERCIAL", "COMMERCIAL_ARBITRATION", "LABOR_ARBITRATION", "ADMINISTRATIVE"],
     variables: T17_VARS,
     buildBuffer: buildT17
   },
   {
     key: "meeting_notes",
-    name: "谈话笔录",
+    name: "è°ˆè¯ç¬”å½•",
     category: "HEARING",
-    description: "y当事人/证人谈话的问答式笔录，含签字Confirmar。",
+    description: "yå½“äº‹äºº/è¯äººè°ˆè¯çš„é—®ç­”å¼ç¬”å½•ï¼Œå«ç­¾å­—Confirmarã€‚",
     applicableCategories: [],
     variables: T18_VARS,
     buildBuffer: buildT18
   },
   {
     key: "detention_meeting_notes",
-    name: "会见笔录(Penal)",
+    name: "ä¼šè§ç¬”å½•(Penal)",
     category: "HEARING",
-    description: "看守所会见笔录：告知事ítems/Caso事实/程序事ítems/辩护安排四段。",
+    description: "çœ‹å®ˆæ‰€ä¼šè§ç¬”å½•ï¼šå‘ŠçŸ¥äº‹Ã­tems/Casoäº‹å®ž/ç¨‹åºäº‹Ã­tems/è¾©æŠ¤å®‰æŽ’å››æ®µã€‚",
     applicableCategories: ["CRIMINAL"],
     variables: T19_VARS,
     buildBuffer: buildT19
   },
   {
     key: "case_closing_registration",
-    name: "Cerrar caso登记表",
+    name: "Cerrar casoç™»è®°è¡¨",
     category: "CLOSING",
-    description: "Cerrar caso信息登记：Cerrar caso方式/结果摘要/Gastosy原件退还Confirmar。",
+    description: "Cerrar casoä¿¡æ¯ç™»è®°ï¼šCerrar casoæ–¹å¼/ç»“æžœæ‘˜è¦/GastosyåŽŸä»¶é€€è¿˜Confirmarã€‚",
     applicableCategories: [],
     variables: T20_VARS,
     buildBuffer: buildT20
   },
   {
     key: "evidence_catalog",
-    name: "证据目录",
+    name: "è¯æ®ç›®å½•",
     category: "ARCHIVE",
-    description: "随证据材料Enviar法院/仲裁机构的证据清单（Nombre/证明目的/页数）。",
+    description: "éšè¯æ®ææ–™Enviaræ³•é™¢/ä»²è£æœºæž„çš„è¯æ®æ¸…å•ï¼ˆNombre/è¯æ˜Žç›®çš„/é¡µæ•°ï¼‰ã€‚",
     applicableCategories: ["CIVIL_COMMERCIAL", "COMMERCIAL_ARBITRATION", "LABOR_ARBITRATION", "ADMINISTRATIVE"],
     variables: T21_VARS,
     buildBuffer: buildT21
   },
   {
     key: "blank_letterhead",
-    name: "空白文档(律所抬头)",
+    name: "ç©ºç™½æ–‡æ¡£(å¾‹æ‰€æŠ¬å¤´)",
     category: "BLANK",
-    description: "套律所抬头的空白文档，自由撰写任何文书。",
+    description: "å¥—å¾‹æ‰€æŠ¬å¤´çš„ç©ºç™½æ–‡æ¡£ï¼Œè‡ªç”±æ’°å†™ä»»ä½•æ–‡ä¹¦ã€‚",
     applicableCategories: [],
     variables: T22_VARS,
     buildBuffer: buildT22
   }
 ];
+

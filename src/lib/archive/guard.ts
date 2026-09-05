@@ -1,18 +1,18 @@
-/**
- * v0.9.4 归档只读门禁
+﻿/**
+ * v0.9.4 Guardia de solo lectura para archivo
  *
- * 策略（用户选择"中"）：
- *   - Caso status === "ARCHIVED" 后：业务写Acciones全禁
- *   - 例外：补传材料到 ARCHIVE 卷宗（Cerrar caso/归档）允许
+ * Estrategia (elegida por el usuario):
+ *   - Despues de que el estado del caso sea "ARCHIVED": todas las acciones de escritura estan prohibidas
+ *   - Excepcion: subir materiales a la carpeta ARCHIVE (Cerrar caso/Archivo) esta permitido
  *
- * 调用方式（每个写Acciones server action 入口）：
+ * Modo de uso (entrada de cada server action de escritura):
  *   await assertMatterWritable(matterId);
  *
- * 文档上传 / Eliminar 需要 isArchiveFolder() 配合放行 ARCHIVE 卷宗。
+ * Subir / Eliminar documentos requiere isArchiveFolder() para permitir la carpeta ARCHIVE.
  */
 import { requireSession } from "@/lib/auth/session";
 import { matterAssociationFilter } from "@/lib/permissions";
-import { prisma } from "@/lib/prisma";
+import { getTenantPrisma } from "@/lib/tenant-prisma";
 
 type WritableGuardOptions = {
   allowedIfArchivedReason?: string;
@@ -24,6 +24,7 @@ async function findWritableMatter(
   opts?: Pick<WritableGuardOptions, "allowFinanceRole">
 ) {
   const session = await requireSession();
+  const prisma = await getTenantPrisma();
   const allowByFinanceRole = opts?.allowFinanceRole && session.user.role === "FINANCE";
   return prisma.matter.findFirst({
     where: {
@@ -36,7 +37,7 @@ async function findWritableMatter(
 }
 
 /**
- * 已归档Caso视为只读。抛错（中文）由 UI catch 显示 toast。
+ * Caso archivado se considera solo lectura. El error lo muestra la UI como toast.
  */
 export async function assertMatterWritable(
   matterId: string | null | undefined,
@@ -44,20 +45,20 @@ export async function assertMatterWritable(
 ): Promise<void> {
   if (!matterId) return;
   const matter = await findWritableMatter(matterId, opts);
-  if (!matter) throw new Error("Caso不存在或无权处理");
+  if (!matter) throw new Error("Caso no existe o sin permiso para procesar");
   if (matter.status === "ARCHIVED") {
     const detail = opts?.allowedIfArchivedReason
-      ? `（${opts.allowedIfArchivedReason}除外）`
+      ? `(${opts.allowedIfArchivedReason} excepto)`
       : "";
-    throw new Error(`Caso已归档，禁止修改${detail}`);
+    throw new Error(`Caso archivado, prohibido modificar${detail}`);
   }
 }
 
 /**
- * 判定 folder 是否为 ARCHIVE 卷宗（Cerrar caso / 归档），用于上传材料门禁放行。
- * 命中条件：name 命中 ["Cerrar caso", "归档"] 之一（y default-folders.ts 一致）。
+ * Determina si la carpeta es ARCHIVE (Cerrar caso / Archivo), usado para permitir subir materiales.
+ * Condicion: name coincide con ["Cerrar caso", "Archivo"] (consistente con default-folders.ts).
  */
-const ARCHIVE_FOLDER_NAMES = new Set(["Cerrar caso", "归档"]);
+const ARCHIVE_FOLDER_NAMES = new Set(["Cerrar caso", "Archivo"]);
 
 export function isArchiveFolderName(name: string | null | undefined): boolean {
   if (!name) return false;
@@ -65,7 +66,8 @@ export function isArchiveFolderName(name: string | null | undefined): boolean {
 }
 
 /**
- * 文档Acciones门禁：归档后只允许上传到 ARCHIVE 卷宗。Eliminar/重命名/移动一律禁止。
+ * Guardia para documentos: despues del archivo solo se permite subir a la carpeta ARCHIVE.
+ * Eliminar/renombrar/mover queda prohibido.
  */
 export async function assertDocumentWritable(
   matterId: string | null | undefined,
@@ -73,13 +75,13 @@ export async function assertDocumentWritable(
 ): Promise<void> {
   if (!matterId) return;
   const matter = await findWritableMatter(matterId, opts);
-  if (!matter) throw new Error("Caso不存在或无权处理");
+  if (!matter) throw new Error("Caso no existe o sin permiso para procesar");
   if (matter.status !== "ARCHIVED") return;
 
   if (opts.kind === "modify") {
-    throw new Error("Caso已归档，材料不可修改或Eliminar");
+    throw new Error("Caso archivado, el material no se puede modificar o eliminar");
   }
   if (opts.kind === "upload" && !isArchiveFolderName(opts.folderName)) {
-    throw new Error("Caso已归档，仅允许补传材料到「Cerrar caso」或「归档」卷宗");
+    throw new Error("Caso archivado, solo se permite subir materiales a la carpeta \"Cerrar caso\" o \"Archivo\"");
   }
 }

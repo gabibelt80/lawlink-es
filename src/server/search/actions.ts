@@ -1,6 +1,6 @@
-"use server";
+﻿"use server";
 
-import { prisma } from "@/lib/prisma";
+import { getTenantPrisma } from "@/lib/tenant-prisma";
 import { requireSession } from "@/lib/auth/session";
 import {
   matterVisibilityFilter,
@@ -25,6 +25,7 @@ export interface GlobalSearchResult {
 }
 
 export async function globalSearch(query: string): Promise<GlobalSearchResult> {
+  const prisma = await getTenantPrisma();
   const session = await requireSession();
   if (!query || query.trim().length < 1) {
     return { matters: [], clients: [], intakes: [], documents: [] };
@@ -41,9 +42,9 @@ export async function globalSearch(query: string): Promise<GlobalSearchResult> {
   const [matters, clients, intakes, documents] = await Promise.all([
     prisma.matter.findMany({
       where: { deletedAt: null, ...mVis, OR: [
-        { title: { contains: q, mode: "insensitive" } },
-        { internalCode: { contains: q, mode: "insensitive" } },
-        { primaryClient: { name: { contains: q, mode: "insensitive" } } },
+        { title: { contains: q } },
+        { internalCode: { contains: q } },
+        { primaryClient: { name: { contains: q } } },
       ]},
       take: limit,
       select: { id: true, title: true, internalCode: true, status: true },
@@ -51,7 +52,7 @@ export async function globalSearch(query: string): Promise<GlobalSearchResult> {
     }),
     prisma.client.findMany({
       where: { deletedAt: null, ...cVis, OR: [
-        { name: { contains: q, mode: "insensitive" } },
+        { name: { contains: q } },
         { idNumber: { contains: q } },
         { phone: { contains: q } },
       ]},
@@ -64,8 +65,8 @@ export async function globalSearch(query: string): Promise<GlobalSearchResult> {
         status: { not: "CONVERTED" },
         ...iVis,
         OR: [
-          { title: { contains: q, mode: "insensitive" } },
-          { client: { name: { contains: q, mode: "insensitive" } } },
+          { title: { contains: q } },
+          { client: { name: { contains: q } } },
         ],
       },
       take: limit,
@@ -77,8 +78,8 @@ export async function globalSearch(query: string): Promise<GlobalSearchResult> {
         deletedAt: null,
         matter: { deletedAt: null, ...mVis },
         OR: [
-          { name: { contains: q, mode: "insensitive" } },
-          { tags: { has: q } },
+          { name: { contains: q } },
+          { tags: { array_contains: q } },
         ],
       },
       take: limit,
@@ -94,7 +95,7 @@ export async function globalSearch(query: string): Promise<GlobalSearchResult> {
     matters: matters.map((m) => ({
       id: m.id,
       title: m.title,
-      subtitle: `${m.internalCode} · ${m.status}`,
+      subtitle: `${m.internalCode} - ${m.status}`,
       href: matterHref(m),
       type: "matter" as const,
     })),

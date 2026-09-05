@@ -1,9 +1,9 @@
-"use server";
+﻿"use server";
 
 /**
- * v0.22: cron 定时作业的手动触发入口（admin only）
+ * v0.22: cron å®šæ—¶ä½œä¸šçš„æ‰‹åŠ¨è§¦å‘å…¥å£ï¼ˆadmin onlyï¼‰
  *
- * 用于测试 / 应急触发，不etc.到定时点。
+ * ç”¨äºŽæµ‹è¯• / åº”æ€¥è§¦å‘ï¼Œä¸etc.åˆ°å®šæ—¶ç‚¹ã€‚
  */
 import { requireSession } from "@/lib/auth/session";
 import { runWeeklyReportPush } from "@/server/reports/push-weekly";
@@ -37,3 +37,5 @@ export async function triggerAuditCleanupNow() {
   await requireAdmin();
   return runAuditCleanup();
 }
+
+

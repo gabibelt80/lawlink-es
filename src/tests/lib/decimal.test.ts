@@ -1,4 +1,4 @@
-import { Prisma } from "@prisma/client";
+﻿import { Prisma } from "@prisma/client";
 import { describe, expect, it } from "vitest";
 import { decimalToNumber, nullableDecimalToNumber, serializeDecimals } from "@/lib/decimal";
 
@@ -20,10 +20,10 @@ describe("serializeDecimals", () => {
       claimAmount: new Prisma.Decimal("8600000.00"),
       targets: [
         {
-          name: "被Preservación人",
+          name: "è¢«PreservaciÃ³näºº",
           properties: [
             { amount: new Prisma.Decimal("1200000.55"), detail: null },
-            { amount: null, detail: "无Monto" }
+            { amount: null, detail: "æ— Monto" }
           ]
         }
       ]
@@ -56,3 +56,4 @@ describe("serializeDecimals", () => {
     expect(out).toEqual(json);
   });
 });
+

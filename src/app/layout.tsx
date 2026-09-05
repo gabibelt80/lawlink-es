@@ -3,8 +3,8 @@ import "./globals.css";
 import { Providers } from "@/components/providers";
 
 export const metadata: Metadata = {
-  title: "LawLink — Sistema de Gestión de Casos Legales",
-  description: "Sistema de gestión de casos para abogados y pequeños estudios jurídicos",
+  title: "Juridictas — Sistema de Gestion de Casos Legales",
+  description: "Sistema de gestion de casos para abogados y estudios juridicos",
   icons: {
     icon: "/favicon.svg",
     shortcut: "/favicon.ico"

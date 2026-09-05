@@ -1,9 +1,9 @@
-"use server";
+﻿"use server";
 
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { Prisma } from "@prisma/client";
-import { prisma } from "@/lib/prisma";
+import { getTenantPrisma } from "@/lib/tenant-prisma";
 import { requireSession } from "@/lib/auth/session";
 import { audit } from "@/server/audit";
 import { createNotification } from "@/server/notifications/create";
@@ -23,9 +23,9 @@ import {
 } from "./schemas";
 import { revalidateMatter } from "@/server/matters/route";
 
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-// 解析并Guardar（支持批量）
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// ────────────────────────────────────────────────────────────────────────────────
+// Analizar y Guardar (soporta lotes)
+// ────────────────────────────────────────────────────────────────────────────────
 
 async function findMatchingMatter(caseNumbers: string[]): Promise<string | null> {
   if (caseNumbers.length === 0) return null;
@@ -81,7 +81,7 @@ function normalizeStoredParsed(rawText: string, parsedJson: Prisma.JsonValue): P
   };
 }
 
-// v0.48: 待人工Estado冗余到 SmsMessage.needsManualAction 供 SQL 过滤
+// v0.48: Estado pendiente de acción manual redundante en SmsMessage.needsManualAction para filtrado SQL
 function needsManualFromResults(results: ParsedSms["attachmentResults"]) {
   return results.some((r) => r.status === "LOGIN_REQUIRED" || r.status === "SKIPPED_NO_MATTER");
 }
@@ -98,7 +98,7 @@ function skippedNoMatterResults(parsed: ParsedSms): ParsedSms["attachmentResults
   return parsed.urls.map((url) => ({
     url,
     status: "SKIPPED_NO_MATTER",
-    message: "请先关联Caso，再提取送达Adjunto",
+    message: "Por favor asociá primero el Caso, después extraé el Adjunto",
     checkedAt: new Date().toISOString()
   }));
 }
@@ -123,18 +123,19 @@ async function tryExtractAttachments({
     return parsed.urls.map((url) => ({
       url,
       status: "FAILED" as const,
-      message: err instanceof Error ? err.message : "Adjunto提取Error",
+      message: err instanceof Error ? err.message : "Error al extraer Adjunto",
       checkedAt: new Date().toISOString()
     }));
   }
 }
 
 export async function parseAndSaveSms(input: z.infer<typeof smsParseAndSaveSchema>) {
+  const prisma = await getTenantPrisma();
   const session = await requireSession();
   const data = smsParseAndSaveSchema.parse(input);
 
   const messages = data.batch ? splitSmsBatch(data.rawText) : [data.rawText.trim()];
-  if (messages.length === 0) throw new Error("没有可解析的内容");
+  if (messages.length === 0) throw new Error("No hay contenido analizable");
 
   const createdIds: string[] = [];
 
@@ -182,7 +183,7 @@ export async function parseAndSaveSms(input: z.infer<typeof smsParseAndSaveSchem
       }
     }
 
-    // Notificaciones关联Caso的负责人
+    // Notificaciones al responsable del Caso asociado
     if (matchedMatterId) {
       const matter = await prisma.matter.findUnique({
         where: { id: matchedMatterId },
@@ -192,8 +193,8 @@ export async function parseAndSaveSms(input: z.infer<typeof smsParseAndSaveSchem
         await createNotification({
           userId: matter.ownerId,
           type: "SMS_ARRIVAL",
-          title: "收到新法院SMS",
-          content: `Caso收到新的法院SMS，类型：${parsed.smsType ?? "Desconocido"}`,
+          title: "Nuevo SMS del juzgado recibido",
+          content: `El Caso recibió un nuevo SMS del juzgado, tipo: ${parsed.smsType ?? "Desconocido"}`,
           href: "/inbox",
           refType: "SmsMessage",
           refId: created.id
@@ -215,6 +216,7 @@ export async function parseAndSaveSms(input: z.infer<typeof smsParseAndSaveSchem
 }
 
 export async function extractSmsAttachments(input: z.infer<typeof smsIdSchema>) {
+  const prisma = await getTenantPrisma();
   const session = await requireSession();
   const data = smsIdSchema.parse(input);
 
@@ -228,9 +230,9 @@ export async function extractSmsAttachments(input: z.infer<typeof smsIdSchema>) 
       matchedMatterId: true
     }
   });
-  if (!sms) throw new Error("SMS不存在");
+  if (!sms) throw new Error("El SMS no existe");
   if (sms.receivedById !== session.user.id && !sms.matchedMatterId) {
-    throw new Error("无权处理这条SMS");
+    throw new Error("No tenés permiso para procesar este SMS");
   }
   if (!sms.matchedMatterId) {
     const parsed = normalizeStoredParsed(sms.rawText, sms.parsedJson);
@@ -252,7 +254,7 @@ export async function extractSmsAttachments(input: z.infer<typeof smsIdSchema>) 
 
   await assertCanAccessMatter(session.user.id, session.user.role, sms.matchedMatterId);
   const parsed = normalizeStoredParsed(sms.rawText, sms.parsedJson);
-  if (parsed.urls.length === 0) throw new Error("SMS中没有可提取的Enlace");
+  if (parsed.urls.length === 0) throw new Error("No hay Enlaces extraíbles en el SMS");
 
   const attachmentResults = await tryExtractAttachments({
     smsId: sms.id,
@@ -286,11 +288,12 @@ export async function extractSmsAttachments(input: z.infer<typeof smsIdSchema>) 
   return { ok: true, count: attachmentResults.length, attachmentResults };
 }
 
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-// 列表
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// ────────────────────────────────────────────────────────────────────────────────
+// Listado
+// ────────────────────────────────────────────────────────────────────────────────
 
 export async function listSmsMessages(input?: z.input<typeof smsListFilterSchema>) {
+  const prisma = await getTenantPrisma();
   const session = await requireSession();
   const filter = smsListFilterSchema.parse(input ?? {});
 
@@ -323,6 +326,7 @@ export async function listSmsMessages(input?: z.input<typeof smsListFilterSchema
 }
 
 export async function getSmsMessage(id: string) {
+  const prisma = await getTenantPrisma();
   await requireSession();
   return prisma.smsMessage.findUnique({
     where: { id },
@@ -344,15 +348,16 @@ export async function getSmsMessage(id: string) {
   });
 }
 
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-// 手动指派 Matter
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// ────────────────────────────────────────────────────────────────────────────────
+// Asignación manual de Matter
+// ────────────────────────────────────────────────────────────────────────────────
 
 export async function matchSmsToMatter(input: z.infer<typeof smsMatchToMatterSchema>) {
+  const prisma = await getTenantPrisma();
   const session = await requireSession();
   const data = smsMatchToMatterSchema.parse(input);
   if (data.matterId) {
-    await assertCanAssociateMatter(session.user.id, data.matterId);
+    await assertCanAssociateMatter(session.user.id, session.user.role, data.matterId);
     await assertMatterWritable(data.matterId);
   }
 
@@ -376,11 +381,12 @@ export async function matchSmsToMatter(input: z.infer<typeof smsMatchToMatterSch
   return { ok: true };
 }
 
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-// 一键生成 Hearing
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// ────────────────────────────────────────────────────────────────────────────────
+// Generar Audiencia con un clic
+// ────────────────────────────────────────────────────────────────────────────────
 
 export async function generateHearingFromSms(input: z.infer<typeof smsGenerateHearingSchema>) {
+  const prisma = await getTenantPrisma();
   const session = await requireSession();
   const data = smsGenerateHearingSchema.parse(input);
 
@@ -388,7 +394,7 @@ export async function generateHearingFromSms(input: z.infer<typeof smsGenerateHe
     where: { id: data.procedureId },
     select: { id: true, matterId: true }
   });
-  if (!proc) throw new Error("程序不存在");
+  if (!proc) throw new Error("El procedimiento no existe");
   await assertCanAccessMatter(session.user.id, session.user.role, proc.matterId);
   await assertMatterWritable(proc.matterId);
 
@@ -425,11 +431,12 @@ export async function generateHearingFromSms(input: z.infer<typeof smsGenerateHe
   return { ok: true, hearingId: hearing.id };
 }
 
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-// 一键生成 Deadline
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// ────────────────────────────────────────────────────────────────────────────────
+// Generar Vencimiento con un clic
+// ────────────────────────────────────────────────────────────────────────────────
 
 export async function generateDeadlineFromSms(input: z.infer<typeof smsGenerateDeadlineSchema>) {
+  const prisma = await getTenantPrisma();
   const session = await requireSession();
   const data = smsGenerateDeadlineSchema.parse(input);
 
@@ -437,7 +444,7 @@ export async function generateDeadlineFromSms(input: z.infer<typeof smsGenerateD
     where: { id: data.procedureId },
     select: { id: true, matterId: true }
   });
-  if (!proc) throw new Error("程序不存在");
+  if (!proc) throw new Error("El procedimiento no existe");
   await assertCanAccessMatter(session.user.id, session.user.role, proc.matterId);
   await assertMatterWritable(proc.matterId);
 
@@ -474,11 +481,12 @@ export async function generateDeadlineFromSms(input: z.infer<typeof smsGenerateD
   return { ok: true, deadlineId: deadline.id };
 }
 
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-// 标记已处理
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// ────────────────────────────────────────────────────────────────────────────────
+// Marcar como procesado
+// ────────────────────────────────────────────────────────────────────────────────
 
 export async function markSmsProcessed(input: z.infer<typeof smsIdSchema>) {
+  const prisma = await getTenantPrisma();
   const session = await requireSession();
   const data = smsIdSchema.parse(input);
 
@@ -499,6 +507,7 @@ export async function markSmsProcessed(input: z.infer<typeof smsIdSchema>) {
 }
 
 export async function deleteSms(input: z.infer<typeof smsIdSchema>) {
+  const prisma = await getTenantPrisma();
   const session = await requireSession();
   const data = smsIdSchema.parse(input);
 
@@ -506,9 +515,9 @@ export async function deleteSms(input: z.infer<typeof smsIdSchema>) {
     where: { id: data.id },
     select: { receivedById: true }
   });
-  if (!sms) throw new Error("SMS不存在");
+  if (!sms) throw new Error("El SMS no existe");
   if (sms.receivedById !== session.user.id && session.user.role !== "ADMIN") {
-    throw new Error("仅Recibido人或Administrar员可Eliminar");
+    throw new Error("Solo el Receptor o un Administrador pueden Eliminar");
   }
 
   await prisma.smsMessage.delete({ where: { id: data.id } });
@@ -524,21 +533,23 @@ export async function deleteSms(input: z.infer<typeof smsIdSchema>) {
   return { ok: true };
 }
 
-// 把解析出的字符串Fecha尽量转 JS Date（UI 预填用）
+// Convertir la cadena de Fecha analizada a JS Date en lo posible (para precarga en UI)
 export async function parseDateString(s: string) {
+  const prisma = await getTenantPrisma();
   await requireSession();
   const d = toDate(s);
   return d ? d.toISOString() : null;
 }
 
 /**
- * v0.51: 立案/受理SMS解析出的案号回填到程序（Recibido箱闭环）。
- * 只允许回填SMS里真实解析出的案号；只填空案号的程序，已有案号不覆盖
- * （更正走程序信息Editar，留痕清晰）。
+ * v0.51: Rellenar el número de caso analizado del SMS de radicación/recepción al procedimiento (cierre del ciclo en Bandeja de entrada).
+ * Solo se permite rellenar números de caso realmente analizados del SMS; solo se completan procedimientos con número de caso vacío, los existentes no se pisan
+ * (la corrección se hace en Editar información del procedimiento, con registro claro).
  */
 export async function backfillCaseNumberFromSms(
   input: z.infer<typeof smsBackfillCaseNumberSchema>
 ) {
+  const prisma = await getTenantPrisma();
   const session = await requireSession();
   const data = smsBackfillCaseNumberSchema.parse(input);
 
@@ -546,14 +557,14 @@ export async function backfillCaseNumberFromSms(
     where: { id: data.smsId },
     select: { id: true, rawText: true, parsedJson: true, matchedMatterId: true }
   });
-  if (!sms) throw new Error("SMS不存在");
-  if (!sms.matchedMatterId) throw new Error("请先关联Caso");
-  await assertCanAssociateMatter(session.user.id, sms.matchedMatterId);
+  if (!sms) throw new Error("El SMS no existe");
+  if (!sms.matchedMatterId) throw new Error("Asociá primero el Caso");
+  await assertCanAssociateMatter(session.user.id, session.user.role, sms.matchedMatterId);
   await assertMatterWritable(sms.matchedMatterId);
 
   const parsed = normalizeStoredParsed(sms.rawText, sms.parsedJson);
   if (!parsed.caseNumbers.includes(data.caseNumber)) {
-    throw new Error("只能回填本条SMS解析出的案号");
+    throw new Error("Solo se puede rellenar el número de caso analizado de este SMS");
   }
 
   const procedure = await prisma.matterProcedure.findUnique({
@@ -561,13 +572,13 @@ export async function backfillCaseNumberFromSms(
     select: { id: true, matterId: true, caseNumber: true, type: true, customLabel: true }
   });
   if (!procedure || procedure.matterId !== sms.matchedMatterId) {
-    throw new Error("程序ySMS关联的Caso不Coincidencia");
+    throw new Error("El procedimiento y el Caso asociado al SMS no Coinciden");
   }
   if (procedure.caseNumber === data.caseNumber) {
     return { ok: true, unchanged: true };
   }
   if (procedure.caseNumber) {
-    throw new Error(`该程序已有案号 ${procedure.caseNumber}，如需更正请在程序信息中修改`);
+    throw new Error(`Este procedimiento ya tiene el número de caso ${procedure.caseNumber}, si necesitás corregirlo modificalo en la información del procedimiento`);
   }
 
   await prisma.matterProcedure.update({
@@ -579,7 +590,7 @@ export async function backfillCaseNumberFromSms(
     data: {
       matterId: sms.matchedMatterId,
       eventType: "PROCEDURE_UPDATED",
-      title: `案号回填：${data.caseNumber}（来自法院SMS）`,
+      title: `Número de caso completado: ${data.caseNumber} (desde SMS del juzgado)`,
       occurredAt: new Date(),
       refType: "MatterProcedure",
       refId: procedure.id

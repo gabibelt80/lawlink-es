@@ -1,33 +1,33 @@
-/**
- * v0.42 批F：Caso批量导入 xlsx 模板生成。
- * 第 1 行表头（必填列带 *），第 2 行示例，另一 sheet 写填写说明。
+﻿/**
+ * v0.42 Lote F: GeneraciÃ³n de plantilla xlsx para importaciÃ³n masiva de casos.
+ * Fila 1 encabezados (obligatorios con *), fila 2 ejemplo, otra hoja con instrucciones.
  */
 import ExcelJS from "exceljs";
 
 import { IMPORT_COLUMNS } from "@/lib/imports/matter-import";
 
-export const IMPORT_SHEET_NAME = "Caso导入";
+export const IMPORT_SHEET_NAME = "ImportaciÃ³n de casos";
 
 const EXAMPLE: Record<string, string> = {
-  clientName: "张三",
-  clientIdNumber: "110101199001011234",
-  clientType: "个人",
-  opposingName: "某某科技有限公司",
-  opposingIdNumber: "91110000MA01XXXX1A",
-  opposingType: "企业",
-  category: "民商诉讼",
-  status: "办理中",
-  ownerEmail: "lawyer@example.com",
+  clientName: "Juan PÃ©rez",
+  clientIdNumber: "20123456789",
+  clientType: "Persona fÃ­sica",
+  opposingName: "TecnologÃ­a Ejemplo S.A.",
+  opposingIdNumber: "30-71234567-8",
+  opposingType: "Empresa",
+  category: "Litigio civil y comercial",
+  status: "En trÃ¡mite",
+  ownerEmail: "abogado@ejemplo.com",
   intakeDate: "2026-05-30",
-  cause: "买卖合同纠纷",
+  cause: "Conflicto de compraventa",
   claimAmount: "120000",
-  clientPhone: "13800000000",
-  jurisdiction: "北京市朝阳区"
+  clientPhone: "1151234567",
+  jurisdiction: "Ciudad AutÃ³noma de Buenos Aires"
 };
 
 export async function buildMatterImportTemplate(): Promise<Buffer> {
   const wb = new ExcelJS.Workbook();
-  wb.creator = "LawLink";
+  wb.creator = "Juridictas";
   wb.created = new Date();
 
   const sheet = wb.addWorksheet(IMPORT_SHEET_NAME);
@@ -37,7 +37,7 @@ export async function buildMatterImportTemplate(): Promise<Buffer> {
     width: Math.max(12, c.header.length * 2 + 4)
   }));
 
-  // 表头样式：必填浅红、选填浅灰
+  // Estilo de encabezados: obligatorios en rojo claro, opcionales en gris claro
   const headerRow = sheet.getRow(1);
   headerRow.font = { bold: true };
   headerRow.alignment = { vertical: "middle" };
@@ -51,27 +51,28 @@ export async function buildMatterImportTemplate(): Promise<Buffer> {
   });
   headerRow.height = 20;
 
-  // 示例行
+  // Fila de ejemplo
   sheet.addRow(IMPORT_COLUMNS.reduce<Record<string, string>>((acc, c) => {
     acc[c.key] = EXAMPLE[c.key] ?? "";
     return acc;
   }, {}));
 
-  // 说明 sheet
-  const notes = wb.addWorksheet("填写说明");
+  // Hoja de instrucciones
+  const notes = wb.addWorksheet("Instrucciones");
   notes.columns = [
-    { header: "列", key: "h", width: 16 },
-    { header: "说明", key: "d", width: 60 }
+    { header: "Columna", key: "h", width: 16 },
+    { header: "DescripciÃ³n", key: "d", width: 60 }
   ];
   notes.getRow(1).font = { bold: true };
-  notes.addRow({ h: "必填列", d: "表头带 * 的为必填：ClienteNombre/证件号、相对方Nombre/证件号、Caso类型、CasoEstado" });
+  notes.addRow({ h: "Columnas obligatorias", d: "Las que tienen * en el encabezado son obligatorias: nombre/documento del cliente, nombre/documento de la contraparte, tipo de caso, estado del caso" });
   for (const c of IMPORT_COLUMNS) {
     if (c.hint) notes.addRow({ h: c.header, d: c.hint });
   }
-  notes.addRow({ h: "首程序", d: "「办理中」的Caso按Caso类型自动生成首程序（诉讼→一审、其他→非诉/仲裁阶段）；已Cerrar caso/已归档不建程序" });
-  notes.addRow({ h: "利益冲突", d: "Clientey相对方的Nombre+证件号会写入当事人库，导入后即可被冲突检索命中" });
-  notes.addRow({ h: "示例行", d: "第 2 行为示例，正式导入前请Eliminar或覆盖" });
+  notes.addRow({ h: "Primer procedimiento", d: "Los casos Â«En trÃ¡miteÂ» generan automÃ¡ticamente el primer procedimiento segÃºn el tipo (litigio â†’ primera instancia; otros â†’ etapa no contenciosa/arbitraje); los cerrados/archivados no crean procedimiento" });
+  notes.addRow({ h: "Conflicto de intereses", d: "El nombre y documento del cliente y la contraparte se guardan en la base de partes, y despuÃ©s de importar ya pueden ser detectados por la bÃºsqueda de conflictos" });
+  notes.addRow({ h: "Fila de ejemplo", d: "La fila 2 es un ejemplo; eliminÃ¡la o sobrescribila antes de la importaciÃ³n real" });
 
   const out = await wb.xlsx.writeBuffer();
   return Buffer.from(out);
 }
+

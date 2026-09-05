@@ -1,4 +1,4 @@
-import { z } from "zod";
+﻿import { z } from "zod";
 
 const sealTypes = [
   "OFFICIAL_SEAL",
@@ -11,8 +11,8 @@ const sealTypes = [
 export const sealCreateSchema = z.object({
   sealType: z.enum(sealTypes),
   matterId: z.string().cuid().optional().nullable(),
-  purpose: z.string().min(1, "用章事由必填").max(500),
-  documentTitle: z.string().min(1, "文件标题必填").max(200),
+  purpose: z.string().min(1, "ç”¨ç« äº‹ç”±å¿…å¡«").max(500),
+  documentTitle: z.string().min(1, "æ–‡ä»¶æ ‡é¢˜å¿…å¡«").max(200),
   pageCount: z.coerce.number().int().positive().default(1),
   requireCrossPageSeal: z.coerce.boolean().default(false),
   copies: z.coerce.number().int().positive().default(1),
@@ -28,7 +28,7 @@ export const sealApproveSchema = z.object({
 
 export const sealRejectSchema = z.object({
   id: z.string().cuid(),
-  reason: z.string().min(1, "请说明RechazarMotivo").max(500)
+  reason: z.string().min(1, "è¯·è¯´æ˜ŽRechazarMotivo").max(500)
 });
 
 export const sealCancelSchema = z.object({
@@ -44,3 +44,5 @@ export const sealListFilterSchema = z.object({
 });
 
 export type SealCreateInput = z.input<typeof sealCreateSchema>;
+
+

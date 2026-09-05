@@ -1,34 +1,35 @@
-import { describe, it, expect } from "vitest";
+﻿import { describe, it, expect } from "vitest";
 import { renderCaseNoTemplate } from "@/lib/matters/firm-caseno";
 
-describe("renderCaseNoTemplate — 所内案号模板渲染", () => {
+describe("renderCaseNoTemplate â€” æ‰€å†…æ¡ˆå·æ¨¡æ¿æ¸²æŸ“", () => {
   const base = {
     year: 2026,
-    firmShortName: "普",
-    categoryAbbr: "民",
-    categoryWord: "民诉",
+    firmShortName: "æ™®",
+    categoryAbbr: "æ°‘",
+    categoryWord: "æ°‘è¯‰",
     seq: 1
   };
 
-  it("默认模板 {年}-{所}{类词}-{序3} → 2026-普民诉-001", () => {
-    expect(renderCaseNoTemplate("{年}-{所}{类词}-{序3}", base)).toBe("2026-普民诉-001");
+  it("é»˜è®¤æ¨¡æ¿ {å¹´}-{æ‰€}{ç±»è¯}-{åº3} â†’ 2026-æ™®æ°‘è¯‰-001", () => {
+    expect(renderCaseNoTemplate("{å¹´}-{æ‰€}{ç±»è¯}-{åº3}", base)).toBe("2026-æ™®æ°‘è¯‰-001");
   });
 
-  it("{年2} 取后两位、{序4} 补四位", () => {
-    expect(renderCaseNoTemplate("{年2}{类}{序4}", { ...base, seq: 23 })).toBe("26民0023");
+  it("{å¹´2} å–åŽä¸¤ä½ã€{åº4} è¡¥å››ä½", () => {
+    expect(renderCaseNoTemplate("{å¹´2}{ç±»}{åº4}", { ...base, seq: 23 })).toBe("26æ°‘0023");
   });
 
-  it("{类} y {类词} 互不污染（{类词} 先替换）", () => {
-    expect(renderCaseNoTemplate("{类词}/{类}", base)).toBe("民诉/民");
+  it("{ç±»} y {ç±»è¯} äº’ä¸æ±¡æŸ“ï¼ˆ{ç±»è¯} å…ˆæ›¿æ¢ï¼‰", () => {
+    expect(renderCaseNoTemplate("{ç±»è¯}/{ç±»}", base)).toBe("æ°‘è¯‰/æ°‘");
   });
 
-  it("所简称为空时该段留空", () => {
-    expect(renderCaseNoTemplate("{年}-{所}{类词}-{序3}", { ...base, firmShortName: "" })).toBe(
-      "2026-民诉-001"
+  it("æ‰€ç®€ç§°ä¸ºç©ºæ—¶è¯¥æ®µç•™ç©º", () => {
+    expect(renderCaseNoTemplate("{å¹´}-{æ‰€}{ç±»è¯}-{åº3}", { ...base, firmShortName: "" })).toBe(
+      "2026-æ°‘è¯‰-001"
     );
   });
 
-  it("流水大于补位宽度时不截断", () => {
-    expect(renderCaseNoTemplate("{序3}", { ...base, seq: 1234 })).toBe("1234");
+  it("æµæ°´å¤§äºŽè¡¥ä½å®½åº¦æ—¶ä¸æˆªæ–­", () => {
+    expect(renderCaseNoTemplate("{åº3}", { ...base, seq: 1234 })).toBe("1234");
   });
 });
+

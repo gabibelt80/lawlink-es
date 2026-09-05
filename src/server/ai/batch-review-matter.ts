@@ -1,14 +1,14 @@
-"use server";
+﻿"use server";
 
 /**
- * v0.22: 一键扫描CasoVer todos未审查文档
+ * v0.22: Escaneo con un clic de todos los documentos no revisados del caso
  *
- * - 取本案中 mime 支持的（PDF / DOCX / text）且 7 días内没审查过的 documents
- * - 硬上限单次 5 个文档（防 token 爆）
- * - 循环调 reviewDocument；单条Error不阻断
- * - Volver { reviewed, skipped, errors[] }
+ * - Obtiene documentos del caso con mime soportado (PDF / DOCX / text) que no hayan sido revisados en los Ãºltimos 7 dÃ­as
+ * - LÃ­mite mÃ¡ximo de 5 documentos por lote (para evitar agotar tokens)
+ * - Llama a reviewDocument en bucle; un error individual no detiene el proceso
+ * - Devuelve { reviewed, skipped, errors[] }
  */
-import { prisma } from "@/lib/prisma";
+import { getTenantPrisma } from "@/lib/tenant-prisma";
 import { requireSession } from "@/lib/auth/session";
 import { assertCanAccessMatter } from "@/lib/permissions";
 import { audit } from "@/server/audit";
@@ -40,13 +40,14 @@ export async function batchReviewMatterDocuments(input: {
   matterId: string;
 }): Promise<BatchReviewSummary> {
   const session = await requireSession();
+  const prisma = await getTenantPrisma();
   await assertCanAccessMatter(
     session.user.id,
     session.user.role,
     input.matterId,
   );
 
-  // 拿本案 documents 当中可审查的
+  // Obtener documentos del caso que sean revisables
   const docs = await prisma.document.findMany({
     where: { matterId: input.matterId, deletedAt: null },
     orderBy: { createdAt: "desc" },
@@ -54,7 +55,7 @@ export async function batchReviewMatterDocuments(input: {
   });
   const reviewable = docs.filter((d) => isReviewable(d.mimeType));
 
-  // 拉最近 7 días内已审查的 documentId 集合
+  // Obtener el conjunto de documentId ya revisados en los Ãºltimos 7 dÃ­as
   const cutoff = new Date(Date.now() - RECENT_HOURS * 3600_000);
   const recent = await prisma.reviewRecord.findMany({
     where: {
@@ -81,7 +82,7 @@ export async function batchReviewMatterDocuments(input: {
       skipped.push({
         documentId: d.id,
         documentName: d.name,
-        reason: "Revisado en los últimos 7 días",
+        reason: "Revisado en los Ãºltimos 7 dÃ­as",
       });
       continue;
     }
@@ -95,7 +96,7 @@ export async function batchReviewMatterDocuments(input: {
       skipped.push({
         documentId: d.id,
         documentName: d.name,
-        reason: `Se omitió esta vez (máximo ${MAX_DOCS_PER_BATCH} por lote, puede volver a escanear)`,
+        reason: `Se omitiÃ³ esta vez (mÃ¡ximo ${MAX_DOCS_PER_BATCH} por lote, podÃ©s volver a escanear)`,
       });
     }
   }
@@ -142,3 +143,4 @@ export async function batchReviewMatterDocuments(input: {
     errors,
   };
 }
+

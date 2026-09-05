@@ -1,8 +1,8 @@
-import type { MatterCategory, ProcedureType, LitigationStanding } from "@prisma/client";
+﻿import type { MatterCategory, ProcedureType, LitigationStanding } from "@prisma/client";
 
 /**
- * 各Caso类别下可选的程序类型。
- * UI 上"新建Caso"和"Agregar程序"按此表过滤可选ítems。
+ * Tipos de procedimiento disponibles para cada categoria de caso.
+ * En la UI, "Nuevo caso" y "Agregar procedimiento" filtran los items disponibles segun esta tabla.
  */
 export const proceduresByCategory: Record<MatterCategory, ProcedureType[]> = {
   CIVIL_COMMERCIAL: [
@@ -35,6 +35,7 @@ export const proceduresByCategory: Record<MatterCategory, ProcedureType[]> = {
     "CUSTOM"
   ],
   ADMINISTRATIVE: [
+    "ADMIN_PRE_LITIGATION",
     "ADMIN_RECONSIDERATION",
     "FIRST_INSTANCE",
     "SECOND_INSTANCE",
@@ -44,7 +45,7 @@ export const proceduresByCategory: Record<MatterCategory, ProcedureType[]> = {
     "PROSECUTORIAL_SUPERVISION",
     "CUSTOM"
   ],
-  // 劳动仲裁前置，裁后不服可续一审/二审/再审/执行
+  // El arbitraje laboral es previo; si no se acepta el laudo, se puede continuar con primera/segunda instancia/nuevo juicio/ejecucion
   LABOR_ARBITRATION: [
     "LABOR_ARBITRATION",
     "FIRST_INSTANCE",
@@ -54,7 +55,7 @@ export const proceduresByCategory: Record<MatterCategory, ProcedureType[]> = {
     "ENFORCEMENT",
     "CUSTOM"
   ],
-  // 商事仲裁一裁终局，但裁后仍可进入撤裁、不予执行审查、执行etc.程序
+  // El arbitraje comercial es definitivo, pero despues del laudo aun se puede entrar a anulacion, revision de no ejecucion, ejecucion, etc.
   COMMERCIAL_ARBITRATION: [
     "COMMERCIAL_ARBITRATION",
     "ARBITRATION_SET_ASIDE",
@@ -69,7 +70,7 @@ export const proceduresByCategory: Record<MatterCategory, ProcedureType[]> = {
 };
 
 /**
- * 各Caso类别下可选的诉讼地位（我方Rol）。
+ * Posiciones procesales disponibles para cada categoria de caso (nuestro rol).
  */
 export const standingsByCategory: Record<MatterCategory, LitigationStanding[]> = {
   CIVIL_COMMERCIAL: [
@@ -100,23 +101,24 @@ export const standingsByCategory: Record<MatterCategory, LitigationStanding[]> =
 };
 
 /**
- * 根据程序类型推荐"办理机关"的提示文本。
+ * Texto de sugerencia del "organo de gestion" segun el tipo de procedimiento.
  */
 export function suggestHandlingAgency(type: ProcedureType): string {
-  if (type === "INVESTIGATION") return "公安局 / 监察委 / 国安局";
-  if (type === "PROSECUTION_REVIEW") return "检察院（审查起诉部门）";
-  if (type === "PROSECUTORIAL_SUPERVISION") return "检察院";
-  if (type === "CRIMINAL_ENFORCEMENT") return "监狱 / 看守所 / 社区矫正机构";
-  if (type === "COMMUTATION_PAROLE_REVIEW") return "法院（执行庭）";
-  if (type === "ADMIN_RECONSIDERATION") return "复议机关";
-  if (type === "COMMERCIAL_ARBITRATION") return "仲裁委员会";
-  if (type === "LABOR_ARBITRATION") return "劳动人事争议仲裁委";
+  if (type === "INVESTIGATION") return "Policia / Comision de Supervision / Seguridad Nacional";
+  if (type === "PROSECUTION_REVIEW") return "Fiscalia (departamento de revision de acusacion)";
+  if (type === "PROSECUTORIAL_SUPERVISION") return "Fiscalia";
+  if (type === "CRIMINAL_ENFORCEMENT") return "Prision / Centro de detencion / Institucion de correccion comunitaria";
+  if (type === "COMMUTATION_PAROLE_REVIEW") return "Tribunal (sala de ejecucion)";
+  if (type === "ADMIN_PRE_LITIGATION") return "Organo administrativo / Compania de seguros";
+  if (type === "ADMIN_RECONSIDERATION") return "Organo de reconsideracion";
+  if (type === "COMMERCIAL_ARBITRATION") return "Comision de arbitraje";
+  if (type === "LABOR_ARBITRATION") return "Comision de arbitraje laboral";
   if (type === "ARBITRATION_SET_ASIDE" || type === "ARBITRATION_ENFORCEMENT_REVIEW")
-    return "中级人民法院";
-  if (type === "ENFORCEMENT" || type === "ENFORCEMENT_OBJECTION") return "法院（执行局）";
-  if (type === "ADMIN_NON_LITIGATION_ENFORCEMENT") return "法院";
-  // 一审/二审/再审 etc.审判类
-  return "法院";
+    return "Tribunal intermedio";
+  if (type === "ENFORCEMENT" || type === "ENFORCEMENT_OBJECTION") return "Tribunal (oficina de ejecucion)";
+  if (type === "ADMIN_NON_LITIGATION_ENFORCEMENT") return "Tribunal";
+  // Primera instancia / segunda instancia / nuevo juicio, etc., tipo judicial
+  return "Tribunal";
 }
 
 export const matterCategoryCode: Record<MatterCategory, string> = {

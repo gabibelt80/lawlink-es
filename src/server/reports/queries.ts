@@ -1,13 +1,13 @@
-/**
- * v0.20: 律所报表数据聚合（纯 read-only，无 use server）
+﻿/**
+ * v0.20: Reportes del bufete (solo lectura, sin use server)
  *
- * 4 个口径（来自 PRD 后续规划）：
- *  - Caso量：本期新收 / 在办 / 已Cerrar caso / 已归档
- *  - 类别分布：按 MatterCategory
- *  - Abogado产出：每个Abogado承办Caso数 / 已Cerrar caso数 / 收款Monto
- *  - Cliente应收：按Cliente聚合 应收 - 已收
+ * 4 bloques de datos:
+ *  - KPIs: nuevos casos / en tramite / cerrados / archivados
+ *  - Distribucion por categoria (MatterCategory)
+ *  - Produccion por abogado: casos asignados / cerrados / cobros
+ *  - Cuentas por cobrar por cliente: pendiente - cobrado
  *
- * 时间范围：调用方传 [start, end]，按 Matter.createdAt 落入本期为「新收」。
+ * Rango de tiempo: [start, end], segun Matter.createdAt para "nuevos casos".
  */
 import { prisma } from "@/lib/prisma";
 import type { MatterCategory } from "@prisma/client";
@@ -24,22 +24,22 @@ export function periodPresets(now = new Date()): Record<"month" | "quarter" | "y
   const q = Math.floor(m / 3);
   return {
     month: {
-      label: `${y} 年 ${m + 1} 月`,
+      label: `${y} - Mes ${m + 1}`,
       start: new Date(y, m, 1),
       end: new Date(y, m + 1, 1)
     },
     quarter: {
-      label: `${y} 年 Q${q + 1}`,
+      label: `${y} - Q${q + 1}`,
       start: new Date(y, q * 3, 1),
       end: new Date(y, q * 3 + 3, 1)
     },
     year: {
-      label: `${y} 年度`,
+      label: `${y} - Anual`,
       start: new Date(y, 0, 1),
       end: new Date(y + 1, 0, 1)
     },
     lastYear: {
-      label: `${y - 1} 年度`,
+      label: `${y - 1} - Anual`,
       start: new Date(y - 1, 0, 1),
       end: new Date(y, 0, 1)
     }
@@ -47,27 +47,27 @@ export function periodPresets(now = new Date()): Record<"month" | "quarter" | "y
 }
 
 /**
- * 解析自定义时间范围（含 start，不含 end，半开区间）。
- * - start/end 必须 yyyy-MM-dd，否则抛错
+ * Analiza rango personalizado (incluye start, excluye end, intervalo semiabierto).
+ * - start/end deben ser yyyy-MM-dd, de lo contrario error
  * - end > start
- * - 跨度 ≤ 5 年（防止误输入年份导致全库扫描）
+ * - Rango maximo 5 anios (evita escaneo completo por error de tipeo)
  */
 export function customPeriod(startStr: string, endStr: string): ReportPeriod {
   const re = /^\d{4}-\d{2}-\d{2}$/;
   if (!re.test(startStr) || !re.test(endStr)) {
-    throw new Error("Fecha格式不合法，需要 yyyy-MM-dd");
+    throw new Error("Formato de fecha invalido, se necesita yyyy-MM-dd");
   }
   const [sy, sm, sd] = startStr.split("-").map(Number);
   const [ey, em, ed] = endStr.split("-").map(Number);
   const start = new Date(sy, sm - 1, sd);
-  // end 解释为"含当días"，转半开区间需 +1 días
+  // end se interpreta como "incluye el dia", para intervalo semiabierto se suma 1 dia
   const end = new Date(ey, em - 1, ed + 1);
   if (end.getTime() <= start.getTime()) {
-    throw new Error("结束Fecha必须晚于起始Fecha");
+    throw new Error("La fecha fin debe ser posterior a la fecha inicio");
   }
   const days = (end.getTime() - start.getTime()) / 86400_000;
   if (days > 5 * 366) {
-    throw new Error("自定义跨度不能超过 5 年");
+    throw new Error("El rango personalizado no puede superar 5 anios");
   }
   return {
     label: `${startStr} ~ ${endStr}`,
@@ -81,7 +81,7 @@ export type ReportKpis = {
   inProgress: number;
   closed: number;
   archived: number;
-  archiveRate: number; // 已归档 / 已Cerrar caso；0 时Volver 0
+  archiveRate: number; // archivados / cerrados; si es 0 devuelve 0
 };
 
 export type CategoryBreakdown = {
@@ -92,9 +92,9 @@ export type CategoryBreakdown = {
 export type LawyerOutput = {
   userId: string;
   name: string;
-  ownedCount: number; // owner = userId 的Caso数
+  ownedCount: number; // cantidad de casos donde owner = userId
   closedCount: number;
-  receivedAmount: number; // 收款Monto
+  receivedAmount: number; // monto cobrado
 };
 
 export type ClientReceivable = {
@@ -114,7 +114,7 @@ export type ReportData = {
 };
 
 export async function getReportData(period: ReportPeriod): Promise<ReportData> {
-  // KPI 1: 本期新收（createdAt 落入本期）
+  // KPI 1: nuevos casos del periodo (createdAt dentro del periodo)
   const newIntake = await prisma.matter.count({
     where: {
       createdAt: { gte: period.start, lt: period.end },
@@ -122,12 +122,12 @@ export async function getReportData(period: ReportPeriod): Promise<ReportData> {
     }
   });
 
-  // KPI 2: 在办（status = IN_PROGRESS，不论何时建的）
+  // KPI 2: en tramite (status = IN_PROGRESS, sin importar fecha de creacion)
   const inProgress = await prisma.matter.count({
     where: { status: "IN_PROGRESS", deletedAt: null }
   });
 
-  // KPI 3: 本期已结（closedAt 落入本期）
+  // KPI 3: cerrados en el periodo (closedAt dentro del periodo)
   const closed = await prisma.matter.count({
     where: {
       closedAt: { gte: period.start, lt: period.end },
@@ -135,7 +135,7 @@ export async function getReportData(period: ReportPeriod): Promise<ReportData> {
     }
   });
 
-  // KPI 4: 本期已归档（archivedAt 落入本期）
+  // KPI 4: archivados en el periodo (archivedAt dentro del periodo)
   const archived = await prisma.matter.count({
     where: {
       archivedAt: { gte: period.start, lt: period.end },
@@ -145,7 +145,7 @@ export async function getReportData(period: ReportPeriod): Promise<ReportData> {
 
   const archiveRate = closed > 0 ? archived / closed : 0;
 
-  // 类别分布（按本期新收的Caso分类）
+  // Distribucion por categoria (por casos nuevos del periodo)
   const cats = await prisma.matter.groupBy({
     by: ["category"],
     where: {
@@ -159,7 +159,7 @@ export async function getReportData(period: ReportPeriod): Promise<ReportData> {
     count: c._count._all
   }));
 
-  // Abogado产出（按 owner 聚合，本期新收 + 本期已结 + 本期收款）
+  // Produccion por abogado (agrupado por owner, nuevos + cerrados + cobros del periodo)
   const lawyerOwnedRaw = await prisma.matter.groupBy({
     by: ["ownerId"],
     where: {
@@ -177,7 +177,7 @@ export async function getReportData(period: ReportPeriod): Promise<ReportData> {
     _count: { _all: true }
   });
 
-  // Abogado本期收款：FeeEntry.type=RECEIVED + occurredAt 在本期 + matter.ownerId
+  // Cobros del periodo por abogado: FeeEntry.type=RECEIVED + occurredAt en el periodo + matter.ownerId
   const feeReceivedRaw = await prisma.feeEntry.findMany({
     where: {
       type: "RECEIVED",
@@ -214,7 +214,7 @@ export async function getReportData(period: ReportPeriod): Promise<ReportData> {
     }))
     .sort((a, b) => b.receivedAmount - a.receivedAmount || b.ownedCount - a.ownedCount);
 
-  // Cliente应收：FeeEntry RECEIVABLE / RECEIVED 按 matter.primaryClient 聚合
+  // Cuentas por cobrar por cliente: FeeEntry RECEIVABLE / RECEIVED agrupado por matter.primaryClient
   const fees = await prisma.feeEntry.findMany({
     where: {
       type: { in: ["RECEIVABLE", "RECEIVED"] },

@@ -42,7 +42,7 @@ export function HeroBlock({ data }: { data: HeroData }) {
           <div>
             <h1 className="text-[clamp(1.5rem,2.6vw,2.25rem)] font-medium leading-[1.1] tracking-tight">
               {greeting}
-              {name && <span className="text-foreground/85">，{name}</span>}
+              {name && <span className="text-muted-foreground/50">。</span>}
               <span className="text-muted-foreground/50">。</span>
             </h1>
 

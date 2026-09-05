@@ -1,14 +1,14 @@
-import { describe, expect, it } from "vitest";
+﻿import { describe, expect, it } from "vitest";
 import { matterHref, normalizeMatterParam } from "@/lib/matters/route";
 
 describe("matterHref", () => {
-  it("用 internalCode 作路由键", () => {
+  it("ç”¨ internalCode ä½œè·¯ç”±é”®", () => {
     expect(matterHref({ id: "cmq3lxgrm002nitzfhh8qn8ql", internalCode: "M-2026-001" })).toBe(
       "/matters/M-2026-001"
     );
   });
 
-  it("internalCode 为空时回退到 id，Enlace不会断", () => {
+  it("internalCode ä¸ºç©ºæ—¶å›žé€€åˆ° idï¼ŒEnlaceä¸ä¼šæ–­", () => {
     expect(matterHref({ id: "cmq3lxgrm002nitzfhh8qn8ql", internalCode: null })).toBe(
       "/matters/cmq3lxgrm002nitzfhh8qn8ql"
     );
@@ -17,38 +17,39 @@ describe("matterHref", () => {
     );
   });
 
-  it("支持子路径后缀", () => {
+  it("æ”¯æŒå­è·¯å¾„åŽç¼€", () => {
     expect(matterHref({ id: "x", internalCode: "LL-2026-CC-0001" }, "#finance")).toBe(
       "/matters/LL-2026-CC-0001#finance"
     );
   });
 
-  it("对编号做 URL Código，异常字符不会破坏地址", () => {
+  it("å¯¹ç¼–å·åš URL CÃ³digoï¼Œå¼‚å¸¸å­—ç¬¦ä¸ä¼šç ´ååœ°å€", () => {
     expect(matterHref({ id: "x", internalCode: "M 2026/001" })).toBe("/matters/M%202026%2F001");
   });
 });
 
 describe("normalizeMatterParam", () => {
-  it("手打小写地址能命中", () => {
+  it("æ‰‹æ‰“å°å†™åœ°å€èƒ½å‘½ä¸­", () => {
     expect(normalizeMatterParam("m-2026-001")).toBe("M-2026-001");
   });
 
-  it("去掉首尾空白", () => {
+  it("åŽ»æŽ‰é¦–å°¾ç©ºç™½", () => {
     expect(normalizeMatterParam("  M-2026-001 ")).toBe("M-2026-001");
   });
 
-  it("先做 URL 解码", () => {
+  it("å…ˆåš URL è§£ç ", () => {
     expect(normalizeMatterParam("M%2D2026%2D001")).toBe("M-2026-001");
   });
 
-  it("参数里有裸 % 时不抛异常", () => {
+  it("å‚æ•°é‡Œæœ‰è£¸ % æ—¶ä¸æŠ›å¼‚å¸¸", () => {
     expect(() => normalizeMatterParam("M-2026-100%")).not.toThrow();
     expect(normalizeMatterParam("M-2026-100%")).toBe("M-2026-100%");
   });
 
-  it("cuid 原样保留（大写化不影响按 id Coincidencia）", () => {
+  it("cuid åŽŸæ ·ä¿ç•™ï¼ˆå¤§å†™åŒ–ä¸å½±å“æŒ‰ id Coincidenciaï¼‰", () => {
     expect(normalizeMatterParam("cmq3lxgrm002nitzfhh8qn8ql")).toBe(
       "CMQ3LXGRM002NITZFHH8QN8QL"
     );
   });
 });
+

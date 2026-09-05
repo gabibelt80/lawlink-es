@@ -1,9 +1,21 @@
 import Link from "next/link";
-import { Settings, Users, Layers, ScrollText, KeyRound, Sparkles, Package, ListChecks, BellRing, Building2, FileUp } from "lucide-react";
+import {
+  Settings,
+  Users,
+  Layers,
+  ScrollText,
+  KeyRound,
+  Sparkles,
+  Package,
+  ListChecks,
+  BellRing,
+  Building2,
+  FileUp,
+} from "lucide-react";
 import { getSession } from "@/lib/auth/session";
 
 export default async function SettingsLayout({
-  children
+  children,
 }: {
   children: React.ReactNode;
 }) {
@@ -27,7 +39,7 @@ export default async function SettingsLayout({
               href="/settings/profile"
               icon={<KeyRound className="h-3.5 w-3.5" />}
             >
-              个人 / 改Contraseña
+              Información personal / Cambiar contraseña
             </SettingsNavLink>
             {isManager && (
               <>
@@ -35,13 +47,13 @@ export default async function SettingsLayout({
                   href="/settings/reminders"
                   icon={<BellRing className="h-3.5 w-3.5" />}
                 >
-                  Recordatorios维护
+                  Mantenimiento de recordatorios
                 </SettingsNavLink>
                 <SettingsNavLink
                   href="/settings/import"
                   icon={<FileUp className="h-3.5 w-3.5" />}
                 >
-                  批量导入
+                  Importación masiva
                 </SettingsNavLink>
               </>
             )}
@@ -51,43 +63,43 @@ export default async function SettingsLayout({
                   href="/settings/firm-profile"
                   icon={<Building2 className="h-3.5 w-3.5" />}
                 >
-                  律所信息
+                  Información del estudio jurídico
                 </SettingsNavLink>
                 <SettingsNavLink
                   href="/settings/users"
                   icon={<Users className="h-3.5 w-3.5" />}
                 >
-                  用户Administrar
+                  Administrar usuarios
                 </SettingsNavLink>
                 <SettingsNavLink
                   href="/settings/templates"
                   icon={<Layers className="h-3.5 w-3.5" />}
                 >
-                  阶段模板
+                  Plantillas de etapas
                 </SettingsNavLink>
                 <SettingsNavLink
                   href="/settings/custom-fields"
                   icon={<ListChecks className="h-3.5 w-3.5" />}
                 >
-                  自定义字段
+                  Campos personalizados
                 </SettingsNavLink>
                 <SettingsNavLink
                   href="/settings/ai"
                   icon={<Sparkles className="h-3.5 w-3.5" />}
                 >
-                  AI 接入
+                  Integración de IA
                 </SettingsNavLink>
                 <SettingsNavLink
                   href="/settings/express"
                   icon={<Package className="h-3.5 w-3.5" />}
                 >
-                  快递接入
+                  Integración de envíos
                 </SettingsNavLink>
                 <SettingsNavLink
                   href="/settings/audit"
                   icon={<ScrollText className="h-3.5 w-3.5" />}
                 >
-                  审计日志
+                  Registro de auditoría
                 </SettingsNavLink>
               </>
             )}
@@ -103,7 +115,7 @@ export default async function SettingsLayout({
 function SettingsNavLink({
   href,
   icon,
-  children
+  children,
 }: {
   href: string;
   icon: React.ReactNode;

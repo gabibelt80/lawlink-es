@@ -1,4 +1,4 @@
-"use server";
+﻿"use server";
 
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
@@ -13,7 +13,7 @@ const saveSchema = z.object({
 async function requireAdmin() {
   const session = await requireSession();
   if (session.user.role !== "ADMIN") {
-    throw new Error("仅Administrar员可修改工作流开关");
+    throw new Error("ä»…Administrarå‘˜å¯ä¿®æ”¹å·¥ä½œæµå¼€å…³");
   }
   return session;
 }
@@ -37,3 +37,5 @@ export async function getWorkflowTogglesAction() {
   await requireAdmin();
   return getWorkflowToggles();
 }
+
+

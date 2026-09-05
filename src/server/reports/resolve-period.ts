@@ -1,16 +1,16 @@
-/**
- * 把 search params 解析成 ReportPeriod，被 page 和 export route 共用。
+﻿/**
+ * æŠŠ search params è§£æžæˆ ReportPeriodï¼Œè¢« page å’Œ export route å…±ç”¨ã€‚
  *
- * 接受参数：
- *   ?period=month|quarter|year|lastYear   预设
- *   ?period=custom&start=yyyy-MM-dd&end=yyyy-MM-dd   自定义
- *   缺省 / 非法 → year
+ * æŽ¥å—å‚æ•°ï¼š
+ *   ?period=month|quarter|year|lastYear   é¢„è®¾
+ *   ?period=custom&start=yyyy-MM-dd&end=yyyy-MM-dd   è‡ªå®šä¹‰
+ *   ç¼ºçœ / éžæ³• â†’ year
  */
 import { customPeriod, periodPresets, type ReportPeriod } from "./queries";
 
 export type ResolvedPeriod = {
   period: ReportPeriod;
-  /** 用于回写 URL */
+  /** ç”¨äºŽå›žå†™ URL */
   periodKey: "month" | "quarter" | "year" | "lastYear" | "custom";
   startStr?: string;
   endStr?: string;
@@ -31,7 +31,7 @@ export function resolveReportPeriod(params: {
       return {
         period: presets.year,
         periodKey: "year",
-        error: "缺少 start / end，已回退本年"
+        error: "ç¼ºå°‘ start / endï¼Œå·²å›žé€€æœ¬å¹´"
       };
     }
     try {
@@ -45,7 +45,7 @@ export function resolveReportPeriod(params: {
       return {
         period: presets.year,
         periodKey: "year",
-        error: err instanceof Error ? err.message : "自定义时间错误，已回退本年"
+        error: err instanceof Error ? err.message : "è‡ªå®šä¹‰æ—¶é—´é”™è¯¯ï¼Œå·²å›žé€€æœ¬å¹´"
       };
     }
   }
@@ -57,3 +57,5 @@ export function resolveReportPeriod(params: {
 
   return { period: presets.year, periodKey: "year" };
 }
+
+

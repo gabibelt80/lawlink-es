@@ -1,4 +1,4 @@
-import type {
+﻿import type {
   Prisma,
   PreservationType,
   GuaranteeType,
@@ -43,26 +43,26 @@ export type MatterOption = {
 export type UserOption = { id: string; name: string };
 
 export const PRES_TYPE_CN: Record<PreservationType, string> = {
-  PRE_LITIGATION: "Preservación previa al litigio",
-  LITIGATION: "Preservación durante el litigio",
-  ENFORCEMENT: "Preservación de ejecución",
+  PRE_LITIGATION: "PreservaciÃ³n previa al litigio",
+  LITIGATION: "PreservaciÃ³n durante el litigio",
+  ENFORCEMENT: "PreservaciÃ³n de ejecuciÃ³n",
 };
 
-// v1.2: 定义已挪到 @/lib/preservation-defaults（cron Notificaciones也要用），此处仅转出
+// v1.2: å®šä¹‰å·²æŒªåˆ° @/lib/preservation-defaultsï¼ˆcron Notificacionesä¹Ÿè¦ç”¨ï¼‰ï¼Œæ­¤å¤„ä»…è½¬å‡º
 export { PROPERTY_TYPE_CN } from "@/lib/preservation-defaults";
 
 export const GUARANTEE_TYPE_CN: Record<GuaranteeType, string> = {
-  CASH_DEPOSIT: "保证金",
-  GUARANTEE_LETTER: "保函",
-  PROPERTY: "财产担保",
-  NONE: "无需担保",
+  CASH_DEPOSIT: "ä¿è¯é‡‘",
+  GUARANTEE_LETTER: "ä¿å‡½",
+  PROPERTY: "è´¢äº§æ‹…ä¿",
+  NONE: "æ— éœ€æ‹…ä¿",
 };
 
 export const PRES_STATUS_CN: Record<PreservationStatus, string> = {
-  ACTIVE: "生效中",
-  RENEWED: "已续保",
-  EXPIRED: "已到期",
-  LIFTED: "已解除",
+  ACTIVE: "ç”Ÿæ•ˆä¸­",
+  RENEWED: "å·²ç»­ä¿",
+  EXPIRED: "å·²åˆ°æœŸ",
+  LIFTED: "å·²è§£é™¤",
 };
 
 export const PRES_STATUS_COLOR: Record<
@@ -91,15 +91,16 @@ export const PRES_STATUS_COLOR: Record<
   },
 };
 
-// 到期倒计时分级
+// åˆ°æœŸå€’è®¡æ—¶åˆ†çº§
 export function classifyExpiry(daysLeft: number): {
   label: string;
   tone: "danger" | "warn" | "ok" | "muted";
 } {
-  if (daysLeft < 0) return { label: `已过期 ${-daysLeft} días`, tone: "danger" };
+  if (daysLeft < 0) return { label: `å·²è¿‡æœŸ ${-daysLeft} dÃ­as`, tone: "danger" };
   if (daysLeft === 0) return { label: "Vence hoy", tone: "danger" };
-  if (daysLeft <= 7) return { label: `${daysLeft} días后到期`, tone: "danger" };
-  if (daysLeft <= 30) return { label: `${daysLeft} días后到期`, tone: "warn" };
-  if (daysLeft <= 60) return { label: `${daysLeft} días后到期`, tone: "muted" };
-  return { label: `${daysLeft} días后到期`, tone: "ok" };
+  if (daysLeft <= 7) return { label: `${daysLeft} dÃ­asåŽåˆ°æœŸ`, tone: "danger" };
+  if (daysLeft <= 30) return { label: `${daysLeft} dÃ­asåŽåˆ°æœŸ`, tone: "warn" };
+  if (daysLeft <= 60) return { label: `${daysLeft} dÃ­asåŽåˆ°æœŸ`, tone: "muted" };
+  return { label: `${daysLeft} dÃ­asåŽåˆ°æœŸ`, tone: "ok" };
 }
+

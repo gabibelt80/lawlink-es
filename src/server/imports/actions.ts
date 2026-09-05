@@ -1,9 +1,9 @@
-"use server";
+﻿"use server";
 
 import { revalidatePath } from "next/cache";
 import ExcelJS from "exceljs";
 
-import { prisma } from "@/lib/prisma";
+import { getTenantPrisma } from "@/lib/tenant-prisma";
 import { requireSession } from "@/lib/auth/session";
 import { audit } from "@/server/audit";
 import { seedDefaultFolders } from "@/lib/default-folders";
@@ -22,12 +22,12 @@ import {
 async function requireManager() {
   const session = await requireSession();
   if (session.user.role !== "ADMIN" && session.user.role !== "PRINCIPAL_LAWYER") {
-    throw new Error("仅Administrar员 / 主任Abogado可批量导入Caso");
+    throw new Error("Solo el Administrador / Abogado Principal puede importar casos");
   }
   return session;
 }
 
-/** Excel 单pesos格值 → 字符串（Fecha统一格式化为 YYYY-MM-DD） */
+/** Convierte valor de celda Excel a string */
 function cellToString(value: ExcelJS.CellValue): string {
   if (value === null || value === undefined) return "";
   if (value instanceof Date) {
@@ -37,7 +37,6 @@ function cellToString(value: ExcelJS.CellValue): string {
     return `${y}-${m}-${d}`;
   }
   if (typeof value === "object") {
-    // 富文本 / 公式结果
     const obj = value as { result?: unknown; text?: unknown; richText?: { text: string }[] };
     if (obj.richText) return obj.richText.map((r) => r.text).join("");
     if (obj.text !== undefined) return String(obj.text);
@@ -47,16 +46,15 @@ function cellToString(value: ExcelJS.CellValue): string {
   return String(value).trim();
 }
 
-/** 解析上传的 xlsx → [{ rowNo, raw }]，rowNo 为 Excel 行号（含表头，从 2 起） */
+/** Lee el xlsx subido y devuelve filas */
 async function readSheet(file: File): Promise<{ rowNo: number; raw: RawRow }[]> {
   const buf = Buffer.from(await file.arrayBuffer());
   const wb = new ExcelJS.Workbook();
   await wb.xlsx.load(buf as unknown as ArrayBuffer);
   const sheet = wb.worksheets[0];
-  if (!sheet) throw new Error("文件中没有工作表");
+  if (!sheet) throw new Error("El archivo no tiene hoja de trabajo");
 
-  // 表头 → 列索引（去掉必填星号，Coincidencia IMPORT_COLUMNS.header）
-  const headerByIndex = new Map<number, string>(); // colIndex → field key
+  const headerByIndex = new Map<number, string>();
   const headerRow = sheet.getRow(1);
   headerRow.eachCell((cell, colNumber) => {
     const text = cellToString(cell.value).replace(/\*$/, "").trim();
@@ -64,7 +62,7 @@ async function readSheet(file: File): Promise<{ rowNo: number; raw: RawRow }[]> 
     if (col) headerByIndex.set(colNumber, col.key);
   });
   if (headerByIndex.size === 0) {
-    throw new Error("未识别到表头，请使用下载的模板填写");
+    throw new Error("No se reconocieron los encabezados, use la plantilla descargada");
   }
 
   const rows: { rowNo: number; raw: RawRow }[] = [];
@@ -96,18 +94,18 @@ export interface ImportPreview {
   validCount: number;
 }
 
-/** 解析 + 校验（不写库），Volver预览表 */
+/** Parsea y valida (sin escribir en la base) */
 export async function parseMatterImportAction(formData: FormData): Promise<ImportPreview> {
+  const prisma = await getTenantPrisma();
   await requireManager();
   const file = formData.get("file");
-  if (!(file instanceof File)) throw new Error("缺少文件");
+  if (!(file instanceof File)) throw new Error("Falta el archivo");
 
   const parsed = await readSheet(file);
   if (parsed.length === 0) {
-    throw new Error("未读取到数据行（请在模板第 2 行起填写，并Eliminar示例行）");
+    throw new Error("No se leyeron filas de datos. Complete desde la fila 2 de la plantilla");
   }
 
-  // 预取主办AbogadoEmail，用于校验
   const emails = [
     ...new Set(parsed.map((p) => (p.raw.ownerEmail ?? "").trim().toLowerCase()).filter(Boolean))
   ];
@@ -120,7 +118,7 @@ export async function parseMatterImportAction(formData: FormData): Promise<Impor
     const { errors, normalized } = validateRow(raw);
     const errs = [...errors];
     if (normalized?.ownerEmail && !knownEmails.has(normalized.ownerEmail.toLowerCase())) {
-      errs.push(`主办AbogadoEmail「${normalized.ownerEmail}」未Coincidencia到用户`);
+      errs.push(`El email del abogado a cargo "${normalized.ownerEmail}" no coincide con ningun usuario`);
     }
     return { rowNo, raw, errors: errs, valid: errs.length === 0 };
   });
@@ -133,20 +131,22 @@ export async function parseMatterImportAction(formData: FormData): Promise<Impor
   };
 }
 
-/** 落库单行：find-or-create Cliente → 建Caso(+编号+主办+当事人+首程序+卷宗) */
+/** Crea un Caso desde fila normalizada */
 async function createOneMatter(n: NormalizedRow, currentUserId: string) {
-  // 主办Abogado
+  const prisma = await getTenantPrisma();
+
+  // Abogado a cargo
   let ownerId = currentUserId;
   if (n.ownerEmail) {
     const lawyer = await prisma.user.findFirst({
-      where: { email: { equals: n.ownerEmail, mode: "insensitive" } },
+      where: { email: { equals: n.ownerEmail } },
       select: { id: true }
     });
-    if (!lawyer) throw new Error(`主办AbogadoEmail「${n.ownerEmail}」未Coincidencia到用户`);
+    if (!lawyer) throw new Error(`El email del abogado a cargo "${n.ownerEmail}" no coincide con ningun usuario`);
     ownerId = lawyer.id;
   }
 
-  // Causa：精确CoincidenciaCausa库，否则作为自由文本
+  // Causa: coincidencia exacta o texto libre
   let causeId: string | null = null;
   let causeFreeText: string | null = null;
   let causeDowngradeReason: string | null = null;
@@ -159,12 +159,7 @@ async function createOneMatter(n: NormalizedRow, currentUserId: string) {
     else causeFreeText = n.causeText;
   }
 
-  // v1.2：导入曾是唯一绕过Causa校验的写入路径，能造出界面Crear不出来的组合
-  // （如劳动仲裁Caso挂婚姻家庭类Causa）。校验基准yCrearCaso一致：类别 + 首程序类型。
-  //
-  // 不合规时降级为自由文本、不整行Error：导入是历史数据迁移工具，历史Caso按当时
-  // 规则立的Causa未必符合现行范围，为一个Causa把整条Caso挡在门外代价过大。
-  // 自由文本字段本就不参y联动校验，信息不丢，降级情况在导入结果里逐行列出。
+  // Validacion de causa
   if (causeId) {
     try {
       await assertCauseAllowedForSelection({
@@ -173,7 +168,7 @@ async function createOneMatter(n: NormalizedRow, currentUserId: string) {
         procedureType: firstProcedureTypeFor(n.category)
       });
     } catch (e) {
-      causeDowngradeReason = e instanceof Error ? e.message : "CausayCaso类别不Coincidencia";
+      causeDowngradeReason = e instanceof Error ? e.message : "La causa no coincide con la categoria del caso";
       causeFreeText = n.causeText ?? null;
       causeId = null;
     }
@@ -182,7 +177,7 @@ async function createOneMatter(n: NormalizedRow, currentUserId: string) {
   const internalCode = await generateInternalCode(n.category);
   const firmCaseNo = await generateFirmCaseNo(n.category);
 
-  // find-or-create Cliente（Nombre + 证件号）
+  // find-or-create Cliente
   const existingClient = await prisma.client.findFirst({
     where: { name: n.clientName, idNumber: n.clientIdNumber, deletedAt: null },
     select: { id: true }
@@ -246,9 +241,8 @@ async function createOneMatter(n: NormalizedRow, currentUserId: string) {
         archivedAt: n.status === "ARCHIVED" ? new Date() : null,
         primaryClientId: clientId,
         members: { create: { userId: ownerId, role: "LEAD" } },
-        clientLinks: { create: { clientId, isPrimary: true, label: "主要委托方" } },
+        clientLinks: { create: { clientId, isPrimary: true, label: "Cliente principal" } },
         parties: { create: [clientParty, opposingParty] },
-        // 办理中按类别自动生成首程序（y收案转化一致）；Cerrar caso/归档不建
         ...(n.status === "IN_PROGRESS"
           ? {
               procedures: {
@@ -271,7 +265,7 @@ async function createOneMatter(n: NormalizedRow, currentUserId: string) {
       data: {
         matterId: matter.id,
         eventType: "MATTER_CREATED",
-        title: "Caso已Crear（批量导入）",
+        title: "Caso creado (importacion masiva)",
         occurredAt: new Date()
       }
     });
@@ -289,13 +283,12 @@ export interface ImportResult {
     internalCode: string;
     firmCaseNo: string | null;
     title: string;
-    /** CausayCaso类别不Coincidencia、已降级为自由文本；需事后人工核对 */
     causeDowngradeReason?: string;
   }[];
   failed: { rowNo: number; error: string }[];
 }
 
-/** Confirmar导入：逐行事务、Error不阻断，Volver成功/Error清单 */
+/** Confirma importacion: fila por fila, los errores no detienen el proceso */
 export async function commitMatterImportAction(input: {
   rows: { rowNo: number; raw: RawRow }[];
 }): Promise<ImportResult> {
@@ -306,7 +299,7 @@ export async function commitMatterImportAction(input: {
   for (const { rowNo, raw } of input.rows) {
     try {
       const { errors, normalized } = validateRow(raw);
-      if (!normalized) throw new Error(errors.join("；") || "行校验Error");
+      if (!normalized) throw new Error(errors.join("; ") || "Error de validacion de fila");
       const m = await createOneMatter(normalized, session.user.id);
       succeeded.push({
         rowNo,
@@ -316,7 +309,7 @@ export async function commitMatterImportAction(input: {
         ...(m.causeDowngradeReason ? { causeDowngradeReason: m.causeDowngradeReason } : {})
       });
     } catch (e) {
-      failed.push({ rowNo, error: e instanceof Error ? e.message : "导入Error" });
+      failed.push({ rowNo, error: e instanceof Error ? e.message : "Error de importacion" });
     }
   }
 

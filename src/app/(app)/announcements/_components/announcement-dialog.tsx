@@ -105,16 +105,15 @@ export function AnnouncementDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
-          <DialogTitle>{editing ? "EditarAnuncio" : "PublicarAnuncio"}</DialogTitle>
+          <DialogTitle>{editing ? "Editar anuncio" : "Publicar anuncio"}</DialogTitle>
           <DialogDescription className="text-xs">
-            置顶Anuncio会显示在全站顶部 banner，Configuración过期Fecha后 banner
-            自动消失（列表仍保留）。
+            El anuncio fijado se muestra en el banner superior de todo el sitio; al configurar la fecha de vencimiento, el banner desaparece automáticamente (la lista aún lo conserva).
           </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-3 py-2">
           <div className="space-y-1.5">
-            <Label className="text-xs">标题 *</Label>
+            <Label className="text-xs">Título *</Label>
             <Input
               value={title}
               onChange={(e) => setTitle(e.target.value)}
@@ -123,12 +122,12 @@ export function AnnouncementDialog({
           </div>
 
           <div className="space-y-1.5">
-            <Label className="text-xs">内容 *</Label>
+            <Label className="text-xs">Contenido *</Label>
             <Textarea
               value={content}
               onChange={(e) => setContent(e.target.value)}
               rows={6}
-              placeholder="支持普通文本换行"
+              placeholder="Admite saltos de línea de texto plano"
             />
           </div>
 
@@ -138,10 +137,10 @@ export function AnnouncementDialog({
                 checked={pinned}
                 onCheckedChange={(c) => setPinned(c === true)}
               />
-              置顶（顶部 banner）
+              Fijado (banner superior)
             </label>
             <div className="space-y-1.5">
-              <Label className="text-xs">过期Fecha（可选）</Label>
+              <Label className="text-xs">Fecha de vencimiento (opcional)</Label>
               <Input
                 type="date"
                 value={expiresAt}

@@ -1,12 +1,13 @@
 "use client";
 
 /**
- * v0.27: 顶部Anuncio banner
+ * v0.27: Banner superior de anuncios
  *
- * 显示 pinned + 未归档 + 未过期 的Anuncio。多条时用左右切换。
- * Cerrar只对当前 tab session 生效（不持久化，避免错过新Anuncio）。
+ * Muestra anuncios fijados + no archivados + no vencidos.
+ * Se actualiza automaticamente cuando se publica un anuncio nuevo.
  */
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Megaphone, ChevronLeft, ChevronRight, X } from "lucide-react";
 
@@ -20,6 +21,25 @@ type Banner = {
 export function AnnouncementBanner({ banners }: { banners: Banner[] }) {
   const [idx, setIdx] = useState(0);
   const [dismissed, setDismissed] = useState<string[]>([]);
+  const router = useRouter();
+
+  // Escuchar eventos SSE para refrescar al instante
+  useEffect(() => {
+    const eventSource = new EventSource("/api/announcements/sse");
+    eventSource.onmessage = (event) => {
+      try {
+        const data = JSON.parse(event.data);
+        if (data.type === "announcement_changed") {
+          router.refresh();
+        }
+      } catch {
+        // ignorar mensajes no JSON
+      }
+    };
+    return () => {
+      eventSource.close();
+    };
+  }, [router]);
 
   const visible = banners.filter((b) => !dismissed.includes(b.id));
   if (visible.length === 0) return null;

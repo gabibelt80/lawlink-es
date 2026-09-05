@@ -1,4 +1,4 @@
-"use server";
+﻿"use server";
 
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
@@ -10,7 +10,7 @@ import { saveFirmProfile, CATEGORY_WORD_DEFAULTS } from "./firm-profile";
 
 const CATEGORY_KEYS = Object.keys(CATEGORY_WORD_DEFAULTS) as MatterCategory[];
 
-/** 约 256KB（base64 Código后的字符长度上限）——律所 logo 应远小于此 */
+/** çº¦ 256KBï¼ˆbase64 CÃ³digoåŽçš„å­—ç¬¦é•¿åº¦ä¸Šé™ï¼‰â€”â€”å¾‹æ‰€ logo åº”è¿œå°äºŽæ­¤ */
 const MAX_LOGO_CHARS = 256 * 1024;
 
 const saveSchema = z.object({
@@ -19,7 +19,7 @@ const saveSchema = z.object({
   matterCodePrefix: z.string().trim().max(12).optional(),
   firmShortName: z.string().trim().max(8).optional(),
   caseNoTemplate: z.string().trim().max(60).optional(),
-  // undefined=不改 logo；null 或 "" =清除；data URL 字符串=替换
+  // undefined=ä¸æ”¹ logoï¼›null æˆ– "" =æ¸…é™¤ï¼›data URL å­—ç¬¦ä¸²=æ›¿æ¢
   logoDataUrl: z.string().nullable().optional(),
   categoryWords: z.record(z.string(), z.string().trim().max(12)).optional()
 });
@@ -27,7 +27,7 @@ const saveSchema = z.object({
 async function requireAdmin() {
   const session = await requireSession();
   if (session.user.role !== "ADMIN") {
-    throw new Error("仅Administrar员可修改律所信息配置");
+    throw new Error("ä»…Administrarå‘˜å¯ä¿®æ”¹å¾‹æ‰€ä¿¡æ¯é…ç½®");
   }
   return session;
 }
@@ -36,17 +36,17 @@ export async function saveFirmProfileAction(input: z.infer<typeof saveSchema>) {
   const session = await requireAdmin();
   const data = saveSchema.parse(input);
 
-  // Logo 校验：必须是 image/* 的 base64 data URL，且体积受限
+  // Logo æ ¡éªŒï¼šå¿…é¡»æ˜¯ image/* çš„ base64 data URLï¼Œä¸”ä½“ç§¯å—é™
   if (typeof data.logoDataUrl === "string" && data.logoDataUrl.length > 0) {
     if (!/^data:image\/(png|jpeg|jpg|webp|svg\+xml);base64,/.test(data.logoDataUrl)) {
-      throw new Error("Logo 必须是 PNG / JPG / WebP / SVG 图片");
+      throw new Error("Logo å¿…é¡»æ˜¯ PNG / JPG / WebP / SVG å›¾ç‰‡");
     }
     if (data.logoDataUrl.length > MAX_LOGO_CHARS) {
-      throw new Error("Logo 体积过大，请控制在约 180KB 以内");
+      throw new Error("Logo ä½“ç§¯è¿‡å¤§ï¼Œè¯·æŽ§åˆ¶åœ¨çº¦ 180KB ä»¥å†…");
     }
   }
 
-  // 只保留有效类别键的非空词
+  // åªä¿ç•™æœ‰æ•ˆç±»åˆ«é”®çš„éžç©ºè¯
   let categoryWords: Partial<Record<MatterCategory, string>> | undefined;
   if (data.categoryWords) {
     categoryWords = {};
@@ -78,7 +78,9 @@ export async function saveFirmProfileAction(input: z.infer<typeof saveSchema>) {
     targetId: "firmProfile"
   });
 
-  // 侧栏品牌在所有 (app) 页面渲染 → 刷新整个布局
+  // ä¾§æ å“ç‰Œåœ¨æ‰€æœ‰ (app) é¡µé¢æ¸²æŸ“ â†’ åˆ·æ–°æ•´ä¸ªå¸ƒå±€
   revalidatePath("/", "layout");
   return { ok: true };
 }
+
+

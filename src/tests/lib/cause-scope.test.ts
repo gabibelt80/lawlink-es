@@ -1,11 +1,11 @@
-import { describe, expect, it } from "vitest";
+﻿import { describe, expect, it } from "vitest";
 import {
   causeScopeForSelection,
   isCauseAllowedForSelection
 } from "@/lib/cause-scope";
 
 describe("causeScopeForSelection", () => {
-  it("商事仲裁类别共用Civil/ComercialCausa库并限制财产权益类Causa", () => {
+  it("å•†äº‹ä»²è£ç±»åˆ«å…±ç”¨Civil/ComercialCausaåº“å¹¶é™åˆ¶è´¢äº§æƒç›Šç±»Causa", () => {
     const scope = causeScopeForSelection("COMMERCIAL_ARBITRATION");
     expect(scope.dbCategory).toBe("CIVIL_COMMERCIAL");
     expect(scope.includeCodePrefixes).toContain("CC-4");
@@ -13,13 +13,13 @@ describe("causeScopeForSelection", () => {
     expect(scope.excludeCodePrefixes).toContain("CC-9-27");
   });
 
-  it("Civil/Comercial类别下选择商事仲裁程序时也启用同一限制", () => {
+  it("Civil/Comercialç±»åˆ«ä¸‹é€‰æ‹©å•†äº‹ä»²è£ç¨‹åºæ—¶ä¹Ÿå¯ç”¨åŒä¸€é™åˆ¶", () => {
     const scope = causeScopeForSelection("CIVIL_COMMERCIAL", "COMMERCIAL_ARBITRATION");
     expect(scope.dbCategory).toBe("CIVIL_COMMERCIAL");
     expect(scope.includeCodePrefixes).toContain("CC-4");
   });
 
-  it("劳动仲裁只使用劳动争议Causa段", () => {
+  it("åŠ³åŠ¨ä»²è£åªä½¿ç”¨åŠ³åŠ¨äº‰è®®Causaæ®µ", () => {
     const scope = causeScopeForSelection("LABOR_ARBITRATION");
     expect(scope.dbCategory).toBe("CIVIL_COMMERCIAL");
     expect(scope.includeCodePrefixes).toEqual(["CC-7"]);
@@ -27,7 +27,7 @@ describe("causeScopeForSelection", () => {
 });
 
 describe("isCauseAllowedForSelection", () => {
-  it("允许商事仲裁选择合同类Causa", () => {
+  it("å…è®¸å•†äº‹ä»²è£é€‰æ‹©åˆåŒç±»Causa", () => {
     expect(
       isCauseAllowedForSelection(
         { category: "CIVIL_COMMERCIAL", code: "CC-4-10-108-3", active: true },
@@ -36,7 +36,7 @@ describe("isCauseAllowedForSelection", () => {
     ).toBe(true);
   });
 
-  it("拒绝商事仲裁选择婚姻继承、劳动、破产和人身损害类Causa", () => {
+  it("æ‹’ç»å•†äº‹ä»²è£é€‰æ‹©å©šå§»ç»§æ‰¿ã€åŠ³åŠ¨ã€ç ´äº§å’Œäººèº«æŸå®³ç±»Causa", () => {
     const rejectedCodes = [
       "CC-2-2-14",
       "CC-7-19-205",
@@ -53,7 +53,7 @@ describe("isCauseAllowedForSelection", () => {
     }
   });
 
-  it("非商事仲裁的Civil/ComercialCaso仍可选择普通民事Causa", () => {
+  it("éžå•†äº‹ä»²è£çš„Civil/ComercialCasoä»å¯é€‰æ‹©æ™®é€šæ°‘äº‹Causa", () => {
     expect(
       isCauseAllowedForSelection(
         { category: "CIVIL_COMMERCIAL", code: "CC-2-2-14", active: true },
@@ -62,3 +62,4 @@ describe("isCauseAllowedForSelection", () => {
     ).toBe(true);
   });
 });
+

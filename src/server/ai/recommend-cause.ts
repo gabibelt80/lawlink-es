@@ -1,11 +1,11 @@
-"use server";
+﻿"use server";
 
 /**
- * v0.19: Causa AI 推荐
+ * v0.19: RecomendaciÃ³n de causa por IA
  *
- * 输入案情Descripción → LLM 吐 3 个 4 级Causa名 + 推荐理由 + 置信度
- * → 用 searchCauses 反查库内 id（找不到的丢弃）
- * → Volver带库内 cause 对象的候选列表
+ * Ingresa la descripciÃ³n del caso â†’ el LLM devuelve 3 causas de 4to nivel + motivo de recomendaciÃ³n + confianza
+ * â†’ Usa searchCauses para buscar el id en la base (descarta las no encontradas)
+ * â†’ Devuelve lista de candidatos con el objeto cause de la base
  */
 import type { MatterCategory, ProcedureType } from "@prisma/client";
 import { aiChat, extractJson, AiNotConfiguredError } from "@/lib/ai/client";
@@ -26,21 +26,20 @@ type LlmCandidate = {
   confidence?: unknown;
 };
 
-const SYSTEM_PROMPT = `你是中国法律Causa分类助手。
-基于用户给出的Caso类别和案情Descripción，从《民事CasoCausa规定》/《AdministrativoCasoCausa规定》/Penal罪名体系中
-选出最贴近的 3 个**最末级**（三级或四级）Causa。
+const SYSTEM_PROMPT = `Sos un asistente de clasificaciÃ³n de causas legales de Argentina.
+SegÃºn la categorÃ­a del caso y la descripciÃ³n de los hechos dada por el usuario, seleccionÃ¡ las 3 causas **mÃ¡s especÃ­ficas** (tercer o cuarto nivel) mÃ¡s cercanas del sistema de causas civiles/penales/administrativas argentinas.
 
-严格按下方 JSON 数组Volver（仅 JSON，不要任何解释文字）：
+RespondÃ© estrictamente con el siguiente array JSON (solo JSON, sin texto explicativo):
 [
-  {"name": "Causa全名（如：民间借贷纠纷）", "reason": "为什么贴合本案，30 字内", "confidence": "HIGH" | "MEDIUM" | "LOW"},
+  {"name": "Nombre completo de la causa (ej.: Conflicto de compraventa)", "reason": "Por quÃ© se ajusta a este caso, mÃ¡ximo 30 caracteres", "confidence": "HIGH" | "MEDIUM" | "LOW"},
   ...
 ]
 
-规则：
-- 必须Volver 3 条；按相关度从高到低排序
-- Causa名必须使用规范全称（如「民间借贷纠纷」而非「借贷」「借贷纠纷」）
-- 优先选最末级具体Causa，避免「合同纠纷」这种二级笼统分类
-- confidence 自评：HIGH=案情要素完全对应；MEDIUM=主要要素Coincidencia但有歧义；LOW=信息不足只能猜测`;
+Reglas:
+- DevolvÃ© 3 resultados ordenados por relevancia de mayor a menor
+- El nombre de la causa debe usar la denominaciÃ³n formal completa
+- PriorizÃ¡ causas especÃ­ficas de Ãºltimo nivel, evitÃ¡ clasificaciones genÃ©ricas de segundo nivel
+- AutoevaluaciÃ³n de confianza: HIGH = los elementos del caso coinciden completamente; MEDIUM = los elementos principales coinciden pero hay ambigÃ¼edad; LOW = informaciÃ³n insuficiente, solo se puede adivinar`;
 
 function categoryHint(category: MatterCategory): string {
   switch (category) {
@@ -51,11 +50,11 @@ function categoryHint(category: MatterCategory): string {
     case "ADMINISTRATIVE":
       return "Administrativo";
     case "NON_LITIGATION":
-      return "非诉";
+      return "No contencioso";
     case "LEGAL_COUNSEL":
-      return "常年法律顾问";
+      return "AsesorÃ­a legal permanente";
     case "SPECIAL_PROJECT":
-      return "专ítems";
+      return "Proyecto especial";
     default:
       return category;
   }
@@ -68,10 +67,10 @@ function normalizeConfidence(v: unknown): CauseConfidence {
 }
 
 /**
- * 反查：把 LLM 给的Causa名映射到库内记录。
- * - 优先精确Coincidencia name
- * - 否则取 searchCauses Volver的第一条
- * - 过滤掉 level < 3 的（二级太笼统，宁可不推）
+ * BÃºsqueda inversa: mapea el nombre de causa dado por el LLM a un registro de la base.
+ * - Prioriza coincidencia exacta de nombre
+ * - Si no, toma el primer resultado de searchCauses
+ * - Filtra los de nivel < 3 (segundo nivel es muy genÃ©rico, mejor no recomendar)
  */
 async function resolveCauseId(
   category: MatterCategory,
@@ -103,7 +102,7 @@ export async function recommendCause(input: {
   const situation = input.situation.trim();
   if (situation.length < 5) {
     throw new Error(
-      "La descripción del caso es demasiado corta; debe tener al menos 5 caracteres.",
+      "La descripciÃ³n del caso es demasiado corta; debe tener al menos 5 caracteres.",
     );
   }
 
@@ -114,7 +113,7 @@ export async function recommendCause(input: {
         { role: "system", content: SYSTEM_PROMPT },
         {
           role: "user",
-          content: `Caso类别：${categoryHint(input.category)}\n\n案情：\n${situation.slice(0, 4000)}`,
+          content: `CategorÃ­a del caso: ${categoryHint(input.category)}\n\nHechos:\n${situation.slice(0, 4000)}`,
         },
       ],
       maxTokens: 800,
@@ -123,12 +122,12 @@ export async function recommendCause(input: {
     content = res.content;
   } catch (err) {
     if (err instanceof AiNotConfiguredError) throw err;
-    throw new Error(err instanceof Error ? err.message : "AI 请求Error");
+    throw new Error(err instanceof Error ? err.message : "Error en la solicitud de IA");
   }
 
   const parsed = extractJson<LlmCandidate[]>(content);
   if (!Array.isArray(parsed)) {
-    throw new Error("AI Volver内容无法解析为候选列表");
+    throw new Error("El contenido devuelto por la IA no se pudo interpretar como lista de candidatos");
   }
 
   const results: CauseRecommendation[] = [];
@@ -148,8 +147,9 @@ export async function recommendCause(input: {
   }
 
   if (results.length === 0) {
-    throw new Error("AI 推荐的Causa都不在Causa库中，请手动选择");
+    throw new Error("Las causas recomendadas por la IA no estÃ¡n en la biblioteca de causas, seleccionÃ¡ manualmente");
   }
 
   return results;
 }
+

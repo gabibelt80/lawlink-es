@@ -1,7 +1,7 @@
-"use server";
+﻿"use server";
 
 import type { MatterCategory, Prisma, ProcedureType } from "@prisma/client";
-import { prisma } from "@/lib/prisma";
+import { getTenantPrisma } from "@/lib/tenant-prisma";
 import { requireSession } from "@/lib/auth/session";
 import { causeScopeForSelection } from "@/lib/cause-scope";
 
@@ -29,9 +29,7 @@ export type CauseSearchResult = {
   shortName: string | null;
   level: number;
   parentId: string | null;
-  /** 二级分类名（用于 UI 显示"X / Y"路径） */
   l2Name: string | null;
-  /** 一级分类名 */
   l1Name: string | null;
 };
 
@@ -49,7 +47,6 @@ function flatten(c: {
     parent: { id: string; name: string; level: number } | null;
   } | null;
 }): CauseSearchResult {
-  // 找 l1 / l2：本Etapa + 链向上的祖先里按 level 取
   const chain: { name: string; level: number }[] = [{ name: c.name, level: c.level }];
   if (c.parent) chain.push({ name: c.parent.name, level: c.parent.level });
   if (c.parent?.parent) chain.push({ name: c.parent.parent.name, level: c.parent.parent.level });
@@ -67,16 +64,7 @@ function flatten(c: {
   };
 }
 
-/**
- * Buscar规范Causa库。
- *
- * - 必传 category
- * - 空 query 时Volver该 category 下二级Causa（让用户先看分类）+ 部分三级
- * - 模糊Coincidencia name / shortName / keywords / pinyin
- * - 结果带 parent 链，UI 可显示"二级 / 三级"路径
- */
 function codeFilter(prefixes: readonly string[]): Prisma.CauseOfActionWhereInput {
-  // 一级 code 形如 CC-7，其子级形如 CC-7-...；用前缀区分（CC-1 不会误命中 CC-10）
   return {
     OR: prefixes.flatMap((p) => [
       { code: p },
@@ -92,7 +80,7 @@ export async function searchCauses(params: {
   limit?: number;
 }): Promise<CauseSearchResult[]> {
   await requireSession();
-  // v0.16: cap 提到 2000 以支持级联 UI 一次性拉全（民事 1055 / Penal 511）
+  const prisma = await getTenantPrisma();
   const limit = Math.min(params.limit ?? 50, 2000);
   const q = params.query?.trim();
   const scope = causeScopeForSelection(params.category, params.procedureType);
@@ -102,7 +90,6 @@ export async function searchCauses(params: {
   };
 
   if (!q) {
-    // 空查询：Volver该 category 下Ver todos 4 级（级联 UI 需要 level=1）
     const list = await prisma.causeOfAction.findMany({
       where: {
         category: scope.dbCategory,
@@ -120,15 +107,15 @@ export async function searchCauses(params: {
     where: {
       category: scope.dbCategory,
       active: true,
-      level: { gte: 2 }, // 至少二级才可选
+      level: { gte: 2 },
       AND: [
         scopedWhere,
         {
           OR: [
-            { name: { contains: q, mode: "insensitive" } },
-            { shortName: { contains: q, mode: "insensitive" } },
-            { keywords: { has: q } },
-            { pinyin: { contains: q, mode: "insensitive" } }
+            { name: { contains: q } },
+            { shortName: { contains: q } },
+            { keywords: { array_contains: q } },
+            { pinyin: { contains: q } }
           ]
         }
       ]
@@ -141,6 +128,7 @@ export async function searchCauses(params: {
 }
 
 export async function getCauseById(id: string) {
+  const prisma = await getTenantPrisma();
   await requireSession();
   const c = await prisma.causeOfAction.findUnique({
     where: { id },
@@ -150,10 +138,8 @@ export async function getCauseById(id: string) {
   return { ...flatten(c), category: c.category };
 }
 
-/**
- * v0.13: 列出某 category 下所有二级分类（用于级联第一步）
- */
 export async function listCauseL2(category: MatterCategory) {
+  const prisma = await getTenantPrisma();
   await requireSession();
   return prisma.causeOfAction.findMany({
     where: { category, active: true, level: 2 },
@@ -161,3 +147,4 @@ export async function listCauseL2(category: MatterCategory) {
     select: { id: true, code: true, name: true, parentId: true }
   });
 }
+

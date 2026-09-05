@@ -1,26 +1,26 @@
-import { describe, it, expect } from "vitest";
+﻿import { describe, it, expect } from "vitest";
 import { isManager, matterVisibilityFilter, intakeVisibilityFilter } from "@/lib/permissions";
 
 describe("isManager", () => {
-  it("ADMIN 是 manager", () => expect(isManager("ADMIN")).toBe(true));
-  it("PRINCIPAL_LAWYER 是 manager", () => expect(isManager("PRINCIPAL_LAWYER")).toBe(true));
-  it("LAWYER 不是 manager", () => expect(isManager("LAWYER")).toBe(false));
-  it("ASSISTANT 不是 manager", () => expect(isManager("ASSISTANT")).toBe(false));
-  it("FINANCE 不是 manager", () => expect(isManager("FINANCE")).toBe(false));
+  it("ADMIN æ˜¯ manager", () => expect(isManager("ADMIN")).toBe(true));
+  it("PRINCIPAL_LAWYER æ˜¯ manager", () => expect(isManager("PRINCIPAL_LAWYER")).toBe(true));
+  it("LAWYER ä¸æ˜¯ manager", () => expect(isManager("LAWYER")).toBe(false));
+  it("ASSISTANT ä¸æ˜¯ manager", () => expect(isManager("ASSISTANT")).toBe(false));
+  it("FINANCE ä¸æ˜¯ manager", () => expect(isManager("FINANCE")).toBe(false));
 });
 
 describe("matterVisibilityFilter", () => {
   const userId = "user-1";
 
-  it("ADMIN 看Ver todos（Volver空 where）", () => {
+  it("ADMIN çœ‹Ver todosï¼ˆVolverç©º whereï¼‰", () => {
     expect(matterVisibilityFilter(userId, "ADMIN")).toEqual({});
   });
 
-  it("FINANCE 看Ver todos", () => {
+  it("FINANCE çœ‹Ver todos", () => {
     expect(matterVisibilityFilter(userId, "FINANCE")).toEqual({});
   });
 
-  it("LAWYER 看自己拥有或参y的Caso", () => {
+  it("LAWYER çœ‹è‡ªå·±æ‹¥æœ‰æˆ–å‚yçš„Caso", () => {
     const filter = matterVisibilityFilter(userId, "LAWYER");
     expect(filter).toHaveProperty("OR");
     const or = (filter as { OR: unknown[] }).OR;
@@ -29,7 +29,7 @@ describe("matterVisibilityFilter", () => {
     expect(or[1]).toEqual({ members: { some: { userId } } });
   });
 
-  it("ASSISTANT 只看自己参y的Caso", () => {
+  it("ASSISTANT åªçœ‹è‡ªå·±å‚yçš„Caso", () => {
     const filter = matterVisibilityFilter(userId, "ASSISTANT");
     expect(filter).toEqual({ members: { some: { userId } } });
   });
@@ -38,14 +38,15 @@ describe("matterVisibilityFilter", () => {
 describe("intakeVisibilityFilter", () => {
   const userId = "user-1";
 
-  it("ADMIN 看Ver todos", () => {
+  it("ADMIN çœ‹Ver todos", () => {
     expect(intakeVisibilityFilter(userId, "ADMIN")).toEqual({});
   });
 
-  it("LAWYER 看自己Crear或参y的", () => {
+  it("LAWYER çœ‹è‡ªå·±Crearæˆ–å‚yçš„", () => {
     const filter = intakeVisibilityFilter(userId, "LAWYER");
     expect(filter).toHaveProperty("OR");
     const or = (filter as { OR: unknown[] }).OR;
     expect(or).toHaveLength(3);
   });
 });
+

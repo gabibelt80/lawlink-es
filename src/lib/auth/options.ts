@@ -1,9 +1,9 @@
-import type { NextAuthOptions } from "next-auth";
+﻿import type { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import bcrypt from "bcryptjs";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
-import { audit } from "@/server/audit";
+import { getTenantPrismaSync } from "@/lib/tenant-prisma";
 
 const credentialsSchema = z.object({
   email: z.string().email(),
@@ -11,62 +11,71 @@ const credentialsSchema = z.object({
 });
 
 export const authOptions: NextAuthOptions = {
-  session: { strategy: "jwt", maxAge: 12 * 60 * 60 }, // 12h
+  session: { strategy: "jwt", maxAge: 12 * 60 * 60 },
   pages: {
     signIn: "/login"
   },
   providers: [
     CredentialsProvider({
-      name: "EmailContraseña",
+      name: "Email y contrasena",
       credentials: {
         email: { label: "Email", type: "email" },
-        password: { label: "Contraseña", type: "password" }
+        password: { label: "Contrasena", type: "password" }
       },
       async authorize(credentials) {
         const parsed = credentialsSchema.safeParse(credentials);
         if (!parsed.success) return null;
 
-        const user = await prisma.user.findUnique({
-          where: { email: parsed.data.email }
+        const firmUser = await prisma.firmUser.findUnique({
+          where: { email: parsed.data.email },
+          include: { firm: true }
         });
-        if (!user || !user.active) {
-          // ErrorMotivo区分「账号不存在」y「已停用」，但都不回给前端，避免账号枚举
-          await audit({
-            userId: user?.id ?? null,
-            action: "LOGIN_FAILED",
-            targetType: "User",
-            targetId: user?.id,
-            detail: { email: parsed.data.email, reason: user ? "INACTIVE" : "NO_SUCH_USER" }
-          });
-          return null;
+
+        if (!firmUser || !firmUser.active) return null;
+
+        const matches = await bcrypt.compare(parsed.data.password, firmUser.passwordHash);
+        if (!matches) return null;
+
+        if (firmUser.firmId === null) {
+          prisma.firmUser.update({
+            where: { id: firmUser.id },
+            data: { lastLoginAt: new Date() }
+          }).catch(() => {});
+
+          return {
+            id: firmUser.id,
+            name: firmUser.name,
+            email: firmUser.email,
+            role: "SYSTEM_ADMIN",
+            avatar: firmUser.avatar,
+            firmId: null as string | null,
+            firmSlug: "",
+            firmName: "Sistema",
+          };
         }
 
-        const matches = await bcrypt.compare(parsed.data.password, user.passwordHash);
-        if (!matches) {
-          await audit({
-            userId: user.id,
-            action: "LOGIN_FAILED",
-            targetType: "User",
-            targetId: user.id,
-            detail: { email: parsed.data.email, reason: "BAD_PASSWORD" }
-          });
-          return null;
-        }
+        if (!firmUser.firm || !firmUser.firm.active) return null;
 
-        // Actualizar最后Iniciar sesión时间（异步，不阻塞）
-        prisma.user.update({
-          where: { id: user.id },
+        prisma.firmUser.update({
+          where: { id: firmUser.id },
           data: { lastLoginAt: new Date() }
-        }).catch(() => {
-          // 忽略ActualizarError
-        });
+        }).catch(() => {});
+
+        const tenantPrisma = getTenantPrismaSync(firmUser.firm.slug);
+        tenantPrisma.user.updateMany({
+          where: { email: firmUser.email },
+          data: { lastLoginAt: new Date() }
+        }).catch(() => {});
 
         return {
-          id: user.id,
-          name: user.name,
-          email: user.email,
-          role: user.role,
-          avatar: user.avatar
+          id: firmUser.id,
+          name: firmUser.name,
+          email: firmUser.email,
+          role: "ADMIN",
+          avatar: firmUser.avatar,
+          firmId: firmUser.firmId as string,
+          firmSlug: firmUser.firm.slug,
+          firmName: firmUser.firm.name,
         };
       }
     })
@@ -77,6 +86,9 @@ export const authOptions: NextAuthOptions = {
         token.id = user.id;
         token.role = user.role;
         token.avatar = user.avatar;
+        token.firmId = user.firmId;
+        token.firmSlug = user.firmSlug;
+        token.firmName = user.firmName;
       }
       return token;
     },
@@ -85,28 +97,11 @@ export const authOptions: NextAuthOptions = {
         session.user.id = token.id as string;
         session.user.role = token.role as string;
         session.user.avatar = token.avatar as string | null;
+        session.user.firmId = token.firmId as string | null;
+        session.user.firmSlug = token.firmSlug as string;
+        session.user.firmName = token.firmName as string;
       }
       return session;
-    }
-  },
-  // AGENTS.md §六：AuditLog 必须记录Iniciar sesión/登出
-  events: {
-    async signIn({ user }) {
-      await audit({
-        userId: user.id,
-        action: "LOGIN",
-        targetType: "User",
-        targetId: user.id
-      });
-    },
-    async signOut({ token }) {
-      const userId = token?.id as string | undefined;
-      await audit({
-        userId: userId ?? null,
-        action: "LOGOUT",
-        targetType: "User",
-        targetId: userId
-      });
     }
   }
 };

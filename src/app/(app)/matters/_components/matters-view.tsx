@@ -88,7 +88,7 @@ const TABS: { key: Tab; label: string; icon: typeof Clock }[] = [
 
 const ALL_STATUS_FILTERS: { value: string; label: string }[] = [
   { value: "ALL", label: "Ver todos los estados" },
-  { value: "active", label: "En trámite" },
+  { value: "active", label: "En tramite" },
   { value: "closed", label: "Cerrado" },
   { value: "archived", label: "Archivado" },
 ];
@@ -397,7 +397,7 @@ export function MattersView({
             <Input
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              placeholder="BuscarCasoNombre / Cliente"
+              placeholder="Buscar nombre del caso / Cliente"
               className="h-[34px] rounded-md border-input bg-background pl-9 text-[13px] shadow-[var(--shadow-inset-deep)]"
             />
           </div>

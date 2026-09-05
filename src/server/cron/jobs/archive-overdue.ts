@@ -1,10 +1,10 @@
-/**
- * 归档Vencido预警：扫描已Cerrar caso但超过 30 días未Enviar归档的Caso，给主办Abogado发Notificaciones。
+﻿/**
+ * å½’æ¡£Vencidoé¢„è­¦ï¼šæ‰«æå·²Cerrar casoä½†è¶…è¿‡ 30 dÃ­asæœªEnviarå½’æ¡£çš„Casoï¼Œç»™ä¸»åŠžAbogadoå‘Notificacionesã€‚
  *
- * 业务逻辑：
- * - status = CLOSED 且 closedAt < now - 30 días
- * - 未生成 ArchiveRecord（或都被 REJECTED）
- * - 同一Caso 30 días内不重复发预警（refId 唯一性）
+ * ä¸šåŠ¡é€»è¾‘ï¼š
+ * - status = CLOSED ä¸” closedAt < now - 30 dÃ­as
+ * - æœªç”Ÿæˆ ArchiveRecordï¼ˆæˆ–éƒ½è¢« REJECTEDï¼‰
+ * - åŒä¸€Caso 30 dÃ­aså†…ä¸é‡å¤å‘é¢„è­¦ï¼ˆrefId å”¯ä¸€æ€§ï¼‰
  */
 import { prisma } from "@/lib/prisma";
 import { createNotification } from "@/server/notifications/create";
@@ -43,10 +43,10 @@ export async function scanArchiveOverdue(): Promise<OverdueScanResult> {
     }
   });
 
-  // 排除已有进行中或已Aprobar的归档
+  // æŽ’é™¤å·²æœ‰è¿›è¡Œä¸­æˆ–å·²Aprobarçš„å½’æ¡£
   const target = candidates.filter((m) => m.archiveRecords.length === 0);
 
-  // 防重：拉最近 30 días已发过的"ARCHIVE_OVERDUE"Notificaciones（refId = matterId）
+  // é˜²é‡ï¼šæ‹‰æœ€è¿‘ 30 dÃ­aså·²å‘è¿‡çš„"ARCHIVE_OVERDUE"Notificacionesï¼ˆrefId = matterIdï¼‰
   const repeatCutoff = new Date(Date.now() - REPEAT_SUPPRESS_DAYS * 86400_000);
   const matterIds = target.map((m) => m.id);
   const recentNotified = await prisma.notification.findMany({
@@ -72,8 +72,8 @@ export async function scanArchiveOverdue(): Promise<OverdueScanResult> {
       userId: m.ownerId,
       type: "SYSTEM",
       priority: "HIGH",
-      title: `归档Vencido：${m.internalCode}·${m.title}`,
-      content: `Caso已结 ${days} días但未Enviar归档，请尽快补全材料后Enviar归档申请。`,
+      title: `å½’æ¡£Vencidoï¼š${m.internalCode}Â·${m.title}`,
+      content: `Casoå·²ç»“ ${days} dÃ­asä½†æœªEnviarå½’æ¡£ï¼Œè¯·å°½å¿«è¡¥å…¨ææ–™åŽEnviarå½’æ¡£ç”³è¯·ã€‚`,
       href: matterHref(m),
       refType: "ArchiveOverdue",
       refId: m.id
@@ -101,3 +101,5 @@ export async function scanArchiveOverdue(): Promise<OverdueScanResult> {
     suppressed
   };
 }
+
+

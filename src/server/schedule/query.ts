@@ -1,7 +1,7 @@
-/**
- * v0.50: Calendario聚合查询（无 session 依赖的内部实现）。
- * 被 listScheduleItems（server action）和 ICS 日历订阅路由共用；
- * 调用方负责Aceptar userId / role 的可信来源（session 或 calendarToken）。
+﻿/**
+ * v0.50: CalendarioèšåˆæŸ¥è¯¢ï¼ˆæ—  session ä¾èµ–çš„å†…éƒ¨å®žçŽ°ï¼‰ã€‚
+ * è¢« listScheduleItemsï¼ˆserver actionï¼‰å’Œ ICS æ—¥åŽ†è®¢é˜…è·¯ç”±å…±ç”¨ï¼›
+ * è°ƒç”¨æ–¹è´Ÿè´£Aceptar userId / role çš„å¯ä¿¡æ¥æºï¼ˆsession æˆ– calendarTokenï¼‰ã€‚
  */
 import { prisma } from "@/lib/prisma";
 import { matterAssociationFilter, matterVisibilityFilter } from "@/lib/permissions";
@@ -23,7 +23,7 @@ export type ScheduleItem = {
 
 export async function queryScheduleItems(
   userId: string,
-  // session.user.role 沿用 next-auth 的 string 类型（y matterVisibilityFilter 一致）
+  // session.user.role æ²¿ç”¨ next-auth çš„ string ç±»åž‹ï¼ˆy matterVisibilityFilter ä¸€è‡´ï¼‰
   role: string,
   params: {
     from?: Date;
@@ -228,11 +228,11 @@ export async function queryScheduleItems(
     items.push({
       id: `p-${p.id}`,
       type: "deadline",
-      title: `Preservación到期：${p.target.name}`,
+      title: `PreservaciÃ³nåˆ°æœŸï¼š${p.target.name}`,
       occurredAt: p.expiryDate,
       matter: matterBrief(matter),
       clientName: clientNameOf(matter),
-      procedureLabel: "财产Preservación",
+      procedureLabel: "è´¢äº§PreservaciÃ³n",
       completed: p.status !== "ACTIVE" && p.status !== "RENEWED",
       remindDays: 30,
       category: "PRESERVATION"
@@ -241,3 +241,5 @@ export async function queryScheduleItems(
   items.sort((a, b) => new Date(a.occurredAt).getTime() - new Date(b.occurredAt).getTime());
   return items;
 }
+
+

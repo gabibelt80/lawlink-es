@@ -37,18 +37,18 @@ import { ToolsDialog } from "@/components/layout/tools-dialog";
 import { cn } from "@/lib/utils";
 
 const roleLabels: Record<string, string> = {
-  ADMIN: "SistemaAdministrar员",
-  PRINCIPAL_LAWYER: "主办Abogado",
-  LAWYER: "经办Abogado",
-  ASSISTANT: "助理",
+  ADMIN: "Administrador del sistema",
+  PRINCIPAL_LAWYER: "Abogado principal",
+  LAWYER: "Abogado a cargo",
+  ASSISTANT: "Asistente",
   FINANCE: "Finanzas",
 };
 
-// 应用菜单聚合入口（v0.38：各分类拆回独立页；实务工具=全局弹窗；法律导航=外链）
-// kind: "tools" 触发工具箱弹窗（不跳转）；"external" 新标签外链；其余 Link 跳独立页
+// Entrada de menú de aplicaciones (v0.38: cada categoría volvió a páginas independientes; herramientas prácticas = ventana global; navegación legal = enlace externo)
+// kind: "tools" dispara la ventana de herramientas (sin navegar); "external" abre enlace externo en pestaña nueva; el resto son Links a páginas independientes
 const APP_ITEMS = [
-  { label: "实务工具", icon: Calculator, kind: "tools" },
-  { label: "快递跟踪", href: "/express", icon: Package, kind: "link" },
+  { label: "Herramientas prácticas", icon: Calculator, kind: "tools" },
+  { label: "Seguimiento de envíos", href: "/express", icon: Package, kind: "link" },
   {
     label: "Documentos del estudio",
     href: "/firm-resources",
@@ -56,14 +56,14 @@ const APP_ITEMS = [
     kind: "link",
   },
   {
-    label: "法律导航",
+    label: "Navegación legal",
     href: "https://yesen.cn",
     icon: Compass,
     kind: "external",
   },
-  { label: "Anuncio指引", href: "/announcements", icon: Megaphone, kind: "link" },
-  { label: "制度规范", href: "/policy", icon: BookText, kind: "link" },
-  { label: "通讯录", href: "/contacts", icon: Contact, kind: "link" },
+  { label: "Guía de anuncios", href: "/announcements", icon: Megaphone, kind: "link" },
+  { label: "Normas institucionales", href: "/policy", icon: BookText, kind: "link" },
+  { label: "Contactos", href: "/contacts", icon: Contact, kind: "link" },
 ] as const;
 
 export function Topbar({
@@ -84,7 +84,7 @@ export function Topbar({
 
   return (
     <header className="ll-material sticky top-0 z-20 flex h-12 items-center gap-2.5 border-b border-white/70 bg-[var(--glass-bg)] px-4 shadow-[0_1px_0_rgba(255,255,255,0.65)] backdrop-blur-xl sm:px-5">
-      {/* 移动端汉堡菜单 */}
+      {/* Menú hamburguesa móvil */}
       {onMobileMenuToggle && (
         <button
           onClick={onMobileMenuToggle}
@@ -94,7 +94,7 @@ export function Topbar({
           <Menu className="h-4 w-4" />
         </button>
       )}
-      {/* Búsqueda */}
+      {/* Buscar */}
       <button
         onClick={() => setSearchOpen(true)}
         className={cn(
@@ -115,9 +115,9 @@ export function Topbar({
 
       <div className="flex-1 hidden sm:block" />
 
-      {/* 工具按钮组 */}
+      {/* Grupo de botones de herramientas */}
       <div className="flex items-center gap-1.5">
-        {/* 应用菜单（Caso云式聚合入口）*/}
+        {/* Menú de aplicaciones (entrada agregada estilo Caso cloud) */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <button
@@ -126,18 +126,18 @@ export function Topbar({
                 "inline-flex h-8 items-center gap-1.5 rounded-full border border-input bg-card px-2.5 text-[13px] shadow-[var(--shadow-low)]",
                 "text-muted-foreground transition-colors hover:bg-muted hover:text-foreground",
               )}
-              title="应用"
+              title="Aplicaciones"
             >
               <LayoutGrid
                 className="h-3.5 w-3.5 shrink-0 text-primary"
                 strokeWidth={1.8}
               />
-              <span className="hidden sm:inline">应用</span>
+              <span className="hidden sm:inline">Aplicaciones</span>
             </button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-44">
             {APP_ITEMS.map((it) => {
-              // 实务工具：打开全局工具箱弹窗，不跳转、不改路由
+              // Herramientas prácticas: abre la ventana global de herramientas, sin navegar ni cambiar la ruta
               if (it.kind === "tools") {
                 return (
                   <DropdownMenuItem
@@ -192,7 +192,7 @@ export function Topbar({
           className="h-8 gap-1.5 px-2.5 text-[13px]"
         >
           <Plus className="h-3.5 w-3.5" strokeWidth={2} />
-          <span className="hidden sm:inline">新建收案</span>
+          <span className="hidden sm:inline">Nuevo caso</span>
         </Button>
 
         <div className="mx-0.5 hidden h-6 w-px bg-border sm:block" />
@@ -200,7 +200,7 @@ export function Topbar({
         <NotificationPopover />
       </div>
 
-      {/* 用户 */}
+      {/* Usuario */}
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <button
@@ -228,7 +228,7 @@ export function Topbar({
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-52">
           <DropdownMenuLabel className="text-xs font-normal text-muted-foreground">
-            {displayName ? `${displayName} · ${roleLabel}` : "Cargar中..."}
+            {displayName ? `${displayName} · ${roleLabel}` : "Cargando..."}
           </DropdownMenuLabel>
           <DropdownMenuSeparator />
           <DropdownMenuItem asChild>
@@ -240,7 +240,7 @@ export function Topbar({
           <DropdownMenuItem asChild>
             <Link href="/settings" className="cursor-pointer">
               <SettingsIcon className="mr-2 h-4 w-4" />
-              偏好Configuración
+              Preferencias
             </Link>
           </DropdownMenuItem>
           <DropdownMenuSeparator />
@@ -252,7 +252,7 @@ export function Topbar({
             className="cursor-pointer text-destructive focus:text-destructive"
           >
             <LogOut className="mr-2 h-4 w-4" />
-            Cerrar sesiónIniciar sesión
+            Cerrar sesión
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>

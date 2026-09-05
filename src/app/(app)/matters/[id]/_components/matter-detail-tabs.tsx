@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState, useTransition } from "react";
 import { toast } from "sonner";
+import { RoadmapPanel } from "./roadmap-panel";
 import type { ClientType, Prisma } from "@prisma/client";
 import {
   CalendarClock,
@@ -35,7 +36,7 @@ import { ApprovalsPanel } from "./approvals-panel";
 import type { SealContractItem, ExpressItem } from "./info-extras";
 import { AddProcedureSheet } from "./procedure-forms";
 import { deleteProcedure } from "@/server/procedures/actions";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { CustomFieldsPanel } from "./custom-fields-panel";
 import { LifecycleActions } from "./lifecycle-actions";
 import { ArchiveStatusBanner } from "./archive-status-banner";
@@ -151,7 +152,10 @@ export function MatterDetailTabs({
   expresses,
   latestArchive,
   customFieldDefs,
-  preservationCases
+  preservationCases,
+  hearings,
+  deadlines,
+  timelineEvents
 }: {
   matter: MatterPayload;
   finance: FinancePayload;
@@ -185,7 +189,12 @@ export function MatterDetailTabs({
     required: boolean;
   }[];
   preservationCases: WorkflowPreservationCase[];
+  hearings: any[];
+  deadlines: any[];
+  timelineEvents: any[];
 }) {
+  const searchParams = useSearchParams();
+  const urlStage = searchParams.get("stage");
   const [selectedProcId, setSelectedProcId] = useState<string | null>(null);
   const [addProcOpen, setAddProcOpen] = useState(false);
   const [matterEditorOpen, setMatterEditorOpen] = useState(false);
@@ -196,10 +205,10 @@ export function MatterDetailTabs({
     startTransition(async () => {
       try {
         await deleteProcedure(id);
-        toast.success("程序已Eliminar");
+        toast.success("Procedimiento eliminado");
         router.refresh();
       } catch (err) {
-        toast.error("EliminarError", { description: err instanceof Error ? err.message : "" });
+        toast.error("Error al eliminar", { description: err instanceof Error ? err.message : "" });
       }
     });
   }
@@ -209,7 +218,6 @@ export function MatterDetailTabs({
     .filter((p) => p.engagement === "ENGAGED")
     .sort((a, b) => a.order - b.order);
 
-  // 默认选中第一个在办程序（若有）
   const currentProcedure: ProcedureItem | null = selectedProcId
     ? engagedProcedures.find((p) => p.id === selectedProcId) ?? null
     : engagedProcedures[0] ?? null;
@@ -218,11 +226,10 @@ export function MatterDetailTabs({
     canEditMatterInfo ||
     canOwnThisMatter ||
     Boolean(currentProcedure && canAssociateThisMatter);
-  const causeLabel = matter.cause?.name ?? matter.causeFreeText ?? "未填写Causa";
+  const causeLabel = matter.cause?.name ?? matter.causeFreeText ?? "Causa no especificada";
 
   const ROMAN = ["I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X"];
 
-  // 当前选中程序的文档
   const procDocs = currentProcedure
     ? documents
         .filter((d) => d.procedureId === currentProcedure.id)
@@ -250,7 +257,6 @@ export function MatterDetailTabs({
 
   return (
     <div className="space-y-4">
-      {/* Caso详情是每días要开几十次的页面，页面级入场动画只会让它显得慢，故不加动效 */}
       <header className="ll-hero-surface px-5 py-4">
         <div className="relative z-[1] flex flex-wrap items-start justify-between gap-4">
           <div className="min-w-0 flex-1">
@@ -265,13 +271,12 @@ export function MatterDetailTabs({
               {matter.intakeDate ? (
                 <>
                   <span className="text-muted-foreground/50">·</span>
-                  <span>收案 {formatShortDate(matter.intakeDate)}</span>
+                  <span>Ingreso {formatShortDate(matter.intakeDate)}</span>
                 </>
               ) : null}
             </div>
             <h1 className="truncate text-[20px] font-semibold leading-tight" title={matter.title}>
               {matter.title}
-              {matterCategoryKind(matter.category) !== "project" && "案"}
             </h1>
             <div className="mt-3 flex flex-wrap items-center gap-2">
               <MatterStatusPill status={matter.status} />
@@ -289,7 +294,7 @@ export function MatterDetailTabs({
                 className="gap-1.5"
               >
                 <Pencil className="h-3.5 w-3.5" strokeWidth={1.8} />
-                Editar信息
+                Editar informacion
               </Button>
             )}
             {currentUserRole && canLeadThisMatter && (
@@ -309,15 +314,12 @@ export function MatterDetailTabs({
         />
       </header>
 
-      {/* v1.1 UI（方案 B）：吸顶摘要条——标题滚出视野后，Caso身份 +
-          下一Etapa倒计时仍常驻可见 */}
       <MatterStickyBar
         title={matter.title}
         caseNumber={currentProcedure?.caseNumber ?? null}
         procedures={engagedProcedures}
       />
 
-      {/* 归档Estado banner */}
       {latestArchive && (
         <div>
           <ArchiveStatusBanner
@@ -332,9 +334,37 @@ export function MatterDetailTabs({
         </div>
       )}
 
-      {/* 主内容 + 右侧动作栏：主区承载办案内容，侧栏承载速览和即时动作 */}
       <div className="grid grid-cols-1 gap-4 xl:grid-cols-[minmax(0,1fr)_320px] 2xl:grid-cols-[minmax(0,1fr)_340px]">
         <div className="min-w-0 space-y-4">
+          <RoadmapPanel
+            matter={{
+              id: matter.id,
+              title: matter.title,
+              status: matter.status,
+              claimAmount: matter.claimAmount ?? null,
+              primaryClient: matter.primaryClient ? { name: matter.primaryClient.name } : null,
+              parties: matter.parties.map((p) => ({
+                id: p.id,
+                name: p.name,
+                role: p.role,
+                partyType: p.partyType,
+                idNumber: p.idNumber,
+              })),
+            }}
+            procedures={engagedProcedures.map((p) => ({
+              id: p.id,
+              type: p.type,
+              customLabel: p.customLabel,
+              caseNumber: p.caseNumber,
+              handlingAgency: p.handlingAgency,
+              status: p.status,
+            }))}
+            documents={documents}
+            hearings={hearings}
+            deadlines={deadlines}
+            timelineEvents={timelineEvents}
+          />
+
           <ProcedureChainBar
             procedures={engagedProcedures}
             currentProcedure={currentProcedure}
@@ -353,6 +383,7 @@ export function MatterDetailTabs({
               title: matter.title,
               category: matter.category
             }}
+            initialStageKey={urlStage}
             procedure={currentProcedure}
             documents={procDocs}
             preservationCases={preservationCases}
@@ -471,36 +502,25 @@ export function MatterDetailTabs({
     </div>
   );
 }
-
 type ProcedureItem = MatterPayload["procedures"][number];
 type DeadlineProgressItem = ProcedureItem["deadlines"][number] & {
   procedureLabel: string;
 };
 
-/**
- * Eliminar程序的Confirmar文案。
- *
- * 原文案是「该程序下的所有开庭、Plazo、备忘和材料记录将被一并Eliminar」——两个问题：
- * 1. 笼统。人对「所有相关记录」会习惯性点Aceptar，对「3 条Plazo」会停手。
- * 2. 不准确。材料（Document）的外键是 SetNull，只会丢失程序关联，本身不删。
- *
- * 级联硬删的实际范围（schema onDelete: Cascade）：Deadline / Hearing /
- * MatterStage（含其下 Task 的关联）/ ProcedureMemo。
- */
 function deleteProcedureWarning(procedure: ProcedureItem, label: string): string {
   const parts: string[] = [];
-  if (procedure.deadlines.length > 0) parts.push(`${procedure.deadlines.length} 条Plazo`);
-  if (procedure.hearings.length > 0) parts.push(`${procedure.hearings.length} 场开庭`);
-  if (procedure.stages.length > 0) parts.push(`${procedure.stages.length} 个环节`);
-  if (procedure.memos.length > 0) parts.push(`${procedure.memos.length} 条备忘`);
+  if (procedure.deadlines.length > 0) parts.push(`${procedure.deadlines.length} plazos`);
+  if (procedure.hearings.length > 0) parts.push(`${procedure.hearings.length} audiencias`);
+  if (procedure.stages.length > 0) parts.push(`${procedure.stages.length} etapas`);
+  if (procedure.memos.length > 0) parts.push(`${procedure.memos.length} notas`);
 
   if (parts.length === 0) {
-    return `AceptarEliminar程序「${label}」？该程序下暂无Plazo、开庭、环节和备忘记录。`;
+    return `Confirma eliminar el procedimiento "${label}"? No hay plazos, audiencias, etapas ni notas.`;
   }
   return (
-    `AceptarEliminar程序「${label}」？\n\n` +
-    `该程序下的 ${parts.join("、")} 将被一并Eliminar，此Acciones不可撤销。\n` +
-    `（材料不会被Eliminar，仅解除y本程序的关联。）`
+    `Confirma eliminar el procedimiento "${label}"?\n\n` +
+    `Se eliminaran ${parts.join(", ")}. Esta accion no se puede deshacer.\n` +
+    `(Los documentos no se eliminan, solo se desvinculan del procedimiento.)`
   );
 }
 
@@ -525,17 +545,17 @@ function ProcedureChainBar({
 }) {
   const currentLabel = currentProcedure
     ? currentProcedure.caseNumber || currentProcedure.customLabel || procedureTypeLabel[currentProcedure.type]
-    : "暂无当前程序";
+    : "Sin procedimiento actual";
 
   return (
     <section className="ll-surface overflow-hidden">
       <div className="flex min-h-[46px] flex-wrap items-center gap-1 px-3.5 py-2.5">
         <span className="mr-1 shrink-0 text-[10.5px] font-semibold uppercase tracking-[0.05em] text-muted-foreground">
-          程序
+          Procedimientos
         </span>
         <div className="flex min-w-0 flex-1 items-center gap-1 overflow-x-auto">
           {procedures.length === 0 ? (
-            <span className="text-[11.5px] text-muted-foreground">暂无在办程序</span>
+            <span className="text-[11.5px] text-muted-foreground">Sin procedimientos activos</span>
           ) : (
             procedures.map((procedure, index) => {
               const isActive = currentProcedure?.id === procedure.id;
@@ -588,7 +608,7 @@ function ProcedureChainBar({
                             ? "text-primary-foreground/75 hover:text-primary-foreground"
                             : "text-muted-foreground hover:text-destructive"
                         )}
-                        title="Eliminar此程序"
+                        title="Eliminar procedimiento"
                       >
                         <X className="h-2.5 w-2.5" />
                       </button>
@@ -603,14 +623,14 @@ function ProcedureChainBar({
               type="button"
               onClick={onAdd}
               className="ml-1 inline-flex h-[26px] w-[26px] shrink-0 items-center justify-center rounded-full border border-dashed border-input text-muted-foreground transition-colors hover:border-primary hover:text-primary"
-              title="Agregar程序"
+              title="Agregar procedimiento"
             >
               <Plus className="h-3 w-3" strokeWidth={1.8} />
             </button>
           )}
         </div>
         <div className="ml-auto flex shrink-0 items-center gap-2 pl-2 text-[11.5px] text-muted-foreground">
-          <span className="hidden sm:inline">当前：</span>
+          <span className="hidden sm:inline">Actual:</span>
           <span className="max-w-[260px] truncate font-mono tabular">{currentLabel}</span>
         </div>
       </div>
@@ -644,8 +664,6 @@ function MatterStickyBar({
   caseNumber: string | null;
   procedures: ProcedureItem[];
 }) {
-  // 标题区自带Plazo/开庭卡片；摘要条只在标题滚出视野后以 fixed 形式出现，
-  // 页首不占位也不重复（sticky 放在零高容器里不会生效，故用 fixed + 测宽）
   const wrapRef = useRef<HTMLDivElement>(null);
   const [pinned, setPinned] = useState(false);
   const [rect, setRect] = useState<{ left: number; width: number } | null>(null);
@@ -659,7 +677,6 @@ function MatterStickyBar({
     };
     measure();
     window.addEventListener("resize", measure);
-    // topbar 高 48px，滚过标题底部（即本容器位置）后出现
     const onScroll = () => {
       setPinned(el.getBoundingClientRect().top < 56);
     };
@@ -677,7 +694,7 @@ function MatterStickyBar({
   const deadlineTone =
     days === null ? "" : days < 0 || days <= 7 ? "text-destructive" : days <= 30 ? "text-amber-600" : "text-muted-foreground";
   const deadlineText =
-    days === null ? "" : days < 0 ? `Vencido ${-days} días` : days === 0 ? "Hoy到期" : `Restan ${days} días`;
+    days === null ? "" : days < 0 ? `Vencido ${-days} dias` : days === 0 ? "Vence hoy" : `Faltan ${days} dias`;
 
   return (
     <div ref={wrapRef} className="h-0 w-full" aria-hidden={!pinned}>
@@ -702,13 +719,13 @@ function MatterStickyBar({
                   </span>
                 </span>
               ) : (
-                <span className="hidden text-muted-foreground sm:inline">无未完成Plazo</span>
+                <span className="hidden text-muted-foreground sm:inline">Sin plazos pendientes</span>
               )}
               {hearing && (
                 <span className="inline-flex items-center gap-1 text-muted-foreground">
                   <Gavel className="h-3 w-3" />
                   <span className="font-mono tabular">
-                    开庭 {formatMonthDay(hearing.startsAt)}{" "}
+                    Audiencia {formatMonthDay(hearing.startsAt)}{" "}
                     {new Date(hearing.startsAt).toTimeString().slice(0, 5)}
                   </span>
                 </span>
@@ -768,26 +785,26 @@ function MatterKeypoints({
     <div className="relative z-[1] mt-3 grid grid-cols-2 gap-1 rounded-lg bg-muted/70 p-1 lg:grid-cols-4">
       <ProgressMetricCard
         icon={<Clock3 className="h-3 w-3" />}
-        label={nextDeadline?.title ?? "最近Plazo"}
+        label={nextDeadline?.title ?? "Proximo plazo"}
         value={deadlineValue(nextDeadline)}
         sub={deadlineSub(nextDeadline)}
         tone={deadlineTone(nextDeadline)}
       />
       <ProgressMetricCard
         icon={<Landmark className="h-3 w-3" />}
-        label="立案Fecha"
+        label="Fecha de inicio"
         value={acceptedDate ? formatMonthDay(acceptedDate) : "—"}
-        sub={acceptedDate ? String(new Date(acceptedDate).getFullYear()) : "未填写立案Fecha"}
+        sub={acceptedDate ? String(new Date(acceptedDate).getFullYear()) : "Sin fecha de inicio"}
       />
       <ProgressMetricCard
         icon={<CalendarClock className="h-3 w-3" />}
-        label="首次开庭"
+        label="Primera audiencia"
         value={firstHearing ? formatMonthDay(firstHearing.startsAt) : "—"}
         sub={firstHearing ? `${formatTime(firstHearing.startsAt)} · ${firstHearing.title}` : "Sin audiencia programada"}
       />
       <ProgressMetricCard
         icon={<CircleDollarSign className="h-3 w-3" />}
-        label="实收进度"
+        label="Progreso de cobros"
         value={`${receivedPercent}%`}
         sub={`${formatCurrency(finance.stats.received, { compact: true })} / ${feeTarget ? formatCurrency(feeTarget, { compact: true }) : "Sin objetivo establecido"}`}
         progress={receivedPercent}
@@ -833,7 +850,7 @@ function MatterTeamCard({
       <header className="flex items-center justify-between border-b border-border px-3 py-2">
         <span className="flex items-center gap-1.5 text-[13px] font-medium">
           <Users className="h-3.5 w-3.5 text-primary" strokeWidth={1.8} />
-          办案团队
+          Equipo del caso
           <span className="ml-1 font-mono text-[11px] text-muted-foreground tabular">
             {sortedMembers.length}
           </span>
@@ -851,7 +868,7 @@ function MatterTeamCard({
       </header>
 
       {sortedMembers.length === 0 ? (
-        <p className="px-3 py-5 text-center text-xs text-muted-foreground">暂无团队成员</p>
+        <p className="px-3 py-5 text-center text-xs text-muted-foreground">Sin miembros del equipo</p>
       ) : (
         <ul className="divide-y divide-border px-3 py-1">
           {sortedMembers.map((member) => (
@@ -957,27 +974,27 @@ function ProgressMetricCard({
 }
 
 function matterTeamRoleLabel(role: MatterTeamMember["matterRole"]) {
-  if (role === "LEAD") return "主办";
-  if (role === "CO_LEAD") return "协办";
-  return "助理";
+  if (role === "LEAD") return "Titular";
+  if (role === "CO_LEAD") return "Colaborador";
+  return "Asistente";
 }
 
 function matterTeamRoleDescription(role: MatterTeamMember["matterRole"]) {
-  if (role === "LEAD") return "主办Abogado";
-  if (role === "CO_LEAD") return "协办Abogado";
-  return "Abogado助理";
+  if (role === "LEAD") return "Abogado titular";
+  if (role === "CO_LEAD") return "Abogado colaborador";
+  return "Abogado asistente";
 }
 
 function deadlineValue(deadline: DeadlineProgressItem | null) {
   if (!deadline) return "—";
   const days = daysFromToday(deadline.dueAt);
-  if (days < 0) return `Vencido ${Math.abs(days)} días`;
+  if (days < 0) return `Vencido ${Math.abs(days)} dias`;
   if (days === 0) return "Hoy";
-  return `${days} días`;
+  return `${days} dias`;
 }
 
 function deadlineSub(deadline: DeadlineProgressItem | null) {
-  if (!deadline) return "暂无未完成Plazo";
+  if (!deadline) return "Sin plazos pendientes";
   return formatShortDate(deadline.dueAt);
 }
 
@@ -1016,7 +1033,7 @@ function formatMonthDay(date: Date) {
 }
 
 function formatTime(date: Date) {
-  return new Date(date).toLocaleTimeString("zh-CN", {
+  return new Date(date).toLocaleTimeString("es-AR", {
     hour: "2-digit",
     minute: "2-digit",
     hour12: false
@@ -1097,7 +1114,7 @@ function buildProcedurePartyOptions(matter: MatterPayload) {
       enterpriseSocialCode: client.type === "INDIVIDUAL" ? null : client.idNumber,
       enterpriseName: client.type === "INDIVIDUAL" ? null : client.name,
       enterpriseBoundAt: null,
-      notes: "Caso关联Cliente",
+      notes: "Cliente vinculado al caso",
       createdAt: new Date(),
       updatedAt: new Date()
     });

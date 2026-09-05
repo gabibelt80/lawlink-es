@@ -36,13 +36,13 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { cn } from "@/lib/utils";
 import { matterHref } from "@/lib/matters/route";
 
-const CATEGORY_CN: Record<string, string> = {
-  CIVIL_COMMERCIAL: "民商",
+const CATEGORY_ES: Record<string, string> = {
+  CIVIL_COMMERCIAL: "Civil y Comercial",
   CRIMINAL: "Penal",
   ADMINISTRATIVE: "Administrativo",
-  NON_LITIGATION: "非诉",
-  LEGAL_COUNSEL: "顾问",
-  SPECIAL_PROJECT: "专ítems",
+  NON_LITIGATION: "No contencioso",
+  LEGAL_COUNSEL: "Consultoría",
+  SPECIAL_PROJECT: "Proyecto especial",
 };
 
 interface PendingRecord {
@@ -203,7 +203,7 @@ export function PendingArchiveTable({ records }: { records: PendingRecord[] }) {
                   </Link>
                 </td>
                 <td className="px-3 py-2.5 text-xs">
-                  {CATEGORY_CN[rec.matter.category] ?? rec.matter.category}
+                  {CATEGORY_ES[rec.matter.category] ?? rec.matter.category}
                 </td>
                 <td className="px-3 py-2.5 text-xs">
                   <User className="h-3 w-3 inline mr-1 text-muted-foreground" />
@@ -371,7 +371,7 @@ function BatchApproveDialog({
                 {withMissing
                   .slice(0, 3)
                   .map((r) => r.archiveNo)
-                  .join("、")}
+                  .join(", ")}
                 {withMissing.length > 3 ? "…" : ""}). Confirme que conoce este
                 detalle antes de aprobar.
               </span>
@@ -882,7 +882,7 @@ function DetailDialog({
                 Materiales faltantes ({record.missingItems.length})
               </div>
               <div className="text-xs text-amber-700/80 break-all">
-                {record.missingItems.join("、")}
+                {record.missingItems.join(", ")}
               </div>
             </div>
           )}
