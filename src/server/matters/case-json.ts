@@ -56,8 +56,21 @@ export async function generateCaseJson(matterId: string) {
       documents: {
         where: { deletedAt: null },
         orderBy: { createdAt: "desc" },
-        include: {
-          uploadedBy: { select: { id: true, name: true } },
+        select: {
+          id: true,
+          name: true,
+          category: true,
+          status: true,
+          sourceParty: true,
+          path: true,
+          mimeType: true,
+          size: true,
+          version: true,
+          isLatest: true,
+          familyId: true,
+          encrypted: true,
+          createdAt: true,
+          uploadedById: true,
         },
       },
       // Timeline de eventos
@@ -314,7 +327,7 @@ export async function generateCaseJson(matterId: string) {
       familyId: doc.familyId,
       encrypted: doc.encrypted,
       createdAt: doc.createdAt,
-      uploadedBy: doc.uploadedBy?.name ?? null,
+      uploadedById: doc.uploadedById ?? null,
     })),
     timelineEvents: matter.timelineEvents.map((event) => ({
       id: event.id,

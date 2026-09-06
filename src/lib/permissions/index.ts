@@ -1,14 +1,14 @@
 ﻿import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 
-/** ADMIN æˆ– PRINCIPAL_LAWYER â€” Administrarå±‚ï¼Œçœ‹æ‰€æœ‰æ•°æ® */
+/** ADMIN o PRINCIPAL_LAWYER — Nivel de administración, ve todos los datos */
 export function isManager(role: string): boolean {
   return role === "ADMIN" || role === "PRINCIPAL_LAWYER";
 }
 
-// ============ Casoå¯è§æ€§ ============
+// ============ Visibilidad de casos ============
 
-/** åˆ—è¡¨æŸ¥è¯¢ç”¨ï¼šVolver Prisma where ç‰‡æ®µï¼ŒAND åˆ°çŽ°æœ‰ where */
+/** Filtro para consultas de listado: devuelve fragmento Prisma where para agregar al where existente */
 export function matterVisibilityFilter(
   userId: string,
   role: string
@@ -26,8 +26,9 @@ export function matterVisibilityFilter(
   return { members: { some: { userId } } };
 }
 
-/** Acciones/å…³è”Casoç”¨ï¼šä¸å›  ADMIN / PRINCIPAL_LAWYER / FINANCE Rolæ”¾å¤§å…¨æ‰€èŒƒå›´ */
-export function matterAssociationFilter(userId: string): Prisma.MatterWhereInput {
+/** Acciones de relación de caso: ADMIN / PRINCIPAL_LAWYER / FINANCE ven todo */
+export function matterAssociationFilter(userId: string, role?: string): Prisma.MatterWhereInput {
+  if (isManager(role ?? "") || role === "FINANCE") return {};
   return {
     OR: [
       { ownerId: userId },
@@ -36,7 +37,7 @@ export function matterAssociationFilter(userId: string): Prisma.MatterWhereInput
   };
 }
 
-/** å•æ¡è®¿é—®æ–­è¨€ï¼šæŸ¥ä¸åˆ°æˆ–æ— æƒé™ä¸€å¾‹ throw "Casoä¸å­˜åœ¨"ï¼ˆé¿å…æ³„éœ² IDï¼‰ */
+/** Verificación de acceso a un caso individual: si no se encuentra o no tiene permiso, throw "Caso no existe" (evita filtrar ID) */
 export async function assertCanAccessMatter(
   userId: string,
   role: string,
@@ -47,7 +48,7 @@ export async function assertCanAccessMatter(
       where: { id: matterId, deletedAt: null },
       select: { id: true }
     });
-    if (!exists) throw new Error("Casoä¸å­˜åœ¨");
+    if (!exists) throw new Error("Caso no existe");
     return;
   }
   const row = await prisma.matter.findFirst({
@@ -58,46 +59,48 @@ export async function assertCanAccessMatter(
     },
     select: { id: true }
   });
-  if (!row) throw new Error("Casoä¸å­˜åœ¨");
+  if (!row) throw new Error("Caso no existe");
 }
 
-/** Acciones/å…³è”æ–­è¨€ï¼šåªå…è®¸ä¸»åŠžæˆ–Casoæˆå‘˜ï¼Œä¸å› AdministrarRolæ”¾å¼€ */
+/** Acciones de asociación de caso: solo permite titular o miembro del caso, no se abre por rol de administración */
 export async function assertCanAssociateMatter(
   userId: string,
-  matterId: string
+  matterId: string,
+  role?: string
 ): Promise<void> {
   const row = await prisma.matter.findFirst({
     where: {
       id: matterId,
       deletedAt: null,
-      ...matterAssociationFilter(userId)
+      ...matterAssociationFilter(userId, role)
     },
     select: { id: true }
   });
-  if (!row) throw new Error("Casoä¸å­˜åœ¨æˆ–æ— æƒå…³è”");
+  if (!row) throw new Error("Caso no existe o sin permiso de asociación");
 }
 
-/** Casoå¤„ç†æ–­è¨€ï¼šåªå…è®¸ä¸»åŠžæˆ–Casoæˆå‘˜ï¼Œä¸å› AdministrarRolæ”¾å¼€ */
+/** Procesamiento de caso: solo permite titular o miembro del caso, no se abre por rol de administración */
 export async function assertCanHandleMatter(
   userId: string,
-  matterId: string
+  matterId: string,
+  role?: string
 ): Promise<void> {
   const row = await prisma.matter.findFirst({
     where: {
       id: matterId,
       deletedAt: null,
-      ...matterAssociationFilter(userId)
+      ...matterAssociationFilter(userId, role)
     },
     select: { id: true }
   });
-  if (!row) throw new Error("Casoä¸å­˜åœ¨æˆ–æ— æƒå¤„ç†");
+  if (!row) throw new Error("Caso no existe o sin permiso de procesamiento");
 }
 
-/** ä¸»åŠž/ååŠžæ–­è¨€ï¼šç”¨äºŽå½’æ¡£ã€å›¢é˜Ÿã€æ ¸å¿ƒä¿¡æ¯ã€æ–‡ä¹¦ç”Ÿæˆetc.è¾ƒæ•æ„Ÿå¤„ç† */
+/** Verificación de titular/co-titular: usado para archivo, equipo, información central, generación de escritos, etc. */
 export async function assertCanLeadMatter(
   userId: string,
   matterId: string,
-  message = "ä»…Casoä¸»åŠž/ååŠžå¯Acciones"
+  message = "Solo el titular/co-titular del caso puede accionar"
 ): Promise<void> {
   const row = await prisma.matter.findFirst({
     where: {
@@ -113,11 +116,11 @@ export async function assertCanLeadMatter(
   if (!row) throw new Error(message);
 }
 
-/** å½“å‰ä¸»åŠžAbogadoæ–­è¨€ï¼šç”¨äºŽå˜æ›´æ‰¿åŠžå›¢é˜Ÿã€EliminarCasoetc.æ‰€æœ‰æƒçº§Acciones */
+/** Verificación de titular actual: usado para cambiar equipo de trabajo, eliminar caso, etc. */
 export async function assertCanOwnMatter(
   userId: string,
   matterId: string,
-  message = "ä»…Casoä¸»åŠžAbogadoå¯Acciones"
+  message = "Solo el titular del caso puede accionar"
 ): Promise<void> {
   const row = await prisma.matter.findFirst({
     where: {
@@ -130,24 +133,24 @@ export async function assertCanOwnMatter(
   if (!row) throw new Error(message);
 }
 
-/** ä¿®æ”¹æ–­è¨€ï¼šåªå…è®¸ä¸»åŠžæˆ–Casoæˆå‘˜ï¼Œä¸å› AdministrarRolæ”¾å¼€ */
+/** Verificación de modificación: solo permite titular o miembro del caso, no se abre por rol de administración */
 export async function assertCanModifyMatter(
   userId: string,
-  _role: string,
+  role: string,
   matterId: string
 ): Promise<void> {
   const matter = await prisma.matter.findFirst({
     where: {
       id: matterId,
       deletedAt: null,
-      ...matterAssociationFilter(userId)
+      ...matterAssociationFilter(userId, role)
     },
     select: { id: true }
   });
-  if (!matter) throw new Error("Casoä¸å­˜åœ¨");
+  if (!matter) throw new Error("Caso no existe");
 }
 
-// ============ æ”¶æ¡ˆå¯è§æ€§ ============
+// ============ Visibilidad de admisiones ============
 
 export function intakeVisibilityFilter(
   userId: string,
@@ -158,14 +161,20 @@ export function intakeVisibilityFilter(
     OR: [
       { createdById: userId },
       { ownerUserId: userId },
-      { coUserIds: { array_contains: userId } }
+      { coUserIds: { has: userId } }
     ]
   };
 }
 
-// ============ Clienteå¯è§æ€§ ============
+// ============ Verificación genérica ============
 
-/** ClienteAprobarå…³è”çš„Casoåˆ¤æ–­å¯è§æ€§ï¼›manager/finance çœ‹Ver todos */
+export function assertManagerOrRole(role: string, ...allowed: string[]): void {
+  if (isManager(role)) return;
+  if (allowed.includes(role)) return;
+  throw new Error("Permisos insuficientes");
+}
+
+/** Visibilidad de clientes */
 export function clientVisibilityFilter(
   userId: string,
   role: string
@@ -173,17 +182,9 @@ export function clientVisibilityFilter(
   if (isManager(role) || role === "FINANCE") return {};
   return {
     OR: [
-      { matters: { some: { deletedAt: null, ...matterVisibilityFilter(userId, role) } } },
-      { intakes: { some: intakeVisibilityFilter(userId, role) } }
+      { createdById: userId },
+      { matters: { some: { matter: { ownerId: userId } } } },
+      { matters: { some: { matter: { members: { some: { userId } } } } } }
     ]
   };
 }
-
-// ============ é€šç”¨æ–­è¨€ ============
-
-export function assertManagerOrRole(role: string, ...allowed: string[]): void {
-  if (isManager(role)) return;
-  if (allowed.includes(role)) return;
-  throw new Error("æƒé™ä¸è¶³");
-}
-

@@ -55,12 +55,12 @@ export function RelatedMattersField({
     startMutate(async () => {
       try {
         await addMatterLink(matterId, id);
-        toast.success("已关联");
+        toast.success("Caso relacionado");
         setOpen(false);
         setQuery("");
         router.refresh();
       } catch (err) {
-        toast.error("关联Error", { description: err instanceof Error ? err.message : "" });
+        toast.error("Error al relacionar", { description: err instanceof Error ? err.message : "" });
       }
     });
   }
@@ -72,7 +72,7 @@ export function RelatedMattersField({
         await removeMatterLink(matterId, id);
         router.refresh();
       } catch (err) {
-        toast.error("解除Error", { description: err instanceof Error ? err.message : "" });
+        toast.error("Error al quitar relación", { description: err instanceof Error ? err.message : "" });
       }
     });
   }
@@ -84,8 +84,8 @@ export function RelatedMattersField({
           type="button"
           variant="outline"
           size="sm"
-          aria-label="关联Caso"
-          title="关联Caso"
+          aria-label="Relacionar caso"
+          title="Relacionar caso"
           className="h-5 w-5 rounded-sm p-0 text-muted-foreground"
         >
           <Plus className="h-2.5 w-2.5" />
@@ -98,7 +98,7 @@ export function RelatedMattersField({
             autoFocus
             value={query}
             onChange={(e) => runSearch(e.target.value)}
-            placeholder="BuscarCasoNombre / 所内案号"
+            placeholder="Buscar por nombre del caso / n° interno"
             className="h-8 pl-7 text-xs"
           />
         </div>
@@ -108,7 +108,7 @@ export function RelatedMattersField({
               <Loader2 className="h-3.5 w-3.5 animate-spin" />
             </div>
           ) : results.length === 0 ? (
-            <p className="py-6 text-center text-xs text-muted-foreground">无可关联的Caso</p>
+            <p className="py-6 text-center text-xs text-muted-foreground">No hay casos para relacionar</p>
           ) : (
             results.map((m) => (
               <button
@@ -154,7 +154,7 @@ export function RelatedMattersField({
               onClick={() => remove(m.id)}
               disabled={pending}
               className="rounded-sm p-0.5 text-muted-foreground opacity-0 transition-opacity hover:text-destructive group-hover:opacity-100"
-              title="解除关联"
+              title="Quitar relación"
             >
               <X className="h-3 w-3" />
             </button>
@@ -165,7 +165,7 @@ export function RelatedMattersField({
 
       {related.length === 0 && (
         <span className="inline-flex items-center gap-1 text-[11px] text-muted-foreground">
-          暂无关联
+          Sin casos relacionados
           {addButton}
         </span>
       )}

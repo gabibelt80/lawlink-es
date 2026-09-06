@@ -63,10 +63,26 @@ export default async function MatterDetailPage({ params }: PageProps) {
     prisma.document.findMany({
       where: { matterId: matter.id, deletedAt: null },
       orderBy: { createdAt: "desc" },
-      include: {
-        uploadedBy: { select: { id: true, name: true } },
-        procedure: { select: { id: true, type: true, customLabel: true } }
-      }
+      select: {
+        id: true,
+        name: true,
+        category: true,
+        status: true,
+        sourceParty: true,
+        path: true,
+        mimeType: true,
+        size: true,
+        version: true,
+        isLatest: true,
+        familyId: true,
+        encrypted: true,
+        createdAt: true,
+        uploadedById: true,
+        stageId: true,
+        procedureId: true,
+        folderId: true,
+        tags: true,
+      },
     }),
     prisma.documentFolder.findMany({
       where: { matterId: matter.id },

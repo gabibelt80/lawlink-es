@@ -74,7 +74,7 @@ export async function syncWritingsFromFolder() {
 
   const WRITINGS_DIR = join(process.cwd(), "escritos");
 
-  const SUPPORTED_EXTENSIONS = new Set([".txt", ".docx", ".pdf", ".doc"]);
+  const SUPPORTED_EXTENSIONS = new Set([".txt", ".docx", ".pdf", ".doc", ".rtf"]);
 
   const files = readdirSync(WRITINGS_DIR);
   const supportedFiles = files.filter((file) => {
@@ -179,10 +179,11 @@ export async function saveWritingToMatter(input: {
   const matterDir = join(process.cwd(), "storage", "matters", matter.internalCode);
   mkdirSync(matterDir, { recursive: true });
 
-  // Guardar el archivo
-  const fileName = `${Date.now()}-${input.name.replace(/[^a-zA-Z0-9]/g, "_")}.html`;
+  // Guardar el archivo como .txt (texto plano legible)
+  const plainText = input.content.replace(/<[^>]*>/g, "");
+    const fileName = `${matter.internalCode}-${input.name.replace(/[^a-zA-Z0-9]/g, "_")}.txt`;
   const filePath = join(matterDir, fileName);
-  writeFileSync(filePath, input.content, "utf-8");
+  writeFileSync(filePath, plainText, "utf-8");
 
   const created = await prisma.document.create({
     data: {
@@ -193,8 +194,8 @@ export async function saveWritingToMatter(input: {
       category: "PLEADING",
       status: "DRAFT",
       path: filePath,
-      mimeType: "text/html",
-      size: Buffer.byteLength(input.content, "utf-8"),
+      mimeType: "text/plain",
+      size: Buffer.byteLength(plainText, "utf-8"),
       tags: JSON.stringify([`etapa:${input.stageName}`]),
       uploadedById: session.user.id,
       encrypted: false
@@ -218,6 +219,7 @@ export async function saveWritingToMatter(input: {
 
   return { ok: true, id: created.id };
 }
+
 export async function getDocumentContent(documentId: string) {
   const prisma = await getTenantPrisma();
   await requireSession();
@@ -263,18 +265,20 @@ export async function updateDocumentContent(input: {
     if (!matter) throw new Error("Caso no encontrado");
     const matterDir = join(process.cwd(), "storage", "matters", matter.internalCode);
     mkdirSync(matterDir, { recursive: true });
-    filePath = join(matterDir, `${Date.now()}-${input.name.replace(/[^a-zA-Z0-9]/g, "_")}.html`);
+        filePath = join(matterDir, `${matter.internalCode}-${input.name.replace(/[^a-zA-Z0-9]/g, "_")}.txt`);
   }
 
-  // Guardar el archivo
-  writeFileSync(filePath, input.content, "utf-8");
+  // Guardar como texto plano
+  const plainText = input.content.replace(/<[^>]*>/g, "");
+  writeFileSync(filePath, plainText, "utf-8");
 
   await prisma.document.update({
     where: { id: input.documentId },
     data: {
       name: input.name,
       path: filePath,
-      size: Buffer.byteLength(input.content, "utf-8"),
+      size: Buffer.byteLength(plainText, "utf-8"),
+      mimeType: "text/plain",
     }
   });
 
