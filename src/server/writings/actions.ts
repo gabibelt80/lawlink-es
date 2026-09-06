@@ -72,9 +72,7 @@ export async function syncWritingsFromFolder() {
     throw new Error("Solo el Administrador o Abogado Principal puede sincronizar escritos");
   }
 
-  const WRITINGS_DIR = process.env.APP_STORAGE_DIR
-    ? join(process.env.APP_STORAGE_DIR, "writings")
-    : join(process.cwd(), "storage", "writings");
+  const WRITINGS_DIR = join(process.cwd(), "escritos");
 
   const SUPPORTED_EXTENSIONS = new Set([".txt", ".docx", ".pdf", ".doc"]);
 

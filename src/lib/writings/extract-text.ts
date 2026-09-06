@@ -15,16 +15,26 @@ export async function extractTextFromFile(path: string): Promise<string> {
   }
 
   if (ext === ".pdf") {
-    const pdfParse = (await import("pdf-parse")).default;
-    const buffer = readFileSync(path);
-    const result = await pdfParse(buffer);
-    return result.text;
+    try {
+      const pdfjs = await import("pdfjs-dist/legacy/build/pdf.mjs");
+      const data = new Uint8Array(readFileSync(path));
+      const doc = await pdfjs.getDocument({ data, useWorkerFetch: false, isEvalSupported: false }).promise;
+      let text = "";
+      for (let i = 1; i <= doc.numPages; i++) {
+        const page = await doc.getPage(i);
+        const content = await page.getTextContent();
+        const pageText = content.items.map((item: any) => item.str).join(" ");
+        text += pageText + "\n\n";
+      }
+      return text;
+    } catch (err) {
+      console.error(`Error al leer PDF: ${path}`, err);
+      return `[No se pudo extraer texto del PDF: ${path}]`;
+    }
   }
 
   if (ext === ".doc") {
-    // .doc requiere conversion con LibreOffice
-    // Por ahora devolvemos un placeholder
-    return `[Archivo .doc - requiere conversion]\n\nNombre del archivo: ${path}`;
+    return `[Archivo .doc - requiere conversión con LibreOffice]\n\nArchivo: ${path}`;
   }
 
   throw new Error(`Formato no soportado: ${ext}`);
