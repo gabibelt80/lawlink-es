@@ -1,1 +1,0 @@
-﻿const { Client } = require("pg"); (async () => { const client = new Client({ host: "localhost", port: 5432, user: "postgres", password: "Lisa0579", database: "postgres" }); await client.connect(); await client.query("ALTER USER postgres WITH PASSWORD 'migrate123'"); console.log("Contraseña cambiada a migrate123"); await client.end(); })();
