@@ -50,3 +50,5 @@ tsconfig.tsbuildinfo
 
 # Working scratch (outside of project scope)
 outputs/
+# Escritos locales (no versionar)
+escritos/
