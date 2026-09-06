@@ -34,52 +34,45 @@ type Props = {
 };
 
 const PROVINCES = [
-  "北京",
-  "días津",
-  "河北",
-  "山西",
-  "内蒙古",
-  "辽宁",
-  "吉林",
-  "黑龙江",
-  "上海",
-  "江苏",
-  "浙江",
-  "安徽",
-  "福建",
-  "江西",
-  "山东",
-  "河南",
-  "湖北",
-  "湖南",
-  "广东",
-  "广西",
-  "海南",
-  "重庆",
-  "四川",
-  "贵州",
-  "云南",
-  "西藏",
-  "陕西",
-  "甘肃",
-  "青海",
-  "宁夏",
-  "新疆",
-  "最高",
+  "Buenos Aires",
+  "CABA",
+  "Catamarca",
+  "Chaco",
+  "Chubut",
+  "Córdoba",
+  "Corrientes",
+  "Entre Ríos",
+  "Formosa",
+  "Jujuy",
+  "La Pampa",
+  "La Rioja",
+  "Mendoza",
+  "Misiones",
+  "Neuquén",
+  "Río Negro",
+  "Salta",
+  "San Juan",
+  "San Luis",
+  "Santa Cruz",
+  "Santa Fe",
+  "Santiago del Estero",
+  "Tierra del Fuego",
+  "Tucumán",
+  "CSJN",
 ];
 
-const WSZL_OPTIONS = ["判决书", "裁定书", "调解书", "决定书"] as const;
+const WSZL_OPTIONS = ["Sentencia", "Auto", "Resolución", "Decreto"] as const;
 
 function ajlbFromCategory(cat: MatterCategory): string | undefined {
   switch (cat) {
     case "CIVIL_COMMERCIAL":
     case "LABOR_ARBITRATION":
     case "COMMERCIAL_ARBITRATION":
-      return "民事Caso";
+      return "Caso Civil y Comercial";
     case "CRIMINAL":
-      return "PenalCaso";
+      return "Caso Penal";
     case "ADMINISTRATIVE":
-      return "AdministrativoCaso";
+      return "Caso Administrativo";
     default:
       return undefined;
   }
@@ -97,7 +90,7 @@ export function CaseSearchPanel({
   const [qw, setQw] = useState("");
   const [vectorQuery, setVectorQuery] = useState("");
   const [provinces, setProvinces] = useState<string[]>([]);
-  const [wszl, setWszl] = useState<string[]>(["判决书"]);
+  const [wszl, setWszl] = useState<string[]>(["Sentencia"]);
   const [jaStart, setJaStart] = useState("");
   const [jaEnd, setJaEnd] = useState("");
   const [topK, setTopK] = useState(10);
@@ -203,7 +196,7 @@ export function CaseSearchPanel({
             query: vectorQuery.trim(),
             ay: ay.length ? ay : undefined,
             ajlb: ajlbFromCategory(matterCategory) as never,
-            xzqh_p: provinces[0] || undefined, // vector 接受 string 单值
+            xzqh_p: provinces[0] || undefined, // vector acepta un solo valor
             wszl: wszl.length ? (wszl as never) : undefined,
             ja_start: jaStart || undefined,
             ja_end: jaEnd || undefined,
@@ -231,7 +224,7 @@ export function CaseSearchPanel({
             Búsqueda de casos similares
           </h3>
           <p className="mt-0.5 text-[11px] text-muted-foreground">
-            Base de casos Yuantong · Cada búsqueda descuenta 10 POINT
+            Base de jurisprudencia argentina · Cada búsqueda descuenta 10 puntos
           </p>
         </div>
         <div className="flex rounded-md border border-border bg-card p-0.5">
@@ -262,7 +255,7 @@ export function CaseSearchPanel({
         </div>
       </header>
 
-      {/* 检索表单 */}
+      {/* Formulario de búsqueda */}
       <div className="space-y-3 rounded-lg border border-border bg-card p-4">
         {mode === "vector" && (
           <div>
@@ -272,7 +265,7 @@ export function CaseSearchPanel({
             <textarea
               value={vectorQuery}
               onChange={(e) => setVectorQuery(e.target.value)}
-              placeholder="Ej.: el demandado tomó un préstamo de 500.000 yuanes y no lo pagó a su vencimiento; el demandante solicita intereses por incumplimiento y gastos por ocupación de fondos"
+              placeholder="Ej.: el demandado tomó un préstamo de $500.000 y no lo pagó a su vencimiento; el demandante solicita intereses por incumplimiento y gastos por ocupación de fondos"
               rows={3}
               className="mt-1 w-full resize-none rounded-md border border-input bg-background px-3 py-2 text-sm placeholder:text-muted-foreground"
             />
@@ -288,7 +281,7 @@ export function CaseSearchPanel({
             <Input
               value={causeInput}
               onChange={(e) => setCauseInput(e.target.value)}
-              placeholder="Ej.: disputa por préstamo privado"
+              placeholder="Ej.: daños y perjuicios por incumplimiento contractual"
               className="mt-1"
             />
           </div>
@@ -300,7 +293,7 @@ export function CaseSearchPanel({
               <Input
                 value={qw}
                 onChange={(e) => setQw(e.target.value)}
-                placeholder="Ej.: penalidad por incumplimiento, vencimiento"
+                placeholder="Ej.: incumplimiento contractual, daños, indemnización"
                 className="mt-1"
               />
             </div>
@@ -398,7 +391,7 @@ export function CaseSearchPanel({
         </div>
       </div>
 
-      {/* 结果区 */}
+      {/* Resultados */}
       {error && (
         <div className="flex items-start gap-2 rounded-md border border-destructive/30 bg-destructive/10 p-3 text-[12px] text-destructive">
           <CircleAlert className="mt-0.5 h-3.5 w-3.5 shrink-0" />
@@ -421,7 +414,7 @@ export function CaseSearchPanel({
             <span className="font-mono text-foreground">
               {keywordResult.pointsCharged}
             </span>{" "}
-            POINT
+            puntos
           </p>
           <ul className="space-y-2">
             {keywordResult.items.map((c) => (
@@ -508,7 +501,7 @@ export function CaseSearchPanel({
             <span className="font-mono text-foreground">
               {vectorResult.pointsCharged}
             </span>{" "}
-            POINT
+            puntos
           </p>
           <ul className="space-y-2">
             {vectorResult.items.map((c) => (

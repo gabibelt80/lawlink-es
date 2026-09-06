@@ -431,7 +431,7 @@ export function InvoiceCreateDialog({
               </Select>
             ) : (
               <Input
-                placeholder="Ej.: Shanghai X Tech Co., Ltd. / Juan Pérez"
+                placeholder="Ej.: Empresa XYZ / Juan Pérez"
                 value={buyerName}
                 onChange={(e) => setBuyerName(e.target.value)}
               />

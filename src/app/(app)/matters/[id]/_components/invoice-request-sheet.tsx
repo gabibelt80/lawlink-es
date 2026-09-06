@@ -34,10 +34,10 @@ type InvoiceType = "PLAIN" | "SPECIAL";
 type InvoiceItem = "LAWYER_FEE" | "CONSULTING_FEE" | "AGENCY_FEE" | "OTHER";
 
 const INVOICE_ITEM_OPTIONS: { value: InvoiceItem; label: string }[] = [
-  { value: "LAWYER_FEE", label: "Abogado服务费" },
-  { value: "CONSULTING_FEE", label: "法律咨询费" },
-  { value: "AGENCY_FEE", label: "代理费" },
-  { value: "OTHER", label: "其他法律服务" },
+  { value: "LAWYER_FEE", label: "Honorarios de abogados" },
+  { value: "CONSULTING_FEE", label: "Honorarios de asesoría legal" },
+  { value: "AGENCY_FEE", label: "Honorarios de representación" },
+  { value: "OTHER", label: "Otros servicios legales" },
 ];
 
 export function InvoiceRequestSheet({
@@ -55,16 +55,16 @@ export function InvoiceRequestSheet({
     ReturnType<typeof getMatterInvoiceContext>
   > | null>(null);
 
-  // 表单Estado
+  // Estado del formulario
   const [amount, setAmount] = useState<string>("");
-  // v0.42 ítems5：开票类型无默认值，必须主动选择一次
+  // El tipo de factura no tiene valor por defecto, debe seleccionarse
   const [invoiceType, setInvoiceType] = useState<InvoiceType | null>(null);
   const [invoiceItem, setInvoiceItem] = useState<InvoiceItem>("LAWYER_FEE");
-  // v0.42 ítems3：开票抬头改下拉（本案Cliente）
+  // El titular de la factura se selecciona desde el cliente del caso
   const [buyerClientId, setBuyerClientId] = useState<string>("");
   const [buyerName, setBuyerName] = useState("");
   const [buyerTaxNo, setBuyerTaxNo] = useState("");
-  // v0.42 ítems4：专票购方六要素
+  // Datos del comprador para factura de IVA
   const [buyerAddress, setBuyerAddress] = useState("");
   const [buyerPhone, setBuyerPhone] = useState("");
   const [buyerBank, setBuyerBank] = useState("");
@@ -73,14 +73,14 @@ export function InvoiceRequestSheet({
   const [evidenceFiles, setEvidenceFiles] = useState<File[]>([]);
   const fileRef = useRef<HTMLInputElement>(null);
 
-  // 拉取Caso上下文 + Restablecer表单
+  // Cargar contexto del caso + resetear formulario
   useEffect(() => {
     if (!open) return;
     setCtxLoading(true);
     getMatterInvoiceContext(matterId)
       .then((data) => {
         setCtx(data);
-        // 只有一个Cliente时默认选中，多Cliente强制选择
+        // Si solo hay un cliente, seleccionarlo por defecto
         if (data.clientOptions.length === 1) {
           const only = data.clientOptions[0];
           setBuyerClientId(only.id);
@@ -109,7 +109,7 @@ export function InvoiceRequestSheet({
     const c = ctx?.clientOptions.find((o) => o.id === id);
     if (c) {
       setBuyerName(c.name);
-      // 选中Cliente时预填税号（专票可直接复用，Abogado可改）
+      // Precargar CUIT si el cliente lo tiene
       if (c.taxNo) setBuyerTaxNo(c.taxNo);
     }
   }
@@ -140,7 +140,7 @@ export function InvoiceRequestSheet({
     if (invoiceType === "SPECIAL") {
       if (!buyerTaxNo.trim()) {
         toast.warning(
-          "La factura de IVA debe incluir el número de identificación tributaria",
+          "La factura de IVA debe incluir el número de CUIT",
         );
         return;
       }
@@ -176,7 +176,7 @@ export function InvoiceRequestSheet({
 
     startTransition(async () => {
       try {
-        // 1. 上传开票依据，拿到 docId
+        // 1. Subir respaldo de factura, obtener docId
         const docIds: string[] = [];
         for (const file of evidenceFiles) {
           const fd = new FormData();
@@ -184,13 +184,13 @@ export function InvoiceRequestSheet({
           fd.set("name", file.name);
           fd.set("category", "OTHER");
           fd.set("encrypted", "true");
-          fd.set("tags", "开票依据");
+          fd.set("tags", "respaldo-factura");
           fd.set("file", file);
           const doc = await uploadDocument(fd);
           docIds.push(doc.id);
         }
 
-        // 2. Crear开票申请
+        // 2. Crear solicitud de factura
         const isSpecial = invoiceType === "SPECIAL";
         await createInvoiceRequest({
           matterId,
@@ -237,7 +237,6 @@ export function InvoiceRequestSheet({
         </DialogHeader>
 
         <div className="flex-1 space-y-4 overflow-y-auto px-5 py-4">
-          {/* v0.42 ítems5：Monto + 开票类型 同一行 */}
           <div className="grid grid-cols-2 gap-3">
             <Field label="Monto de la factura (pesos)" required>
               <Input
@@ -268,7 +267,6 @@ export function InvoiceRequestSheet({
             </Field>
           </div>
 
-          {/* 开票名目 */}
           <Field label="Concepto de la factura" required>
             <RadioChips
               items={INVOICE_ITEM_OPTIONS}
@@ -277,7 +275,6 @@ export function InvoiceRequestSheet({
             />
           </Field>
 
-          {/* v0.42 ítems3：Cliente抬头下拉（本案Cliente） */}
           <Field
             label="Titular de la factura (cliente)"
             required
@@ -310,32 +307,31 @@ export function InvoiceRequestSheet({
             )}
           </Field>
 
-          {/* 专票购方六要素（v0.42 ítems4，税法合规） */}
           {invoiceType === "SPECIAL" && (
             <div className="space-y-3 rounded-md border border-primary/30 bg-primary/5 p-3">
               <Field
-                label="Número de identificación tributaria (código fiscal unificado)"
+                label="Número de CUIT"
                 required
               >
                 <Input
                   className="font-mono"
-                  placeholder="91310000XXXXXXXXXX"
+                  placeholder="20-XXXXXXXX-X"
                   value={buyerTaxNo}
                   onChange={(e) => setBuyerTaxNo(e.target.value)}
                 />
               </Field>
               <div className="grid grid-cols-2 gap-3">
-                <Field label="开户银行" required>
+                <Field label="Banco del comprador" required>
                   <Input
                     placeholder="Por ejemplo: Banco Nación, sucursal Centro"
                     value={buyerBank}
                     onChange={(e) => setBuyerBank(e.target.value)}
                   />
                 </Field>
-                <Field label="银行账号" required>
+                <Field label="Cuenta bancaria" required>
                   <Input
                     className="font-mono"
-                    placeholder="62XXXXXXXXXXXXXXXX"
+                    placeholder="Número de cuenta"
                     value={buyerBankAccount}
                     onChange={(e) => setBuyerBankAccount(e.target.value)}
                   />
@@ -344,7 +340,7 @@ export function InvoiceRequestSheet({
               <div className="grid grid-cols-2 gap-3">
                 <Field label="Dirección del comprador" required>
                   <Input
-                    placeholder="Dirección registrada en la licencia comercial"
+                    placeholder="Dirección registrada"
                     value={buyerAddress}
                     onChange={(e) => setBuyerAddress(e.target.value)}
                   />
@@ -361,7 +357,6 @@ export function InvoiceRequestSheet({
             </div>
           )}
 
-          {/* 开票依据 */}
           <Field
             label="Respaldo de la factura"
             required
@@ -421,7 +416,6 @@ export function InvoiceRequestSheet({
             </div>
           </Field>
 
-          {/* 申请Observaciones */}
           <Field label="Observaciones de la solicitud (opcional)">
             <Textarea
               rows={2}
