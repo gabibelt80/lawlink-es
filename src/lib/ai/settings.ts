@@ -15,9 +15,9 @@ import { encryptBuffer, decryptBuffer } from "@/lib/storage/crypto";
 const AI_SETTINGS_KEY = "aiSettings";
 
 export const AI_DEFAULTS = {
-  baseUrl: "https://dashscope.aliyuncs.com/compatible-mode/v1",
-  textModel: "qwen-turbo",
-  visionModel: "qwen-vl-max"
+  baseUrl: "https://api.openai.com/v1",
+  textModel: "gpt-4o-mini",
+  visionModel: "gpt-4o"
 } as const;
 
 export interface StoredAiSettings {
