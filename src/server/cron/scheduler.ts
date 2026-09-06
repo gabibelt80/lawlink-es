@@ -1,3 +1,7 @@
+<<<<<<< HEAD
+export function registerCronJobs() {
+  return;
+=======
 ﻿/**
  * v0.22: è¿›ç¨‹å†… cron è°ƒåº¦ï¼ˆnode-cronï¼‰
  *
@@ -146,6 +150,7 @@ export function registerCronJobs() {
   console.log(
     `[cron] å·²Registrarse ${backupCronEnabled() ? 6 : 5} ä¸ªå®šæ—¶ä½œä¸šï¼ˆå‘¨æŠ¥æŽ¨é€ / å½’æ¡£Vencidoæ‰«æ / AuditLog æ¸…ç† / åˆ°æœŸRecordatoriosæ‰«æ / ç”¨ç« å›žå¡«Recordatoriosæ‰«æ${backupCronEnabled() ? " / æ•°æ®åº“å¤‡ä»½" : ""}ï¼‰ï¼Œæ—¶åŒº Asia/Shanghai`
   );
+>>>>>>> 1730f21e93d6111622e2de74ba5997edf8ea6291
 }
 
 
