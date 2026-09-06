@@ -204,13 +204,13 @@ export function WritingEditor({
     setChatLoading(true);
 
     try {
-      const { chatWithDocument } = await import("@/server/ai/document-chat");
-      const result = await chatWithDocument({
-        documentContent: editor.getHTML(),
+      const { chatWithCase } = await import("@/server/ai/case-chat");
+      const result = await chatWithCase({
+        matterId,
         documentTitle: title,
+        documentContent: editor.getHTML(),
         message: userMessage,
       });
-
       setChatMessages((prev) => [...prev, { role: "assistant", content: result.response }]);
 
       if (result.editedContent) {

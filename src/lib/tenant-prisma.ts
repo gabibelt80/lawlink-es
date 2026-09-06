@@ -28,7 +28,7 @@ export function getTenantPrismaSync(firmSlug: string): PrismaClient {
 
   const baseUrl = process.env.DATABASE_URL!;
   const url = new URL(baseUrl);
-  const tenantUrl = `postgresql://${url.username}:${url.password}@${url.hostname}:${url.port}/juridictas?schema=${schema}`;
+  const tenantUrl = `postgresql://${url.username}:${url.password}@${url.hostname}:${url.port}/juridictas?schema=${schema}&connection_limit=5`;
 
   console.log("TENANT URL:", tenantUrl);
 
