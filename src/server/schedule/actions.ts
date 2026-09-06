@@ -2,6 +2,7 @@
 
 import { requireSession } from "@/lib/auth/session";
 import { queryScheduleItems } from "./query";
+import { getTenantPrisma } from "@/lib/tenant-prisma";
 
 export async function listScheduleItems(params: {
   from?: Date;

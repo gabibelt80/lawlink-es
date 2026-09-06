@@ -1,9 +1,9 @@
 ﻿import { PrismaClient } from "@prisma/client";
-import mysql from "mysql2/promise";
+import { Client } from "pg";
 
 /**
  * Sistema multi-tenant con esquema por estudio.
- * Cada estudio tiene su propio schema en MariaDB: juridictas_estudio_slug
+ * Cada estudio tiene su propio schema en PostgreSQL: juridictas_estudio_slug
  */
 
 // Cliente Prisma para el schema central (estudios, usuarios, suscripciones)
@@ -13,13 +13,14 @@ export const prisma = new PrismaClient();
 const tenantClients = new Map<string, PrismaClient>();
 
 /**
- * Obtiene (o crea) un cliente Prisma para el schema de un estudio especÃ­fico.
+ * Obtiene (o crea) un cliente Prisma para el schema de un estudio específico.
  */
 export function getTenantPrisma(firmSlug: string): PrismaClient {
   if (!tenantClients.has(firmSlug)) {
     const schema = `juridictas_${firmSlug}`;
     const baseUrl = process.env.DATABASE_URL!;
-    const tenantUrl = baseUrl.replace(/\/[^/]+$/, `/${schema}`);
+    const url = new URL(baseUrl);
+    const tenantUrl = `postgresql://${url.username}:${url.password}@${url.hostname}:${url.port}/${schema}?schema=public`;
     const client = new PrismaClient({
       datasources: {
         db: {
@@ -33,48 +34,51 @@ export function getTenantPrisma(firmSlug: string): PrismaClient {
 }
 
 /**
- * Crea un nuevo schema para un estudio reciÃ©n registrado.
+ * Crea un nuevo schema para un estudio recién registrado.
  */
 export async function createTenantSchema(firmSlug: string): Promise<void> {
   const schema = `juridictas_${firmSlug}`;
   const baseUrl = process.env.DATABASE_URL!;
   const url = new URL(baseUrl);
-  const connection = await mysql.createConnection({
+  const client = new Client({
     host: url.hostname,
-    port: parseInt(url.port || "3306"),
+    port: parseInt(url.port || "5432"),
     user: url.username,
     password: url.password,
+    database: url.pathname.slice(1),
   });
-  await connection.query(
-    `CREATE DATABASE IF NOT EXISTS \`${schema}\` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci`
-  );
-  await connection.end();
+  await client.connect();
+  await client.query(`CREATE SCHEMA IF NOT EXISTS "${schema}"`);
+  await client.end();
 }
 
 /**
- * Elimina el schema de un estudio (para cancelaciÃ³n de suscripciÃ³n).
+ * Elimina el schema de un estudio (para cancelación de suscripción).
  */
 export async function dropTenantSchema(firmSlug: string): Promise<void> {
   const schema = `juridictas_${firmSlug}`;
   const baseUrl = process.env.DATABASE_URL!;
   const url = new URL(baseUrl);
-  const connection = await mysql.createConnection({
+  const client = new Client({
     host: url.hostname,
-    port: parseInt(url.port || "3306"),
+    port: parseInt(url.port || "5432"),
     user: url.username,
     password: url.password,
+    database: url.pathname.slice(1),
   });
-  await connection.query(`DROP DATABASE IF EXISTS \`${schema}\``);
-  await connection.end();
+  await client.connect();
+  await client.query(`DROP SCHEMA IF EXISTS "${schema}" CASCADE`);
+  await client.end();
 }
 
 /**
- * Aplica las migraciones al schema del estudio reciÃ©n creado.
+ * Aplica las migraciones al schema del estudio recién creado.
  */
 export async function migrateTenantSchema(firmSlug: string): Promise<void> {
   const schema = `juridictas_${firmSlug}`;
   const baseUrl = process.env.DATABASE_URL!;
-  const tenantUrl = baseUrl.replace(/\/[^/]+$/, `/${schema}`);
+  const url = new URL(baseUrl);
+  const tenantUrl = `postgresql://${url.username}:${url.password}@${url.hostname}:${url.port}/${schema}?schema=public`;
   const { exec } = await import("child_process");
   await new Promise((resolve, reject) => {
     exec(
@@ -82,7 +86,7 @@ export async function migrateTenantSchema(firmSlug: string): Promise<void> {
       {
         env: { ...process.env, DATABASE_URL: tenantUrl },
       },
-      (err, stdout, stderr) => {
+      (err, stdout) => {
         if (err) reject(err);
         else resolve(stdout);
       }

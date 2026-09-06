@@ -28,7 +28,6 @@ export const authOptions: NextAuthOptions = {
 
         const firmUser = await prisma.firmUser.findUnique({
           where: { email: parsed.data.email },
-          include: { firm: true }
         });
 
         if (!firmUser || !firmUser.active) return null;
@@ -36,8 +35,9 @@ export const authOptions: NextAuthOptions = {
         const matches = await bcrypt.compare(parsed.data.password, firmUser.passwordHash);
         if (!matches) return null;
 
+        // SYSTEM_ADMIN: firmId es null
         if (firmUser.firmId === null) {
-          prisma.firmUser.update({
+          await prisma.firmUser.update({
             where: { id: firmUser.id },
             data: { lastLoginAt: new Date() }
           }).catch(() => {});
@@ -54,16 +54,15 @@ export const authOptions: NextAuthOptions = {
           };
         }
 
-        if (!firmUser.firm || !firmUser.firm.active) return null;
+        // Tenant admin: buscar el firm
+        const firm = await prisma.firm.findUnique({
+          where: { id: firmUser.firmId },
+        });
 
-        prisma.firmUser.update({
+        if (!firm || !firm.active) return null;
+
+        await prisma.firmUser.update({
           where: { id: firmUser.id },
-          data: { lastLoginAt: new Date() }
-        }).catch(() => {});
-
-        const tenantPrisma = getTenantPrismaSync(firmUser.firm.slug);
-        tenantPrisma.user.updateMany({
-          where: { email: firmUser.email },
           data: { lastLoginAt: new Date() }
         }).catch(() => {});
 
@@ -74,8 +73,8 @@ export const authOptions: NextAuthOptions = {
           role: "ADMIN",
           avatar: firmUser.avatar,
           firmId: firmUser.firmId as string,
-          firmSlug: firmUser.firm.slug,
-          firmName: firmUser.firm.name,
+          firmSlug: firm.slug,
+          firmName: firm.name,
         };
       }
     })

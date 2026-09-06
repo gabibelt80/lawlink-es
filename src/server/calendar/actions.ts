@@ -10,10 +10,19 @@ function newToken() {
 }
 
 async function resolveTenantUserId(email: string, prisma: any): Promise<string | null> {
-  const user = await prisma.user.findUnique({
+  // Si es system admin, buscar el primer admin del tenant
+  let user = await prisma.user.findUnique({
     where: { email },
     select: { id: true }
   });
+  
+  if (!user) {
+    user = await prisma.user.findFirst({
+      where: { role: "ADMIN" },
+      select: { id: true }
+    });
+  }
+  
   return user?.id ?? null;
 }
 

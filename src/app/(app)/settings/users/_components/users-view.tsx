@@ -214,16 +214,16 @@ function UserRow({
         </Badge>
       </td>
       <td className="px-5 py-3">
-        <div className="flex gap-1">
+        <div className="flex flex-nowrap items-center gap-1">
           <Button
             variant="ghost"
             size="sm"
             onClick={onResetPassword}
             disabled={isPending}
-            className="h-7 gap-1 text-xs"
+            className="h-7 shrink-0 gap-1 whitespace-nowrap text-xs"
           >
             <KeyRound className="h-3.5 w-3.5" />
-            Cambiar contraseña
+            Contraseña
           </Button>
           {!isSelf && (
             <Button
@@ -231,12 +231,12 @@ function UserRow({
               size="sm"
               onClick={handleToggleActive}
               disabled={isPending}
-              className={`h-7 gap-1 text-xs ${user.active ? "text-destructive" : "text-[#4ADE80]"}`}
+              className={`h-7 shrink-0 gap-1 whitespace-nowrap text-xs ${user.active ? "text-destructive" : "text-[#4ADE80]"}`}
             >
               {user.active ? (
                 <>
                   <CircleOff className="h-3.5 w-3.5" />
-                  Deshabilitar
+                  Deshab.
                 </>
               ) : (
                 <>
