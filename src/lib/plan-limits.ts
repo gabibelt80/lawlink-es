@@ -1,5 +1,6 @@
 ﻿import { prisma } from "@/lib/prisma";
 import { getPlan } from "@/lib/plans";
+import { getSession } from "@/lib/auth/session";
 
 /**
  * Verifica si el estudio puede crear un nuevo usuario.
@@ -47,4 +48,38 @@ export async function activatePlan(firmId: string, planKey: string): Promise<voi
       planExpiresAt: planKey === "trial" ? new Date(Date.now() + plan.trialDays * 24 * 60 * 60 * 1000) : null,
     },
   });
+}
+export async function getPlanLimitsForCurrentFirm() {
+  const session = await getSession();
+  if (!session?.user?.email) return { storageGB: 1 };
+  
+  const firmUser = await prisma.firmUser.findUnique({
+    where: { email: session.user.email },
+    include: { firm: true },
+  });
+  
+  if (!firmUser?.firm) return { storageGB: 1 };
+  
+  // Leer límites personalizados
+  const row = await prisma.systemSetting.findUnique({
+    where: { key: "planLimits" },
+  });
+  
+  if (row?.value && typeof row.value === "object") {
+    const limits = row.value as Record<string, any>;
+    const planLimits = limits[firmUser.firm.plan];
+    if (planLimits?.storageGB) {
+      return { storageGB: planLimits.storageGB };
+    }
+  }
+  
+  // Valores por defecto
+  const defaults: Record<string, number> = {
+    trial: 3,
+    basic: 5,
+    professional: 10,
+    studio: 30,
+  };
+  
+  return { storageGB: defaults[firmUser.firm.plan] ?? 1 };
 }

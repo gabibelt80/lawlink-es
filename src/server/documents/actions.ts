@@ -47,6 +47,22 @@ export async function uploadDocument(formData: FormData) {
 
   if (!(file instanceof File)) throw new Error("Falta el archivo");
 
+  // Verificar límite de almacenamiento del plan
+  const { getPlanLimitsForCurrentFirm } = await import("@/lib/plan-limits");
+  const limits = await getPlanLimitsForCurrentFirm();
+  
+  const totalSize = await prisma.document.aggregate({
+    where: { deletedAt: null },
+    _sum: { size: true },
+  });
+  
+  const currentSize = totalSize._sum.size ?? 0;
+  const fileSize = file.size;
+  const maxBytes = limits.storageGB * 1024 * 1024 * 1024;
+  
+  if (currentSize + fileSize > maxBytes) {
+    throw new Error(`Límite de almacenamiento alcanzado. Tu plan incluye ${limits.storageGB} GB.`);
+  }
   const matterId = typeof matterIdRaw === "string" && matterIdRaw ? matterIdRaw : null;
   const intakeId = typeof intakeIdRaw === "string" && intakeIdRaw ? intakeIdRaw : null;
   if (!matterId && !intakeId) throw new Error("matterId o intakeId son obligatorios");
