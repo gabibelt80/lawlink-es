@@ -59,10 +59,8 @@ export default async function ClientDetailPage({ params }: { params: { id: strin
 
   const isIndividual = client.type === "INDIVIDUAL";
   const TypeIcon = isIndividual ? User : client.type === "COMPANY" ? Building2 : Briefcase;
-  // Cliente empresa: Contacto principal (contacts ya ordenado por isPrimary desc)
   const primaryContact = client.contacts[0] ?? null;
 
-  // Agrupar contratos por caso, mostrando caso asociado y contrato firmado combinados (izquierda Caso / derecha contrato)
   const billingsByMatter = new Map<string, typeof finance.billings>();
   for (const b of finance.billings) {
     const arr = billingsByMatter.get(b.matter.id) ?? [];
@@ -110,7 +108,7 @@ export default async function ClientDetailPage({ params }: { params: { id: strin
                 >
                   {cooperationStatusLabel[client.cooperationStatus]}
                 </span>
-                {client.tags.slice(0, 3).map((tag) => (
+                {(client.tags as string[]).slice(0, 3).map((tag) => (
                   <Badge key={tag} variant="secondary" className="rounded-full text-[11px]">
                     {tag}
                   </Badge>
@@ -263,12 +261,12 @@ export default async function ClientDetailPage({ params }: { params: { id: strin
               <L>Domicilio</L>
               <V wide title={client.address ?? undefined}>{client.address || dash}</V>
 
-              {client.tags.length > 0 && (
+              {(client.tags as string[]).length > 0 && (
                 <>
                   <L>Etiquetas</L>
                   <V wide nowrap={false}>
                     <span className="flex flex-wrap gap-1">
-                      {client.tags.map((t) => (
+                      {(client.tags as string[]).map((t) => (
                         <Badge key={t} variant="outline" className="rounded-full text-[10px]">
                           {t}
                         </Badge>
@@ -447,7 +445,6 @@ function SummaryField({
   );
 }
 
-// Tabla de información del cliente: celda de etiqueta (fondo gris)
 function L({ children }: { children: React.ReactNode }) {
   return (
     <dt className="bg-muted/50 px-2.5 py-2 text-[11.5px] leading-snug text-muted-foreground">
@@ -456,7 +453,6 @@ function L({ children }: { children: React.ReactNode }) {
   );
 }
 
-// Tabla de información del cliente: celda de valor (fondo blanco). Por defecto truncado en una línea; wide ocupa toda la fila; nowrap=false permite saltos de línea (etiquetas/notas)
 function V({
   children,
   mono,

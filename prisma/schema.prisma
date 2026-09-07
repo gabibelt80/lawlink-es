@@ -403,7 +403,7 @@ model Client {
   phone       String?
   email       String?
   source      String?
-  tags        Json
+  tags        String[]
   notes       String?
   legalRep    String?
   // v0.39: Campos complementarios estilo expediente en la nube
@@ -457,7 +457,7 @@ model CauseOfAction {
   children   CauseOfAction[] @relation("CauseHierarchy")
   active     Boolean         @default(true)
   pinyin     String?
-  keywords   Json
+  keywords   String[]
   matters    Matter[]
   intakes    Intake[]
   sourceNote String?
@@ -523,7 +523,7 @@ model Intake {
   // v0.5: Abogado titular + co-abogados (al convertir se genera MatterMember)
   ownerUserId String?
   ownerUser   User?    @relation("IntakeOwner", fields: [ownerUserId], references: [id])
-  coUserIds   Json @default("[]")
+  coUserIds String[] @default([])
 
   parties        Party[]
   conflictChecks ConflictCheck[]
@@ -646,7 +646,7 @@ model CustomFieldDef {
   key        String // Clave estable, se escribe en customValues de la entidad
   label      String
   fieldType  CustomFieldType   @default(TEXT)
-  options    Json // Opciones para tipo SELECT
+  options    String[] // Opciones para tipo SELECT
   required   Boolean           @default(false)
   order      Int               @default(0)
   enabled    Boolean           @default(true)
@@ -999,8 +999,8 @@ model Note {
   withWhom    String?
   occurredAt  DateTime    @default(now())
   content     String
-  tags        Json
-  attachments Json
+  tags        String[]
+  attachments String[]
   deletedAt   DateTime?
   createdAt   DateTime    @default(now())
   updatedAt   DateTime    @updatedAt
@@ -1050,7 +1050,7 @@ model Document {
   iv        String?
   authTag   String?
 
-  tags         Json
+  tags         String[]
   uploadedById String
   uploadedBy   User      @relation("DocumentUploader", fields: [uploadedById], references: [id])
   deletedAt    DateTime?
@@ -1116,7 +1116,7 @@ model InvoiceRequest {
   buyerPhone       String? // Telefono del comprador (obligatorio)
   buyerBank        String? // Banco del comprador (obligatorio)
   buyerBankAccount String? // Cuenta bancaria del comprador (obligatorio)
-  evidenceDocIds Json @default("[]") // Lista de Document ids de respaldo
+  evidenceDocIds String[] @default([]) // Lista de Document ids de respaldo
 
   // v0.14: Numero real de factura (cuando finanzas completa la emision)
   invoiceNo String?
@@ -1250,7 +1250,7 @@ model ArchiveRecord {
   closedReason    ArchiveClosedReason?
   completedAt     DateTime?
   checklistJson   Json
-  missingItems    Json
+  missingItems    String[]
 
   coverDocId   String?
   catalogDocId String?
@@ -1558,7 +1558,7 @@ model PreservationCase {
   ownerId String?
   owner   User?   @relation("PreservationCaseOwner", fields: [ownerId], references: [id], onDelete: SetNull)
 
-  remindDays Json @default("[30, 15, 7, 3, 1]")
+  remindDays Int[] @default([30, 15, 7, 3, 1])
 
   targets   PreservationTarget[]
   createdAt DateTime @default(now())
@@ -1738,7 +1738,7 @@ model FirmFile {
   name        String
   description String?
   category    FirmFileCategory
-  tags        Json
+  tags        String[]
 
   path     String
   mimeType String?
@@ -1809,7 +1809,7 @@ model ExternalContact {
   wechat       String?
   address      String?
   notes        String?
-  tags         Json
+  tags         String[]
 
   createdById  String
   createdBy    User     @relation("ExternalContactCreator", fields: [createdById], references: [id])
@@ -1878,7 +1878,7 @@ model Jurisprudence {
   date        DateTime?
   source      String?
   category    String?
-  tags        Json      @default("[]")
+  tags        String[]  @default([])
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
   createdById String?

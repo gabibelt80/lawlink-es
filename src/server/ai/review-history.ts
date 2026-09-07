@@ -34,7 +34,7 @@ export async function listReviewHistory(input: {
   });
   if (!doc) return [];
   if (doc.matterId) {
-    await assertCanAccessMatter(session.user.id, session.user.role, doc.matterId);
+    await assertCanAccessMatter(session.user.id, session.user.role as any, doc.matterId);
   }
 
   const list = await prisma.reviewRecord.findMany({
@@ -96,7 +96,7 @@ export async function getReviewRecord(input: {
     }
   });
   if (!rec) return null;
-  await assertCanAccessMatter(session.user.id, session.user.role, rec.matterId);
+  await assertCanAccessMatter(session.user.id, session.user.role as any, rec.matterId);
   return {
     id: rec.id,
     reviewedAt: rec.reviewedAt,

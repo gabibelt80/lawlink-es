@@ -125,7 +125,7 @@ export function ClientsTable({
                   </td>
                   <td className="px-4 py-2.5">
                     <div className="flex flex-wrap gap-1">
-                      {c.tags.slice(0, 3).map((t) => (
+                      {(c.tags as string[]).slice(0, 3).map((t) => (
                         <Badge
                           key={t}
                           variant="secondary"
@@ -154,7 +154,7 @@ export function ClientsTable({
         </table>
       </div>
 
-      {/* 移动端卡片列表 */}
+      {/* Mobile card list */}
       <div className="space-y-2 md:hidden">
         {items.map((c) => {
           const primary = c.contacts[0];
@@ -197,9 +197,9 @@ export function ClientsTable({
                 )}
                 <span className="ll-stat">{c._count.matters} casos</span>
               </div>
-              {c.tags.length > 0 && (
+              {(c.tags as string[]).length > 0 && (
                 <div className="mt-1.5 flex flex-wrap gap-1">
-                  {c.tags.slice(0, 3).map((t) => (
+                  {(c.tags as string[]).slice(0, 3).map((t) => (
                     <Badge
                       key={t}
                       variant="secondary"

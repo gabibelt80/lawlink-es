@@ -123,7 +123,7 @@ export function ClientSheet({ open, onOpenChange, editingClient }: Props) {
         industry: (editingClient as any).industry ?? "",
         gender: (editingClient as any).gender ?? "",
         ethnicity: (editingClient as any).ethnicity ?? "",
-        tags: editingClient.tags,
+        tags: (editingClient.tags as string[]) ?? [],
         notes: editingClient.notes ?? "",
         contacts:
           editingClient.contacts && editingClient.contacts.length > 0

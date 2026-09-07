@@ -318,12 +318,12 @@ export function FirmFilesView({
                         <span>{new Date(f.createdAt).toLocaleDateString("es-AR")}</span>
                         <span className="opacity-50">·</span>
                         <span>{f.uploadedBy.name}</span>
-                        {f.tags.length > 0 && (
+                        {(f.tags as string[]).length > 0 && (
                           <>
                             <span className="opacity-50">·</span>
                             <span className="flex items-center gap-0.5">
                               <Tag className="h-2.5 w-2.5" />
-                              {f.tags.join(" / ")}
+                              {(f.tags as string[]).join(" / ")}
                             </span>
                           </>
                         )}

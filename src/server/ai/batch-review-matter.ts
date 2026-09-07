@@ -43,7 +43,7 @@ export async function batchReviewMatterDocuments(input: {
   const prisma = await getTenantPrisma();
   await assertCanAccessMatter(
     session.user.id,
-    session.user.role,
+    session.user.role as any,
     input.matterId,
   );
 

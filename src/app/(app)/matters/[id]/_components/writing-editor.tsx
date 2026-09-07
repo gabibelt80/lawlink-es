@@ -89,6 +89,7 @@ type WritingEditorProps = {
   onClose: () => void;
   title: string;
   content: string;
+  matterId: string;
   onSave: (title: string, content: string) => void;
   isPending?: boolean;
 };
@@ -116,6 +117,7 @@ export function WritingEditor({
   onClose,
   title: initialTitle,
   content: initialContent,
+  matterId,
   onSave,
   isPending,
 }: WritingEditorProps) {

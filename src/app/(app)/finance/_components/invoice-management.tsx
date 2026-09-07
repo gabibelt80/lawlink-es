@@ -362,7 +362,7 @@ function ProcessDialog({
       const res = await recognizeInvoiceFromImage(fd);
       if (!res.ok) {
         toast.warning("No se pudo completar el reconocimiento de la factura", {
-          description: res.message,
+          description: (res as any).message,
         });
         return;
       }

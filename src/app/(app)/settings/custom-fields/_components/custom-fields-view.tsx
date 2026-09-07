@@ -134,8 +134,8 @@ export function CustomFieldsView({
                     {f.required ? "Sí" : "—"}
                   </td>
                   <td className="px-4 py-2.5 text-muted-foreground">
-                    {f.fieldType === "SELECT" && f.options.length > 0
-                      ? f.options.join(" / ")
+                    {f.fieldType === "SELECT" && (f.options as string[]).length > 0
+                      ? (f.options as string[]).join(" / ")
                       : "—"}
                   </td>
                   <td className="px-4 py-2.5">
@@ -201,7 +201,7 @@ function FieldFormDialog({
   );
   const [required, setRequired] = useState(field?.required ?? false);
   const [optionsText, setOptionsText] = useState(
-    (field?.options ?? []).join("\n"),
+    (field?.options as string[] ?? []).join("\n"),
   );
   const [pending, startTransition] = useTransition();
 

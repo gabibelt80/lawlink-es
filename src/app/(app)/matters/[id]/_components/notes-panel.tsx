@@ -40,12 +40,12 @@ import type { NotePayload } from "./matter-detail-tabs";
 import { cn } from "@/lib/utils";
 
 const channelMeta = {
-  PHONE: { icon: Phone, label: "电话", color: "#4ADE80" },
-  WECHAT: { icon: MessageCircle, label: "微信", color: "#4FD1C5" },
-  EMAIL: { icon: Mail, label: "邮件", color: "#5B8DEF" },
-  MEETING: { icon: Users, label: "面谈", color: "#9B7BF7" },
-  COURT: { icon: Gavel, label: "法院", color: "#FBBF24" },
-  OTHER: { icon: MessageSquare, label: "其他", color: "#9BA8C7" }
+  PHONE: { icon: Phone, label: "Teléfono", color: "#4ADE80" },
+  WECHAT: { icon: MessageCircle, label: "WhatsApp", color: "#4FD1C5" },
+  EMAIL: { icon: Mail, label: "Email", color: "#5B8DEF" },
+  MEETING: { icon: Users, label: "Reunión", color: "#9B7BF7" },
+  COURT: { icon: Gavel, label: "Tribunal", color: "#FBBF24" },
+  OTHER: { icon: MessageSquare, label: "Otro", color: "#9BA8C7" }
 } as const;
 
 const formSchema = z.object({
@@ -53,7 +53,7 @@ const formSchema = z.object({
   channel: z.enum(["PHONE", "WECHAT", "EMAIL", "MEETING", "COURT", "OTHER"]),
   withWhom: z.string().max(80).optional().or(z.literal("")),
   occurredAt: z.coerce.date(),
-  content: z.string().min(1, "内容不能为空").max(5000)
+  content: z.string().min(1, "El contenido es obligatorio").max(5000)
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -69,13 +69,13 @@ export function NotesPanel({
   const [isPending, startTransition] = useTransition();
 
   function handleDelete(id: string) {
-    if (!confirm("Eliminar这条沟通记录？")) return;
+    if (!confirm("¿Eliminar este registro de comunicación?")) return;
     startTransition(async () => {
       try {
         await deleteNote(id);
-        toast.success("已Eliminar");
+        toast.success("Registro eliminado");
       } catch (err) {
-        toast.error("EliminarError", { description: err instanceof Error ? err.message : "" });
+        toast.error("Error al eliminar", { description: err instanceof Error ? err.message : "" });
       }
     });
   }
@@ -84,7 +84,7 @@ export function NotesPanel({
     <div className="space-y-4">
       <header className="flex items-center justify-between">
         <p className="text-sm text-muted-foreground">
-          按时间倒序展示。每条记录会进入审计日志。
+          Ordenado por fecha descendente. Cada registro queda en la auditoría.
         </p>
         <Button
           onClick={() => setSheetOpen(true)}
@@ -92,14 +92,14 @@ export function NotesPanel({
           className="gap-1.5 "
         >
           <Plus className="h-4 w-4" />
-          录入沟通
+          Nueva comunicación
         </Button>
       </header>
 
       {notes.length === 0 ? (
         <div className="rounded-xl border border-dashed border-border bg-card py-16 text-center">
           <p className="text-sm text-muted-foreground">
-            还没有沟通记录。点击 <span className="text-foreground">录入沟通</span> 开始
+            Todavía no hay registros. Clic en <span className="text-foreground">Nueva comunicación</span> para comenzar
           </p>
         </div>
       ) : (
@@ -130,11 +130,11 @@ export function NotesPanel({
                       </Badge>
                       {n.withWhom && (
                         <span className="text-xs text-muted-foreground">
-                          y <span className="text-foreground">{n.withWhom}</span>
+                          con <span className="text-foreground">{n.withWhom}</span>
                         </span>
                       )}
                       <span className="font-mono text-xs text-muted-foreground tabular">
-                        {new Date(n.occurredAt).toLocaleString("zh-CN", {
+                        {new Date(n.occurredAt).toLocaleString("es-AR", {
                           month: "2-digit",
                           day: "2-digit",
                           hour: "2-digit",
@@ -147,9 +147,9 @@ export function NotesPanel({
                     <p className="mt-2 whitespace-pre-wrap text-sm text-foreground/90">
                       {n.content}
                     </p>
-                    {n.tags.length > 0 && (
+                    {(n.tags as string[]).length > 0 && (
                       <div className="mt-2 flex flex-wrap gap-1">
-                        {n.tags.map((t) => (
+                        {(n.tags as string[]).map((t) => (
                           <Badge key={t} variant="secondary" className="text-[10px]">
                             #{t}
                           </Badge>
@@ -212,7 +212,7 @@ function NoteSheet({
     startTransition(async () => {
       try {
         await createNote({ ...values, tags: [] });
-        toast.success("沟通记录已Guardar");
+        toast.success("Comunicación guardada");
         reset({
           matterId,
           channel: "PHONE",
@@ -222,7 +222,7 @@ function NoteSheet({
         });
         onOpenChange(false);
       } catch (err) {
-        toast.error("GuardarError", { description: err instanceof Error ? err.message : "" });
+        toast.error("Error al guardar", { description: err instanceof Error ? err.message : "" });
       }
     });
   }
@@ -231,13 +231,13 @@ function NoteSheet({
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent side="right" className="flex w-full max-w-md flex-col gap-0 p-0">
         <SheetHeader className="border-b border-border bg-background px-6 py-4">
-          <SheetTitle>录入沟通</SheetTitle>
+          <SheetTitle>Nueva comunicación</SheetTitle>
         </SheetHeader>
 
         <form onSubmit={handleSubmit(onSubmit)} className="flex flex-1 flex-col">
           <div className="flex-1 space-y-3 overflow-y-auto px-6 py-5">
             <div className="space-y-2">
-              <Label className="text-xs">沟通渠道</Label>
+              <Label className="text-xs">Canal de comunicación</Label>
               <div className="grid grid-cols-3 gap-1.5">
                 {(["PHONE", "WECHAT", "EMAIL", "MEETING", "COURT", "OTHER"] as const).map(
                   (c) => {
@@ -265,12 +265,12 @@ function NoteSheet({
             </div>
 
             <div className="space-y-1.5">
-              <Label className="text-xs">沟通对象</Label>
-              <Input placeholder="如 张三 / 主审法官" {...register("withWhom")} />
+              <Label className="text-xs">Persona</Label>
+              <Input placeholder="Ej.: Juan Pérez / Juez principal" {...register("withWhom")} />
             </div>
 
             <div className="space-y-1.5">
-              <Label className="text-xs">时间</Label>
+              <Label className="text-xs">Fecha y hora</Label>
               <Input
                 type="datetime-local"
                 {...register("occurredAt", { valueAsDate: true })}
@@ -279,11 +279,11 @@ function NoteSheet({
 
             <div className="space-y-1.5">
               <Label className="text-xs">
-                内容 <span className="text-destructive">*</span>
+                Contenido <span className="text-destructive">*</span>
               </Label>
               <Textarea
                 rows={8}
-                placeholder="简要记录沟通内容、对方意见、约定事ítemsetc."
+                placeholder="Registrá brevemente el contenido, la opinión de la otra parte, los temas acordados, etc."
                 {...register("content")}
               />
               {errors.content && (
@@ -312,5 +312,4 @@ function NoteSheet({
   );
 }
 
-// 兜底 select component (unused but referenced through interface)
 export { Select, SelectContent, SelectItem, SelectTrigger, SelectValue };

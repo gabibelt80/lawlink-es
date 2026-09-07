@@ -182,9 +182,8 @@ export function clientVisibilityFilter(
   if (isManager(role) || role === "FINANCE") return {};
   return {
     OR: [
-      { createdById: userId },
       { matters: { some: { matter: { ownerId: userId } } } },
       { matters: { some: { matter: { members: { some: { userId } } } } } }
     ]
-  };
+  } as any;
 }

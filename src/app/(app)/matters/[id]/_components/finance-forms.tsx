@@ -694,7 +694,7 @@ function InvoiceOcrBlock({
       fd.set("file", file);
       const res = await recognizeInvoiceFromImage(fd);
       if (!res.ok) {
-        toast.error(res.message);
+        toast.error((res as any).message);
         return;
       }
       setPreview(res.data);

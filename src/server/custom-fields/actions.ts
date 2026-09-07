@@ -151,6 +151,7 @@ export async function saveMatterCustomValues(
   await assertMatterWritable(matterId);
   await assertCanLeadMatter(
     session.user.id,
+    session.user.role as any,
     matterId,
     "Solo el responsable/co-responsable puede editar",
   );

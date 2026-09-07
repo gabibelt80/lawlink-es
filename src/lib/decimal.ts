@@ -44,11 +44,11 @@ export function serializeDecimals<T>(value: T): Serialized<T> {
   if (value === null || typeof value !== "object") {
     return value as Serialized<T>;
   }
-  if (value instanceof Date) {
+  if ((value as any) instanceof Date) {
     return value as Serialized<T>;
   }
   if (Array.isArray(value)) {
-    return value.map((item) => serializeDecimals(item)) as Serialized<T>;
+    return (value as any[]).map((item) => serializeDecimals(item)) as Serialized<T>;
   }
   const out: Record<string, unknown> = {};
   for (const [key, item] of Object.entries(value)) {

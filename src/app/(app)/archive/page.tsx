@@ -61,7 +61,7 @@ export default async function ArchivePage({
       )}
 
       {activeTab === "pending" && isAdmin ? (
-        <PendingArchiveTable records={pending} />
+        <PendingArchiveTable records={pending as any} />
       ) : items.length === 0 ? (
         <div className="rounded-lg border border-dashed border-border/60 py-16 text-center text-sm text-muted-foreground">
           No hay casos archivados. Completá el flujo de archivo en la parte superior del detalle del caso («Estado → Archivar») y aparecerán aquí.
@@ -117,9 +117,9 @@ export default async function ArchivePage({
                   </td>
                   <td className="px-3 py-2.5 text-xs">{rec.archivedBy}</td>
                   <td className="px-3 py-2.5">
-                    {rec.missingItems.length > 0 ? (
+                    {(rec.missingItems as string[]).length > 0 ? (
                       <Badge variant="outline" className="border-amber-500/40 text-amber-400 text-[10px]">
-                        {rec.missingItems.length} ítems
+                        {(rec.missingItems as string[]).length} ítems
                       </Badge>
                     ) : (
                       <span className="text-xs text-muted-foreground">Completo</span>

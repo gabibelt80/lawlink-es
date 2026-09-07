@@ -222,12 +222,12 @@ export function PendingArchiveTable({ records }: { records: PendingRecord[] }) {
                 </td>
                 <td className="px-3 py-2.5 text-xs">{rec.archivedBy}</td>
                 <td className="px-3 py-2.5">
-                  {rec.missingItems.length > 0 ? (
+                  {(rec.missingItems as string[]).length > 0 ? (
                     <Badge
                       variant="outline"
                       className="border-amber-500/40 text-amber-500 text-[10px]"
                     >
-                      {rec.missingItems.length} items
+                      {(rec.missingItems as string[]).length} items
                     </Badge>
                   ) : (
                     <span className="text-xs text-muted-foreground">
@@ -319,7 +319,7 @@ function BatchApproveDialog({
   const [note, setNote] = useState("");
   const [isPending, startTransition] = useTransition();
   const [result, setResult] = useState<BatchResult | null>(null);
-  const withMissing = records.filter((r) => r.missingItems.length > 0);
+  const withMissing = records.filter((r) => (r.missingItems as string[]).length > 0);
   const recordById = new Map(records.map((r) => [r.id, r]));
 
   function submit(ids?: string[]) {
@@ -698,11 +698,11 @@ function ApproveDialog({
               {record.matter.internalCode} · {record.matter.title}
             </div>
           </div>
-          {record.missingItems.length > 0 && (
+          {(record.missingItems as string[]).length > 0 && (
             <div className="flex items-start gap-2 rounded-md border border-amber-500/40 bg-amber-500/10 px-3 py-2 text-xs text-amber-700">
               <AlertTriangle className="h-3.5 w-3.5 mt-0.5 shrink-0" />
               <span>
-                Esta solicitud tiene {record.missingItems.length} materiales
+                Esta solicitud tiene {(record.missingItems as string[]).length} materiales
                 faltantes; confirme que lo conoce antes de aprobarla.
               </span>
             </div>
@@ -876,13 +876,13 @@ function DetailDialog({
             </Section>
           )}
           <Section title="Resumen del cierre">{record.summary}</Section>
-          {record.missingItems.length > 0 && (
+          {(record.missingItems as string[]).length > 0 && (
             <div className="rounded-md border border-amber-500/40 bg-amber-500/10 px-3 py-2">
               <div className="text-xs font-medium text-amber-700 mb-1">
-                Materiales faltantes ({record.missingItems.length})
+                Materiales faltantes ({(record.missingItems as string[]).length})
               </div>
               <div className="text-xs text-amber-700/80 break-all">
-                {record.missingItems.join(", ")}
+                {(record.missingItems as string[]).join(", ")}
               </div>
             </div>
           )}

@@ -212,7 +212,7 @@ export default async function MatterDetailPage({ params }: PageProps) {
     name: d.name,
     size: d.size,
     folderId: d.folderId,
-    templateId: d.templateId,
+    templateId: (d as any).templateId,
     createdAt: d.createdAt
   }));
   const preservationCasesForClient = serializeDecimals(preservationCases);
@@ -238,6 +238,7 @@ export default async function MatterDetailPage({ params }: PageProps) {
         folderDocuments={folderDocuments}
         templates={templates.map((t) => ({
           ...t,
+          applicableCategories: (t.applicableCategories as string[]) ?? [],
           variables: Array.isArray(t.variables) ? (t.variables as string[]) : []
         }))}
         colleagues={allColleagues.map((c) => ({ id: c.id, name: c.name }))}

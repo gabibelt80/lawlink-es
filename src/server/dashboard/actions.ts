@@ -62,8 +62,8 @@ export async function getDashboardKpis(): Promise<KpiItem[]> {
   const userId = session.user.id;
   const role = session.user.role;
 
-  const mVis = matterVisibilityFilter(userId, role);
-  const iVis = intakeVisibilityFilter(userId, role);
+  const mVis = matterVisibilityFilter(userId, role as any);
+  const iVis = intakeVisibilityFilter(userId, role as any);
 
   const now = new Date();
   const in7d = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
@@ -141,7 +141,7 @@ export async function getDashboardKpis(): Promise<KpiItem[]> {
 export async function getDashboardRevenueTrend(months = 6) {
   const prisma = await getTenantPrisma();
   const session = await requireSession();
-  const visFilter = matterVisibilityFilter(session.user.id, session.user.role);
+  const visFilter = matterVisibilityFilter(session.user.id, session.user.role as any);
   const now = new Date();
   const start = new Date(now.getFullYear(), now.getMonth() - (months - 1), 1);
 
@@ -189,7 +189,7 @@ export async function getDashboardRevenueTrend(months = 6) {
 export async function getDashboardCategoryDistribution() {
   const prisma = await getTenantPrisma();
   const session = await requireSession();
-  const visFilter = matterVisibilityFilter(session.user.id, session.user.role);
+  const visFilter = matterVisibilityFilter(session.user.id, session.user.role as any)
 
   const groups = await prisma.matter.groupBy({
     by: ["category"],
@@ -220,7 +220,7 @@ export async function getDashboardCategoryDistribution() {
 export async function getDashboardSchedule(): Promise<ScheduleItem[]> {
   const prisma = await getTenantPrisma();
   const session = await requireSession();
-  const visFilter = matterVisibilityFilter(session.user.id, session.user.role);
+  const visFilter = matterVisibilityFilter(session.user.id, session.user.role as any)
 
   const now = new Date();
   const from = new Date(now.getTime() - 2 * 24 * 60 * 60 * 1000);
@@ -345,7 +345,7 @@ export async function getDashboardHeroData(): Promise<HeroData> {
   const session = await requireSession();
   const userId = session.user.id;
   const role = session.user.role;
-  const visFilter = matterVisibilityFilter(userId, role);
+  const visFilter = matterVisibilityFilter(userId, role as any);
 
   const now = new Date();
   const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());

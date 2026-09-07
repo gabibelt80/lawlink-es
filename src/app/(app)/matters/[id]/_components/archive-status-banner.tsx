@@ -78,9 +78,9 @@ export function ArchiveStatusBanner({ record, onReArchive }: Props) {
               : "El administrador no indicó el motivo del rechazo"
             : "La solicitud de archivo fue enviada. Esperá la aprobación del administrador. Cuando la aprobación sea exitosa, el caso pasará a modo de solo lectura."}
         </div>
-        {isRejected && record.missingItems.length > 0 && (
+        {isRejected && (record.missingItems as string[]).length > 0 && (
           <div className="text-[11px] text-muted-foreground">
-            Items faltantes anteriores: {record.missingItems.join("、")}
+            Items faltantes anteriores: {(record.missingItems as string[]).join(", ")}
           </div>
         )}
       </div>

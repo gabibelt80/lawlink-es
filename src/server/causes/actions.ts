@@ -114,7 +114,7 @@ export async function searchCauses(params: {
           OR: [
             { name: { contains: q } },
             { shortName: { contains: q } },
-            { keywords: { array_contains: q } },
+            { keywords: { has: q } },
             { pinyin: { contains: q } }
           ]
         }

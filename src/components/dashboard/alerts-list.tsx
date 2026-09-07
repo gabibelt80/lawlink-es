@@ -39,7 +39,7 @@ async function loadAlerts(userId: string | null, role: string | null): Promise<A
             target: {
               case: {
                 OR: [
-                  { matter: { deletedAt: null, ...matterVisibilityFilter(userId, role) } },
+                  { matter: { deletedAt: null, ...matterVisibilityFilter(userId, role as any) } },
                   { matterId: null, ownerId: userId }
                 ]
               }

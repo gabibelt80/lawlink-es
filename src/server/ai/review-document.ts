@@ -75,7 +75,7 @@ export async function reviewDocument(input: {
   if (doc.matterId) {
     await assertCanAccessMatter(
       session.user.id,
-      session.user.role,
+      session.user.role as any,
       doc.matterId,
     );
   }

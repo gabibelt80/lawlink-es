@@ -33,10 +33,10 @@ export async function listClients(input: Partial<ClientListQuery> = {}) {
   const query = clientListQuerySchema.parse(input);
 
   const where: Prisma.ClientWhereInput = {
-    ...clientVisibilityFilter(session.user.id, session.user.role),
+    ...clientVisibilityFilter(session.user.id, session.user.role as any),
     deletedAt: null,
     ...(query.type ? { type: query.type } : {}),
-    ...(query.tag ? { tags: { array_contains: query.tag } } : {}),
+    ...(query.tag ? { tags: { has: query.tag } } : {}),
     ...(query.search
       ? {
           OR: [
@@ -70,12 +70,12 @@ export async function getClientById(id: string) {
   const prisma = await getTenantPrisma();
   const session = await requireSession();
   // Control de permisos: manager/finance ven todo, los demas necesitan casos asociados
-  if (!isManager(session.user.role) && session.user.role !== "FINANCE") {
+  if (!isManager(session.user.role as any) && session.user.role !== "FINANCE") {
     const accessible = await prisma.client.findFirst({
       where: {
         id,
         deletedAt: null,
-        ...clientVisibilityFilter(session.user.id, session.user.role),
+        ...clientVisibilityFilter(session.user.id, session.user.role as any),
       },
       select: { id: true },
     });
@@ -117,12 +117,12 @@ export async function getClientFinanceSummary(clientId: string) {
   const prisma = await getTenantPrisma();
   const session = await requireSession();
   // Permisos: igual que getClientById
-  if (!isManager(session.user.role) && session.user.role !== "FINANCE") {
+  if (!isManager(session.user.role as any) && session.user.role !== "FINANCE") {
     const accessible = await prisma.client.findFirst({
       where: {
         id: clientId,
         deletedAt: null,
-        ...clientVisibilityFilter(session.user.id, session.user.role),
+        ...clientVisibilityFilter(session.user.id, session.user.role as any),
       },
       select: { id: true },
     });
@@ -228,7 +228,7 @@ export async function createClient(input: ClientCreateInput) {
 export async function updateClient(input: ClientUpdateInput) {
   const prisma = await getTenantPrisma();
   const session = await requireSession();
-  if (!isManager(session.user.role)) {
+  if (!isManager(session.user.role as any)) {
     throw new Error(
       "Solo el Administrador o el Abogado Principal puede editar la informacion del cliente",
     );
@@ -306,14 +306,14 @@ export async function softDeleteClient(id: string) {
 export async function addContact(clientId: string, input: ContactInput) {
   const prisma = await getTenantPrisma();
   const session = await requireSession();
-  if (!isManager(session.user.role)) {
+  if (!isManager(session.user.role as any)) {
     throw new Error(
       "Solo el Administrador o el Abogado Principal puede editar contactos",
     );
   }
   const data = contactInputSchema.parse(input);
   const created = await prisma.contact.create({
-    data: { clientId, ...emptyToNull(data) },
+    data: { clientId, ...emptyToNull(data) } as any,
   });
   await audit({
     userId: session.user.id,
@@ -329,7 +329,7 @@ export async function addContact(clientId: string, input: ContactInput) {
 export async function deleteContact(id: string) {
   const prisma = await getTenantPrisma();
   const session = await requireSession();
-  if (!isManager(session.user.role)) {
+  if (!isManager(session.user.role as any)) {
     throw new Error(
       "Solo el Administrador o el Abogado Principal puede eliminar contactos",
     );
