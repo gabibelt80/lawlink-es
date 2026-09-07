@@ -1,1 +1,0 @@
-﻿const { Client } = require("pg"); (async () => { const c = new Client({host:"localhost",port:5432,user:"postgres",password:"Lisa0579",database:"juridictas"}); await c.connect(); const r = await c.query("SELECT id, \"internalCode\" FROM juridictas_juridictas.\"Matter\" WHERE id = $1", ["cmtpzlkuw004g5x1a2q66rdbl"]); console.log(JSON.stringify(r.rows)); await c.end(); })();
