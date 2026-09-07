@@ -9,6 +9,7 @@ import { requireSession } from "@/lib/auth/session";
 import { audit } from "@/server/audit";
 
 const userRoleSchema = z.enum([
+  "SYSTEM_ADMIN",
   "ADMIN",
   "PRINCIPAL_LAWYER",
   "LAWYER",

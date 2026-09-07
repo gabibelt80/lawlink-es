@@ -289,7 +289,7 @@ export async function listAllDocuments(input: Partial<z.infer<typeof docListQuer
   const session = await requireSession();
   const query = docListQuerySchema.parse(input);
 
-  const visFilter = matterVisibilityFilter(session.user.id, session.user.role);
+  const visFilter = matterVisibilityFilter(session.user.id, session.user.role as any);
   const where: Prisma.DocumentWhereInput = {
     deletedAt: null,
     matter: { deletedAt: null, ...visFilter },
@@ -299,7 +299,7 @@ export async function listAllDocuments(input: Partial<z.infer<typeof docListQuer
       ? {
           OR: [
             { name: { contains: query.search } },
-            { tags: { array_contains: query.search } }
+            { tags: { has: query.search } }
           ]
         }
       : {})

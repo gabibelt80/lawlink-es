@@ -515,7 +515,7 @@ export async function listAllFeeEntries(params: {
 }) {
   const prisma = await getTenantPrisma();
   const session = await requireSession();
-  const visFilter = matterVisibilityFilter(session.user.id, session.user.role);
+const visFilter = matterVisibilityFilter(session.user.id, session.user.role as any);
   const rows = await prisma.feeEntry.findMany({
     where: {
       ...(params.type ? { type: params.type } : {}),
@@ -535,7 +535,7 @@ export async function listAllFeeEntries(params: {
 export async function getMonthlyRevenue(months = 6) {
   const prisma = await getTenantPrisma();
   const session = await requireSession();
-  const visFilter = matterVisibilityFilter(session.user.id, session.user.role);
+const visFilter = matterVisibilityFilter(session.user.id, session.user.role as any);
   const now = new Date();
   const start = new Date(now.getFullYear(), now.getMonth() - (months - 1), 1);
 

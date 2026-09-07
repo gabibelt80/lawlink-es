@@ -44,7 +44,7 @@ function invoiceRequestVisibilityWhere(
       {
         matter: {
           deletedAt: null,
-          ...matterVisibilityFilter(userId, role)
+          ...matterVisibilityFilter(userId, role as any)
         }
       }
     ]

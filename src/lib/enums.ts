@@ -168,6 +168,7 @@ export const intakeStatusLabel: Record<IntakeStatus, string> = {
 };
 
 export const userRoleLabel: Record<UserRole, string> = {
+  SYSTEM_ADMIN: "Super Administrador",
   ADMIN: "Administrador del sistema",
   PRINCIPAL_LAWYER: "Abogado principal",
   LAWYER: "Abogado a cargo",

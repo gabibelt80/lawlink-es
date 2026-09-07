@@ -198,7 +198,7 @@ export async function listIntakes(input: Partial<IntakeListQuery> = {}) {
       : [{ receivedAt: query.sortDir }];
 
   const whereParts: Prisma.IntakeWhereInput[] = [
-    intakeVisibilityFilter(session.user.id, session.user.role),
+    intakeVisibilityFilter(session.user.id, session.user.role as any),
     statusWhere
   ];
   if (query.category) whereParts.push({ category: query.category });

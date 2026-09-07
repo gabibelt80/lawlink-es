@@ -375,7 +375,7 @@ function groupRowsByCategory<T extends { category: MatterCategory }>(
 
 function buildIntakeWhere(params: MattersExportParams, user: ExportUser): Prisma.IntakeWhereInput {
   const parts: Prisma.IntakeWhereInput[] = [
-    intakeVisibilityFilter(user.id, user.role),
+    intakeVisibilityFilter(user.id, user.role as any),
     params.tab === "revision"
       ? { status: { in: ["NEEDS_REVISION"] } }
       : { status: { in: ["INTAKE", "PENDING_CONFIRMATION"] } }
@@ -407,7 +407,7 @@ function buildIntakeWhere(params: MattersExportParams, user: ExportUser): Prisma
 
 function buildMatterWhere(params: MattersExportParams, user: ExportUser): Prisma.MatterWhereInput {
   const parts: Prisma.MatterWhereInput[] = [
-    matterVisibilityFilter(user.id, user.role),
+    matterVisibilityFilter(user.id, user.role as any),
     { deletedAt: null },
     matterStatusWhere(params)
   ];

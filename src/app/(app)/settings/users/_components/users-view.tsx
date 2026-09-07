@@ -49,7 +49,7 @@ import {
 } from "@/server/users/actions";
 import { userRoleLabel } from "@/lib/enums";
 
-const ROLES: UserRole[] = ["ADMIN", "PRINCIPAL_LAWYER", "LAWYER", "ASSISTANT", "FINANCE"];
+const ROLES: UserRole[] = ["SYSTEM_ADMIN", "ADMIN", "PRINCIPAL_LAWYER", "LAWYER", "ASSISTANT", "FINANCE"];
 
 const createSchema = z.object({
   name: z.string().min(1).max(40),

@@ -47,7 +47,7 @@ export async function listMatters(input: Partial<MatterListQuery> = {}) {
   const query = matterListQuerySchema.parse(input);
 
   const whereParts: Prisma.MatterWhereInput[] = [
-    matterVisibilityFilter(session.user.id, session.user.role),
+    matterVisibilityFilter(session.user.id, session.user.role as any),
     { deletedAt: null }
   ];
   if (query.category) whereParts.push({ category: query.category });
