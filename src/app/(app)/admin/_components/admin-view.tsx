@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
+import { cn } from "@/lib/utils";
 import {
   Building2,
   Plus,
@@ -14,6 +15,9 @@ import {
   Users,
   Calendar,
   Package,
+  PauseCircle,
+  AlertTriangle,
+  Undo2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -38,9 +42,12 @@ import { PLANS, getPlan } from "@/lib/plans";
 import { getPlanModules, MODULES } from "@/lib/modules";
 import {
   createFirmAction,
-  deleteFirmAction,
   toggleFirmActiveAction,
   updateFirmPlanAction,
+  suspendFirmAction,
+  scheduleFirmDeletionAction,
+  cancelFirmDeletionAction,
+  hardDeleteFirmAction,
 } from "@/server/tenant/admin-actions";
 
 type FirmRow = {
@@ -54,6 +61,9 @@ type FirmRow = {
   maxUsers: number;
   maxBranch: number;
   createdAt: Date;
+  suspendedAt: Date | null;
+  suspensionReason: string | null;
+  deletedAtScheduled: Date | null;
   _count: { users: number };
 };
 
@@ -99,12 +109,56 @@ export function AdminView({ firms, customModules }: { firms: FirmRow[]; customMo
     });
   }
 
-  function handleDelete(firmId: string, firmName: string) {
-    if (!confirm(`¿Eliminar el estudio «${firmName}»? Esta accion es irreversible.`)) return;
+  function handleSuspend(firmId: string, firmName: string) {
+    const reason = prompt(`¿Motivo de la suspensión de "${firmName}"?`);
     startTransition(async () => {
       try {
-        await deleteFirmAction({ firmId });
-        toast.success("Estudio eliminado");
+        await suspendFirmAction({ firmId, reason: reason ?? undefined });
+        toast.success("Estudio suspendido");
+        router.refresh();
+      } catch (err) {
+        toast.error("Error al suspender", {
+          description: err instanceof Error ? err.message : "",
+        });
+      }
+    });
+  }
+
+  function handleScheduleDelete(firmId: string, firmName: string) {
+    if (!confirm(`¿Programar eliminación de "${firmName}"?\n\nLos datos se conservarán 30 días antes de eliminarse permanentemente.`)) return;
+    startTransition(async () => {
+      try {
+        await scheduleFirmDeletionAction({ firmId });
+        toast.success("Eliminación programada (30 días)");
+        router.refresh();
+      } catch (err) {
+        toast.error("Error al programar eliminación", {
+          description: err instanceof Error ? err.message : "",
+        });
+      }
+    });
+  }
+
+  function handleCancelDelete(firmId: string) {
+    startTransition(async () => {
+      try {
+        await cancelFirmDeletionAction({ firmId });
+        toast.success("Eliminación cancelada");
+        router.refresh();
+      } catch (err) {
+        toast.error("Error al cancelar eliminación", {
+          description: err instanceof Error ? err.message : "",
+        });
+      }
+    });
+  }
+
+  function handleHardDelete(firmId: string, firmName: string) {
+    if (!confirm(`⚠️ ADVERTENCIA: Vas a eliminar PERMANENTEMENTE "${firmName}" y TODOS sus datos.\n\nEsta acción es IRREVERSIBLE. ¿Continuar?`)) return;
+    startTransition(async () => {
+      try {
+        await hardDeleteFirmAction({ firmId });
+        toast.success("Estudio eliminado permanentemente");
         router.refresh();
       } catch (err) {
         toast.error("Error al eliminar", {
@@ -159,15 +213,9 @@ export function AdminView({ firms, customModules }: { firms: FirmRow[]; customMo
 
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
         <StatCard label="Total estudios" value={firms.length} />
-        <StatCard label="Estudios activos" value={firms.filter((f) => f.active).length} />
-        <StatCard
-          label="Usuarios totales"
-          value={firms.reduce((acc, f) => acc + f._count.users, 0)}
-        />
-        <StatCard
-          label="Plan trial"
-          value={firms.filter((f) => f.plan === "trial").length}
-        />
+        <StatCard label="Estudios activos" value={firms.filter((f) => f.active && !f.deletedAtScheduled).length} />
+        <StatCard label="Suspendidos" value={firms.filter((f) => f.suspendedAt && !f.deletedAtScheduled).length} />
+        <StatCard label="Con eliminación programada" value={firms.filter((f) => f.deletedAtScheduled).length} />
       </div>
 
       <div className="rounded-xl border border-border bg-card overflow-hidden">
@@ -178,8 +226,6 @@ export function AdminView({ firms, customModules }: { firms: FirmRow[]; customMo
               <th className="px-4 py-2 text-left font-normal">Plan</th>
               <th className="px-4 py-2 text-left font-normal">Módulos</th>
               <th className="px-4 py-2 text-left font-normal">Usuarios</th>
-              <th className="px-4 py-2 text-left font-normal">Límite</th>
-              <th className="px-4 py-2 text-left font-normal">Vence</th>
               <th className="px-4 py-2 text-left font-normal">Estado</th>
               <th className="px-4 py-2 text-right font-normal">Acciones</th>
             </tr>
@@ -187,19 +233,40 @@ export function AdminView({ firms, customModules }: { firms: FirmRow[]; customMo
           <tbody className="divide-y divide-border">
             {firms.map((f) => {
               const modules = customModules[f.plan] ?? getPlanModules(f.plan);
+              const isScheduled = !!f.deletedAtScheduled;
+              const isSuspended = !!f.suspendedAt && !f.deletedAtScheduled;
               return (
-                <tr key={f.id} className="hover:bg-muted/20 transition-colors">
+                <tr
+                  key={f.id}
+                  className={cn(
+                    "hover:bg-muted/20 transition-colors",
+                    isScheduled && "opacity-50",
+                    isSuspended && "bg-amber-500/5"
+                  )}
+                >
                   <td className="px-4 py-2.5">
                     <div className="font-medium">{f.name}</div>
                     <div className="font-mono text-[10px] text-muted-foreground">
                       {f.slug}
                     </div>
                     <div className="text-[10px] text-muted-foreground">{f.email}</div>
+                    {isSuspended && f.suspensionReason && (
+                      <div className="mt-1 text-[10px] text-amber-600">
+                        {f.suspensionReason}
+                      </div>
+                    )}
+                    {isScheduled && (
+                      <div className="mt-1 flex items-center gap-1 text-[10px] text-destructive">
+                        <AlertTriangle className="h-3 w-3" />
+                        Se eliminará el {new Date(f.deletedAtScheduled!).toLocaleDateString("es-AR")}
+                      </div>
+                    )}
                   </td>
                   <td className="px-4 py-2.5">
                     <Select
                       value={f.plan}
                       onValueChange={(v) => handlePlanChange(f.id, v)}
+                      disabled={isScheduled}
                     >
                       <SelectTrigger className="h-8 w-36 bg-background text-xs">
                         <SelectValue />
@@ -218,18 +285,6 @@ export function AdminView({ firms, customModules }: { firms: FirmRow[]; customMo
                       <Package className="h-3 w-3 text-muted-foreground" />
                       <span className="text-xs">{modules.length} módulos</span>
                     </div>
-                    <div className="mt-1 flex flex-wrap gap-0.5">
-                      {modules.slice(0, 3).map((m) => (
-                        <span key={m} className="rounded bg-primary/10 px-1 py-0.5 text-[9px] text-primary">
-                          {MODULES[m].label.split(" ")[0]}
-                        </span>
-                      ))}
-                      {modules.length > 3 && (
-                        <span className="text-[9px] text-muted-foreground">
-                          +{modules.length - 3}
-                        </span>
-                      )}
-                    </div>
                   </td>
                   <td className="px-4 py-2.5">
                     <span className="inline-flex items-center gap-1 text-xs">
@@ -237,57 +292,77 @@ export function AdminView({ firms, customModules }: { firms: FirmRow[]; customMo
                       {f._count.users}
                     </span>
                   </td>
-                  <td className="px-4 py-2.5 text-xs">
-                    <span className="font-mono">{f.maxUsers} usuarios</span>
-                    <br />
-                    <span className="text-muted-foreground">{f.maxBranch} sucursales</span>
-                  </td>
-                  <td className="px-4 py-2.5 text-xs">
-                    {f.plan === "trial" && f.planExpiresAt ? (
-                      <span className="inline-flex items-center gap-1 text-amber-600">
-                        <Calendar className="h-3 w-3" />
-                        {new Date(f.planExpiresAt).toLocaleDateString("es-AR")}
-                      </span>
+                  <td className="px-4 py-2.5">
+                    {isScheduled ? (
+                      <Badge variant="destructive" className="text-[10px] gap-1">
+                        <AlertTriangle className="h-3 w-3" />
+                        Eliminación programada
+                      </Badge>
+                    ) : isSuspended ? (
+                      <Badge variant="outline" className="text-[10px] gap-1 border-amber-500/30 text-amber-700">
+                        <PauseCircle className="h-3 w-3" />
+                        Suspendido
+                      </Badge>
+                    ) : f.active ? (
+                      <Badge variant="green" className="text-[10px] gap-1">
+                        <CheckCircle2 className="h-3 w-3" />
+                        Activo
+                      </Badge>
                     ) : (
-                      <span className="text-muted-foreground">—</span>
+                      <Badge variant="destructive" className="text-[10px] gap-1">
+                        <XCircle className="h-3 w-3" />
+                        Inactivo
+                      </Badge>
                     )}
                   </td>
                   <td className="px-4 py-2.5">
-                    <button
-                      onClick={() => handleToggle(f.id)}
-                      className="inline-flex items-center gap-1"
-                    >
-                      {f.active ? (
-                        <Badge variant="green" className="text-[10px] gap-1">
-                          <CheckCircle2 className="h-3 w-3" />
-                          Activo
-                        </Badge>
-                      ) : (
-                        <Badge variant="destructive" className="text-[10px] gap-1">
-                          <XCircle className="h-3 w-3" />
-                          Inactivo
-                        </Badge>
-                      )}
-                    </button>
-                  </td>
-                  <td className="px-4 py-2.5">
                     <div className="flex justify-end gap-1">
-                      <a
-                        href={`http://juridictas.ar/${f.slug}`}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="rounded-md p-1.5 text-muted-foreground hover:bg-popover hover:text-primary"
-                        title="Abrir estudio"
-                      >
-                        <ExternalLink className="h-3.5 w-3.5" />
-                      </a>
-                      <button
-                        onClick={() => handleDelete(f.id, f.name)}
-                        className="rounded-md p-1.5 text-muted-foreground hover:bg-popover hover:text-destructive"
-                        title="Eliminar estudio"
-                      >
-                        <Trash2 className="h-3.5 w-3.5" />
-                      </button>
+                      {isScheduled ? (
+                        <>
+                          <button
+                            onClick={() => handleCancelDelete(f.id)}
+                            className="rounded-md p-1.5 text-emerald-600 hover:bg-popover"
+                            title="Cancelar eliminación"
+                          >
+                            <Undo2 className="h-3.5 w-3.5" />
+                          </button>
+                          <button
+                            onClick={() => handleHardDelete(f.id, f.name)}
+                            className="rounded-md p-1.5 text-destructive hover:bg-popover"
+                            title="Eliminar ahora permanentemente"
+                          >
+                            <Trash2 className="h-3.5 w-3.5" />
+                          </button>
+                        </>
+                      ) : (
+                        <>
+                          <a
+                            href={`http://juridictas.ar/${f.slug}`}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="rounded-md p-1.5 text-muted-foreground hover:bg-popover hover:text-primary"
+                            title="Abrir estudio"
+                          >
+                            <ExternalLink className="h-3.5 w-3.5" />
+                          </a>
+                          {!isSuspended && f.active && (
+                            <button
+                              onClick={() => handleSuspend(f.id, f.name)}
+                              className="rounded-md p-1.5 text-amber-600 hover:bg-popover"
+                              title="Suspender estudio"
+                            >
+                              <PauseCircle className="h-3.5 w-3.5" />
+                            </button>
+                          )}
+                          <button
+                            onClick={() => handleScheduleDelete(f.id, f.name)}
+                            className="rounded-md p-1.5 text-destructive hover:bg-popover"
+                            title="Programar eliminación"
+                          >
+                            <Trash2 className="h-3.5 w-3.5" />
+                          </button>
+                        </>
+                      )}
                     </div>
                   </td>
                 </tr>

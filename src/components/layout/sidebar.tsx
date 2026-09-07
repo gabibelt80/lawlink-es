@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useSession } from "next-auth/react";
-import { Scale, LayoutDashboard } from "lucide-react";
+import { Scale, LayoutDashboard, Package, Activity } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { primaryNav, secondaryNav, filterNavByModules, type NavItem } from "./nav-config";
 import type { ModuleKey } from "@/lib/modules";
@@ -33,17 +33,22 @@ export function NavContent({ firm }: { firm: FirmBrand }) {
   const [enabledModules, setEnabledModules] = useState<ModuleKey[]>([]);
 
   useEffect(() => {
+    if (isSystemAdmin) return;
     import("@/server/settings/modules-actions")
-      .then((m) => m.getEnabledModules())
+      .then((m) => m.getModulesForCurrentFirm())
       .then(setEnabledModules)
       .catch(() => setEnabledModules([]));
-  }, []);
+  }, [isSystemAdmin]);
 
   const filteredPrimary = filterNavByModules(primaryNav, enabledModules);
   const filteredSecondary = filterNavByModules(secondaryNav, enabledModules);
 
   const navItems = isSystemAdmin
-    ? [...filteredPrimary, { label: "Administración", href: "/admin", icon: LayoutDashboard }]
+    ? [
+        { label: "Panel de administración", href: "/admin", icon: LayoutDashboard },
+        { label: "Planes y precios", href: "/admin/plans", icon: Package },
+        { label: "Analíticas", href: "/admin/analytics", icon: Activity },
+      ]
     : filteredPrimary;
 
   return (
@@ -92,17 +97,19 @@ export function NavContent({ firm }: { firm: FirmBrand }) {
         </div>
       </nav>
 
-      <div className="border-t border-border px-2 py-2">
-        <div className="space-y-0.5">
-          {filteredSecondary.map((item) => (
-            <NavLink
-              key={item.href}
-              item={item}
-              active={isActive(pathname, item.href)}
-            />
-          ))}
+      {!isSystemAdmin && (
+        <div className="border-t border-border px-2 py-2">
+          <div className="space-y-0.5">
+            {filteredSecondary.map((item) => (
+              <NavLink
+                key={item.href}
+                item={item}
+                active={isActive(pathname, item.href)}
+              />
+            ))}
+          </div>
         </div>
-      </div>
+      )}
     </>
   );
 }

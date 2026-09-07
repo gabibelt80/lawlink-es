@@ -1846,7 +1846,10 @@ model Firm {
   maxBranch   Int      @default(1)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
-
+  suspendedAt    DateTime?
+  suspensionReason String?
+  deletedAt      DateTime?
+  deletedAtScheduled DateTime?
   users FirmUser[]
 }
 

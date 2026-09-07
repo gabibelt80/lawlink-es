@@ -110,4 +110,77 @@ export async function updateFirmPlanAction({ firmId, plan }: { firmId: string; p
   revalidatePath("/admin");
   return { ok: true };
 }
+export async function suspendFirmAction({ firmId, reason }: { firmId: string; reason?: string }) {
+  const session = await requireSession();
+  if (session.user.role !== "SYSTEM_ADMIN") {
+    throw new Error("Solo el administrador del sistema puede suspender estudios");
+  }
 
+  await prisma.firm.update({
+    where: { id: firmId },
+    data: {
+      active: false,
+      suspendedAt: new Date(),
+      suspensionReason: reason ?? null,
+    },
+  });
+
+  revalidatePath("/admin");
+  return { ok: true };
+}
+
+export async function scheduleFirmDeletionAction({ firmId }: { firmId: string }) {
+  const session = await requireSession();
+  if (session.user.role !== "SYSTEM_ADMIN") {
+    throw new Error("Solo el administrador del sistema puede eliminar estudios");
+  }
+
+  await prisma.firm.update({
+    where: { id: firmId },
+    data: {
+      deletedAtScheduled: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 días
+      active: false,
+    },
+  });
+
+  revalidatePath("/admin");
+  return { ok: true };
+}
+
+export async function cancelFirmDeletionAction({ firmId }: { firmId: string }) {
+  const session = await requireSession();
+  if (session.user.role !== "SYSTEM_ADMIN") {
+    throw new Error("Solo el administrador del sistema puede cancelar eliminación");
+  }
+
+  await prisma.firm.update({
+    where: { id: firmId },
+    data: {
+      deletedAtScheduled: null,
+      active: true,
+    },
+  });
+
+  revalidatePath("/admin");
+  return { ok: true };
+}
+
+export async function hardDeleteFirmAction({ firmId }: { firmId: string }) {
+  const session = await requireSession();
+  if (session.user.role !== "SYSTEM_ADMIN") {
+    throw new Error("Solo el administrador del sistema puede eliminar permanentemente");
+  }
+
+  const firm = await prisma.firm.findUnique({ where: { id: firmId } });
+  if (!firm) throw new Error("Estudio no encontrado");
+
+  // Eliminar schema del tenant
+  const { dropTenantSchema } = await import("@/lib/tenant");
+  await dropTenantSchema(firm.slug);
+
+  // Eliminar de la base central
+  await prisma.firm.delete({ where: { id: firmId } });
+
+  revalidatePath("/admin");
+  return { ok: true };
+}
