@@ -40,7 +40,7 @@ export async function listDeadlineRulesForProcedure(input: { procedureId: string
         {
           OR: [
             { applicableCategories: { equals: "[]" } },
-            { applicableCategories: { has: procedure.matter.category } }
+            { applicableCategories: { equals: procedure.matter.category } }
           ]
         }
       ]

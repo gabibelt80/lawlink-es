@@ -31,7 +31,7 @@ export async function listTemplates(input?: z.input<typeof templateListFilterSch
     // applicableCategories vacio = aplica a todos
     where.OR = [
       { applicableCategories: { equals: [] } },
-      { applicableCategories: { has: filter.matterCategory } }
+      { applicableCategories: { equals: filter.matterCategory } }
     ];
   }
 
