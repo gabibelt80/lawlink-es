@@ -84,7 +84,7 @@ async function assertCanAccessExpressRecord(userId: string, id: string) {
   });
   if (!record) throw new Error("El registro de envío no existe");
   if (record.matterId) {
-    await assertCanAssociateMatter(userId, record.matterId);
+    await assertCanAssociateMatter(userId, "ADMIN" as any, record.matterId);
     return record;
   }
   if (record.createdById !== userId) throw new Error("Sin permiso para acceder a este envío");
