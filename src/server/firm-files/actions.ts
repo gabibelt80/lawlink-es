@@ -1,4 +1,4 @@
-﻿"use server";
+"use server";
 
 /**
  * v0.22: Archivos del estudio (FirmFile)
@@ -52,7 +52,7 @@ function parseCategory(raw: unknown): FirmFileCategory {
 function parseTags(raw: unknown): string[] {
   if (typeof raw !== "string" || !raw.trim()) return [];
   return raw
-    .split(/[,，、\s]+/)
+    .split(/[,,?\s]+/)
     .map((s) => s.trim())
     .filter(Boolean)
     .slice(0, 20);
@@ -77,7 +77,7 @@ export async function listFirmFiles(input: {
     where.OR = [
       { name: { contains: q } },
       { description: { contains: q } },
-      { tags: { array_contains: q } }
+      { tags: { has: q } }
     ];
   }
 

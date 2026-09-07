@@ -1,4 +1,4 @@
-﻿"use server";
+"use server";
 
 import { getTenantPrisma } from "@/lib/tenant-prisma";
 import { requireSession } from "@/lib/auth/session";
@@ -79,7 +79,7 @@ export async function globalSearch(query: string): Promise<GlobalSearchResult> {
         matter: { deletedAt: null, ...mVis },
         OR: [
           { name: { contains: q } },
-          { tags: { array_contains: q } },
+          { tags: { has: q } },
         ],
       },
       take: limit,

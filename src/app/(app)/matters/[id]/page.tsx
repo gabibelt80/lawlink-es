@@ -94,7 +94,7 @@ export default async function MatterDetailPage({ params }: PageProps) {
         enabled: true,
         OR: [
           { applicableCategories: { equals: [] } },
-          { applicableCategories: { array_contains: matter.category } }
+          { applicableCategories: { equals: matter.category as any } }
         ]
       },
       orderBy: [{ category: "asc" }, { name: "asc" }],

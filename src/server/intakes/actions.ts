@@ -1,4 +1,4 @@
-﻿"use server";
+"use server";
 
 import { revalidatePath } from "next/cache";
 import { Prisma, type ClientType, type LitigationStanding, type PartyType } from "@prisma/client";
@@ -34,7 +34,7 @@ function requireApprover(role: string) {
   }
 }
 
-/** Genera titulo automÃ¡tico segÃºn {cliente} y {contraparte} {causa} */
+/** Genera titulo automático según {cliente} y {contraparte} {causa} */
 function generateTitle(
   clientName: string | null,
   opposingNames: string[],
@@ -167,7 +167,7 @@ function assertConflictReviewAllowsConversion(intake: IntakeConflictGateInput) {
     throw new Error("La conclusion de la busqueda de conflictos es informacioninsuficiente, no se puede convertir a caso formal");
   }
   if (latestCheck.conclusion === "SAME_SUBJECT") {
-    throw new Error("Se confirmÃ³ que existe conflicto de intereses, no se puede convertir directamente a caso formal");
+    throw new Error("Se confirmó que existe conflicto de intereses, no se puede convertir directamente a caso formal");
   }
   if (latestCheck.conclusion !== "DIFFERENT") {
     throw new Error("conclusion de conflicto anomala, ejecute nuevamente la busqueda");
@@ -257,7 +257,7 @@ export async function getIntakeById(id: string) {
         OR: [
           { createdById: session.user.id },
           { ownerUserId: session.user.id },
-          { coUserIds: { array_contains: session.user.id } }
+          { coUserIds: { has: session.user.id } }
         ]
       },
       select: { id: true }
@@ -510,7 +510,7 @@ export async function markIntakeNeedsRevision(input: { id: string; reason: strin
   const prisma = await getTenantPrisma();
   const session = await requireSession();
   requireApprover(session.user.role);
-  if (!input.reason.trim()) throw new Error("Complete el motivo de correcciÃ³n");
+  if (!input.reason.trim()) throw new Error("Complete el motivo de corrección");
 
   await prisma.intake.update({
     where: { id: input.id },
@@ -685,7 +685,7 @@ export async function convertIntakeToMatter(intakeId: string) {
           contactName: intake.contactName,
           enterpriseSocialCode: intake.client.type === "INDIVIDUAL" ? null : intake.client.idNumber,
           enterpriseName: intake.client.type === "INDIVIDUAL" ? null : intake.client.name,
-          notes: "Incorporado automÃ¡ticamente desde la admision"
+          notes: "Incorporado automáticamente desde la admision"
         },
         select: { id: true }
       });

@@ -1,4 +1,4 @@
-﻿"use server";
+"use server";
 
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
@@ -31,7 +31,7 @@ export async function listTemplates(input?: z.input<typeof templateListFilterSch
     // applicableCategories vacio = aplica a todos
     where.OR = [
       { applicableCategories: { equals: [] } },
-      { applicableCategories: { array_contains: filter.matterCategory } }
+      { applicableCategories: { has: filter.matterCategory } }
     ];
   }
 

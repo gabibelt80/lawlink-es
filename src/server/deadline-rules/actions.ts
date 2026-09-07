@@ -1,4 +1,4 @@
-﻿"use server";
+"use server";
 
 import { z } from "zod";
 import { getTenantPrisma } from "@/lib/tenant-prisma";
@@ -34,13 +34,13 @@ export async function listDeadlineRulesForProcedure(input: { procedureId: string
         {
           OR: [
             { applicableProcedures: { equals: "[]" } },
-            { applicableProcedures: { array_contains: procedure.type } }
+            { applicableProcedures: { equals: procedure.type as any } }
           ]
         },
         {
           OR: [
             { applicableCategories: { equals: "[]" } },
-            { applicableCategories: { array_contains: procedure.matter.category } }
+            { applicableCategories: { has: procedure.matter.category } }
           ]
         }
       ]
