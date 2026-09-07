@@ -5,11 +5,10 @@ import { AdminView } from "./_components/admin-view";
 
 export default async function AdminPage() {
   const session = await getSession();
-  if (!session?.user) redirect("/login");
+  if (!session?.user?.email) redirect("/login");
 
   const firmUser = await prisma.firmUser.findUnique({
     where: { email: session.user.email },
-    include: { firm: true },
   });
 
   if (!firmUser || firmUser.firmId !== null) {
@@ -25,5 +24,11 @@ export default async function AdminPage() {
     },
   });
 
-  return <AdminView firms={firms} />;
+  // Leer módulos personalizados por plan
+  const planModulesRow = await prisma.systemSetting.findUnique({
+    where: { key: "planModules" },
+  });
+  const customModules = (planModulesRow?.value as Record<string, string[]>) ?? {};
+
+  return <AdminView firms={firms} customModules={customModules} />;
 }

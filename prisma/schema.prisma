@@ -1865,3 +1865,19 @@ model FirmUser {
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 }
+model Jurisprudence {
+  id          String    @id @default(cuid())
+  title       String
+  summary     String?
+  fullText    String    @db.Text
+  court       String?
+  jurisdiction String?
+  date        DateTime?
+  source      String?
+  category    String?
+  tags        Json      @default("[]")
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  createdById String?
+  matterId    String?
+}

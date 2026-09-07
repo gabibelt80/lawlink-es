@@ -11,6 +11,7 @@ import {
   BellRing,
   Building2,
   FileUp,
+  Boxes,
 } from "lucide-react";
 import { getSession } from "@/lib/auth/session";
 
@@ -44,16 +45,16 @@ export default async function SettingsLayout({
             {isManager && (
               <>
                 <SettingsNavLink
-                  href="/settings/reminders"
-                  icon={<BellRing className="h-3.5 w-3.5" />}
+                  href="/settings/express"
+                  icon={<Package className="h-3.5 w-3.5" />}
                 >
-                  Mantenimiento de recordatorios
+                  Integración de envíos
                 </SettingsNavLink>
                 <SettingsNavLink
-                  href="/settings/import"
-                  icon={<FileUp className="h-3.5 w-3.5" />}
+                  href="/settings/modules"
+                  icon={<Boxes className="h-3.5 w-3.5" />}
                 >
-                  Importación masiva
+                  Módulos del sistema
                 </SettingsNavLink>
               </>
             )}
@@ -93,6 +94,12 @@ export default async function SettingsLayout({
                   href="/settings/express"
                   icon={<Package className="h-3.5 w-3.5" />}
                 >
+                <SettingsNavLink
+                  href="/settings/modules"
+                  icon={<Boxes className="h-3.5 w-3.5" />}
+                >
+                  Módulos del sistema
+                </SettingsNavLink>
                   Integración de envíos
                 </SettingsNavLink>
                 <SettingsNavLink

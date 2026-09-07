@@ -1,11 +1,13 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { Scale, LayoutDashboard } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { primaryNav, secondaryNav, type NavItem } from "./nav-config";
+import { primaryNav, secondaryNav, filterNavByModules, type NavItem } from "./nav-config";
+import type { ModuleKey } from "@/lib/modules";
 
 /** v0.42 ítem 1: Marca de la barra lateral (configurable en Configuración → Información del estudio) */
 export type FirmBrand = {
@@ -28,10 +30,21 @@ export function NavContent({ firm }: { firm: FirmBrand }) {
   const pathname = usePathname();
   const { data: session } = useSession();
   const isSystemAdmin = session?.user?.role === "SYSTEM_ADMIN";
+  const [enabledModules, setEnabledModules] = useState<ModuleKey[]>([]);
+
+  useEffect(() => {
+    import("@/server/settings/modules-actions")
+      .then((m) => m.getEnabledModules())
+      .then(setEnabledModules)
+      .catch(() => setEnabledModules([]));
+  }, []);
+
+  const filteredPrimary = filterNavByModules(primaryNav, enabledModules);
+  const filteredSecondary = filterNavByModules(secondaryNav, enabledModules);
 
   const navItems = isSystemAdmin
-    ? [...primaryNav, { label: "Administración", href: "/admin", icon: LayoutDashboard }]
-    : primaryNav;
+    ? [...filteredPrimary, { label: "Administración", href: "/admin", icon: LayoutDashboard }]
+    : filteredPrimary;
 
   return (
     <>
@@ -81,7 +94,7 @@ export function NavContent({ firm }: { firm: FirmBrand }) {
 
       <div className="border-t border-border px-2 py-2">
         <div className="space-y-0.5">
-          {secondaryNav.map((item) => (
+          {filteredSecondary.map((item) => (
             <NavLink
               key={item.href}
               item={item}

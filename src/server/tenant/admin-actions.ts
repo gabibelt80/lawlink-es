@@ -105,7 +105,9 @@ export async function deleteFirmAction({ firmId }: { firmId: string }) {
 }
 export async function updateFirmPlanAction({ firmId, plan }: { firmId: string; plan: string }) {
   const { activatePlan } = await import("@/lib/plan-limits");
+  const { revalidatePath } = await import("next/cache");
   await activatePlan(firmId, plan);
+  revalidatePath("/admin");
   return { ok: true };
 }
 

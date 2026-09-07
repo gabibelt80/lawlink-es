@@ -13,6 +13,7 @@ import {
   ExternalLink,
   Users,
   Calendar,
+  Package,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -34,6 +35,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { PLANS, getPlan } from "@/lib/plans";
+import { getPlanModules, MODULES } from "@/lib/modules";
 import {
   createFirmAction,
   deleteFirmAction,
@@ -55,7 +57,7 @@ type FirmRow = {
   _count: { users: number };
 };
 
-export function AdminView({ firms }: { firms: FirmRow[] }) {
+export function AdminView({ firms, customModules }: { firms: FirmRow[]; customModules: Record<string, string[]> }) {
   const router = useRouter();
   const [createOpen, setCreateOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
@@ -138,10 +140,21 @@ export function AdminView({ firms }: { firms: FirmRow[] }) {
             Gestioná todos los estudios jurídicos registrados en Juridictas.ar
           </p>
         </div>
-        <Button size="sm" onClick={() => setCreateOpen(true)} className="gap-1.5">
-          <Plus className="h-3.5 w-3.5" />
-          Nuevo estudio
-        </Button>
+        <div className="flex gap-2">
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => router.push("/admin/plans")}
+            className="gap-1.5"
+          >
+            <Package className="h-3.5 w-3.5" />
+            Configurar planes
+          </Button>
+          <Button size="sm" onClick={() => setCreateOpen(true)} className="gap-1.5">
+            <Plus className="h-3.5 w-3.5" />
+            Nuevo estudio
+          </Button>
+        </div>
       </header>
 
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
@@ -163,6 +176,7 @@ export function AdminView({ firms }: { firms: FirmRow[] }) {
             <tr>
               <th className="px-4 py-2 text-left font-normal">Estudio</th>
               <th className="px-4 py-2 text-left font-normal">Plan</th>
+              <th className="px-4 py-2 text-left font-normal">Módulos</th>
               <th className="px-4 py-2 text-left font-normal">Usuarios</th>
               <th className="px-4 py-2 text-left font-normal">Límite</th>
               <th className="px-4 py-2 text-left font-normal">Vence</th>
@@ -172,7 +186,7 @@ export function AdminView({ firms }: { firms: FirmRow[] }) {
           </thead>
           <tbody className="divide-y divide-border">
             {firms.map((f) => {
-              const plan = getPlan(f.plan);
+              const modules = customModules[f.plan] ?? getPlanModules(f.plan);
               return (
                 <tr key={f.id} className="hover:bg-muted/20 transition-colors">
                   <td className="px-4 py-2.5">
@@ -198,6 +212,24 @@ export function AdminView({ firms }: { firms: FirmRow[] }) {
                         ))}
                       </SelectContent>
                     </Select>
+                  </td>
+                  <td className="px-4 py-2.5">
+                    <div className="flex items-center gap-1.5">
+                      <Package className="h-3 w-3 text-muted-foreground" />
+                      <span className="text-xs">{modules.length} módulos</span>
+                    </div>
+                    <div className="mt-1 flex flex-wrap gap-0.5">
+                      {modules.slice(0, 3).map((m) => (
+                        <span key={m} className="rounded bg-primary/10 px-1 py-0.5 text-[9px] text-primary">
+                          {MODULES[m].label.split(" ")[0]}
+                        </span>
+                      ))}
+                      {modules.length > 3 && (
+                        <span className="text-[9px] text-muted-foreground">
+                          +{modules.length - 3}
+                        </span>
+                      )}
+                    </div>
                   </td>
                   <td className="px-4 py-2.5">
                     <span className="inline-flex items-center gap-1 text-xs">
@@ -226,7 +258,7 @@ export function AdminView({ firms }: { firms: FirmRow[] }) {
                       className="inline-flex items-center gap-1"
                     >
                       {f.active ? (
-                        <Badge variant="success" className="text-[10px] gap-1">
+                        <Badge variant="green" className="text-[10px] gap-1">
                           <CheckCircle2 className="h-3 w-3" />
                           Activo
                         </Badge>
