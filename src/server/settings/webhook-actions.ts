@@ -16,13 +16,13 @@ const saveSchema = z.object({
     .string()
     .trim()
     .max(500)
-    .refine((v) => v === "" || v.startsWith("https://"), "ä»…æ”¯æŒ HTTPS çš„æœºå™¨äººåœ°å€")
+    .refine((v) => v === "" || v.startsWith("https://"), "Solo se admite HTTPS para la URL del bot")
 });
 
 async function requireManager() {
   const session = await requireSession();
   if (session.user.role !== "ADMIN" && session.user.role !== "PRINCIPAL_LAWYER") {
-    throw new Error("ä»…Administrarå‘˜ / ä¸»ä»»Abogadoå¯é…ç½®RecordatoriosæŽ¨é€");
+    throw new Error("Solo el Administrador / Abogado Principal puede configurar el envío de recordatorios");
   }
   return session;
 }
@@ -35,7 +35,7 @@ export async function getWebhookSettingsAction() {
 export async function saveWebhookSettingsAction(input: z.infer<typeof saveSchema>) {
   const session = await requireManager();
   const data = saveSchema.parse(input);
-  if (data.enabled && !data.url) throw new Error("å¯ç”¨æŽ¨é€éœ€è¦å¡«å†™æœºå™¨äººåœ°å€");
+  if (data.enabled && !data.url) throw new Error("Para activar el envío necesitás completar la URL del bot");
 
   await saveWebhookSettings({ enabled: data.enabled, url: data.url });
   await audit({
@@ -52,11 +52,9 @@ export async function saveWebhookSettingsAction(input: z.infer<typeof saveSchema
 export async function sendTestWebhookAction() {
   const session = await requireManager();
   const result = await sendWebhookText(
-    `LawLink æµ‹è¯•æ¶ˆæ¯ï¼šRecordatoriosæŽ¨é€é…ç½®æˆåŠŸï¼ˆIniciado porï¼š${session.user.name ?? session.user.email}ï¼‰`
+    `LawLink - Mensaje de prueba: El envío de recordatorios está configurado correctamente (Iniciado por: ${session.user.name ?? session.user.email})`
   );
-  if (result.skipped) throw new Error("æŽ¨é€æœªå¯ç”¨æˆ–æœªé…ç½®æœºå™¨äººåœ°å€");
-  if (!result.ok) throw new Error(`å‘é€Errorï¼š${result.error ?? "Desconocidoé”™è¯¯"}`);
+  if (result.skipped) throw new Error("El envío no está habilitado o no configuraste la URL del bot");
+  if (!result.ok) throw new Error(`Error de envío: ${result.error ?? "Error desconocido"}`);
   return { ok: true };
 }
-
-
