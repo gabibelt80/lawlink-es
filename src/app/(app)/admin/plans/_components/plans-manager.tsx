@@ -10,6 +10,7 @@ import {
   DollarSign,
   Users as UsersIcon,
   Building2,
+  HardDrive,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -22,6 +23,7 @@ type PlanConfig = {
   price: number;
   maxUsers: number;
   maxBranch: number;
+  storageGB: number;
   modules: ModuleKey[];
 };
 
@@ -33,6 +35,7 @@ export function PlansManager() {
         price: PLANS[key].price,
         maxUsers: PLANS[key].maxUsers,
         maxBranch: PLANS[key].maxBranch,
+        storageGB: (PLANS[key] as any).storageGB ?? 1,
         modules: PLAN_MODULES[key] ?? [],
       };
     });
@@ -123,7 +126,7 @@ export function PlansManager() {
               </div>
 
               {/* Precio y límites */}
-              <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-3">
+              <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-4">
                 <div>
                   <Label className="text-[11px]">Precio mensual ($)</Label>
                   <div className="relative mt-1">
@@ -156,6 +159,18 @@ export function PlansManager() {
                       type="number"
                       value={plan.maxBranch}
                       onChange={(e) => updatePlanField(planKey, "maxBranch", Number(e.target.value))}
+                      className="pl-8"
+                    />
+                  </div>
+                </div>
+                <div>
+                  <Label className="text-[11px]">Almacenamiento (GB)</Label>
+                  <div className="relative mt-1">
+                    <HardDrive className="absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
+                    <Input
+                      type="number"
+                      value={plan.storageGB}
+                      onChange={(e) => updatePlanField(planKey, "storageGB", Number(e.target.value))}
                       className="pl-8"
                     />
                   </div>
