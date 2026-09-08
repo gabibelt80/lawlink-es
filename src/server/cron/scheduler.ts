@@ -1,5 +1,3 @@
-"use server";
-
 import cron from "node-cron";
 import { runWeeklyReportPush } from "@/server/reports/push-weekly";
 import { scanArchiveOverdue } from "./jobs/archive-overdue";

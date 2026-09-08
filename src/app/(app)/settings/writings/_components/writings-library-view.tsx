@@ -194,13 +194,13 @@ export function WritingsLibraryView() {
       </div>
 
       <div className="rounded-xl border border-border bg-card overflow-hidden">
-        <table className="w-full text-sm">
+       <table className="w-full text-sm table-fixed"> 
           <thead className="bg-muted/30 text-xs text-muted-foreground">
             <tr>
-              <th className="px-4 py-2 text-left font-normal">Nombre</th>
-              <th className="px-4 py-2 text-left font-normal">Categoria</th>
-              <th className="px-4 py-2 text-left font-normal">Etapa</th>
-              <th className="px-4 py-2 text-right font-normal">Acciones</th>
+              <th className="px-4 py-2 text-left font-normal w-[50%]">Nombre</th>
+              <th className="px-4 py-2 text-left font-normal w-[20%]">Categoria</th>
+	      <th className="px-4 py-2 text-left font-normal w-[20%]">Etapa</th>
+	     <th className="px-4 py-2 text-right font-normal w-[10%]">Acciones</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-border">
@@ -219,8 +219,10 @@ export function WritingsLibraryView() {
             ) : (
               filtered.map((w) => (
                 <tr key={w.id} className="hover:bg-muted/20 transition-colors">
-                  <td className="px-4 py-2.5">
-                    <div className="font-medium">{w.name}</div>
+		<td className="px-4 py-2.5">
+		  <div className="font-medium truncate" title={w.name}>
+		    {w.name}
+		  </div>
                   </td>
                   <td className="px-4 py-2.5 text-xs">{CATEGORY_LABELS[w.category] ?? w.category}</td>
                   <td className="px-4 py-2.5 text-xs">{STAGE_LABELS[w.stage] ?? w.stage}</td>
