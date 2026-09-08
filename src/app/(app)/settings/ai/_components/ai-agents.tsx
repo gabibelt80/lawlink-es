@@ -29,11 +29,13 @@ type AgentConfig = {
 };
 
 const AI_MODELS = [
-  { value: "deepseek-chat", label: "DeepSeek Chat" },
+  { value: "deepseek-r1:7b", label: "DeepSeek R1 (Ollama)" },
+  { value: "deepseek-chat", label: "DeepSeek Chat (API)" },
+  { value: "llama3.2", label: "Llama 3.2 (Ollama)" },
+  { value: "llama3.1:8b", label: "Llama 3.1 (Ollama)" },
   { value: "claude-3-5-sonnet-20241022", label: "Claude Sonnet" },
   { value: "gpt-4o-mini", label: "ChatGPT 4o Mini" },
   { value: "gpt-4o", label: "ChatGPT 4o" },
-  { value: "llama3.2", label: "Llama (Ollama)" },
 ];
 
 export function AiAgentsSection({

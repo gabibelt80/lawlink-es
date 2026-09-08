@@ -1,10 +1,10 @@
 ﻿/**
- * v0.9.1 OpenAI å…¼å®¹åè®®å°è£…
+ * v0.9.1 Cliente compatible con protocolo OpenAI
  *
- * æ‰€æœ‰è°ƒç”¨èµ° {baseUrl}/chat/completionsã€‚
- * æ”¯æŒ OpenAI / é€šä¹‰ / DeepSeek / Kimi / æ™ºè°± / OpenRouter / Ollama etc.ã€‚
+ * Todas las llamadas van a {baseUrl}/chat/completions.
+ * Soporta OpenAI / DeepSeek / Ollama / etc.
  *
- * server-side onlyï¼ˆç›´æŽ¥è¯» SystemSettingï¼‰ã€‚
+ * server-side only (lee directamente de SystemSetting).
  */
 import { getAiSettings } from "./settings";
 
@@ -20,7 +20,7 @@ export type ChatMessage =
 
 export interface AiChatOptions {
   messages: ChatMessage[];
-  model?: string; // è¦†ç›–é»˜è®¤ textModel
+  model?: string;
   maxTokens?: number;
   temperature?: number;
   timeoutMs?: number;
@@ -34,7 +34,7 @@ export interface AiChatResult {
 export class AiNotConfiguredError extends Error {
   constructor() {
     super(
-      "La IA no estÃ¡ configurada. Primero completÃ¡ la clave de API en ConfiguraciÃ³n â†’ Acceso a IA",
+      "La IA no está configurada. Primero completá la clave de API en Configuración → Acceso a IA",
     );
     this.name = "AiNotConfiguredError";
   }
@@ -49,21 +49,25 @@ async function callOpenAiCompatible(opts: {
   const ctrl = new AbortController();
   const timer = setTimeout(() => ctrl.abort(), opts.timeoutMs);
   try {
-    const res = await fetch(
-      `${opts.baseUrl.replace(/\/$/, "")}/chat/completions`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${opts.apiKey}`,
-        },
-        body: JSON.stringify(opts.body),
-        signal: ctrl.signal,
+    const url = `${opts.baseUrl.replace(/\/$/, "")}/chat/completions`;
+    console.error("[AI] URL:", url);
+    console.error("[AI] Body:", JSON.stringify(opts.body).slice(0, 300));
+
+    const res = await fetch(url, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${opts.apiKey}`,
       },
-    );
+      body: JSON.stringify(opts.body),
+      signal: ctrl.signal,
+    });
+
     if (!res.ok) {
       const body = await res.text();
-      throw new Error(`AI è¯·æ±‚Error (${res.status}): ${body.slice(0, 200)}`);
+      console.error("[AI] Status:", res.status);
+      console.error("[AI] Response:", body.slice(0, 500));
+      throw new Error(`AI error (${res.status}): ${body.slice(0, 200)}`);
     }
     return res.json();
   } finally {
@@ -96,7 +100,7 @@ export async function aiChat(input: AiChatOptions): Promise<AiChatResult> {
 }
 
 /**
- * è§†è§‰è¯†åˆ«ï¼šä¼  base64 / dataURL / URL ä¸‰é€‰ä¸€ï¼Œprompt å¼•å¯¼æ¨¡åž‹æŠ½å­—æ®µã€‚
+ * Visión: envía base64 / dataURL / URL. El prompt guía al modelo para extraer campos.
  */
 export async function aiVision(input: {
   image: { dataUrl: string } | { url: string };
@@ -130,7 +134,7 @@ export async function aiVision(input: {
 }
 
 /**
- * ä»Ž AI Volveræ–‡æœ¬ä¸­æå– JSONï¼ˆå®¹é”™ï¼š``` åŒ…è£¹ã€å‰åŽæœ‰è§£é‡Šæ–‡å­—å‡èƒ½æŠ½å‡ºï¼‰ã€‚
+ * Extrae JSON de la respuesta de la IA (tolera bloques ```json o texto alrededor).
  */
 export function extractJson<T = unknown>(content: string): T | null {
   const fenced = content.match(/```(?:json)?\s*([\s\S]*?)```/);
@@ -143,4 +147,3 @@ export function extractJson<T = unknown>(content: string): T | null {
     return null;
   }
 }
-

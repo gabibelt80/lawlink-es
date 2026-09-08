@@ -193,7 +193,7 @@ Incluí en tu respuesta:
     throw new Error("IA no configurada. Configure la API key en Configuración > IA.");
   }
 
-  const response = await fetch(aiSettings.baseUrl, {
+  const response = await fetch(`${aiSettings.baseUrl.replace(/\/$/, "")}/chat/completions`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",

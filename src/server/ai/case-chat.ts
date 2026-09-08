@@ -2,6 +2,7 @@
 
 import { requireSession } from "@/lib/auth/session";
 import { getAiSettings } from "@/lib/ai/settings";
+import { aiChat, AiNotConfiguredError } from "@/lib/ai/client";
 import { readFileSync, existsSync } from "node:fs";
 import { join } from "node:path";
 import { getTenantPrisma } from "@/lib/tenant-prisma";
@@ -66,14 +67,8 @@ Devolvé SOLO JSON:
   "editedContent": "Contenido HTML completo o null"
 }`;
 
-  const response = await fetch(aiSettings.baseUrl, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "Authorization": `Bearer ${aiSettings.apiKey}`,
-    },
-    body: JSON.stringify({
-      model: aiSettings.textModel,
+  try {
+    const result = await aiChat({
       messages: [
         { role: "system", content: systemPrompt },
         {
@@ -82,18 +77,21 @@ Devolvé SOLO JSON:
         },
       ],
       temperature: 0.3,
-      max_tokens: 4000,
-    }),
-  });
+      maxTokens: 4000,
+      timeoutMs: 60_000,
+    });
 
-  if (!response.ok) throw new Error("Error al comunicarse con la IA");
+    const content = result.content;
 
-  const data = await response.json();
-  const content = data.choices[0].message.content;
-
-  try {
-    return JSON.parse(content);
-  } catch {
-    return { response: content, editedContent: null };
+    try {
+      return JSON.parse(content);
+    } catch {
+      return { response: content, editedContent: null };
+    }
+  } catch (e) {
+    if (e instanceof AiNotConfiguredError) {
+      throw new Error("IA no configurada. Configurá la API key en Configuración > IA.");
+    }
+    throw e;
   }
 }
