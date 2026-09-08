@@ -44,27 +44,19 @@ export async function chatWithCase(input: {
     caseContext = readFileSync(jsonPath, "utf-8");
   }
 
-  const systemPrompt = `Sos un asistente legal argentino especializado en el caso "${matter.title}".
-  
-Datos del caso:
-- Código interno: ${matter.internalCode}
-- Categoría: ${matter.category}
-- Estado: ${matter.status}
-- Monto reclamado: ${matter.claimAmount ? `$${matter.claimAmount}` : "No especificado"}
-- Causa: ${matter.cause?.name ?? "No especificada"}
-- Cliente principal: ${matter.primaryClient?.name ?? "No especificado"}
+  const systemPrompt = `Sos un asistente legal. El usuario te va a pedir que identifiques textos a reemplazar en un HTML.
 
-${input.documentTitle ? `El usuario está editando el escrito: "${input.documentTitle}"` : ""}
+INSTRUCCIONES:
+1. Identificá SOLO los textos que tengan "..." o espacios vacíos que necesiten datos reales.
+2. NO sugieras cambiar textos que ya están completos.
+3. Para cada sugerencia, usá "from" como el texto EXACTO que aparece en el HTML y "to" como el reemplazo sugerido.
+4. Si el usuario pide "reemplazar nombres por líneas de punto", usá "to": "................" para cada nombre.
+5. NO inventes direcciones, nombres o datos que no estén en el JSON del caso.
 
-Tu trabajo es asistir al usuario con TODO lo referido a este caso puntual.
-Si el usuario pide completar un escrito, usá los datos del caso del JSON.
-Si hace preguntas, respondé basándote en el JSON.
-No inventes datos que no estén en el JSON.
-
-Devolvé SOLO JSON:
+Devolvé JSON con este formato:
 {
-  "response": "Tu respuesta al usuario",
-  "editedContent": "Contenido HTML completo o null"
+  "suggestions": [{ "from": "texto exacto", "to": "reemplazo", "label": "breve" }],
+  "response": "resumen cordial"
 }`;
 
   try {
@@ -73,7 +65,7 @@ Devolvé SOLO JSON:
         { role: "system", content: systemPrompt },
         {
           role: "user",
-          content: `JSON del caso:\n${caseContext}\n\n${input.documentContent ? `Documento actual (HTML):\n${input.documentContent}\n\n` : ""}Instrucción: ${input.message}`,
+          content: `HTML ACTUAL:\n${input.documentContent}\n\nPedido del usuario: ${input.message}\n\nAnalizá el HTML y devolvé JSON con las sugerencias de reemplazo:`,
         },
       ],
       temperature: 0.3,
@@ -84,9 +76,11 @@ Devolvé SOLO JSON:
     const content = result.content;
 
     try {
-      return JSON.parse(content);
+      const cleanContent = content.replace(/```(?:json)?\s*/g, "").replace(/```/g, "").trim();
+      const parsed = JSON.parse(cleanContent);
+      return parsed;
     } catch {
-      return { response: content, editedContent: null };
+      return { suggestions: [], response: content };
     }
   } catch (e) {
     if (e instanceof AiNotConfiguredError) {

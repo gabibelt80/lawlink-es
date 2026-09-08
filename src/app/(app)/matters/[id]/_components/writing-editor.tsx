@@ -126,6 +126,7 @@ export function WritingEditor({
   const [chatMessages, setChatMessages] = useState<{ role: "user" | "assistant"; content: string }[]>([]);
   const [chatInput, setChatInput] = useState("");
   const [chatLoading, setChatLoading] = useState(false);
+  const [suggestions, setSuggestions] = useState<{ from: string; to: string; label: string }[]>([]);
   const chatEndRef = useRef<HTMLDivElement>(null);
 
   const editor = useEditor({
@@ -214,10 +215,11 @@ export function WritingEditor({
         message: userMessage,
       });
       setChatMessages((prev) => [...prev, { role: "assistant", content: result.response }]);
+      setSuggestions(result.suggestions ?? []);
 
       if (result.editedContent) {
         editor.commands.setContent(result.editedContent);
-      }
+      }  
     } catch (err) {
       setChatMessages((prev) => [...prev, { role: "assistant", content: "Error al comunicarse con la IA" }]);
     } finally {
@@ -530,10 +532,7 @@ export function WritingEditor({
         {chatOpen && (
           <div className="flex w-80 shrink-0 flex-col border-l border-border bg-white">
             <div className="flex items-center justify-between border-b border-border px-3 py-2">
-              <span className="text-xs font-medium flex items-center gap-1">
-                <Sparkles className="h-3 w-3 text-primary" />
-                Asistente IA
-              </span>
+              <span className="text-xs font-medium">Asistente IA</span>
               <button
                 type="button"
                 onClick={() => setChatOpen(false)}
@@ -542,32 +541,67 @@ export function WritingEditor({
                 <X className="h-3.5 w-3.5" />
               </button>
             </div>
+
             <div className="flex-1 overflow-y-auto px-3 py-2 space-y-2">
               {chatMessages.length === 0 && (
                 <p className="text-[11px] text-muted-foreground text-center py-4">
                   Pedile a la IA que modifique el documento, ej: "Cambiá el encabezado a formato legal"
                 </p>
               )}
+
               {chatMessages.map((msg, idx) => (
                 <div
                   key={idx}
-                  className={cn(
-                    "rounded-lg px-3 py-2 text-[11px] max-w-[85%]",
+                  className={
                     msg.role === "user"
-                      ? "ml-auto bg-primary text-primary-foreground"
-                      : "bg-muted"
-                  )}
+                      ? "ml-auto max-w-[85%] rounded-lg bg-primary px-3 py-2 text-[11px] text-primary-foreground"
+                      : "mr-auto max-w-[85%] rounded-lg bg-muted px-3 py-2 text-[11px]"
+                  }
                 >
                   {msg.content}
                 </div>
               ))}
+
+              {suggestions.length > 0 && (
+                <div className="space-y-2 border-t border-border pt-3">
+                  <p className="text-xs font-medium text-muted-foreground">
+                    Sugerencias de reemplazo:
+                  </p>
+                  {suggestions.map((s, idx) => (
+                    <div
+                      key={idx}
+                      className="flex items-center justify-between gap-2 rounded-md border border-border bg-muted/30 px-3 py-2"
+                    >
+                      <div className="min-w-0 flex-1">
+                        <p className="text-xs font-medium">{s.label}</p>
+                        <p className="text-[11px] text-muted-foreground truncate">
+                          <span className="line-through">{s.from}</span> →{" "}
+                          <span className="text-emerald-600">{s.to}</span>
+                        </p>
+                      </div>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="h-7 px-2 text-[11px]"
+                        onClick={() => {
+                          const updated = editor.getHTML().replaceAll(s.from, s.to);
+                          editor.commands.setContent(updated);
+                          setSuggestions((prev) => prev.filter((_, i) => i !== idx));
+                        }}
+                      >
+                        Aplicar
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              )}
+
               {chatLoading && (
                 <div className="flex items-center gap-2 text-[11px] text-muted-foreground">
                   <Loader2 className="h-3 w-3 animate-spin" />
                   Pensando...
                 </div>
               )}
-              <div ref={chatEndRef} />
             </div>
             <div className="flex items-center gap-2 border-t border-border px-3 py-2">
               <input
