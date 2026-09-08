@@ -65,8 +65,8 @@ export async function assertCanAccessMatter(
 /** Acciones de asociación de caso: solo permite titular o miembro del caso, no se abre por rol de administración */
 export async function assertCanAssociateMatter(
   userId: string,
-  matterId: string,
-  role?: string
+  role: string,
+  matterId: string
 ): Promise<void> {
   const row = await prisma.matter.findFirst({
     where: {
@@ -82,8 +82,8 @@ export async function assertCanAssociateMatter(
 /** Procesamiento de caso: solo permite titular o miembro del caso, no se abre por rol de administración */
 export async function assertCanHandleMatter(
   userId: string,
-  matterId: string,
-  role?: string
+  role: string,
+  matterId: string
 ): Promise<void> {
   const row = await prisma.matter.findFirst({
     where: {
@@ -99,9 +99,11 @@ export async function assertCanHandleMatter(
 /** Verificación de titular/co-titular: usado para archivo, equipo, información central, generación de escritos, etc. */
 export async function assertCanLeadMatter(
   userId: string,
+  role: string,
   matterId: string,
   message = "Solo el titular/co-titular del caso puede accionar"
 ): Promise<void> {
+  if (isManager(role)) return;
   const row = await prisma.matter.findFirst({
     where: {
       id: matterId,
@@ -119,9 +121,11 @@ export async function assertCanLeadMatter(
 /** Verificación de titular actual: usado para cambiar equipo de trabajo, eliminar caso, etc. */
 export async function assertCanOwnMatter(
   userId: string,
+  role: string,
   matterId: string,
   message = "Solo el titular del caso puede accionar"
 ): Promise<void> {
+  if (isManager(role)) return;
   const row = await prisma.matter.findFirst({
     where: {
       id: matterId,
@@ -182,9 +186,8 @@ export function clientVisibilityFilter(
   if (isManager(role) || role === "FINANCE") return {};
   return {
     OR: [
-      { createdById: userId },
-      { matters: { some: { matter: { ownerId: userId } } } },
-      { matters: { some: { matter: { members: { some: { userId } } } } } }
+      { matterLinks: { some: { matter: { ownerId: userId } } } },
+      { matterLinks: { some: { matter: { members: { some: { userId } } } } } }
     ]
   };
 }

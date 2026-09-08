@@ -41,6 +41,7 @@ export async function archiveMatter(input: ArchiveSubmitInput) {
   await assertMatterWritable(data.matterId);
   await assertCanLeadMatter(
     session.user.id,
+    session.user.role,
     data.matterId,
     "Solo el responsable del Caso / co-responsable puede enviar la solicitud de archivo",
   );
@@ -348,6 +349,7 @@ export async function getArchivePrepData(matterId: string) {
   const session = await requireSession();
   await assertCanLeadMatter(
     session.user.id,
+    session.user.role,
     matterId,
     "Solo el responsable/co-responsable puede preparar el archivo",
   );

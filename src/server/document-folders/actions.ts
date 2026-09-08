@@ -18,13 +18,18 @@ import { revalidateMatter } from "@/server/matters/route";
 
 /** Verifica si el usuario puede editar la estructura de carpetas del Caso */
 async function requireFolderEditor(matterId: string, session: { user: { id: string; role: string } }) {
-  await assertCanLeadMatter(session.user.id, session.user.role, matterId, "Solo el responsable/co-responsable puede administrar carpetas");
+  await assertCanLeadMatter(
+  session.user.id,
+  session.user.role as any,
+    matterId,
+    "Solo el responsable/co-responsable puede editar la estructura de carpetas",
+  );
 }
 
 export async function listFoldersByMatter(matterId: string) {
   const prisma = await getTenantPrisma();
   const session = await requireSession();
-  await assertCanAccessMatter(session.user.id, session.user.role, matterId);
+  await assertCanAccessMatter(session.user.id, session.user.role as any, matterId);
   return prisma.documentFolder.findMany({
     where: { matterId },
     orderBy: [{ orderIndex: "asc" }, { createdAt: "asc" }],

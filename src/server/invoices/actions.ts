@@ -30,7 +30,7 @@ function requireFinanceOrApprover(role: string) {
 }
 
 function canReviewInvoiceRequests(role: string) {
-  return isManager(role) || role === "FINANCE";
+  return isManager(role as any) || role === "FINANCE";
 }
 
 function invoiceRequestVisibilityWhere(
@@ -44,7 +44,7 @@ function invoiceRequestVisibilityWhere(
       {
         matter: {
           deletedAt: null,
-          ...matterVisibilityFilter(userId, role)
+          ...matterVisibilityFilter(userId, role as any)
         }
       }
     ]
@@ -63,10 +63,14 @@ export async function createInvoiceRequest(input: z.infer<typeof createSchema>) 
   const prisma = await getTenantPrisma();
   const session = await requireSession();
   const data = createSchema.parse(input);
-  await assertCanAssociateMatter(session.user.id, session.user.role, data.matterId);
+  await assertCanAssociateMatter(session.user.id, session.user.role as any, data.matterId);
   await assertMatterWritable(data.matterId);
 
-  await assertCanLeadMatter(session.user.id, session.user.role, data.matterId, "Solo el responsable/co-responsable puede solicitar factura");
+await assertCanLeadMatter(
+  session.user.id,
+  session.user.role as any,
+  data.matterId,
+);
 
   const created = await prisma.invoiceRequest.create({
     data: {
@@ -150,7 +154,7 @@ export async function listInvoiceRequests(filter?: { status?: "PENDING" | "ISSUE
 export async function listInvoiceRequestsByMatter(matterId: string) {
   const prisma = await getTenantPrisma();
   const session = await requireSession();
-  await assertCanAccessMatter(session.user.id, session.user.role, matterId);
+  await assertCanAccessMatter(session.user.id, session.user.role as any, matterId);
   const rows = await prisma.invoiceRequest.findMany({
     where: { matterId },
     orderBy: { requestedAt: "desc" },

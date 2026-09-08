@@ -19,14 +19,11 @@ export const expressListFilterSchema = z.object({
 
 export const expressIdSchema = z.object({ id: z.string().cuid() });
 
-// é…ç½®
 export const expressSettingsSaveSchema = z.object({
-  kdniaoEbusinessId: z.string().max(40).optional().or(z.literal("")),
-  kdniaoAppKey: z.string().max(80).optional().or(z.literal("")),
-  kdniaoClearKey: z.boolean().optional(),
-  kuaidi100Customer: z.string().max(40).optional().or(z.literal("")),
-  kuaidi100Key: z.string().max(80).optional().or(z.literal("")),
-  kuaidi100ClearKey: z.boolean().optional()
+  andreaniApiKey: z.string().max(80).optional().or(z.literal("")),
+  andreaniClearKey: z.boolean().optional(),
+  correoArgentinoApiKey: z.string().max(80).optional().or(z.literal("")),
+  correoArgentinoClearKey: z.boolean().optional()
 });
 
 

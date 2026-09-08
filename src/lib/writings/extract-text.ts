@@ -18,7 +18,7 @@ export async function extractTextFromFile(path: string): Promise<string> {
     try {
       const pdfjs = await import("pdfjs-dist/legacy/build/pdf.mjs");
       const data = new Uint8Array(readFileSync(path));
-      const doc = await pdfjs.getDocument({ data, useWorkerFetch: false, isEvalSupported: false }).promise;
+      const doc = await pdfjs.getDocument({ data, useWorkerFetch: false } as any).promise;
       let text = "";
       for (let i = 1; i <= doc.numPages; i++) {
         const page = await doc.getPage(i);

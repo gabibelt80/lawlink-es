@@ -47,7 +47,7 @@ export async function listMatters(input: Partial<MatterListQuery> = {}) {
   const query = matterListQuerySchema.parse(input);
 
   const whereParts: Prisma.MatterWhereInput[] = [
-    matterVisibilityFilter(session.user.id, session.user.role),
+    matterVisibilityFilter(session.user.id, session.user.role as any),
     { deletedAt: null }
   ];
   if (query.category) whereParts.push({ category: query.category });
@@ -214,7 +214,7 @@ export async function updateProcedureInfo(input: {
     select: { matterId: true, type: true }
   });
   if (!proc) throw new Error("El procedimiento no existe");
-  await assertCanAccessMatter(session.user.id, session.user.role, proc.matterId);
+  await assertCanAccessMatter(session.user.id, session.user.role as any, proc.matterId);
   await assertMatterWritable(proc.matterId);
   assertAgencyAllowedForProcedure(input.handlingAgency, proc.type);
 
@@ -553,7 +553,7 @@ function normalizeNewProcedureParties(rows: NewProcedurePartyInput[]) {
 export async function searchMattersForLink(matterId: string, q: string) {
   const prisma = await getTenantPrisma();
   const session = await requireSession();
-  await assertCanAssociateMatter(session.user.id, session.user.role, matterId);
+  await assertCanAssociateMatter(session.user.id, session.user.role as any, matterId);
   const query = q.trim();
   const links = await prisma.matterLink.findMany({
     where: { OR: [{ matterId }, { relatedMatterId: matterId }] },
@@ -588,8 +588,8 @@ export async function searchMattersForLink(matterId: string, q: string) {
 export async function addMatterLink(matterId: string, relatedMatterId: string) {
   const prisma = await getTenantPrisma();
   const session = await requireSession();
-  await assertCanAssociateMatter(session.user.id, session.user.role, matterId);
-  await assertCanAssociateMatter(session.user.id, session.user.role, relatedMatterId);
+  await assertCanAssociateMatter(session.user.id, session.user.role as any, matterId);
+  await assertCanAssociateMatter(session.user.id, session.user.role as any, relatedMatterId);
   if (matterId === relatedMatterId) throw new Error("No se puede vincular a si mismo");
   await prisma.matterLink.upsert({
     where: { matterId_relatedMatterId: { matterId, relatedMatterId } },
@@ -609,8 +609,8 @@ export async function addMatterLink(matterId: string, relatedMatterId: string) {
 export async function removeMatterLink(matterId: string, relatedMatterId: string) {
   const prisma = await getTenantPrisma();
   const session = await requireSession();
-  await assertCanAssociateMatter(session.user.id, session.user.role, matterId);
-  await assertCanAssociateMatter(session.user.id, session.user.role, relatedMatterId);
+  await assertCanAssociateMatter(session.user.id, session.user.role as any, matterId);
+  await assertCanAssociateMatter(session.user.id, session.user.role as any, relatedMatterId);
   await prisma.matterLink.deleteMany({
     where: {
       OR: [
@@ -632,7 +632,7 @@ export async function removeMatterLink(matterId: string, relatedMatterId: string
 export async function getMatterById(id: string) {
   const prisma = await getTenantPrisma();
   const session = await requireSession();
-  await assertCanAccessMatter(session.user.id, session.user.role, id);
+  await assertCanAccessMatter(session.user.id, session.user.role as any, id);
   const matter = await prisma.matter.findFirst({
     where: { id, deletedAt: null },
     include: {
@@ -818,7 +818,7 @@ export async function updateMatterTeam(input: {
   });
   if (!matter) throw new Error("El Caso no existe");
   await assertMatterWritable(input.matterId);
-  await assertCanOwnMatter(session.user.id, session.user.role, input.matterId, "Solo el abogado a cargo puede modificar el equipo");
+  await assertCanOwnMatter(session.user.id, session.user.role as any, input.matterId, "Solo el abogado a cargo puede modificar el equipo");
 
   const co = input.coLeadIds.filter((id) => id !== input.ownerId);
   const ass = input.assistantIds.filter(
@@ -892,7 +892,11 @@ export async function updateMatterBasicInfo(input: MatterUpdateBasicInput) {
   });
   if (!matter) throw new Error("El Caso no existe");
   await assertMatterWritable(data.id);
-  await assertCanLeadMatter(session.user.id, session.user.role, data.id, "Solo el responsable/co-responsable puede editar");
+await assertCanLeadMatter(
+  session.user.id,
+  session.user.role as any,
+  data.id,
+);
   await assertCauseAllowedForMatter(data.id, data.causeId);
 
   await prisma.matter.update({
@@ -926,7 +930,7 @@ export async function softDeleteMatter(id: string) {
   const prisma = await getTenantPrisma();
   const session = await requireSession();
   await assertMatterWritable(id);
-  await assertCanOwnMatter(session.user.id, session.user.role, id, "Solo el abogado a cargo puede eliminar el Caso");
+  await assertCanOwnMatter(session.user.id, session.user.role as any, id, "Solo el abogado a cargo puede eliminar el Caso");
 
   await prisma.matter.update({
     where: { id },

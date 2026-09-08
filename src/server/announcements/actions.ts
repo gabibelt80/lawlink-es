@@ -1,4 +1,4 @@
-﻿"use server";
+"use server";
 
 /**
  * v0.27: Centro de servicios - Anuncios del estudio
@@ -76,7 +76,7 @@ export async function createAnnouncement(
   assertCanManage(session.user.role);
   const data = announcementCreateSchema.parse(input);
 
-  const tenantUserId = await resolveTenantUserId(session.user.email, prisma);
+  const tenantUserId = await resolveTenantUserId(session.user.email ?? "", prisma);
   if (!tenantUserId) throw new Error("Usuario no encontrado");
 
   const created = await prisma.announcement.create({
@@ -111,7 +111,7 @@ export async function updateAnnouncement(
   assertCanManage(session.user.role);
   const data = announcementUpdateSchema.parse(input);
 
-  const tenantUserId = await resolveTenantUserId(session.user.email, prisma);
+  const tenantUserId = await resolveTenantUserId(session.user.email ?? "", prisma);
   if (!tenantUserId) throw new Error("Usuario no encontrado");
 
   const updated = await prisma.announcement.update({
@@ -143,7 +143,7 @@ export async function archiveAnnouncement(id: string) {
   const session = await requireSession();
   assertCanManage(session.user.role);
 
-  const tenantUserId = await resolveTenantUserId(session.user.email, prisma);
+  const tenantUserId = await resolveTenantUserId(session.user.email ?? "", prisma);
   if (!tenantUserId) throw new Error("Usuario no encontrado");
 
   await prisma.announcement.update({

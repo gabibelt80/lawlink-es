@@ -40,7 +40,7 @@ export function WritingPickerDialog({
   onOpenChange: (o: boolean) => void;
   matterId: string;
   procedureId: string;
-  stageId: string;
+  stageId: string | null;
   stageName: string;
   onSaved?: () => void;
 }) {
@@ -217,6 +217,7 @@ function handleSelect(writing: Writing) {
           onClose={() => setEditingWriting(null)}
           title={editingWriting.name}
           content={editingWriting.content}
+          matterId={matterId}
           onSave={(title, content) => {
             startTransition(async () => {
               try {

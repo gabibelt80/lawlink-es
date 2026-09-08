@@ -36,7 +36,7 @@ export async function listClients(input: Partial<ClientListQuery> = {}) {
     ...clientVisibilityFilter(session.user.id, session.user.role),
     deletedAt: null,
     ...(query.type ? { type: query.type } : {}),
-    ...(query.tag ? { tags: { array_contains: query.tag } } : {}),
+    ...(query.tag ? { tags: { has: query.tag } } : {}),
     ...(query.search
       ? {
           OR: [

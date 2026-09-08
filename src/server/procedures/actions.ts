@@ -142,7 +142,7 @@ export async function deleteProcedure(id: string) {
 
   await assertCanAccessMatter(session.user.id, session.user.role, procedure.matterId);
   await assertMatterWritable(procedure.matterId);
-  await assertCanLeadMatter(session.user.id, session.user.role, procedure.matterId, "Solo el responsable/co-responsable puede eliminar el procedimiento");
+  await assertCanLeadMatter(session.user.id, session.user.role as any, procedure.matterId, "Solo el responsable/co-responsable puede eliminar el procedimiento");
 
   await prisma.matterProcedure.delete({ where: { id } });
   await audit({

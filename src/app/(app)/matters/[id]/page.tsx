@@ -81,6 +81,7 @@ export default async function MatterDetailPage({ params }: PageProps) {
         stageId: true,
         procedureId: true,
         folderId: true,
+        templateId: true,
         tags: true,
       },
     }),
@@ -238,6 +239,7 @@ export default async function MatterDetailPage({ params }: PageProps) {
         folderDocuments={folderDocuments}
         templates={templates.map((t) => ({
           ...t,
+          applicableCategories: Array.isArray(t.applicableCategories) ? (t.applicableCategories as string[]) : [],
           variables: Array.isArray(t.variables) ? (t.variables as string[]) : []
         }))}
         colleagues={allColleagues.map((c) => ({ id: c.id, name: c.name }))}

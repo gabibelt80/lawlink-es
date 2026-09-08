@@ -3,6 +3,7 @@ import CredentialsProvider from "next-auth/providers/credentials";
 import bcrypt from "bcryptjs";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
+import { UserRole } from "@prisma/client";
 import { getTenantPrismaSync } from "@/lib/tenant-prisma";
 
 const credentialsSchema = z.object({
@@ -94,7 +95,7 @@ export const authOptions: NextAuthOptions = {
     async session({ session, token }) {
       if (session.user) {
         session.user.id = token.id as string;
-        session.user.role = token.role as string;
+        session.user.role = token.role as UserRole;
         session.user.avatar = token.avatar as string | null;
         session.user.firmId = token.firmId as string | null;
         session.user.firmSlug = token.firmSlug as string;

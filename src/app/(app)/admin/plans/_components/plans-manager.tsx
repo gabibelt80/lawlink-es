@@ -17,7 +17,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 import { MODULES, ModuleKey, PLAN_MODULES } from "@/lib/modules";
-import { PLANS } from "@/lib/plans";
+import { PLANS, PLAN_KEYS } from "@/lib/plans";
 
 type PlanConfig = {
   price: number;
@@ -30,12 +30,12 @@ type PlanConfig = {
 export function PlansManager() {
   const [plans, setPlans] = useState<Record<string, PlanConfig>>(() => {
     const initial: Record<string, PlanConfig> = {};
-    Object.keys(PLANS).forEach((key) => {
+    PLAN_KEYS.forEach((key) => {
       initial[key] = {
         price: PLANS[key].price,
         maxUsers: PLANS[key].maxUsers,
         maxBranch: PLANS[key].maxBranch,
-        storageGB: (PLANS[key] as any).storageGB ?? 1,
+        storageGB: PLANS[key].storageGB,
         modules: PLAN_MODULES[key] ?? [],
       };
     });
@@ -93,9 +93,9 @@ export function PlansManager() {
       </header>
 
       <div className="space-y-6">
-        {(Object.keys(PLANS) as Array<keyof typeof PLANS>).map((planKey) => {
+        {PLAN_KEYS.map((planKey) => {
           const plan = plans[planKey];
-          const isPopular = planKey === "plus";
+          const isPopular = planKey === "professional";
           return (
             <div
               key={planKey}

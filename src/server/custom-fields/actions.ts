@@ -73,7 +73,7 @@ export async function createCustomFieldDef(
       key: `cf_${randomUUID().slice(0, 8)}`,
       label: data.label,
       fieldType: data.fieldType,
-      options: data.fieldType === "SELECT" ? data.options : [],
+      options: data.fieldType === "SELECT" ? data.options as string[] : [],
       required: data.required,
       order: (max._max.order ?? 0) + 1,
     },
@@ -107,7 +107,7 @@ export async function updateCustomFieldDef(
     data: {
       ...(rest.label !== undefined ? { label: rest.label } : {}),
       ...(rest.fieldType !== undefined ? { fieldType: rest.fieldType } : {}),
-      ...(rest.options !== undefined ? { options: rest.options } : {}),
+      ...(rest.options !== undefined ? { options: rest.options as string[] } : {}),
       ...(rest.required !== undefined ? { required: rest.required } : {}),
     },
   });
@@ -149,11 +149,12 @@ export async function saveMatterCustomValues(
   const prisma = await getTenantPrisma();
   const session = await requireSession();
   await assertMatterWritable(matterId);
-  await assertCanLeadMatter(
-    session.user.id,
-    matterId,
-    "Solo el responsable/co-responsable puede editar",
-  );
+await assertCanLeadMatter(
+  session.user.id,
+  session.user.role as any,
+  matterId,
+  "Solo el responsable/co-responsable puede editar",
+);
 
   // Solo conserva claves de campos habilitados
   const defs = await prisma.customFieldDef.findMany({

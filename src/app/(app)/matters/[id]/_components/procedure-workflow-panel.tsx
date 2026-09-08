@@ -1696,6 +1696,7 @@ function StageMaterialsPanel({
           onClose={() => setEditingDoc(null)}
           title={editingDoc.name}
           content={editingDoc.content ?? ""}
+          matterId={matterId}
           onSave={(title, content) => {
             startTransition(async () => {
               try {

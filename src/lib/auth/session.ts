@@ -1,24 +1,39 @@
 ﻿import { getServerSession } from "next-auth";
 import { redirect } from "next/navigation";
 import { authOptions } from "./options";
+import type { Session } from "next-auth";
+import type { UserRole } from "@prisma/client";
+
+export type AppSession = Session & {
+  user: {
+    id: string;
+    role: UserRole;
+    avatar: string | null;
+    firmId: string | null;
+    firmSlug: string;
+    firmName: string;
+    name?: string | null;
+    email?: string | null;
+    image?: string | null;
+  }
+};
 
 /**
- * Server Component / Server Action ä¸­è¯»å–å½“å‰ sessionã€‚
- * æœªIniciar sesiÃ³nVolver nullã€‚
+ * Server Component / Server Action para leer la sesión actual.
+ * Devuelve null si no hay sesión iniciada.
  */
-export async function getSession() {
-  return getServerSession(authOptions);
+export async function getSession(): Promise<AppSession | null> {
+  return getServerSession(authOptions) as Promise<AppSession | null>;
 }
 
 /**
- * è¦æ±‚Iniciar sesiÃ³nï¼ŒæœªIniciar sesiÃ³nå¼ºåˆ¶è·³ /loginã€‚
- * åœ¨ Server Component / Server Action ä¸­ä½¿ç”¨ã€‚
+ * Requiere sesión iniciada. Si no hay sesión, redirige a /login.
+ * Usar en Server Components / Server Actions.
  */
-export async function requireSession() {
+export async function requireSession(): Promise<AppSession> {
   const session = await getSession();
   if (!session?.user) {
     redirect("/login");
   }
   return session;
 }
-
