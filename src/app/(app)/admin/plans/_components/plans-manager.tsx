@@ -17,7 +17,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 import { MODULES, ModuleKey, PLAN_MODULES } from "@/lib/modules";
-import { PLANS } from "@/lib/plans";
+import { PLANS, PLAN_KEYS } from "@/lib/plans";
 
 type PlanConfig = {
   price: number;
@@ -30,13 +30,13 @@ type PlanConfig = {
 export function PlansManager() {
   const [plans, setPlans] = useState<Record<string, PlanConfig>>(() => {
     const initial: Record<string, PlanConfig> = {};
-    (Object.keys(PLANS) as Array<keyof typeof PLANS>).forEach((key) => {
-      initial[key as string] = {
-        price: (PLANS[key] as any).price,
-        maxUsers: (PLANS[key] as any).maxUsers,
-        maxBranch: (PLANS[key] as any).maxBranch,
-        storageGB: (PLANS[key] as any).storageGB ?? 1,
-        modules: PLAN_MODULES[key as keyof typeof PLAN_MODULES] ?? [],
+    PLAN_KEYS.forEach((key) => {
+      initial[key] = {
+        price: PLANS[key].price,
+        maxUsers: PLANS[key].maxUsers,
+        maxBranch: PLANS[key].maxBranch,
+        storageGB: PLANS[key].storageGB,
+        modules: PLAN_MODULES[key] ?? [],
       };
     });
     return initial;
@@ -93,9 +93,9 @@ export function PlansManager() {
       </header>
 
       <div className="space-y-6">
-        {(Object.keys(PLANS) as Array<keyof typeof PLANS>).map((planKey) => {
-          const plan = plans[planKey as string];
-          const isPopular = (planKey as string) === "plus";
+        {PLAN_KEYS.map((planKey) => {
+          const plan = plans[planKey];
+          const isPopular = planKey === "professional";
           return (
             <div
               key={planKey}
@@ -109,7 +109,7 @@ export function PlansManager() {
               <div className="flex flex-wrap items-start justify-between gap-4">
                 <div>
                   <h2 className="text-lg font-semibold flex items-center gap-2">
-                    {(PLANS[planKey] as any).label}
+                    {PLANS[planKey].label}
                     {isPopular && (
                       <span className="rounded-full bg-primary/15 px-2 py-0.5 text-[10px] text-primary">
                         POPULAR
@@ -117,7 +117,7 @@ export function PlansManager() {
                     )}
                   </h2>
                   <p className="text-[11px] text-muted-foreground mt-0.5">
-                    {(PLANS[planKey] as any).description ?? "Plan de suscripción"}
+                    {PLANS[planKey].description ?? "Plan de suscripción"}
                   </p>
                 </div>
                 <span className="rounded-full bg-primary/10 px-3 py-1 text-xs text-primary">

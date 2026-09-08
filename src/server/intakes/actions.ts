@@ -164,7 +164,7 @@ function assertConflictReviewAllowsConversion(intake: IntakeConflictGateInput) {
     throw new Error("La busqueda de conflictos no tiene conclusion, marque si se puede aceptar");
   }
   if (latestCheck.conclusion === "NEED_INFO") {
-    throw new Error("La conclusion de la busqueda de conflictos es informacioninsuficiente, no se puede convertir a caso formal");
+    throw new Error("La conclusion de la busqueda de conflictos es información insuficiente, no se puede convertir a caso formal");
   }
   if (latestCheck.conclusion === "SAME_SUBJECT") {
     throw new Error("Se confirmó que existe conflicto de intereses, no se puede convertir directamente a caso formal");
@@ -543,7 +543,7 @@ export async function resubmitIntake(id: string) {
     select: { status: true, title: true, createdById: true, ownerUserId: true }
   });
   if (!intake) throw new Error("admision no encontrada");
-  if (intake.status !== "NEEDS_REVISION") throw new Error("Solo el estado Pendiente de correccionpuede reenviarse");
+  if (intake.status !== "NEEDS_REVISION") throw new Error("Solo el estado Pendiente de corrección puede reenviarse");
 
   await prisma.intake.update({
     where: { id },
@@ -806,4 +806,3 @@ export async function convertIntakeToMatter(intakeId: string) {
   revalidatePath("/matters");
   return { ok: true, matterId: matter.id, internalCode };
 }
-

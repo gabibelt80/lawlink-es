@@ -19,7 +19,6 @@ export const expressListFilterSchema = z.object({
 
 export const expressIdSchema = z.object({ id: z.string().cuid() });
 
-// é…ç½®
 export const expressSettingsSaveSchema = z.object({
   andreaniApiKey: z.string().max(80).optional().or(z.literal("")),
   andreaniClearKey: z.boolean().optional(),

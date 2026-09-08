@@ -10,7 +10,7 @@ import {
   type EnterpriseSummary
 } from "@/lib/yuandian/enterprise";
 import { audit } from "@/server/audit";
-import { prisma } from "@/lib/prisma";
+import { getTenantPrisma } from "@/lib/tenant-prisma";
 import {
   assertCanAccessMatter,
   assertCanModifyMatter
@@ -24,7 +24,8 @@ export type EnterpriseSearchItem = {
 };
 
 /**
- * ä¼ä¸šNombreBuscarï¼ˆ1 POINT/æ¬¡ï¼‰ï¼Œæœªé…ç½®æ—¶é™é»˜Volver configured: false
+ * Búsqueda de empresas por nombre (1 POINT por consulta).
+ * Devuelve configured: false si no está configurado.
  */
 export async function searchEnterpriseCandidates(
   name: string
@@ -47,8 +48,8 @@ export async function searchEnterpriseCandidates(
     return {
       items: candidates.map((c) => ({
         id: c.id,
-        name: c["ä¼ä¸šNombre"],
-        creditCode: c["ç»Ÿä¸€ç¤¾ä¼šä¿¡ç”¨ä»£ç "]
+        name: c.name,
+        creditCode: c.creditCode
       })),
       configured: true
     };
@@ -58,7 +59,8 @@ export async function searchEnterpriseCandidates(
 }
 
 /**
- * ä¼ä¸šè¯¦æƒ…ï¼ˆ10 POINT/æ¬¡ï¼‰ï¼Œæœªé…ç½®æ—¶Volver configured: false
+ * Detalle de empresa (10 POINT por consulta).
+ * Devuelve configured: false si no está configurado.
  */
 export async function getEnterpriseDetail(
   id: string
@@ -81,10 +83,11 @@ export async function getEnterpriseDetail(
 }
 
 // ============================================================
-// v0.26: å¯¹æ–¹å…¬å¸é£Žé™©æŸ¥è¯¢ï¼ˆèšåˆTotalè§ˆ + Party ç»‘å®šï¼‰
+// v0.26: Consulta de riesgo de contraparte + vinculación con Party
 // ============================================================
 
 async function loadPartyWithMatter(partyId: string) {
+  const prisma = await getTenantPrisma();
   const party = await prisma.party.findUnique({
     where: { id: partyId },
     select: {
@@ -98,15 +101,14 @@ async function loadPartyWithMatter(partyId: string) {
       enterpriseBoundAt: true
     }
   });
-  if (!party) throw new Error("å½“äº‹äººä¸å­˜åœ¨");
-  if (!party.matterId) throw new Error("å½“äº‹äººæœªå…³è”Caso");
+  if (!party) throw new Error("La parte no existe");
+  if (!party.matterId) throw new Error("La parte no está asociada a un Caso");
   return party;
 }
 
 /**
- * æŠŠæŸä¸ªå¯¹æ–¹ Party ç»‘å®šåˆ°pesoså…¸ä¼ä¸šï¼ˆå†™å…¥ä¼ä¸š IDã€ç»Ÿä¸€ç¤¾ä¼šä¿¡ç”¨ä»£ç ã€ä¼ä¸šåï¼‰
- *
- * æƒé™ï¼šå½“å‰ç”¨æˆ·å¯¹è¯¥ Matter æœ‰ä¿®æ”¹æƒé™ï¼ˆowner æˆ– managerï¼‰
+ * Vincula una Party a una empresa (guarda ID, código social y nombre).
+ * Permiso: el usuario actual tiene permiso de modificación sobre el Matter.
  */
 export async function bindPartyToEnterprise(input: {
   partyId: string;
@@ -114,6 +116,7 @@ export async function bindPartyToEnterprise(input: {
   socialCode: string;
   enterpriseName: string;
 }): Promise<{ ok: true }> {
+  const prisma = await getTenantPrisma();
   const session = await requireSession();
   const party = await loadPartyWithMatter(input.partyId);
   await assertCanModifyMatter(
@@ -151,13 +154,13 @@ export async function bindPartyToEnterprise(input: {
 }
 
 /**
- * è§£ç»‘ Party ypesoså…¸ä¼ä¸šã€‚
- *
- * æƒé™ï¼šå½“å‰ç”¨æˆ·å¯¹è¯¥ Matter æœ‰ä¿®æ”¹æƒé™ã€‚
+ * Desvincula una Party de la empresa.
+ * Permiso: el usuario actual tiene permiso de modificación sobre el Matter.
  */
 export async function unbindPartyEnterprise(
   partyId: string
 ): Promise<{ ok: true }> {
+  const prisma = await getTenantPrisma();
   const session = await requireSession();
   const party = await loadPartyWithMatter(partyId);
   await assertCanModifyMatter(
@@ -189,13 +192,13 @@ export async function unbindPartyEnterprise(
 }
 
 /**
- * æ‹‰å–æŸä¸ªå·²ç»‘å®š Party çš„ä¼ä¸šèšåˆTotalè§ˆï¼ˆ10 POINT/æ¬¡ï¼‰
- *
- * æƒé™ï¼šå½“å‰ç”¨æˆ·å¯¹è¯¥ Matter æœ‰è®¿é—®æƒé™ã€‚
+ * Obtiene el resumen de una empresa vinculada a una Party (10 POINT por consulta).
+ * Permiso: el usuario actual tiene permiso de acceso sobre el Matter.
  */
 export async function getEnterpriseSummaryByParty(
   partyId: string
 ): Promise<{ summary: EnterpriseSummary | null; configured: boolean }> {
+  const prisma = await getTenantPrisma();
   const session = await requireSession();
   const party = await loadPartyWithMatter(partyId);
   await assertCanAccessMatter(
@@ -205,7 +208,7 @@ export async function getEnterpriseSummaryByParty(
   );
 
   if (!party.enterpriseId && !party.enterpriseSocialCode) {
-    throw new Error("æ­¤å½“äº‹äººå°šæœªç»‘å®špesoså…¸ä¼ä¸š");
+    throw new Error("Esta parte aún no está vinculada a una empresa");
   }
 
   const settings = await getYuandianSettings();
@@ -238,5 +241,3 @@ export async function getEnterpriseSummaryByParty(
 
   return { summary, configured: true };
 }
-
-

@@ -1,13 +1,13 @@
 /**
- * v0.50: ICS 日历订阅源（PRD §二十一）。
+ * v0.50: ICS calendario suscripción (PRD §21).
  *
  * GET /api/calendar/{token} → text/calendar
- * token 即凭证（对应 User.calendarToken，可在 Configuración→Información personal Restablecer）；
- * 内容 = 该用户可见范围内 过去 7 días ~ 未来 90 días 的开庭 / Plazo / Tarea / Preservación到期。
- * 苹果日历 / Google Calendar / Outlook 订阅 URL 后自动定期刷新。
+ * token es la credencial (corresponde a User.calendarToken, se puede resetear en Configuración→Información personal);
+ * contenido = eventos visibles del usuario: audiencias / plazos / tareas / vencimientos de medidas cautelares.
+ * Apple Calendar / Google Calendar / Outlook se suscriben a la URL y se actualizan automáticamente.
  */
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
+import { getTenantPrisma } from "@/lib/tenant-prisma";
 import { queryScheduleItems } from "@/server/schedule/query";
 import { buildIcs, type IcsEvent } from "@/lib/ics";
 
@@ -17,7 +17,7 @@ const PAST_DAYS = 7;
 const FUTURE_DAYS = 90;
 
 const TYPE_PREFIX: Record<string, string> = {
-  hearing: "[开庭]",
+  hearing: "[Audiencia]",
   deadline: "[Plazo]",
   task: "[Tarea]"
 };
@@ -30,6 +30,8 @@ export async function GET(
   if (!token || token.length < 16) {
     return new NextResponse("Not found", { status: 404 });
   }
+
+  const prisma = await getTenantPrisma();
 
   const user = await prisma.user.findUnique({
     where: { calendarToken: token },
@@ -53,7 +55,7 @@ export async function GET(
 
   const events: IcsEvent[] = items.map((item) => {
     const prefix = TYPE_PREFIX[item.type] ?? "";
-    // Cliente名而非完整Caso名（y站内Calendario一致，减少日历外泄的敏感信息）
+    // Se muestra el nombre del cliente, no el nombre completo del caso (menos datos sensibles en el calendario)
     const who = item.clientName ?? item.matter.internalCode;
     const isTimed = item.type === "hearing";
     return {

@@ -196,7 +196,7 @@ export async function saveWritingToMatter(input: {
       path: filePath,
       mimeType: "text/plain",
       size: Buffer.byteLength(plainText, "utf-8"),
-      tags: JSON.stringify([`etapa:${input.stageName}`]),
+      tags: [`etapa:${input.stageName}`],
       uploadedById: session.user.id,
       encrypted: false
     }

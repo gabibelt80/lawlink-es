@@ -41,9 +41,9 @@ export async function archiveMatter(input: ArchiveSubmitInput) {
   await assertMatterWritable(data.matterId);
   await assertCanLeadMatter(
     session.user.id,
-    session.user.role as any,
+    session.user.role,
     data.matterId,
-    "Solo el responsable..."
+    "Solo el responsable del Caso / co-responsable puede enviar la solicitud de archivo",
   );
 
   const matter = await prisma.matter.findUnique({
@@ -349,9 +349,9 @@ export async function getArchivePrepData(matterId: string) {
   const session = await requireSession();
   await assertCanLeadMatter(
     session.user.id,
-    session.user.role as any,
+    session.user.role,
     matterId,
-    "Solo el responsable/co-responsable..."
+    "Solo el responsable/co-responsable puede preparar el archivo",
   );
   const matter = await prisma.matter.findUnique({
     where: { id: matterId },
@@ -427,7 +427,7 @@ export async function getArchivePrepData(matterId: string) {
 export async function listArchivedMatters() {
   const prisma = await getTenantPrisma();
   await requireSession();
-  const records = await prisma.archiveRecord.findMany({
+  return prisma.archiveRecord.findMany({
     where: { status: "APPROVED" },
     orderBy: { archivedAt: "desc" },
     take: 200,
@@ -452,11 +452,6 @@ export async function listArchivedMatters() {
       },
     },
   });
-
-  return records.map((r) => ({
-    ...r,
-    missingItems: (r.missingItems as string[]),
-  }));
 }
 
 /**
@@ -468,7 +463,7 @@ export async function listPendingArchiveRecords() {
   if (session.user.role !== "ADMIN") {
     throw new Error("Solo el Administrador puede ver solicitudes pendientes");
   }
-  const records = await prisma.archiveRecord.findMany({
+  return prisma.archiveRecord.findMany({
     where: { status: "PENDING_REVIEW" },
     orderBy: { archivedAt: "asc" },
     take: 200,
@@ -495,11 +490,6 @@ export async function listPendingArchiveRecords() {
       },
     },
   });
-
-  return records.map((r) => ({
-    ...r,
-    missingItems: (r.missingItems as string[]),
-  }));
 }
 
 /**

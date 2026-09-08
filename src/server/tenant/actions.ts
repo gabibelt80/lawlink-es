@@ -1,6 +1,7 @@
 ﻿"use server";
 
 import bcrypt from "bcryptjs";
+import { getTenantPrisma } from "@/lib/tenant-prisma";
 import { prisma, createTenantSchema, migrateTenantSchema } from "@/lib/tenant";
 
 function slugify(text: string): string {

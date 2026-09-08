@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { Prisma } from "@prisma/client";
+import type { UserRole } from "@prisma/client";
 import { getTenantPrisma } from "@/lib/tenant-prisma";
 import { requireSession } from "@/lib/auth/session";
 import { audit } from "@/server/audit";
@@ -66,7 +67,7 @@ export async function listExpress(input?: z.input<typeof expressListFilterSchema
 export async function getExpress(id: string) {
   const prisma = await getTenantPrisma();
   const session = await requireSession();
-  await assertCanAccessExpressRecord(session.user.id, id);
+  await assertCanAccessExpressRecord(session.user.id, session.user.role, id);
   return prisma.expressTracking.findUnique({
     where: { id },
     include: {
@@ -76,7 +77,7 @@ export async function getExpress(id: string) {
   });
 }
 
-async function assertCanAccessExpressRecord(userId: string, id: string) {
+async function assertCanAccessExpressRecord(userId: string, role: UserRole, id: string) {
   const prisma = await getTenantPrisma();
   const record = await prisma.expressTracking.findUnique({
     where: { id },
@@ -84,7 +85,7 @@ async function assertCanAccessExpressRecord(userId: string, id: string) {
   });
   if (!record) throw new Error("El registro de envío no existe");
   if (record.matterId) {
-    await assertCanAssociateMatter(userId, "ADMIN" as any, record.matterId);
+    await assertCanAssociateMatter(userId, role, record.matterId);
     return record;
   }
   if (record.createdById !== userId) throw new Error("Sin permiso para acceder a este envío");
@@ -162,7 +163,7 @@ export async function refreshExpress(input: z.infer<typeof expressIdSchema>) {
   const session = await requireSession();
   const data = expressIdSchema.parse(input);
 
-  await assertCanAccessExpressRecord(session.user.id, data.id);
+  await assertCanAccessExpressRecord(session.user.id, session.user.role, data.id);
   const e = await prisma.expressTracking.findUniqueOrThrow({
     where: { id: data.id },
     select: { id: true, trackingNo: true, companyCode: true, matterId: true }
@@ -201,7 +202,7 @@ export async function deleteExpress(input: z.infer<typeof expressIdSchema>) {
   const session = await requireSession();
   const data = expressIdSchema.parse(input);
 
-  const e = await assertCanAccessExpressRecord(session.user.id, data.id);
+  const e = await assertCanAccessExpressRecord(session.user.id, session.user.role, data.id);
 
   await prisma.expressTracking.delete({ where: { id: data.id } });
 

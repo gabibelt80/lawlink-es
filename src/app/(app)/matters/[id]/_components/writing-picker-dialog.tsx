@@ -40,7 +40,7 @@ export function WritingPickerDialog({
   onOpenChange: (o: boolean) => void;
   matterId: string;
   procedureId: string;
-  stageId: string;
+  stageId: string | null;
   stageName: string;
   onSaved?: () => void;
 }) {

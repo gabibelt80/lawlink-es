@@ -121,7 +121,7 @@ export async function generateCaseJson(matterId: string) {
 
   if (!matter) throw new Error("Caso no encontrado");
 
-  const caseJson = {
+  const caseJson: Record<string, unknown> = {
     version: "1.0",
     updatedAt: new Date().toISOString(),
     case: {
@@ -504,7 +504,7 @@ export async function generateCaseJson(matterId: string) {
   const jsonPath = join(matterDir, `${matter.internalCode}.json`);
    // Preservar audit, chat y writings del JSON anterior
   if (existsSync(jsonPath)) {
-    const previousData = JSON.parse(readFileSync(jsonPath, "utf-8"));
+    const previousData = JSON.parse(readFileSync(jsonPath, "utf-8")) as Record<string, unknown>;
     if (previousData.audit) caseJson.audit = previousData.audit;
     if (previousData.chat) caseJson.chat = previousData.chat;
     if (previousData.writings) caseJson.writings = previousData.writings;

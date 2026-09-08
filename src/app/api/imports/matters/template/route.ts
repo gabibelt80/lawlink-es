@@ -1,14 +1,12 @@
 ﻿import { NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-
-import { authOptions } from "@/lib/auth/options";
+import { getSession } from "@/lib/auth/session";
 import { buildMatterImportTemplate } from "@/server/imports/template";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 export async function GET() {
-  const session = await getServerSession(authOptions);
+  const session = await getSession();
   if (!session?.user) {
     return NextResponse.json({ error: "No autenticado" }, { status: 401 });
   }

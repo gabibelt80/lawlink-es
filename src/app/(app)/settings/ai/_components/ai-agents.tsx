@@ -20,10 +20,12 @@ import { cn } from "@/lib/utils";
 type AgentConfig = {
   editorEnabled: boolean;
   editorModel: string;
-  editorApiKey: string;
+  editorApiKey?: string;
+  editorApiKeyCipher?: { ct: string; iv: string; tag: string } | null;
   auditorEnabled: boolean;
   auditorModel: string;
-  auditorApiKey: string;
+  auditorApiKey?: string;
+  auditorApiKeyCipher?: { ct: string; iv: string; tag: string } | null;
 };
 
 const AI_MODELS = [

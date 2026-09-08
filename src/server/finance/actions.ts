@@ -73,7 +73,11 @@ export async function deleteBilling(id: string) {
     await assertMatterWritable(billing.matterId, { allowFinanceRole: true });
   } else {
     await assertMatterWritable(billing.matterId);
-    await assertCanLeadMatter(session.user.id, session.user.role, billing.matterId, "Solo el titular/co-titular del caso o Finanzas puede eliminar contratos");
+    await assertCanLeadMatter(
+      session.user.id,
+      session.user.role,
+      billing.matterId,
+    );
   }
 
   await prisma.billing.delete({ where: { id } });
@@ -87,11 +91,11 @@ export async function deleteBilling(id: string) {
   return { ok: true };
 }
 
-// ============ FeeEntry + comision automÃ¡tica ============
+// ============ FeeEntry + comision automática ============
 
 /**
  * Crea un registro de cobro/pago.
- * - Al crear RECEIVED se deriva automÃ¡ticamente un subregistro COMMISSION por cada beneficiario Segun CommissionPlan
+ * - Al crear RECEIVED se deriva automáticamente un subregistro COMMISSION por cada beneficiario Segun CommissionPlan
  * - parent / children se vinculan por parentFeeEntryId
  */
 export async function createFeeEntry(input: FeeEntryCreateInput) {
@@ -116,7 +120,7 @@ export async function createFeeEntry(input: FeeEntryCreateInput) {
       }
     });
 
-    // comision automÃ¡tica
+    // comision automática
     if (data.type === "RECEIVED" && data.amount > 0) {
       const plans = await tx.commissionPlan.findMany({
         where: { matterId: data.matterId, active: true }
@@ -133,7 +137,7 @@ export async function createFeeEntry(input: FeeEntryCreateInput) {
             occurredAt: data.occurredAt,
             parentFeeEntryId: entry.id,
             beneficiaryUserId: plan.userId,
-            note: plan.label ? `Segun plan [${plan.label}] comision automÃ¡tica ${plan.percent}%` : `comision automÃ¡tica ${plan.percent}%`,
+            note: plan.label ? `Segun plan [${plan.label}] comision automática ${plan.percent}%` : `comision automática ${plan.percent}%`,
             recordedById: session.user.id
           }
         });
@@ -182,7 +186,7 @@ export async function deleteFeeEntry(id: string) {
   if (!entry) return { ok: false };
   await assertMatterWritable(entry.matterId, { allowFinanceRole: true });
 
-  // Al eliminar el registro padre tambiÃ©n se eliminan las comisiones derivadas
+  // Al eliminar el registro padre también se eliminan las comisiones derivadas
   await prisma.$transaction(async (tx) => {
     if (entry.commissionChildren.length > 0) {
       await tx.feeEntry.deleteMany({
@@ -218,7 +222,11 @@ export async function setCommissionPlan(input: CommissionPlanSetInput) {
   const session = await requireSession();
   const data = commissionPlanSetSchema.parse(input);
   await assertMatterWritable(data.matterId);
-  await assertCanLeadMatter(session.user.id, session.user.role, data.matterId, "Solo el titular/co-titular del caso puede configurar el plan de comisiones");
+  await assertCanLeadMatter(
+    session.user.id,
+    session.user.role,
+    data.matterId,
+  );
 
   await prisma.$transaction([
     prisma.commissionPlan.deleteMany({ where: { matterId: data.matterId } }),
@@ -245,7 +253,7 @@ export async function setCommissionPlan(input: CommissionPlanSetInput) {
   return { ok: true };
 }
 
-// ============ EstadÃ­sticas financieras globales ============
+// ============ Estadísticas financieras globales ============
 
 export async function getMatterFinance(matterId: string) {
   const prisma = await getTenantPrisma();
@@ -324,7 +332,7 @@ export async function listMatterInvoiceRequests(matterId: string) {
 }
 
 /**
- * v0.12: Obtiene la informaciÃ³n por defecto del caso para facturar (titular del cliente + id de admisiÃ³n asociada)
+ * v0.12: Obtiene la información por defecto del caso para facturar (titular del cliente + id de admisión asociada)
  */
 export async function getMatterInvoiceContext(matterId: string) {
   const prisma = await getTenantPrisma();
@@ -441,7 +449,7 @@ export async function createInvoiceRequest(input: {
   }
   if (!input.buyerName.trim()) throw new Error("Completa el titular de la factura");
   if (input.invoiceType === "SPECIAL") {
-    if (!input.buyerTaxNo?.trim()) throw new Error("La factura especial debe incluir el numero de identificaciÃ³n fiscal");
+    if (!input.buyerTaxNo?.trim()) throw new Error("La factura especial debe incluir el numero de identificación fiscal");
     if (!input.buyerAddress?.trim()) throw new Error("La factura especial debe incluir la direccion del comprador");
     if (!input.buyerPhone?.trim()) throw new Error("La factura especial debe incluir el telefono del comprador");
     if (!input.buyerBank?.trim()) throw new Error("La factura especial debe incluir el banco");
@@ -483,7 +491,7 @@ export async function createInvoiceRequest(input: {
   await notifyRoleApprovers({
     roles: ["ADMIN", "PRINCIPAL_LAWYER", "FINANCE"],
     excludeUserId: session.user.id,
-    title: "Nueva aprobaciÃ³n de factura pendiente",
+    title: "Nueva aprobación de factura pendiente",
     content: `${session.user.name ?? "Usuario"} envio una solicitud de facturacion: ${
       matter ? `${matter.internalCode} ${matter.title}` : input.noMatterReason?.trim() || "Sin caso asociado"
     },Monto ${input.amount.toLocaleString("es-AR")} ARS`,
@@ -605,4 +613,3 @@ export async function getPersonalRevenue(userId: string) {
     yearlyCommission: Number(yearly._sum.amount ?? 0)
   };
 }
-

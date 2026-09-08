@@ -6,6 +6,7 @@ import { Prisma } from "@prisma/client";
 import { getTenantPrisma } from "@/lib/tenant-prisma";
 import { requireSession } from "@/lib/auth/session";
 import { audit } from "@/server/audit";
+import type { UserRole } from "@prisma/client";
 import { assertMatterWritable } from "@/lib/archive/guard";
 import {
   assertCanAccessMatter,
@@ -29,13 +30,13 @@ function requireFinanceOrApprover(role: string) {
   }
 }
 
-function canReviewInvoiceRequests(role: string) {
+function canReviewInvoiceRequests(role: UserRole) {
   return isManager(role) || role === "FINANCE";
 }
 
 function invoiceRequestVisibilityWhere(
   userId: string,
-  role: string
+  role: UserRole
 ): Prisma.InvoiceRequestWhereInput {
   if (canReviewInvoiceRequests(role)) return {};
   return {
@@ -66,7 +67,11 @@ export async function createInvoiceRequest(input: z.infer<typeof createSchema>) 
   await assertCanAssociateMatter(session.user.id, session.user.role, data.matterId);
   await assertMatterWritable(data.matterId);
 
-  await assertCanLeadMatter(session.user.id, session.user.role, data.matterId, "Solo el responsable/co-responsable puede solicitar factura");
+  await assertCanLeadMatter(
+    session.user.id,
+    session.user.role,
+    data.matterId,
+  );
 
   const created = await prisma.invoiceRequest.create({
     data: {

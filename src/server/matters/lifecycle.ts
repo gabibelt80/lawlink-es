@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
-import { prisma } from "@/lib/prisma";
+import { getTenantPrisma } from "@/lib/tenant-prisma";
 import { requireSession } from "@/lib/auth/session";
 import { audit } from "@/server/audit";
 import { assertMatterWritable } from "@/lib/archive/guard";
@@ -11,7 +11,7 @@ import { revalidateMatter } from "@/server/matters/route";
 
 const closeMatterSchema = z.object({
   id: z.string().cuid(),
-  summary: z.string().min(1, "Cerrar casoå°ç»“å¿…å¡«").max(2000)
+  summary: z.string().min(1, "El resumen de cierre es obligatorio").max(2000)
 });
 
 const holdMatterSchema = z.object({
@@ -23,14 +23,14 @@ export type CloseMatterInput = z.infer<typeof closeMatterSchema>;
 export type HoldMatterInput = z.infer<typeof holdMatterSchema>;
 
 /**
- * Cerrar casoï¼šæŠŠCasoEstadoåˆ‡åˆ° CLOSEDï¼Œè®°å½•Cerrar casoå°ç»“åˆ° TimelineEventã€‚
- * ä¸å¼ºåˆ¶è¦æ±‚æ‰€æœ‰ procedure éƒ½ concludedï¼ŒAbogadoè‡ªè¡Œåˆ¤æ–­ã€‚
+ * Cerrar caso: cambia el estado del caso a CLOSED, registra el resumen en TimelineEvent.
  */
 export async function closeMatter(input: CloseMatterInput) {
+  const prisma = await getTenantPrisma();
   const session = await requireSession();
   const data = closeMatterSchema.parse(input);
   await assertMatterWritable(data.id);
-  await assertCanLeadMatter(session.user.id, session.user.role, data.id, "ä»…Casoä¸»åŠž/ååŠžå¯ä»¥Cerrar caso");
+  await assertCanLeadMatter(session.user.id, session.user.role, data.id, "Solo el responsable/co-responsable puede cerrar el caso");
 
   await prisma.$transaction(async (tx) => {
     await tx.matter.update({
@@ -44,7 +44,7 @@ export async function closeMatter(input: CloseMatterInput) {
       data: {
         matterId: data.id,
         eventType: "MATTER_CLOSED",
-        title: "Casoå·²Cerrar caso",
+        title: "Caso cerrado",
         content: data.summary,
         occurredAt: new Date()
       }
@@ -65,22 +65,22 @@ export async function closeMatter(input: CloseMatterInput) {
 }
 
 /**
- * å½’æ¡£ï¼šå®Œæ•´æµç¨‹è§ src/server/archive/actions.ts â†’ archiveMatter
- * è¿™é‡Œä¸å†ä¿ç•™æ—§çš„è½»é‡ç‰ˆæœ¬ï¼ˆv0.9.4 èµ·ç»Ÿä¸€èµ° ArchiveWizardï¼‰ã€‚
+ * Archivo: flujo completo en src/server/archive/actions.ts → archiveMatter
  */
 
 /**
- * é‡æ–°å¼€æ”¾ï¼ˆä»Ž ON_HOLD / CLOSED å›žåˆ° IN_PROGRESSï¼‰ã€‚
- * ARCHIVED Estadoä¸èƒ½é‡æ–°å¼€æ”¾ï¼ˆå¦‚éœ€è¦åº”ç”± ADMIN èµ°å•ç‹¬è·¯å¾„ï¼‰ã€‚
+ * Reabrir caso (de ON_HOLD / CLOSED a IN_PROGRESS).
+ * ARCHIVED no se puede reabrir.
  */
 export async function reopenMatter(id: string) {
+  const prisma = await getTenantPrisma();
   const session = await requireSession();
   const matter = await prisma.matter.findUnique({ where: { id }, select: { status: true } });
-  if (!matter) throw new Error("Casoä¸å­˜åœ¨");
+  if (!matter) throw new Error("Caso no existe");
   await assertMatterWritable(id);
-  await assertCanLeadMatter(session.user.id, session.user.role, id, "ä»…Casoä¸»åŠž/ååŠžå¯ä»¥é‡æ–°å¼€æ”¾Caso");
+  await assertCanLeadMatter(session.user.id, session.user.role, id, "Solo el responsable/co-responsable puede reabrir el caso");
   if (matter.status === "ARCHIVED") {
-    throw new Error("å·²å½’æ¡£Casoä¸èƒ½é‡æ–°å¼€æ”¾");
+    throw new Error("Caso archivado no se puede reabrir");
   }
 
   await prisma.$transaction(async (tx) => {
@@ -95,7 +95,7 @@ export async function reopenMatter(id: string) {
       data: {
         matterId: id,
         eventType: "MATTER_REOPENED",
-        title: "Casoå·²é‡æ–°å¼€æ”¾",
+        title: "Caso reabierto",
         occurredAt: new Date()
       }
     });
@@ -114,13 +114,14 @@ export async function reopenMatter(id: string) {
 }
 
 /**
- * æš‚åœCasoï¼ˆClienteå¤±è”ã€å¾…è¡¥å……ææ–™etc.ï¼‰ã€‚
+ * Pausar caso (cliente no responde, falta material, etc.).
  */
 export async function holdMatter(input: HoldMatterInput) {
+  const prisma = await getTenantPrisma();
   const session = await requireSession();
   const data = holdMatterSchema.parse(input);
   await assertMatterWritable(data.id);
-  await assertCanLeadMatter(session.user.id, session.user.role, data.id, "ä»…Casoä¸»åŠž/ååŠžå¯ä»¥æš‚åœCaso");
+  await assertCanLeadMatter(session.user.id, session.user.role, data.id, "Solo el responsable/co-responsable puede pausar el caso");
 
   await prisma.$transaction(async (tx) => {
     await tx.matter.update({
@@ -131,7 +132,7 @@ export async function holdMatter(input: HoldMatterInput) {
       data: {
         matterId: data.id,
         eventType: "MATTER_ON_HOLD",
-        title: "Casoå·²æš‚åœ",
+        title: "Caso pausado",
         content: data.reason || undefined,
         occurredAt: new Date()
       }
@@ -150,5 +151,3 @@ export async function holdMatter(input: HoldMatterInput) {
   revalidatePath("/matters");
   return { ok: true };
 }
-
-

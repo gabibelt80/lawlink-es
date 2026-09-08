@@ -329,7 +329,7 @@ export async function removeProcedureStage(input: ProcedureStageRemoveInput) {
   });
   if (!stage) return { ok: false };
 
-  await assertCanAssociateMatter(session.user.id, session.user.role, procedure.matterId);
+  await assertCanAssociateMatter(session.user.id, session.user.role, stage.procedure.matterId);
   await assertMatterWritable(stage.procedure.matterId);
 
   const preset = stagePresetForName(stage.procedure.type, stage.name);

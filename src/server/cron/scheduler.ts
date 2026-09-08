@@ -1,7 +1,5 @@
-/**
- * Cron scheduler simplificado.
- * Los jobs se registran en el arranque del proceso.
- */
+"use server";
+
 import cron from "node-cron";
 import { runWeeklyReportPush } from "@/server/reports/push-weekly";
 import { scanArchiveOverdue } from "./jobs/archive-overdue";
@@ -87,7 +85,7 @@ export function registerCronJobs() {
     { timezone: TIMEZONE }
   );
 
-  // Todos los días 09:00 - escaneo de recordatorios
+  // Todos los días 09:00 - escaneo de recordatorios vencidos
   cron.schedule(
     "0 9 * * *",
     () =>

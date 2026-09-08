@@ -79,7 +79,7 @@ const runCheckSchema = z.object({
 export async function runCheckAndSave(input: z.infer<typeof runCheckSchema>) {
   const prisma = await getTenantPrisma();
   const session = await requireSession();
-  const tenantUserId = await resolveTenantUserId(session.user.email, prisma);
+  const tenantUserId = await resolveTenantUserId(session.user.email ?? "", prisma);
   const data = runCheckSchema.parse(input);
 
   const queries: QueryItem[] = data.queries.map((q) => ({
@@ -166,7 +166,7 @@ const conclusionSchema = z.object({
 export async function setConflictConclusion(input: z.infer<typeof conclusionSchema>) {
   const prisma = await getTenantPrisma();
   const session = await requireSession();
-  const tenantUserId = await resolveTenantUserId(session.user.email, prisma);
+  const tenantUserId = await resolveTenantUserId(session.user.email ?? "", prisma);
   const data = conclusionSchema.parse(input);
 
   const updated = await prisma.conflictCheck.update({

@@ -1,6 +1,5 @@
 ﻿import { NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth/options";
+import { getSession } from "@/lib/auth/session";
 import { audit } from "@/server/audit";
 import { buildReportWorkbook } from "@/server/reports/export-xlsx";
 import { resolveReportPeriod } from "@/server/reports/resolve-period";
@@ -9,12 +8,12 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 export async function GET(req: Request) {
-  const session = await getServerSession(authOptions);
+  const session = await getSession();
   if (!session?.user) {
-    return NextResponse.json({ error: "æœªIniciar sesiÃ³n" }, { status: 401 });
+    return NextResponse.json({ error: "No has iniciado sesión" }, { status: 401 });
   }
   if (session.user.role !== "ADMIN" && session.user.role !== "PRINCIPAL_LAWYER") {
-    return NextResponse.json({ error: "æ— æƒè®¿é—®" }, { status: 403 });
+    return NextResponse.json({ error: "Sin permiso de acceso" }, { status: 403 });
   }
 
   const url = new URL(req.url);
@@ -32,8 +31,8 @@ export async function GET(req: Request) {
   try {
     buf = await buildReportWorkbook(period);
   } catch (err) {
-    console.error("[reports/export] ç”ŸæˆErrorï¼š", err);
-    return NextResponse.json({ error: "å¯¼å‡ºError" }, { status: 500 });
+    console.error("[reports/export] Error al generar:", err);
+    return NextResponse.json({ error: "Error al exportar" }, { status: 500 });
   }
 
   await audit({
@@ -57,4 +56,3 @@ export async function GET(req: Request) {
     }
   });
 }
-

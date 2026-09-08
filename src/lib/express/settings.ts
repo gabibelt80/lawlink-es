@@ -1,11 +1,5 @@
 ﻿/**
  * Configuración de servicios de mensajería argentinos.
- *
- * SystemSetting con clave `expressSettings`, value:
- *   {
- *     andreani: { apiKeyCipher: {ct,iv,tag} },
- *     correoArgentino: { apiKeyCipher: {ct,iv,tag} }
- *   }
  */
 import { prisma } from "@/lib/prisma";
 import { encryptBuffer, decryptBuffer } from "@/lib/storage/crypto";

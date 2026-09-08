@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth/options";
-import { prisma } from "@/lib/prisma";
+import { getTenantPrisma } from "@/lib/tenant-prisma";
+import { getSession } from "@/lib/auth/session";
 import { audit } from "@/server/audit";
 import { storage } from "@/lib/storage";
 import { decryptBuffer } from "@/lib/storage/crypto";
@@ -11,19 +10,19 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 /**
- * v0.42: Caso材料在线预览。
- * - docx → mammoth 转 HTML
- * - xlsx/xls → exceljs 读单pesos格转 HTML 表
- * Volver完整 HTML 文档，前端 <iframe> 内嵌。
- * pdf/图片/文本etc.浏览器原生可预览的走 download?inline=1（本路由不处理）。
+ * v0.42: Vista previa en línea de materiales del Caso.
+ * - docx → mammoth a HTML
+ * - xlsx/xls → exceljs a tabla HTML
+ * Devuelve HTML completo, el front lo muestra en <iframe>.
+ * pdf/imagen/texto van por download?inline=1.
  */
 function htmlShell(title: string, body: string): string {
-  return `<!doctype html><html lang="zh"><head><meta charset="utf-8"/>
+  return `<!doctype html><html lang="es"><head><meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
 <title>${escapeHtml(title)}</title>
 <style>
   :root { color-scheme: light; }
-  body { margin: 0; padding: 24px 28px; font-family: -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif; color: #1a1a1a; line-height: 1.7; background: #fff; }
+  body { margin: 0; padding: 24px 28px; font-family: -apple-system, "Segoe UI", sans-serif; color: #1a1a1a; line-height: 1.7; background: #fff; }
   .doc { max-width: 820px; margin: 0 auto; }
   .doc img { max-width: 100%; height: auto; }
   table { border-collapse: collapse; width: 100%; margin: 8px 0; font-size: 13px; }
@@ -44,23 +43,25 @@ function escapeHtml(s: string): string {
 }
 
 export async function GET(req: Request, { params }: { params: { id: string } }) {
-  const session = await getServerSession(authOptions);
+  const session = await getSession();
   if (!session?.user) {
-    return NextResponse.json({ error: "未Iniciar sesión" }, { status: 401 });
+    return NextResponse.json({ error: "No has iniciado sesión" }, { status: 401 });
   }
+
+  const prisma = await getTenantPrisma();
 
   const doc = await prisma.document.findFirst({
     where: { id: params.id, deletedAt: null }
   });
-  if (!doc) return NextResponse.json({ error: "材料不存在" }, { status: 404 });
+  if (!doc) return NextResponse.json({ error: "El material no existe" }, { status: 404 });
 
-  // 权限：y download 路由一致（ADMIN/主任全看；Caso成员看本案；收案合同限相关人）
+  // Permisos: igual que download
   if (session.user.role !== "ADMIN" && session.user.role !== "PRINCIPAL_LAWYER") {
     if (doc.matterId) {
       const member = await prisma.matterMember.findUnique({
         where: { matterId_userId: { matterId: doc.matterId, userId: session.user.id } }
       });
-      if (!member) return NextResponse.json({ error: "无权访问" }, { status: 403 });
+      if (!member) return NextResponse.json({ error: "Sin permiso de acceso" }, { status: 403 });
     } else if (doc.intakeId) {
       const intake = await prisma.intake.findUnique({
         where: { id: doc.intakeId },
@@ -71,15 +72,15 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
         !!intake &&
         (intake.createdById === uid ||
           intake.ownerUserId === uid ||
-          intake.coUserIds.includes(uid));
-      if (!allowed) return NextResponse.json({ error: "无权访问" }, { status: 403 });
+          (intake.coUserIds as string[]).includes(uid));
+      if (!allowed) return NextResponse.json({ error: "Sin permiso de acceso" }, { status: 403 });
     }
   }
 
   const kind = officePreviewKind(doc.mimeType, doc.name);
   if (!kind) {
     return NextResponse.json(
-      { error: "该类型不支持在线预览，请下载Ver" },
+      { error: "Este tipo no soporta vista previa en línea, descargalo para verlo" },
       { status: 415 }
     );
   }
@@ -89,15 +90,15 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
     const stored = await storage.readFile(doc.path);
     if (doc.encrypted) {
       if (!doc.iv || !doc.authTag) {
-        return NextResponse.json({ error: "加密pesos数据损坏" }, { status: 500 });
+        return NextResponse.json({ error: "Datos cifrados dañados" }, { status: 500 });
       }
       buf = decryptBuffer(stored, doc.iv, doc.authTag);
     } else {
       buf = stored;
     }
   } catch (err) {
-    console.error("[preview] 读取Error：", err);
-    return NextResponse.json({ error: "读取Error" }, { status: 500 });
+    console.error("[preview] Error al leer:", err);
+    return NextResponse.json({ error: "Error al leer" }, { status: 500 });
   }
 
   let html: string;
@@ -105,7 +106,7 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
     if (kind === "docx") {
       const mammoth = (await import("mammoth")).default;
       const result = await mammoth.convertToHtml({ buffer: buf });
-      html = htmlShell(doc.name, result.value || "<p>（空文档）</p>");
+      html = htmlShell(doc.name, result.value || "<p>(documento vacío)</p>");
     } else {
       const ExcelJS = (await import("exceljs")).default;
       const wb = new ExcelJS.Workbook();
@@ -131,11 +132,11 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
         });
         parts.push(`<table>${rows.join("")}</table>`);
       });
-      html = htmlShell(doc.name, parts.join("") || "<p>（空表格）</p>");
+      html = htmlShell(doc.name, parts.join("") || "<p>(tabla vacía)</p>");
     }
   } catch (err) {
-    console.error("[preview] 转换Error：", err);
-    return NextResponse.json({ error: "文档转换Error，请下载Ver" }, { status: 500 });
+    console.error("[preview] Error al convertir:", err);
+    return NextResponse.json({ error: "Error al convertir el documento, descargalo para verlo" }, { status: 500 });
   }
 
   await audit({

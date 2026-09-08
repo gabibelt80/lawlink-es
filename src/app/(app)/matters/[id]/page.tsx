@@ -81,6 +81,7 @@ export default async function MatterDetailPage({ params }: PageProps) {
         stageId: true,
         procedureId: true,
         folderId: true,
+        templateId: true,
         tags: true,
       },
     }),
@@ -94,7 +95,7 @@ export default async function MatterDetailPage({ params }: PageProps) {
         enabled: true,
         OR: [
           { applicableCategories: { equals: [] } },
-          { applicableCategories: { equals: matter.category as any } }
+          { applicableCategories: { array_contains: matter.category } }
         ]
       },
       orderBy: [{ category: "asc" }, { name: "asc" }],
@@ -212,7 +213,7 @@ export default async function MatterDetailPage({ params }: PageProps) {
     name: d.name,
     size: d.size,
     folderId: d.folderId,
-    templateId: (d as any).templateId,
+    templateId: d.templateId,
     createdAt: d.createdAt
   }));
   const preservationCasesForClient = serializeDecimals(preservationCases);
@@ -238,7 +239,7 @@ export default async function MatterDetailPage({ params }: PageProps) {
         folderDocuments={folderDocuments}
         templates={templates.map((t) => ({
           ...t,
-          applicableCategories: (t.applicableCategories as string[]) ?? [],
+          applicableCategories: Array.isArray(t.applicableCategories) ? (t.applicableCategories as string[]) : [],
           variables: Array.isArray(t.variables) ? (t.variables as string[]) : []
         }))}
         colleagues={allColleagues.map((c) => ({ id: c.id, name: c.name }))}

@@ -29,6 +29,7 @@ import { revalidateMatter } from "@/server/matters/route";
 
 async function findMatchingMatter(caseNumbers: string[]): Promise<string | null> {
   if (caseNumbers.length === 0) return null;
+  const prisma = await getTenantPrisma();
   const proc = await prisma.matterProcedure.findFirst({
     where: {
       caseNumber: { in: caseNumbers },
@@ -40,6 +41,7 @@ async function findMatchingMatter(caseNumbers: string[]): Promise<string | null>
 }
 
 async function findDefaultProcedureId(matterId: string, caseNumbers: string[]): Promise<string | null> {
+  const prisma = await getTenantPrisma();
   const byCaseNumber = caseNumbers.length > 0
     ? await prisma.matterProcedure.findFirst({
         where: {

@@ -892,7 +892,11 @@ export async function updateMatterBasicInfo(input: MatterUpdateBasicInput) {
   });
   if (!matter) throw new Error("El Caso no existe");
   await assertMatterWritable(data.id);
-  await assertCanLeadMatter(session.user.id, session.user.role, data.id, "Solo el responsable/co-responsable puede editar");
+  await assertCanLeadMatter(
+    session.user.id,
+    session.user.role,
+    data.id,
+  );
   await assertCauseAllowedForMatter(data.id, data.causeId);
 
   await prisma.matter.update({

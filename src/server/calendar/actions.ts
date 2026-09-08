@@ -1,4 +1,4 @@
-﻿"use server";
+"use server";
 
 import { randomBytes } from "node:crypto";
 import { getTenantPrisma } from "@/lib/tenant-prisma";
@@ -10,7 +10,6 @@ function newToken() {
 }
 
 async function resolveTenantUserId(email: string, prisma: any): Promise<string | null> {
-  // Si es system admin, buscar el primer admin del tenant
   let user = await prisma.user.findUnique({
     where: { email },
     select: { id: true }
@@ -26,14 +25,11 @@ async function resolveTenantUserId(email: string, prisma: any): Promise<string |
   return user?.id ?? null;
 }
 
-/**
- * v0.50: Obtiene (o genera) el token de suscripción al calendario del usuario actual.
- */
 export async function getCalendarToken() {
   const prisma = await getTenantPrisma();
   const session = await requireSession();
 
-  const tenantUserId = await resolveTenantUserId(session.user.email, prisma);
+  const tenantUserId = await resolveTenantUserId(session.user.email ?? "", prisma);
   if (!tenantUserId) throw new Error("Usuario no encontrado");
 
   const user = await prisma.user.findUnique({
@@ -59,7 +55,7 @@ export async function getCalendarToken() {
 export async function regenerateCalendarToken() {
   const prisma = await getTenantPrisma();
   const session = await requireSession();
-  const tenantUserId = await resolveTenantUserId(session.user.email, prisma);
+  const tenantUserId = await resolveTenantUserId(session.user.email ?? "", prisma);
   if (!tenantUserId) throw new Error("Usuario no encontrado");
 
   const token = newToken();

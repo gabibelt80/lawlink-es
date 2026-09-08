@@ -63,6 +63,7 @@ export async function uploadDocument(formData: FormData) {
   if (currentSize + fileSize > maxBytes) {
     throw new Error(`Límite de almacenamiento alcanzado. Tu plan incluye ${limits.storageGB} GB.`);
   }
+
   const matterId = typeof matterIdRaw === "string" && matterIdRaw ? matterIdRaw : null;
   const intakeId = typeof intakeIdRaw === "string" && intakeIdRaw ? intakeIdRaw : null;
   if (!matterId && !intakeId) throw new Error("matterId o intakeId son obligatorios");
@@ -116,6 +117,7 @@ export async function uploadDocument(formData: FormData) {
 
     await assertDocumentWritable(matterId, { kind: "upload", folderName });
   }
+
   if (intakeId) {
     const intake = await prisma.intake.findUnique({
       where: { id: intakeId },
@@ -128,7 +130,7 @@ export async function uploadDocument(formData: FormData) {
       !isManager(session.user.role) &&
       intake.createdById !== uid &&
       intake.ownerUserId !== uid &&
-      !intake.coUserIds.includes(uid)
+      !(intake.coUserIds as string[]).includes(uid)
     ) {
       throw new Error("Sin permiso para subir material a esta admision");
     }
@@ -222,7 +224,11 @@ export async function deleteDocument(id: string) {
   if (doc.matterId) {
     await assertDocumentWritable(doc.matterId, { kind: "modify" });
     if (doc.uploadedById !== session.user.id) {
-      await assertCanLeadMatter(session.user.id, session.user.role, doc.matterId, "Solo puede eliminar el material que subio, o el responsable/co-responsable");
+      await assertCanLeadMatter(
+        session.user.id,
+        session.user.role,
+        doc.matterId,
+      );
     }
   } else if (
     doc.uploadedById !== session.user.id &&
@@ -259,7 +265,9 @@ export async function hardDeleteDocument(id: string) {
   }
   const doc = await prisma.document.findUnique({ where: { id } });
   if (!doc) return { ok: false };
-  await assertDocumentWritable(doc.matterId, { kind: "modify" });
+  if (doc.matterId) {
+    await assertDocumentWritable(doc.matterId, { kind: "modify" });
+  }
 
   await storage.deleteFile(doc.path);
   await prisma.document.delete({ where: { id } });

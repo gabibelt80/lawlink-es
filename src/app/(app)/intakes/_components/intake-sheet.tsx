@@ -10,7 +10,7 @@ import {
 } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
-import { useSession } from "next-auth/react";
+import { useAppSession } from "@/lib/auth/use-app-session";
 import { toast } from "sonner";
 import {
   ChevronRight,
@@ -213,7 +213,7 @@ export function IntakeSheet({
   colleagues: Colleague[];
 }) {
   const router = useRouter();
-  const { data: session } = useSession();
+  const { session } = useAppSession();
   const [isPending, startTransition] = useTransition();
   const [contracts, setContracts] = useState<File[]>([]);
   const fileRef = useRef<HTMLInputElement>(null);

@@ -5,6 +5,7 @@ import { Prisma } from "@prisma/client";
 import { getTenantPrisma } from "@/lib/tenant-prisma";
 import { requireSession } from "@/lib/auth/session";
 import { audit } from "@/server/audit";
+import type { UserRole } from "@prisma/client";
 import { assertMatterWritable } from "@/lib/archive/guard";
 import { assertCanAccessMatter, assertCanLeadMatter } from "@/lib/permissions";
 import {
@@ -17,8 +18,13 @@ import {
 import { revalidateMatter } from "@/server/matters/route";
 
 /** Verifica si el usuario puede editar la estructura de carpetas del Caso */
-async function requireFolderEditor(matterId: string, session: { user: { id: string; role: string } }) {
-  await assertCanLeadMatter(session.user.id, session.user.role as any, matterId, "Solo el responsable...");
+async function requireFolderEditor(matterId: string, session: { user: { id: string; role: UserRole } }) {
+  await assertCanLeadMatter(
+    session.user.id,
+    session.user.role,
+    matterId,
+    "Solo el responsable/co-responsable puede editar la estructura de carpetas",
+  );
 }
 
 export async function listFoldersByMatter(matterId: string) {
