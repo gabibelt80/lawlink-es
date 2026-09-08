@@ -4,12 +4,12 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
+import { signIn } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Loader2, AlertCircle, Eye, EyeOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { signIn, getCsrfToken } from "next-auth/react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { cn } from "@/lib/utils";
 
@@ -37,28 +37,13 @@ export function LoginForm() {
 
   async function onSubmit(values: FormValues) {
     setAuthError(null);
-    const res = await fetch("/api/auth/callback/credentials", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/x-www-form-urlencoded",
-      },
-      body: new URLSearchParams({
-        email: values.email,
-        password: values.password,
-        csrfToken: await getCsrfToken(),
-        redirect: "false",
-      }),
-      credentials: "include",
+    const res = await signIn("credentials", {
+      email: values.email,
+      password: values.password,
+      redirect: false
     });
-
-    if (res.ok) {
-      const sessionRes = await fetch("/api/auth/session");
-      const sessionData = await sessionRes.json();
-      if (sessionData?.user) {
-        window.location.href = sessionData.user.role === "SYSTEM_ADMIN" ? "/admin" : "/";
-      } else {
-        setAuthError("No se pudo iniciar sesión");
-      }
+    if (res?.ok) {
+      window.location.href = callbackUrl === "/" ? "/" : callbackUrl;
     } else {
       setAuthError("Email o contraseña incorrectos");
     }
