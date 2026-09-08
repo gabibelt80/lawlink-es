@@ -17,11 +17,18 @@ const writingSchema = z.object({
   enabled: z.boolean().default(true),
 });
 
-export async function listWritings() {
+export async function listWritings(search?: string) {
   const prisma = await getTenantPrisma();
   await requireSession();
   return prisma.writingTemplate.findMany({
+    where: search ? {
+      OR: [
+        { name: { contains: search } },
+        { content: { contains: search } },
+      ]
+    } : undefined,
     orderBy: [{ category: "asc" }, { name: "asc" }],
+    take: 200,
   });
 }
 
