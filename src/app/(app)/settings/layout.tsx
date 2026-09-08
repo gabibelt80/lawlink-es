@@ -8,9 +8,7 @@ import {
   Sparkles,
   Package,
   ListChecks,
-  BellRing,
   Building2,
-  FileUp,
   Boxes,
 } from "lucide-react";
 import { getSession } from "@/lib/auth/session";
@@ -89,18 +87,6 @@ export default async function SettingsLayout({
                   icon={<Sparkles className="h-3.5 w-3.5" />}
                 >
                   Integración de IA
-                </SettingsNavLink>
-                <SettingsNavLink
-                  href="/settings/express"
-                  icon={<Package className="h-3.5 w-3.5" />}
-                >
-                <SettingsNavLink
-                  href="/settings/modules"
-                  icon={<Boxes className="h-3.5 w-3.5" />}
-                >
-                  Módulos del sistema
-                </SettingsNavLink>
-                  Integración de envíos
                 </SettingsNavLink>
                 <SettingsNavLink
                   href="/settings/audit"
