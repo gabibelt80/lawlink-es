@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { useSession } from "next-auth/react";
+import { useAppSession } from "@/lib/auth/use-app-session";
 import { toast } from "sonner";
 import { ArrowRight, XCircle, Loader2, Clock, RotateCcw, AlertCircle } from "lucide-react";
 import type { IntakeStatus } from "@prisma/client";
@@ -33,7 +33,7 @@ export function IntakeActions({
   status?: IntakeStatus;
 }) {
   const router = useRouter();
-  const { data: session } = useSession();
+  const { session } = useAppSession();
   const [isPending, startTransition] = useTransition();
   const [dialogKind, setDialogKind] = useState<"decline" | "revision" | null>(null);
   const [reason, setReason] = useState("");

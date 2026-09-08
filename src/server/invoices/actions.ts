@@ -6,6 +6,7 @@ import { Prisma } from "@prisma/client";
 import { getTenantPrisma } from "@/lib/tenant-prisma";
 import { requireSession } from "@/lib/auth/session";
 import { audit } from "@/server/audit";
+import type { UserRole } from "@prisma/client";
 import { assertMatterWritable } from "@/lib/archive/guard";
 import {
   assertCanAccessMatter,
@@ -29,13 +30,13 @@ function requireFinanceOrApprover(role: string) {
   }
 }
 
-function canReviewInvoiceRequests(role: string) {
-  return isManager(role as any) || role === "FINANCE";
+function canReviewInvoiceRequests(role: UserRole) {
+  return isManager(role) || role === "FINANCE";
 }
 
 function invoiceRequestVisibilityWhere(
   userId: string,
-  role: string
+  role: UserRole
 ): Prisma.InvoiceRequestWhereInput {
   if (canReviewInvoiceRequests(role)) return {};
   return {
@@ -44,7 +45,7 @@ function invoiceRequestVisibilityWhere(
       {
         matter: {
           deletedAt: null,
-          ...matterVisibilityFilter(userId, role as any)
+          ...matterVisibilityFilter(userId, role)
         }
       }
     ]
@@ -63,14 +64,14 @@ export async function createInvoiceRequest(input: z.infer<typeof createSchema>) 
   const prisma = await getTenantPrisma();
   const session = await requireSession();
   const data = createSchema.parse(input);
-  await assertCanAssociateMatter(session.user.id, session.user.role as any, data.matterId);
+  await assertCanAssociateMatter(session.user.id, session.user.role, data.matterId);
   await assertMatterWritable(data.matterId);
 
-await assertCanLeadMatter(
-  session.user.id,
-  session.user.role as any,
-  data.matterId,
-);
+  await assertCanLeadMatter(
+    session.user.id,
+    session.user.role,
+    data.matterId,
+  );
 
   const created = await prisma.invoiceRequest.create({
     data: {
@@ -154,7 +155,7 @@ export async function listInvoiceRequests(filter?: { status?: "PENDING" | "ISSUE
 export async function listInvoiceRequestsByMatter(matterId: string) {
   const prisma = await getTenantPrisma();
   const session = await requireSession();
-  await assertCanAccessMatter(session.user.id, session.user.role as any, matterId);
+  await assertCanAccessMatter(session.user.id, session.user.role, matterId);
   const rows = await prisma.invoiceRequest.findMany({
     where: { matterId },
     orderBy: { requestedAt: "desc" },

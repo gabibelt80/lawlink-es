@@ -147,4 +147,3 @@ export async function listCauseL2(category: MatterCategory) {
     select: { id: true, code: true, name: true, parentId: true }
   });
 }
-

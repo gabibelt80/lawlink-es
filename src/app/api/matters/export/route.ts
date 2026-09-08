@@ -1,6 +1,5 @@
 ﻿import { NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth/options";
+import { getSession } from "@/lib/auth/session";
 import { audit } from "@/server/audit";
 import {
   buildMattersExportWorkbook,
@@ -11,9 +10,9 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 export async function GET(req: Request) {
-  const session = await getServerSession(authOptions);
+  const session = await getSession();
   if (!session?.user) {
-    return NextResponse.json({ error: "æœªIniciar sesiÃ³n" }, { status: 401 });
+    return NextResponse.json({ error: "No has iniciado sesión" }, { status: 401 });
   }
 
   const url = new URL(req.url);
@@ -26,8 +25,8 @@ export async function GET(req: Request) {
       role: session.user.role
     });
   } catch (err) {
-    console.error("[matters/export] ç”ŸæˆErrorï¼š", err);
-    return NextResponse.json({ error: "å¯¼å‡ºError" }, { status: 500 });
+    console.error("[matters/export] Error al generar:", err);
+    return NextResponse.json({ error: "Error al exportar" }, { status: 500 });
   }
 
   await audit({
@@ -59,4 +58,3 @@ export async function GET(req: Request) {
     }
   });
 }
-

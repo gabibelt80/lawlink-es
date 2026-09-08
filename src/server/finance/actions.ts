@@ -73,11 +73,11 @@ export async function deleteBilling(id: string) {
     await assertMatterWritable(billing.matterId, { allowFinanceRole: true });
   } else {
     await assertMatterWritable(billing.matterId);
-await assertCanLeadMatter(
-  session.user.id,
-  session.user.role as any,
-  billing.matterId,
-);
+    await assertCanLeadMatter(
+      session.user.id,
+      session.user.role,
+      billing.matterId,
+    );
   }
 
   await prisma.billing.delete({ where: { id } });
@@ -176,7 +176,7 @@ export async function createFeeEntry(input: FeeEntryCreateInput) {
 export async function deleteFeeEntry(id: string) {
   const prisma = await getTenantPrisma();
   const session = await requireSession();
-  if (!isManager(session.user.role as any) && session.user.role !== "FINANCE") {
+  if (!isManager(session.user.role) && session.user.role !== "FINANCE") {
     throw new Error("Solo el administrador, el abogado principal o Finanzas puede eliminar registros de cobro/pago");
   }
   const entry = await prisma.feeEntry.findUnique({
@@ -222,11 +222,11 @@ export async function setCommissionPlan(input: CommissionPlanSetInput) {
   const session = await requireSession();
   const data = commissionPlanSetSchema.parse(input);
   await assertMatterWritable(data.matterId);
-await assertCanLeadMatter(
-  session.user.id,
-  session.user.role as any,
-  data.matterId,
-);
+  await assertCanLeadMatter(
+    session.user.id,
+    session.user.role,
+    data.matterId,
+  );
 
   await prisma.$transaction([
     prisma.commissionPlan.deleteMany({ where: { matterId: data.matterId } }),
@@ -258,7 +258,7 @@ await assertCanLeadMatter(
 export async function getMatterFinance(matterId: string) {
   const prisma = await getTenantPrisma();
   const session = await requireSession();
-  await assertCanAccessMatter(session.user.id, session.user.role as any, matterId);
+  await assertCanAccessMatter(session.user.id, session.user.role, matterId);
 
   const [billings, entries, plans, issuedInvoices] = await Promise.all([
     prisma.billing.findMany({
@@ -307,7 +307,7 @@ export async function getMatterFinance(matterId: string) {
 export async function listMatterInvoiceRequests(matterId: string) {
   const prisma = await getTenantPrisma();
   const session = await requireSession();
-  await assertCanAccessMatter(session.user.id, session.user.role as any, matterId);
+  await assertCanAccessMatter(session.user.id, session.user.role, matterId);
   const rows = await prisma.invoiceRequest.findMany({
     where: { matterId },
     orderBy: { requestedAt: "desc" },
@@ -337,7 +337,7 @@ export async function listMatterInvoiceRequests(matterId: string) {
 export async function getMatterInvoiceContext(matterId: string) {
   const prisma = await getTenantPrisma();
   const session = await requireSession();
-  await assertCanAccessMatter(session.user.id, session.user.role as any, matterId);
+  await assertCanAccessMatter(session.user.id, session.user.role, matterId);
   const m = await prisma.matter.findUnique({
     where: { id: matterId },
     select: {
@@ -433,9 +433,9 @@ export async function createInvoiceRequest(input: {
   const prisma = await getTenantPrisma();
   const session = await requireSession();
   if (input.matterId) {
-    await assertCanAssociateMatter(session.user.id, session.user.role as any, input.matterId);
+    await assertCanAssociateMatter(session.user.id, session.user.role, input.matterId);
   } else {
-    if (!isManager(session.user.role as any) && session.user.role !== "FINANCE") {
+    if (!isManager(session.user.role) && session.user.role !== "FINANCE") {
       throw new Error("La facturacion sin caso asociado solo puede iniciarla Finanzas / Administrador / Abogado principal");
     }
     if (!input.noMatterReason?.trim()) {
@@ -523,7 +523,7 @@ export async function listAllFeeEntries(params: {
 }) {
   const prisma = await getTenantPrisma();
   const session = await requireSession();
-  const visFilter = matterVisibilityFilter(session.user.id, session.user.role as any);
+  const visFilter = matterVisibilityFilter(session.user.id, session.user.role);
   const rows = await prisma.feeEntry.findMany({
     where: {
       ...(params.type ? { type: params.type } : {}),
@@ -543,7 +543,7 @@ export async function listAllFeeEntries(params: {
 export async function getMonthlyRevenue(months = 6) {
   const prisma = await getTenantPrisma();
   const session = await requireSession();
-  const visFilter = matterVisibilityFilter(session.user.id, session.user.role as any);
+  const visFilter = matterVisibilityFilter(session.user.id, session.user.role);
   const now = new Date();
   const start = new Date(now.getFullYear(), now.getMonth() - (months - 1), 1);
 
@@ -580,7 +580,7 @@ export async function getMonthlyRevenue(months = 6) {
 export async function getPersonalRevenue(userId: string) {
   const prisma = await getTenantPrisma();
   const session = await requireSession();
-  if (!isManager(session.user.role as any) && session.user.id !== userId) {
+  if (!isManager(session.user.role) && session.user.id !== userId) {
     throw new Error("Solo podes ver tus propios datos de ingresos");
   }
   const monthStart = new Date();

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useSession } from "next-auth/react";
+import { useAppSession } from "@/lib/auth/use-app-session";
 import { usePathname } from "next/navigation";
 import {
   FileText,
@@ -28,7 +28,7 @@ type AgentStatus = {
 };
 
 export function AgentsPanel() {
-  const { data: session } = useSession();
+  const { session } = useAppSession();
   const pathname = usePathname();
   const [expanded, setExpanded] = useState(true);
   const [agents, setAgents] = useState<AgentStatus[]>([]);

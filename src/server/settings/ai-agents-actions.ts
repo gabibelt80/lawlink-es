@@ -8,6 +8,15 @@ import { readFileSync, existsSync } from "node:fs";
 import { join } from "node:path";
 import { getAiSettings } from "@/lib/ai/settings";
 
+type AgentsConfig = {
+  editorEnabled: boolean;
+  editorModel: string;
+  editorApiKeyCipher?: { ct: string; iv: string; tag: string } | null;
+  auditorEnabled: boolean;
+  auditorModel: string;
+  auditorApiKeyCipher?: { ct: string; iv: string; tag: string } | null;
+};
+
 const agentsSchema = z.object({
   editorEnabled: z.boolean(),
   editorModel: z.string(),
@@ -20,7 +29,7 @@ const agentsSchema = z.object({
 export async function saveAgentsConfigAction(input: z.infer<typeof agentsSchema>) {
   const prisma = await getTenantPrisma();
   const session = await requireSession();
-  
+
   if (session.user.role !== "ADMIN" && session.user.role !== "PRINCIPAL_LAWYER") {
     throw new Error("Solo el Administrador puede configurar agentes");
   }
@@ -28,14 +37,14 @@ export async function saveAgentsConfigAction(input: z.infer<typeof agentsSchema>
   const data = agentsSchema.parse(input);
 
   // Cifrar las API keys
-  const encryptedEditorKey = data.editorApiKey?.trim() 
+  const encryptedEditorKey = data.editorApiKey?.trim()
     ? encryptBuffer(Buffer.from(data.editorApiKey.trim(), "utf-8"))
     : null;
   const encryptedAuditorKey = data.auditorApiKey?.trim()
     ? encryptBuffer(Buffer.from(data.auditorApiKey.trim(), "utf-8"))
     : null;
 
-  const value = {
+  const value: AgentsConfig = {
     editorEnabled: data.editorEnabled,
     editorModel: data.editorModel,
     editorApiKeyCipher: encryptedEditorKey ? {
@@ -54,32 +63,30 @@ export async function saveAgentsConfigAction(input: z.infer<typeof agentsSchema>
 
   await prisma.systemSetting.upsert({
     where: { key: "aiAgents" },
-    update: { value },
-    create: { key: "aiAgents", value },
+    update: { value: value as unknown as object },
+    create: { key: "aiAgents", value: value as unknown as object },
   });
 
   return { ok: true };
 }
 
-export async function getAgentsConfig() {
+const DEFAULT_AGENTS_CONFIG: AgentsConfig = {
+  editorEnabled: true,
+  editorModel: "deepseek-chat",
+  auditorEnabled: true,
+  auditorModel: "claude-3-5-sonnet-20241022",
+};
+
+export async function getAgentsConfig(): Promise<AgentsConfig> {
   const prisma = await getTenantPrisma();
   const row = await prisma.systemSetting.findUnique({
     where: { key: "aiAgents" },
   });
-  return (row?.value as any) ?? {
-    editorEnabled: true,
-    editorModel: "deepseek-chat",
-    auditorEnabled: true,
-    auditorModel: "claude-3-5-sonnet-20241022",
-  };
+  return (row?.value as unknown as AgentsConfig) ?? DEFAULT_AGENTS_CONFIG;
 }
 
 export async function getAgentsStatus() {
-  const prisma = await getTenantPrisma();
-  const row = await prisma.systemSetting.findUnique({
-    where: { key: "aiAgents" },
-  });
-  const config = (row?.value as any) ?? {};
+  const config = await getAgentsConfig();
 
   return [
     {
@@ -116,7 +123,7 @@ export async function askAgentAboutCase(input: {
 }) {
   const prisma = await getTenantPrisma();
   const session = await requireSession();
-  
+
   if (session.user.role !== "ADMIN" && session.user.role !== "PRINCIPAL_LAWYER") {
     throw new Error("Solo el Administrador puede consultar agentes");
   }

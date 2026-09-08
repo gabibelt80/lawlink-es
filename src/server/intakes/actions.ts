@@ -34,7 +34,7 @@ function requireApprover(role: string) {
   }
 }
 
-/** Genera titulo automÃ¡tico segÃºn {cliente} y {contraparte} {causa} */
+/** Genera titulo automático según {cliente} y {contraparte} {causa} */
 function generateTitle(
   clientName: string | null,
   opposingNames: string[],
@@ -164,10 +164,10 @@ function assertConflictReviewAllowsConversion(intake: IntakeConflictGateInput) {
     throw new Error("La busqueda de conflictos no tiene conclusion, marque si se puede aceptar");
   }
   if (latestCheck.conclusion === "NEED_INFO") {
-    throw new Error("La conclusion de la busqueda de conflictos es informacioninsuficiente, no se puede convertir a caso formal");
+    throw new Error("La conclusion de la busqueda de conflictos es información insuficiente, no se puede convertir a caso formal");
   }
   if (latestCheck.conclusion === "SAME_SUBJECT") {
-    throw new Error("Se confirmÃ³ que existe conflicto de intereses, no se puede convertir directamente a caso formal");
+    throw new Error("Se confirmó que existe conflicto de intereses, no se puede convertir directamente a caso formal");
   }
   if (latestCheck.conclusion !== "DIFFERENT") {
     throw new Error("conclusion de conflicto anomala, ejecute nuevamente la busqueda");
@@ -257,7 +257,7 @@ export async function getIntakeById(id: string) {
         OR: [
           { createdById: session.user.id },
           { ownerUserId: session.user.id },
-          { coUserIds: { array_contains: session.user.id } }
+          { coUserIds: { has: session.user.id } }
         ]
       },
       select: { id: true }
@@ -510,7 +510,7 @@ export async function markIntakeNeedsRevision(input: { id: string; reason: strin
   const prisma = await getTenantPrisma();
   const session = await requireSession();
   requireApprover(session.user.role);
-  if (!input.reason.trim()) throw new Error("Complete el motivo de correcciÃ³n");
+  if (!input.reason.trim()) throw new Error("Complete el motivo de corrección");
 
   await prisma.intake.update({
     where: { id: input.id },
@@ -543,7 +543,7 @@ export async function resubmitIntake(id: string) {
     select: { status: true, title: true, createdById: true, ownerUserId: true }
   });
   if (!intake) throw new Error("admision no encontrada");
-  if (intake.status !== "NEEDS_REVISION") throw new Error("Solo el estado Pendiente de correccionpuede reenviarse");
+  if (intake.status !== "NEEDS_REVISION") throw new Error("Solo el estado Pendiente de corrección puede reenviarse");
 
   await prisma.intake.update({
     where: { id },
@@ -685,7 +685,7 @@ export async function convertIntakeToMatter(intakeId: string) {
           contactName: intake.contactName,
           enterpriseSocialCode: intake.client.type === "INDIVIDUAL" ? null : intake.client.idNumber,
           enterpriseName: intake.client.type === "INDIVIDUAL" ? null : intake.client.name,
-          notes: "Incorporado automÃ¡ticamente desde la admision"
+          notes: "Incorporado automáticamente desde la admision"
         },
         select: { id: true }
       });
@@ -806,4 +806,3 @@ export async function convertIntakeToMatter(intakeId: string) {
   revalidatePath("/matters");
   return { ok: true, matterId: matter.id, internalCode };
 }
-

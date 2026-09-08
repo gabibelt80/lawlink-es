@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useAppSession } from "@/lib/auth/use-app-session";
 import { useSession, signOut } from "next-auth/react";
 import {
   Search,
@@ -73,7 +74,7 @@ export function Topbar({
   onMobileMenuToggle?: () => void;
   userAvatar?: string | null;
 }) {
-  const { data: session } = useSession();
+  const { session } = useAppSession();
   const router = useRouter();
   const [searchOpen, setSearchOpen] = useState(false);
   const [toolsOpen, setToolsOpen] = useState(false);

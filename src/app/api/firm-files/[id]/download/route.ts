@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth/options";
-import { prisma } from "@/lib/prisma";
+import { getTenantPrisma } from "@/lib/tenant-prisma";
+import { getSession } from "@/lib/auth/session";
 import { storage } from "@/lib/storage";
 import { ensureExt } from "@/lib/storage/mime-ext";
 import { audit } from "@/server/audit";
@@ -13,22 +12,24 @@ export async function GET(
   req: Request,
   { params }: { params: { id: string } }
 ) {
-  const session = await getServerSession(authOptions);
+  const session = await getSession();
   if (!session?.user) {
-    return NextResponse.json({ error: "未Iniciar sesión" }, { status: 401 });
+    return NextResponse.json({ error: "No has iniciado sesión" }, { status: 401 });
   }
+
+  const prisma = await getTenantPrisma();
 
   const f = await prisma.firmFile.findUnique({
     where: { id: params.id, archivedAt: null }
   });
-  if (!f) return NextResponse.json({ error: "Material不存在" }, { status: 404 });
+  if (!f) return NextResponse.json({ error: "El material no existe" }, { status: 404 });
 
   let buf: Buffer;
   try {
     buf = await storage.readFile(f.path);
   } catch (err) {
-    console.error("[firm-files/download] 读取Error：", err);
-    return NextResponse.json({ error: "读取Error" }, { status: 500 });
+    console.error("[firm-files/download] Error al leer:", err);
+    return NextResponse.json({ error: "Error al leer" }, { status: 500 });
   }
 
   const inline = new URL(req.url).searchParams.get("inline") === "1";
@@ -49,7 +50,6 @@ export async function GET(
       "Content-Type": f.mimeType ?? "application/octet-stream",
       "Content-Length": String(buf.byteLength),
       "Content-Disposition": `${inline ? "inline" : "attachment"}; filename*=UTF-8''${encodeURIComponent(filename)}`,
-      // 允许在 iframe 内预览
       "X-Content-Type-Options": "nosniff",
       "Cache-Control": "private, max-age=60"
     }

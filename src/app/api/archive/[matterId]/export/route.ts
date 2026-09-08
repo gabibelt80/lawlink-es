@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth/options";
-import { prisma } from "@/lib/prisma";
+import { getTenantPrisma } from "@/lib/tenant-prisma";
+import { getSession } from "@/lib/auth/session";
 import { audit } from "@/server/audit";
 import { buildArchiveZip } from "@/server/archive/export";
 import { storage } from "@/lib/storage";
@@ -13,7 +12,7 @@ export async function GET(
   _req: Request,
   { params }: { params: { matterId: string } },
 ) {
-  const session = await getServerSession(authOptions);
+  const session = await getSession();
   if (!session?.user) {
     return NextResponse.json(
       { error: "No has iniciado sesión" },
@@ -21,7 +20,9 @@ export async function GET(
     );
   }
 
-  // 权限：ADMIN / PRINCIPAL_LAWYER 或Caso成员
+  const prisma = await getTenantPrisma();
+
+  // Permisos: ADMIN / PRINCIPAL_LAWYER o miembro del Caso
   const matter = await prisma.matter.findUnique({
     where: { id: params.matterId },
     select: { id: true, status: true, internalCode: true },
@@ -56,14 +57,14 @@ export async function GET(
   try {
     result = await buildArchiveZip(params.matterId);
   } catch (err) {
-    console.error("[archive export] 构建Error：", err);
+    console.error("[archive export] Error al construir:", err);
     return NextResponse.json(
       { error: err instanceof Error ? err.message : "Error al exportar" },
       { status: 500 },
     );
   }
 
-  // 持久化路径 + checksum 回填到最新 ArchiveRecord
+  // Persistir path + checksum al último ArchiveRecord
   try {
     const storagePath = await storage.writeFile(
       `archive_${matter.id}`,
@@ -74,7 +75,7 @@ export async function GET(
       data: { exportPath: storagePath, checksum: result.checksum },
     });
   } catch (err) {
-    console.error("[archive export] 落盘Error（不阻断下载）：", err);
+    console.error("[archive export] Error al guardar (no bloquea la descarga):", err);
   }
 
   await audit({

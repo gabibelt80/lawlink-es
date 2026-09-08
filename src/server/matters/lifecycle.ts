@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
-import { prisma } from "@/lib/prisma";
+import { getTenantPrisma } from "@/lib/tenant-prisma";
 import { requireSession } from "@/lib/auth/session";
 import { audit } from "@/server/audit";
 import { assertMatterWritable } from "@/lib/archive/guard";
@@ -26,10 +26,11 @@ export type HoldMatterInput = z.infer<typeof holdMatterSchema>;
  * Cerrar caso: cambia el estado del caso a CLOSED, registra el resumen en TimelineEvent.
  */
 export async function closeMatter(input: CloseMatterInput) {
+  const prisma = await getTenantPrisma();
   const session = await requireSession();
   const data = closeMatterSchema.parse(input);
   await assertMatterWritable(data.id);
-  await assertCanLeadMatter(session.user.id, session.user.role as any, data.id, "Solo el responsable/co-responsable puede cerrar el caso");
+  await assertCanLeadMatter(session.user.id, session.user.role, data.id, "Solo el responsable/co-responsable puede cerrar el caso");
 
   await prisma.$transaction(async (tx) => {
     await tx.matter.update({
@@ -72,11 +73,12 @@ export async function closeMatter(input: CloseMatterInput) {
  * ARCHIVED no se puede reabrir.
  */
 export async function reopenMatter(id: string) {
+  const prisma = await getTenantPrisma();
   const session = await requireSession();
   const matter = await prisma.matter.findUnique({ where: { id }, select: { status: true } });
   if (!matter) throw new Error("Caso no existe");
   await assertMatterWritable(id);
-  await assertCanLeadMatter(session.user.id, session.user.role as any, id, "Solo el responsable/co-responsable puede reabrir el caso");
+  await assertCanLeadMatter(session.user.id, session.user.role, id, "Solo el responsable/co-responsable puede reabrir el caso");
   if (matter.status === "ARCHIVED") {
     throw new Error("Caso archivado no se puede reabrir");
   }
@@ -115,10 +117,11 @@ export async function reopenMatter(id: string) {
  * Pausar caso (cliente no responde, falta material, etc.).
  */
 export async function holdMatter(input: HoldMatterInput) {
+  const prisma = await getTenantPrisma();
   const session = await requireSession();
   const data = holdMatterSchema.parse(input);
   await assertMatterWritable(data.id);
-  await assertCanLeadMatter(session.user.id, session.user.role as any, data.id, "Solo el responsable/co-responsable puede pausar el caso");
+  await assertCanLeadMatter(session.user.id, session.user.role, data.id, "Solo el responsable/co-responsable puede pausar el caso");
 
   await prisma.$transaction(async (tx) => {
     await tx.matter.update({

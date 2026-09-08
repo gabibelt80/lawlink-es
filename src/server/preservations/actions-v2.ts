@@ -3,7 +3,8 @@
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { Prisma } from "@prisma/client";
-import { prisma } from "@/lib/prisma";
+import type { UserRole } from "@prisma/client";
+import { getTenantPrisma } from "@/lib/tenant-prisma";
 import { requireSession } from "@/lib/auth/session";
 import { audit } from "@/server/audit";
 import { assertMatterWritable } from "@/lib/archive/guard";
@@ -22,9 +23,10 @@ import {
 } from "./schemas-v2";
 import { revalidateMatter } from "@/server/matters/route";
 
-// â”â”â”â” Read â”â”â”â”
+// ============ Read ============
 
 export async function listPreservationCases(input?: z.input<typeof caseListFilterSchema>) {
+  const prisma = await getTenantPrisma();
   const session = await requireSession();
   const filter = caseListFilterSchema.parse(input ?? {});
 
@@ -81,34 +83,37 @@ type PreservationCaseAccess = {
 
 async function assertCanAccessPreservationCaseRecord(
   userId: string,
+  role: UserRole,
   record: PreservationCaseAccess
 ) {
   if (record.matterId) {
-    await assertCanAssociateMatter(userId, record.matterId);
+    await assertCanAssociateMatter(userId, role, record.matterId);
     return;
   }
-  if (record.ownerId !== userId) throw new Error("æ— æƒAccionesæ­¤PreservaciÃ³nè®°å½•");
+  if (record.ownerId !== userId) throw new Error("Sin permiso para acceder a este registro de preservación");
 }
 
-async function assertCanAccessPreservationCase(userId: string, id: string) {
+async function assertCanAccessPreservationCase(userId: string, role: UserRole, id: string) {
+  const prisma = await getTenantPrisma();
   const record = await prisma.preservationCase.findUnique({
     where: { id },
     select: { id: true, matterId: true, ownerId: true }
   });
-  if (!record) throw new Error("PreservaciÃ³nCasoä¸å­˜åœ¨");
-  await assertCanAccessPreservationCaseRecord(userId, record);
+  if (!record) throw new Error("El registro de preservación no existe");
+  await assertCanAccessPreservationCaseRecord(userId, role, record);
   return record;
 }
 
-// â”â”â”â” Case CRUD â”â”â”â”
+// ============ Case CRUD ============
 
 export async function createPreservationCase(input: z.infer<typeof caseCreateSchema>) {
+  const prisma = await getTenantPrisma();
   const session = await requireSession();
   const data = caseCreateSchema.parse(input);
 
   if (data.matterId) {
     const m = await prisma.matter.findUnique({ where: { id: data.matterId } });
-    if (!m) throw new Error("å…³è”Casoä¸å­˜åœ¨");
+    if (!m) throw new Error("El caso asociado no existe");
     await assertCanAssociateMatter(session.user.id, session.user.role, data.matterId);
     await assertMatterWritable(data.matterId);
   }
@@ -125,7 +130,6 @@ export async function createPreservationCase(input: z.infer<typeof caseCreateSch
       ownerId: data.ownerId ?? null,
       remindDays: data.remindDays,
       status: "ACTIVE",
-      // Create first target + property inline if provided
       targets: data.firstTarget?.trim() ? {
         create: {
           name: data.firstTarget.trim(),
@@ -160,11 +164,12 @@ export async function createPreservationCase(input: z.infer<typeof caseCreateSch
 }
 
 export async function updatePreservationCase(input: z.infer<typeof caseUpdateSchema>) {
+  const prisma = await getTenantPrisma();
   const session = await requireSession();
   const data = caseUpdateSchema.parse(input);
   const { id, matterId, court, rulingNumber, note, ownerId, guaranteeType, ...rest } = data;
 
-  const existing = await assertCanAccessPreservationCase(session.user.id, id);
+  const existing = await assertCanAccessPreservationCase(session.user.id, session.user.role, id);
   if (existing.matterId) await assertMatterWritable(existing.matterId);
   if (matterId) {
     await assertCanAssociateMatter(session.user.id, session.user.role, matterId);
@@ -194,13 +199,14 @@ export async function updatePreservationCase(input: z.infer<typeof caseUpdateSch
 }
 
 export async function deletePreservationCase(input: z.infer<typeof deleteSchema>) {
+  const prisma = await getTenantPrisma();
   const session = await requireSession();
   const data = deleteSchema.parse(input);
   if (session.user.role !== "ADMIN" && session.user.role !== "PRINCIPAL_LAWYER") {
-    throw new Error("ä»…Administrarå‘˜æˆ–ä¸»ä»»Abogadoå¯EliminarPreservaciÃ³nè®°å½•");
+    throw new Error("Solo el Administrador o Abogado Principal puede eliminar registros de preservación");
   }
 
-  const cs = await assertCanAccessPreservationCase(session.user.id, data.id);
+  const cs = await assertCanAccessPreservationCase(session.user.id, session.user.role, data.id);
   if (cs.matterId) await assertMatterWritable(cs.matterId);
 
   await prisma.preservationCase.delete({ where: { id: data.id } });
@@ -217,13 +223,14 @@ export async function deletePreservationCase(input: z.infer<typeof deleteSchema>
   return { ok: true };
 }
 
-// â”â”â”â” Target CRUD â”â”â”â”
+// ============ Target CRUD ============
 
 export async function addTarget(input: z.infer<typeof targetCreateSchema>) {
+  const prisma = await getTenantPrisma();
   const session = await requireSession();
   const data = targetCreateSchema.parse(input);
 
-  const cs = await assertCanAccessPreservationCase(session.user.id, data.caseId);
+  const cs = await assertCanAccessPreservationCase(session.user.id, session.user.role, data.caseId);
   if (cs.matterId) await assertMatterWritable(cs.matterId);
 
   const created = await prisma.preservationTarget.create({
@@ -236,14 +243,15 @@ export async function addTarget(input: z.infer<typeof targetCreateSchema>) {
 }
 
 export async function updateTarget(input: z.infer<typeof targetUpdateSchema>) {
+  const prisma = await getTenantPrisma();
   const session = await requireSession();
   const data = targetUpdateSchema.parse(input);
   const target = await prisma.preservationTarget.findUnique({
     where: { id: data.id },
     include: { case: { select: { id: true, matterId: true, ownerId: true } } }
   });
-  if (!target) throw new Error("è¢«PreservaciÃ³näººä¸å­˜åœ¨");
-  await assertCanAccessPreservationCaseRecord(session.user.id, target.case);
+  if (!target) throw new Error("El sujeto preservado no existe");
+  await assertCanAccessPreservationCaseRecord(session.user.id, session.user.role, target.case);
   if (target.case.matterId) await assertMatterWritable(target.case.matterId);
 
   const patch: Prisma.PreservationTargetUpdateInput = {};
@@ -255,13 +263,14 @@ export async function updateTarget(input: z.infer<typeof targetUpdateSchema>) {
 }
 
 export async function deleteTarget(id: string) {
+  const prisma = await getTenantPrisma();
   const session = await requireSession();
   const target = await prisma.preservationTarget.findUnique({
     where: { id },
     include: { case: { select: { id: true, matterId: true, ownerId: true } } }
   });
-  if (!target) throw new Error("è¢«PreservaciÃ³näººä¸å­˜åœ¨");
-  await assertCanAccessPreservationCaseRecord(session.user.id, target.case);
+  if (!target) throw new Error("El sujeto preservado no existe");
+  await assertCanAccessPreservationCaseRecord(session.user.id, session.user.role, target.case);
   if (target.case.matterId) await assertMatterWritable(target.case.matterId);
 
   await prisma.preservationTarget.delete({ where: { id } });
@@ -269,19 +278,20 @@ export async function deleteTarget(id: string) {
   return { ok: true };
 }
 
-// â”â”â”â” Property CRUD â”â”â”â”
+// ============ Property CRUD ============
 
 export async function addProperty(input: z.infer<typeof propertyCreateSchema>) {
+  const prisma = await getTenantPrisma();
   const session = await requireSession();
   const data = propertyCreateSchema.parse(input);
-  if (data.expiryDate <= data.startDate) throw new Error("åˆ°æœŸFechaå¿…é¡»æ™šäºŽç”Ÿæ•ˆFecha");
+  if (data.expiryDate <= data.startDate) throw new Error("La fecha de vencimiento debe ser posterior a la fecha de inicio");
 
   const target = await prisma.preservationTarget.findUnique({
     where: { id: data.targetId },
     include: { case: { select: { id: true, matterId: true, ownerId: true } } }
   });
-  if (!target) throw new Error("è¢«PreservaciÃ³näººä¸å­˜åœ¨");
-  await assertCanAccessPreservationCaseRecord(session.user.id, target.case);
+  if (!target) throw new Error("El sujeto preservado no existe");
+  await assertCanAccessPreservationCaseRecord(session.user.id, session.user.role, target.case);
   if (target.case.matterId) await assertMatterWritable(target.case.matterId);
 
   const created = await prisma.preservationProperty.create({
@@ -311,6 +321,7 @@ export async function addProperty(input: z.infer<typeof propertyCreateSchema>) {
 }
 
 export async function updateProperty(input: z.infer<typeof propertyUpdateSchema>) {
+  const prisma = await getTenantPrisma();
   const session = await requireSession();
   const data = propertyUpdateSchema.parse(input);
   const { id, amount, propertyDetail, ...rest } = data;
@@ -318,8 +329,8 @@ export async function updateProperty(input: z.infer<typeof propertyUpdateSchema>
     where: { id },
     include: { target: { include: { case: { select: { id: true, matterId: true, ownerId: true } } } } }
   });
-  if (!property) throw new Error("PreservaciÃ³nè´¢äº§ä¸å­˜åœ¨");
-  await assertCanAccessPreservationCaseRecord(session.user.id, property.target.case);
+  if (!property) throw new Error("El bien preservado no existe");
+  await assertCanAccessPreservationCaseRecord(session.user.id, session.user.role, property.target.case);
   if (property.target.case.matterId) await assertMatterWritable(property.target.case.matterId);
 
   const patch: Prisma.PreservationPropertyUpdateInput = { ...rest };
@@ -333,6 +344,7 @@ export async function updateProperty(input: z.infer<typeof propertyUpdateSchema>
 }
 
 export async function renewProperty(input: z.infer<typeof propertyRenewSchema>) {
+  const prisma = await getTenantPrisma();
   const session = await requireSession();
   const data = propertyRenewSchema.parse(input);
 
@@ -340,12 +352,12 @@ export async function renewProperty(input: z.infer<typeof propertyRenewSchema>) 
     where: { id: data.propertyId },
     include: { target: { include: { case: { select: { id: true, matterId: true, ownerId: true } } } } }
   });
-  if (!prop) throw new Error("PreservaciÃ³nè´¢äº§ä¸å­˜åœ¨");
-  await assertCanAccessPreservationCaseRecord(session.user.id, prop.target.case);
-  if (prop.status === "LIFTED") throw new Error("å·²è§£é™¤çš„PreservaciÃ³nä¸å¯ç»­ä¿");
+  if (!prop) throw new Error("El bien preservado no existe");
+  await assertCanAccessPreservationCaseRecord(session.user.id, session.user.role, prop.target.case);
+  if (prop.status === "LIFTED") throw new Error("La preservación levantada no se puede renovar");
   if (prop.target.case.matterId) await assertMatterWritable(prop.target.case.matterId);
   if (data.newExpiryDate <= prop.expiryDate) {
-    throw new Error("æ–°Fecha de vencimientoå¿…é¡»æ™šäºŽåŽŸFecha de vencimiento");
+    throw new Error("La nueva fecha de vencimiento debe ser posterior a la fecha original");
   }
 
   await prisma.$transaction([
@@ -372,20 +384,19 @@ export async function renewProperty(input: z.infer<typeof propertyRenewSchema>) 
 }
 
 export async function liftProperty(propertyId: string) {
+  const prisma = await getTenantPrisma();
   const session = await requireSession();
   const prop = await prisma.preservationProperty.findUnique({
     where: { id: propertyId },
     include: { target: { include: { case: { select: { id: true, matterId: true, ownerId: true } } } } }
   });
-  if (!prop) throw new Error("PreservaciÃ³nè´¢äº§ä¸å­˜åœ¨");
-  await assertCanAccessPreservationCaseRecord(session.user.id, prop.target.case);
+  if (!prop) throw new Error("El bien preservado no existe");
+  await assertCanAccessPreservationCaseRecord(session.user.id, session.user.role, prop.target.case);
   if (prop.target.case.matterId) await assertMatterWritable(prop.target.case.matterId);
 
   await prisma.preservationProperty.update({
     where: { id: propertyId },
-    data: {
-      status: "LIFTED",
-    }
+    data: { status: "LIFTED" }
   });
 
   revalidatePath("/preservation");
@@ -394,13 +405,14 @@ export async function liftProperty(propertyId: string) {
 }
 
 export async function deleteProperty(id: string) {
+  const prisma = await getTenantPrisma();
   const session = await requireSession();
   const property = await prisma.preservationProperty.findUnique({
     where: { id },
     include: { target: { include: { case: { select: { id: true, matterId: true, ownerId: true } } } } }
   });
-  if (!property) throw new Error("PreservaciÃ³nè´¢äº§ä¸å­˜åœ¨");
-  await assertCanAccessPreservationCaseRecord(session.user.id, property.target.case);
+  if (!property) throw new Error("El bien preservado no existe");
+  await assertCanAccessPreservationCaseRecord(session.user.id, session.user.role, property.target.case);
   if (property.target.case.matterId) await assertMatterWritable(property.target.case.matterId);
 
   await prisma.preservationProperty.delete({ where: { id } });
@@ -410,6 +422,7 @@ export async function deleteProperty(id: string) {
 
 // for dashboard alerts
 export async function listExpiringProperties(daysAhead = 60) {
+  const prisma = await getTenantPrisma();
   const session = await requireSession();
   const end = new Date();
   end.setDate(end.getDate() + daysAhead);
@@ -440,5 +453,3 @@ export async function listExpiringProperties(daysAhead = 60) {
   });
   return serializeDecimals(rows);
 }
-
-

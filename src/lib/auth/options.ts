@@ -83,23 +83,38 @@ export const authOptions: NextAuthOptions = {
   callbacks: {
     async jwt({ token, user }) {
       if (user) {
-        token.id = user.id;
-        token.role = user.role;
-        token.avatar = user.avatar;
-        token.firmId = user.firmId;
-        token.firmSlug = user.firmSlug;
-        token.firmName = user.firmName;
+        const appUser = user as typeof user & {
+          role: string;
+          avatar: string | null;
+          firmId: string | null;
+          firmSlug: string;
+          firmName: string;
+        };
+        token.id = appUser.id;
+        token.role = appUser.role;
+        token.avatar = appUser.avatar;
+        token.firmId = appUser.firmId;
+        token.firmSlug = appUser.firmSlug;
+        token.firmName = appUser.firmName;
       }
       return token;
     },
     async session({ session, token }) {
       if (session.user) {
-        session.user.id = token.id as string;
-        session.user.role = token.role as UserRole;
-        session.user.avatar = token.avatar as string | null;
-        session.user.firmId = token.firmId as string | null;
-        session.user.firmSlug = token.firmSlug as string;
-        session.user.firmName = token.firmName as string;
+        const appUser = session.user as typeof session.user & {
+          id: string;
+          role: UserRole;
+          avatar: string | null;
+          firmId: string | null;
+          firmSlug: string;
+          firmName: string;
+        };
+        appUser.id = token.id as string;
+        appUser.role = token.role as UserRole;
+        appUser.avatar = token.avatar as string | null;
+        appUser.firmId = token.firmId as string | null;
+        appUser.firmSlug = token.firmSlug as string;
+        appUser.firmName = token.firmName as string;
       }
       return session;
     }

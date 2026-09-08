@@ -88,7 +88,7 @@ export async function uploadDocument(formData: FormData) {
       select: { id: true, status: true }
     });
     if (!matter) throw new Error("El Caso no existe");
-    await assertCanAccessMatter(session.user.id, session.user.role as any, matterId);
+    await assertCanAccessMatter(session.user.id, session.user.role, matterId);
 
     if (folderId) {
       const folder = await prisma.documentFolder.findUnique({
@@ -127,7 +127,7 @@ export async function uploadDocument(formData: FormData) {
     if (intake.status === "DECLINED") throw new Error("No se puede subir material a una admision rechazada");
     const uid = session.user.id;
     if (
-      !isManager(session.user.role as any) &&
+      !isManager(session.user.role) &&
       intake.createdById !== uid &&
       intake.ownerUserId !== uid &&
       !(intake.coUserIds as string[]).includes(uid)
@@ -226,7 +226,7 @@ export async function deleteDocument(id: string) {
     if (doc.uploadedById !== session.user.id) {
       await assertCanLeadMatter(
         session.user.id,
-        session.user.role as any,
+        session.user.role,
         doc.matterId,
       );
     }
@@ -265,7 +265,9 @@ export async function hardDeleteDocument(id: string) {
   }
   const doc = await prisma.document.findUnique({ where: { id } });
   if (!doc) return { ok: false };
-  await assertDocumentWritable(doc.matterId, { kind: "modify" });
+  if (doc.matterId) {
+    await assertDocumentWritable(doc.matterId, { kind: "modify" });
+  }
 
   await storage.deleteFile(doc.path);
   await prisma.document.delete({ where: { id } });
@@ -295,7 +297,7 @@ export async function listAllDocuments(input: Partial<z.infer<typeof docListQuer
   const session = await requireSession();
   const query = docListQuerySchema.parse(input);
 
-  const visFilter = matterVisibilityFilter(session.user.id, session.user.role as any);
+  const visFilter = matterVisibilityFilter(session.user.id, session.user.role);
   const where: Prisma.DocumentWhereInput = {
     deletedAt: null,
     matter: { deletedAt: null, ...visFilter },
@@ -330,7 +332,7 @@ export async function submitDocumentForReview(id: string) {
   const doc = await prisma.document.findUnique({ where: { id, deletedAt: null } });
   if (!doc) throw new Error("El material no existe");
   if (doc.matterId) {
-    await assertCanAccessMatter(session.user.id, session.user.role as any, doc.matterId);
+    await assertCanAccessMatter(session.user.id, session.user.role, doc.matterId);
     await assertDocumentWritable(doc.matterId, { kind: "modify" });
   }
   if (doc.status !== "DRAFT") throw new Error("Solo los materiales en borrador pueden enviarse a revision");
@@ -355,7 +357,7 @@ export async function submitDocumentForReview(id: string) {
 export async function approveDocument(id: string) {
   const prisma = await getTenantPrisma();
   const session = await requireSession();
-  if (!isManager(session.user.role as any)) {
+  if (!isManager(session.user.role)) {
     throw new Error("Solo el Administrador o Abogado Principal puede aprobar documentos");
   }
   const doc = await prisma.document.findUnique({ where: { id, deletedAt: null } });
@@ -386,7 +388,7 @@ export async function approveDocument(id: string) {
 export async function rejectDocument(id: string, reason?: string) {
   const prisma = await getTenantPrisma();
   const session = await requireSession();
-  if (!isManager(session.user.role as any)) {
+  if (!isManager(session.user.role)) {
     throw new Error("Solo el Administrador o Abogado Principal puede rechazar documentos");
   }
   const doc = await prisma.document.findUnique({ where: { id, deletedAt: null } });
@@ -420,7 +422,7 @@ export async function fileDocument(id: string) {
   const doc = await prisma.document.findUnique({ where: { id, deletedAt: null } });
   if (!doc) throw new Error("El material no existe");
   if (doc.matterId)
-    await assertCanAccessMatter(session.user.id, session.user.role as any, doc.matterId);
+    await assertCanAccessMatter(session.user.id, session.user.role, doc.matterId);
   if (doc.status !== "APPROVED") throw new Error("Solo los materiales aprobados pueden archivarse");
 
   await prisma.document.update({

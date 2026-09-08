@@ -40,9 +40,11 @@ export type MattersExportParams = {
   sortDir: MatterSortDir;
 };
 
+import type { UserRole } from "@prisma/client";
+
 type ExportUser = {
   id: string;
-  role: string;
+  role: UserRole;
 };
 
 const EXPORT_TABS: MattersExportTab[] = [

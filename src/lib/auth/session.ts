@@ -15,21 +15,14 @@ export type AppSession = Session & {
     name?: string | null;
     email?: string | null;
     image?: string | null;
-  }
+  };
 };
 
-/**
- * Server Component / Server Action para leer la sesión actual.
- * Devuelve null si no hay sesión iniciada.
- */
 export async function getSession(): Promise<AppSession | null> {
-  return getServerSession(authOptions) as Promise<AppSession | null>;
+  const s = await getServerSession(authOptions);
+  return s as AppSession | null;
 }
 
-/**
- * Requiere sesión iniciada. Si no hay sesión, redirige a /login.
- * Usar en Server Components / Server Actions.
- */
 export async function requireSession(): Promise<AppSession> {
   const session = await getSession();
   if (!session?.user) {

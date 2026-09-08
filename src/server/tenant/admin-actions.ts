@@ -1,7 +1,9 @@
 ﻿"use server";
 
 import bcrypt from "bcryptjs";
+import { requireSession } from "@/lib/auth/session";
 import { getTenantPrismaSync } from "@/lib/tenant-prisma";
+import { revalidatePath } from "next/cache";
 import { prisma, createTenantSchema, migrateTenantSchema, dropTenantSchema } from "@/lib/tenant";
 
 function slugify(text: string): string {

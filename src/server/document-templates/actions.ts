@@ -31,7 +31,7 @@ export async function listTemplates(input?: z.input<typeof templateListFilterSch
     // applicableCategories vacio = aplica a todos
     where.OR = [
       { applicableCategories: { equals: [] } },
-      { applicableCategories: { has: filter.matterCategory } }
+      { applicableCategories: { array_contains: filter.matterCategory } }
     ];
   }
 
@@ -105,7 +105,7 @@ export async function renderTemplate(input: z.infer<typeof templateRenderSchema>
   await assertMatterWritable(data.matterId);
   await assertCanLeadMatter(
     session.user.id,
-    session.user.role as any,
+    session.user.role,
     data.matterId,
   );
 

@@ -14,7 +14,7 @@ export async function getModulesForCurrentFirm(): Promise<ModuleKey[]> {
 
   const prisma = await getTenantPrisma();
   const firmUser = await prisma.firmUser.findUnique({
-    where: { email: session.user.email },
+    where: { email: session.user.email ?? "" },
     include: { firm: true },
   });
 

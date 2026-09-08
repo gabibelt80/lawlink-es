@@ -15,9 +15,9 @@ export const archiveSubmitSchema = z.object({
   closedReason: archiveClosedReasonSchema,
   completedAt: z.coerce.date(),
   judgmentSummary: z.string().max(2000).optional().or(z.literal("")),
-  // checklist å‹¾é€‰Estadoï¼š{ itemId: true/false }
+  // checklist de estado: { itemId: true/false }
   checklist: z.record(z.boolean()).default({}),
-  // AbogadoConfirmarå¼ºåˆ¶å½’æ¡£ï¼ˆç¼ºå¿…å¡«Ã­temsæ—¶éœ€ true æ‰èƒ½Enviarï¼‰
+  // El abogado confirma archivo forzado (cuando faltan items obligatorios debe ser true para enviar)
   forceWithMissing: z.boolean().default(false),
 });
 
@@ -27,12 +27,10 @@ export const CLOSED_REASON_CN: Record<
   z.infer<typeof archiveClosedReasonSchema>,
   string
 > = {
-  JUDGMENT: "åˆ¤å†³",
-  MEDIATION: "è°ƒè§£",
-  WITHDRAWAL: "æ’¤è¯‰",
-  SETTLEMENT: "å’Œè§£",
-  RULING: "è£å®š",
-  OTHER: "å…¶ä»–",
+  JUDGMENT: "Sentencia",
+  MEDIATION: "Mediación",
+  WITHDRAWAL: "Desistimiento",
+  SETTLEMENT: "Conciliación",
+  RULING: "Resolución",
+  OTHER: "Otro",
 };
-
-

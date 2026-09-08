@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useSession } from "next-auth/react";
+import { useAppSession } from "@/lib/auth/use-app-session";
 import { Scale, LayoutDashboard, Package, Activity } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { primaryNav, secondaryNav, filterNavByModules, type NavItem } from "./nav-config";
@@ -28,7 +28,7 @@ export function Sidebar({ firm }: { firm: FirmBrand }) {
 /** Contenido de navegación — compartido entre barra lateral de escritorio y Sheet móvil */
 export function NavContent({ firm }: { firm: FirmBrand }) {
   const pathname = usePathname();
-  const { data: session } = useSession();
+  const { session } = useAppSession();
   const isSystemAdmin = session?.user?.role === "SYSTEM_ADMIN";
   const [enabledModules, setEnabledModules] = useState<ModuleKey[]>([]);
 

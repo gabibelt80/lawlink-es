@@ -85,9 +85,11 @@ async function canApproveSealType(
     const repId = await getFirmLegalRepUserId();
     return !!repId && repId === user.id;
   }
-  return cfg.approverRoles.includes(user.role as UserRole);
+  const approverRoles = Array.isArray(cfg.approverRoles) ? (cfg.approverRoles as string[]) : [];
+  return approverRoles.includes(user.role as UserRole);
 }
 
+// Listado
 // Listado
 export async function listSealRequests(input?: z.input<typeof sealListFilterSchema>) {
   const prisma = await getTenantPrisma();
@@ -139,7 +141,8 @@ async function pickApprovableSealTypes(user: { id: string; role: string }): Prom
   return cfgs
     .filter((c) => {
       if (c.requiresLegalRep) return !!repId && repId === user.id;
-      return c.approverRoles.includes(user.role as UserRole);
+      const approverRoles = Array.isArray(c.approverRoles) ? (c.approverRoles as string[]) : [];
+     return approverRoles.includes(user.role as UserRole);
     })
     .map((c) => c.type);
 }
@@ -161,11 +164,12 @@ async function getSealApprovalRecipientIds(sealType: SealType): Promise<string[]
     return ids;
   }
 
-  if (cfg.approverRoles.length > 0) {
+const approverRoles = Array.isArray(cfg.approverRoles) ? (cfg.approverRoles as UserRole[]) : [];
+if (approverRoles.length > 0) {
     const roleApprovers = await prisma.user.findMany({
       where: {
         active: true,
-        role: { in: cfg.approverRoles as UserRole[] }
+        role: { in: approverRoles }
       },
       select: { id: true }
     });
@@ -399,7 +403,7 @@ if (!session.user.id) {
         iv: draftDocPrepare.iv,
         authTag: draftDocPrepare.authTag,
         tags: ["Solicitud de sello", "Borrador a sellar"],
-        uploadedById: await resolveTenantUserId(session.user.email) ?? session.user.id
+        uploadedById: await resolveTenantUserId(session.user.email ?? "") ?? session.user.id
       }
     });
 
@@ -416,7 +420,7 @@ if (!session.user.id) {
         urgency: data.urgency,
         requestNote: (data.requestNote || "").trim() || null,
         draftDocId: draftDoc.id,
-        requestedById: await resolveTenantUserId(session.user.email) ?? session.user.id,
+        requestedById: await resolveTenantUserId(session.user.email ?? "") ?? session.user.id,
         status: "PENDING",
         parentSealRequestId: data.parentSealRequestId ?? undefined
       }

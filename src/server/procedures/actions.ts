@@ -142,7 +142,7 @@ export async function deleteProcedure(id: string) {
 
   await assertCanAccessMatter(session.user.id, session.user.role, procedure.matterId);
   await assertMatterWritable(procedure.matterId);
-  await assertCanLeadMatter(session.user.id, session.user.role as any, procedure.matterId, "Solo el responsable/co-responsable puede eliminar el procedimiento");
+  await assertCanLeadMatter(session.user.id, session.user.role, procedure.matterId, "Solo el responsable/co-responsable puede eliminar el procedimiento");
 
   await prisma.matterProcedure.delete({ where: { id } });
   await audit({
@@ -329,7 +329,7 @@ export async function removeProcedureStage(input: ProcedureStageRemoveInput) {
   });
   if (!stage) return { ok: false };
 
-  await assertCanAssociateMatter(session.user.id, session.user.role, procedure.matterId);
+  await assertCanAssociateMatter(session.user.id, session.user.role, stage.procedure.matterId);
   await assertMatterWritable(stage.procedure.matterId);
 
   const preset = stagePresetForName(stage.procedure.type, stage.name);

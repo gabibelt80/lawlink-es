@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth/options";
-import { prisma } from "@/lib/prisma";
+import { getTenantPrisma } from "@/lib/tenant-prisma";
+import { getSession } from "@/lib/auth/session";
 import { audit } from "@/server/audit";
 import { storage } from "@/lib/storage";
 import { decryptBuffer } from "@/lib/storage/crypto";
@@ -11,27 +10,28 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 export async function GET(req: Request, { params }: { params: { id: string } }) {
-  // ?inline=1 时以 inline 方式Volver，浏览器新标签内预览（PDF/图片/文本），否则下载
+  // ?inline=1 muestra en el navegador (PDF/imagen/texto), sino descarga
   const inline = new URL(req.url).searchParams.get("inline") === "1";
-  const session = await getServerSession(authOptions);
+  const session = await getSession();
   if (!session?.user) {
-    return NextResponse.json({ error: "未Iniciar sesión" }, { status: 401 });
+    return NextResponse.json({ error: "No has iniciado sesión" }, { status: 401 });
   }
+
+  const prisma = await getTenantPrisma();
 
   const doc = await prisma.document.findFirst({
     where: { id: params.id, deletedAt: null }
   });
-  if (!doc) return NextResponse.json({ error: "材料不存在" }, { status: 404 });
+  if (!doc) return NextResponse.json({ error: "El material no existe" }, { status: 404 });
 
-  // 权限检查：ADMIN / PRINCIPAL_LAWYER 可读Ver todos；其他Rol —— Caso成员才能读Caso材料；
-  // 仅 intakeId 的收案合同限收案Crear人/主办/协办（含Cliente身份证号etc.隐私，不再对全所开放）
+  // Permisos: ADMIN / PRINCIPAL_LAWYER pueden ver todos; otros roles solo si son miembros del Caso
   if (session.user.role !== "ADMIN" && session.user.role !== "PRINCIPAL_LAWYER") {
     if (doc.matterId) {
       const member = await prisma.matterMember.findUnique({
         where: { matterId_userId: { matterId: doc.matterId, userId: session.user.id } }
       });
       if (!member) {
-        return NextResponse.json({ error: "无权访问" }, { status: 403 });
+        return NextResponse.json({ error: "Sin permiso de acceso" }, { status: 403 });
       }
     } else if (doc.intakeId) {
       const intake = await prisma.intake.findUnique({
@@ -43,9 +43,9 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
         !!intake &&
         (intake.createdById === uid ||
           intake.ownerUserId === uid ||
-          intake.coUserIds.includes(uid));
+          (intake.coUserIds as string[]).includes(uid));
       if (!allowed) {
-        return NextResponse.json({ error: "无权访问" }, { status: 403 });
+        return NextResponse.json({ error: "Sin permiso de acceso" }, { status: 403 });
       }
     }
   }
@@ -55,15 +55,15 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
     const stored = await storage.readFile(doc.path);
     if (doc.encrypted) {
       if (!doc.iv || !doc.authTag) {
-        return NextResponse.json({ error: "加密pesos数据损坏" }, { status: 500 });
+        return NextResponse.json({ error: "Datos cifrados dañados" }, { status: 500 });
       }
       buf = decryptBuffer(stored, doc.iv, doc.authTag);
     } else {
       buf = stored;
     }
   } catch (err) {
-    console.error("[download] 读取Error：", err);
-    return NextResponse.json({ error: "读取Error" }, { status: 500 });
+    console.error("[download] Error al leer:", err);
+    return NextResponse.json({ error: "Error al leer" }, { status: 500 });
   }
 
   await audit({

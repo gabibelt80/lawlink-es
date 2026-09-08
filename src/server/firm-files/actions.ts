@@ -77,7 +77,7 @@ export async function listFirmFiles(input: {
     where.OR = [
       { name: { contains: q } },
       { description: { contains: q } },
-      { tags: { array_contains: q } }
+      { tags: { has: q } }
     ];
   }
 

@@ -4,7 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ArrowUpRight, Plus, ShieldCheck } from "lucide-react";
-import { useSession } from "next-auth/react";
+import { useAppSession } from "@/lib/auth/use-app-session";
 import { Button } from "@/components/ui/button";
 import { cn, formatDate } from "@/lib/utils";
 import type { HeroData } from "@/server/dashboard/actions";
@@ -21,7 +21,7 @@ function getGreeting(hour: number) {
 export function HeroBlock({ data }: { data: HeroData }) {
   const today = new Date();
   const router = useRouter();
-  const { data: session } = useSession();
+  const { session } = useAppSession();
   const greeting = getGreeting(today.getHours());
   const name = session?.user?.name ?? "";
   const [conflictOpen, setConflictOpen] = useState(false);

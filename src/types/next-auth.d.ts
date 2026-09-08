@@ -1,35 +1,32 @@
-﻿import { DefaultSession, DefaultUser } from "next-auth";
-import { DefaultJWT } from "next-auth/jwt";
-import { UserRole } from "@prisma/client";
+﻿import { getServerSession } from "next-auth";
+import { redirect } from "next/navigation";
+import { authOptions } from "./options";
+import type { Session } from "next-auth";
+import type { UserRole } from "@prisma/client";
 
-declare module "next-auth" {
-  interface Session {
-    user: {
-      id: string;
-      role: UserRole;
-      avatar: string | null;
-      firmId: string | null;
-      firmSlug: string;
-      firmName: string;
-    } & DefaultSession["user"];
-  }
-
-  interface User extends DefaultUser {
-    role: UserRole;
-    avatar: string | null;
-    firmId: string | null;
-    firmSlug: string;
-    firmName: string;
-  }
-}
-
-declare module "next-auth/jwt" {
-  interface JWT extends DefaultJWT {
+export type AppSession = Session & {
+  user: {
     id: string;
     role: UserRole;
     avatar: string | null;
     firmId: string | null;
     firmSlug: string;
     firmName: string;
+    name?: string | null;
+    email?: string | null;
+    image?: string | null;
+  };
+};
+
+export async function getSession(): Promise<AppSession | null> {
+  const session = await getServerSession(authOptions);
+  return session as AppSession | null;
+}
+
+export async function requireSession(): Promise<AppSession> {
+  const session = await getSession();
+  if (!session?.user) {
+    redirect("/login");
   }
+  return session;
 }
