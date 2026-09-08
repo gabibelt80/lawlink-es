@@ -43,7 +43,13 @@ export function LoginForm() {
       redirect: false
     });
     if (res?.ok) {
-      router.replace(callbackUrl);
+      const sessionRes = await fetch("/api/auth/session");
+      const sessionData = await sessionRes.json();
+      if (sessionData?.user?.role === "SYSTEM_ADMIN") {
+        router.replace("/admin");
+      } else {
+        router.replace(callbackUrl === "/" ? "/" : callbackUrl);
+      }
       router.refresh();
     } else {
       setAuthError("Email o contraseña incorrectos");
