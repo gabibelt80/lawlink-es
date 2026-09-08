@@ -78,7 +78,7 @@ export async function migrateTenantSchema(firmSlug: string): Promise<void> {
   const schema = `juridictas_${firmSlug}`;
   const baseUrl = process.env.DATABASE_URL!;
   const url = new URL(baseUrl);
-  const tenantUrl = `postgresql://${url.username}:${url.password}@${url.hostname}:${url.port}/${schema}?schema=public`;
+  const tenantUrl = `postgresql://${url.username}:${url.password}@${url.hostname}:${url.port}/juridictas?schema=${schema}`;
   const { exec } = await import("child_process");
   await new Promise((resolve, reject) => {
     exec(

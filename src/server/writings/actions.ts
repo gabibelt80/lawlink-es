@@ -10,10 +10,10 @@ import { logCaseWriting, logCaseEvent } from "@/server/matters/case-logger";
 import { extractTextFromFile } from "@/lib/writings/extract-text";
 
 const writingSchema = z.object({
-  name: z.string().min(1).max(200),
-  category: z.string().min(1).max(50),
-  stage: z.string().min(1).max(50),
-  content: z.string().min(1).max(50000),
+  name: z.string().max(200).optional(),
+  category: z.string().max(50).optional(),
+  stage: z.string().max(50).optional(),
+  content: z.string().max(50000).optional(),
   enabled: z.boolean().default(true),
 });
 
@@ -32,8 +32,15 @@ export async function createWriting(input: z.infer<typeof writingSchema>) {
     throw new Error("Solo el Administrador o Abogado Principal puede crear escritos");
   }
   const data = writingSchema.parse(input);
-  const created = await prisma.writingTemplate.create({
-    data: { ...data, createdById: session.user.id },
+const created = await prisma.writingTemplate.create({
+    data: {
+      name: data.name ?? "Sin título",
+      category: data.category ?? "OTRO",
+      stage: data.stage ?? "TODAS",
+      content: data.content ?? "",
+      enabled: data.enabled,
+      createdById: session.user.id,
+    },
   });
   revalidatePath("/settings/writings");
   return { ok: true, id: created.id };

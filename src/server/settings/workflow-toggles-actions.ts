@@ -1,4 +1,4 @@
-﻿"use server";
+"use server";
 
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
@@ -13,7 +13,7 @@ const saveSchema = z.object({
 async function requireAdmin() {
   const session = await requireSession();
   if (session.user.role !== "ADMIN") {
-    throw new Error("ä»…Administrarå‘˜å¯ä¿®æ”¹å·¥ä½œæµå¼€å…³");
+    throw new Error("Solo el Administrador puede modificar los interruptores de flujo de trabajo");
   }
   return session;
 }
@@ -21,7 +21,9 @@ async function requireAdmin() {
 export async function saveWorkflowTogglesAction(input: z.infer<typeof saveSchema>) {
   const session = await requireAdmin();
   const data = saveSchema.parse(input);
-  await saveWorkflowToggles(data);
+await saveWorkflowToggles({
+  externalContactReview: data.externalContactReview
+});
   await audit({
     userId: session.user.id,
     action: "WORKFLOW_TOGGLES_SAVE",
@@ -37,5 +39,3 @@ export async function getWorkflowTogglesAction() {
   await requireAdmin();
   return getWorkflowToggles();
 }
-
-

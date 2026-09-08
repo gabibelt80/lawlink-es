@@ -6,9 +6,9 @@ import { getTenantPrisma } from "@/lib/tenant-prisma";
 import { requireSession } from "@/lib/auth/session";
 
 const jurisprudenceSchema = z.object({
-  title: z.string().min(1).max(300),
+  title: z.string().max(300).optional(),
   summary: z.string().optional(),
-  fullText: z.string().min(1),
+  fullText: z.string().optional(),
   court: z.string().optional(),
   jurisdiction: z.string().optional(),
   date: z.string().optional(),
@@ -33,6 +33,8 @@ export async function createJurisprudence(input: z.infer<typeof jurisprudenceSch
   const created = await prisma.jurisprudence.create({
     data: {
       ...data,
+      title: data.title ?? "Sin título",
+      fullText: data.fullText ?? "",
       date: data.date ? new Date(data.date) : null,
       createdById: session.user.id,
     },

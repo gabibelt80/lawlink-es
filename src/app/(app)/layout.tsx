@@ -6,33 +6,46 @@ import { getFirmProfile } from "@/server/settings/firm-profile";
 import { prisma } from "@/lib/prisma";
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
-  // v0.27: Banner de anuncios superior — solo se obtiene después de iniciar sesión;
-  // sin sesión se usa el layout (auth) y no este layout
   const session = await getSession();
   const banners = session?.user ? await listActiveBanners() : [];
 
-  // v0.42 ítem 1: Marca de la barra lateral (nombre del estudio / subtítulo / Logo)
-  // configurable en la página de Configuración
-  const profile = await getFirmProfile();
+  let profile = { firmName: "LawLink", firmSubtitle: "", logoDataUrl: null as string | null };
+  let avatar: string | null = null;
+
+  if (session?.user) {
+    // Para system admin (firmId=null), no hay perfil del tenant
+    if (session.user.firmId) {
+      try {
+        profile = await getFirmProfile();
+      } catch {
+        // Silencioso: si no hay tenant, usa defaults
+      }
+    }
+
+    // Avatar del usuario
+    if (session.user.firmId) {
+      try {
+        const me = await prisma.user.findUnique({
+          where: { id: session.user.id },
+          select: { avatar: true }
+        });
+        avatar = me?.avatar ?? null;
+      } catch {
+        avatar = null;
+      }
+    }
+  }
+
   const firm = {
     name: profile.firmName,
     subtitle: profile.firmSubtitle,
     logoDataUrl: profile.logoDataUrl
   };
 
-  // v0.43: Avatar del usuario actual (se lee de la base para evitar caché JWT),
-  // permite refrescar la barra superior al instante
-  const me = session?.user
-    ? await prisma.user.findUnique({
-        where: { id: session.user.id },
-        select: { avatar: true }
-      })
-    : null;
-
   return (
     <AppShell
       firm={firm}
-      userAvatar={me?.avatar ?? null}
+      userAvatar={avatar}
       banner={banners.length > 0 ? <AnnouncementBanner banners={banners} /> : null}
     >
       {children}
