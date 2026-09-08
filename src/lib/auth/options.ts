@@ -1,10 +1,9 @@
-﻿import type { NextAuthOptions } from "next-auth";
+import type { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import bcrypt from "bcryptjs";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { UserRole } from "@prisma/client";
-import { getTenantPrismaSync } from "@/lib/tenant-prisma";
 
 const credentialsSchema = z.object({
   email: z.string().email(),
@@ -15,6 +14,17 @@ export const authOptions: NextAuthOptions = {
   session: { strategy: "jwt", maxAge: 12 * 60 * 60 },
   pages: {
     signIn: "/login"
+  },
+  cookies: {
+    sessionToken: {
+      name: "next-auth.session-token",
+      options: {
+        httpOnly: true,
+        sameSite: "lax",
+        path: "/",
+        secure: process.env.NODE_ENV === "production",
+      },
+    },
   },
   providers: [
     CredentialsProvider({
@@ -47,7 +57,7 @@ export const authOptions: NextAuthOptions = {
             id: firmUser.id,
             name: firmUser.name,
             email: firmUser.email,
-            role: "SYSTEM_ADMIN" as const,
+            role: "SYSTEM_ADMIN",
             avatar: firmUser.avatar,
             firmId: null as string | null,
             firmSlug: "",
@@ -71,7 +81,7 @@ export const authOptions: NextAuthOptions = {
           id: firmUser.id,
           name: firmUser.name,
           email: firmUser.email,
-          role: "ADMIN" as const,
+          role: "ADMIN",
           avatar: firmUser.avatar,
           firmId: firmUser.firmId as string,
           firmSlug: firm.slug,
