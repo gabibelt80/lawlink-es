@@ -2,6 +2,7 @@ import Link from "next/link";
 import {
   CreditCard,
   AlertTriangle,
+  Workflow,
   Settings,
   Users,
   Layers,
@@ -76,6 +77,12 @@ export default async function SettingsLayout({
                   icon={<Layers className="h-3.5 w-3.5" />}
                 >
                   Plantillas de etapas
+                </SettingsNavLink>
+                <SettingsNavLink
+                  href="/settings/stages"
+                  icon={<Workflow className="h-3.5 w-3.5" />}
+                >
+                  Etapas por procedimiento
                 </SettingsNavLink>
                 <SettingsNavLink
                   href="/settings/custom-fields"
