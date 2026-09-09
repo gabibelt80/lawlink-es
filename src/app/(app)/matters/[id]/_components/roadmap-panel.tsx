@@ -19,6 +19,7 @@ type DocumentItem = Prisma.DocumentGetPayload<{
   include: {
     uploadedBy: { select: { id: true; name: true } };
     procedure: { select: { id: true; type: true; customLabel: true } };
+    stage: { select: { id: true; name: true } };
   };
 }> & {
   stageId?: string | null;
@@ -154,9 +155,9 @@ export function RoadmapPanel({
       date: new Date(doc.createdAt),
       status: DOCUMENT_STATUS_LABELS[doc.status] ?? doc.status,
       user: doc.uploadedBy?.name ?? "Sistema",
-      detail: doc.procedure?.customLabel ?? (doc.procedure?.type ? procedureTypeLabel[doc.procedure.type as keyof typeof procedureTypeLabel] : undefined) ?? (doc.stageName ? `Etapa: ${doc.stageName}` : DOCUMENT_CATEGORY_LABELS[doc.category] ?? doc.category),
+      detail: doc.stage?.name ?? doc.stageName ?? doc.procedure?.customLabel ?? (doc.procedure?.type ? procedureTypeLabel[doc.procedure.type as keyof typeof procedureTypeLabel] : undefined) ?? DOCUMENT_CATEGORY_LABELS[doc.category] ?? doc.category,
       stageId: doc.stageId ?? null,
-      stageName: doc.procedure?.customLabel ?? (doc.procedure?.type ? procedureTypeLabel[doc.procedure.type as keyof typeof procedureTypeLabel] : null),
+      stageName: doc.stage?.name ?? doc.procedure?.customLabel ?? (doc.procedure?.type ? procedureTypeLabel[doc.procedure.type as keyof typeof procedureTypeLabel] : null),
     });
   }
 

@@ -81,6 +81,7 @@ export default async function MatterDetailPage({ params }: PageProps) {
         procedure: { select: { id: true, type: true, customLabel: true } },
         uploadedById: true,
         stageId: true,
+        stage: { select: { id: true, name: true } },
         procedureId: true,
         folderId: true,
         templateId: true,
