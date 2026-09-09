@@ -4,7 +4,7 @@ import {
   isCauseAllowedForSelection,
   isCommercialArbitrationSelection,
 } from "@/lib/cause-scope";
-import { prisma } from "@/lib/prisma";
+import { getTenantPrisma } from "@/lib/tenant-prisma";
 
 /**
  * ä»¥Casoå½“å‰Estadoä¸ºåŸºå‡†åšCausaæ ¡éªŒï¼ˆv1.2 æ”¶å£å…¥å£ï¼‰ã€‚
@@ -19,6 +19,7 @@ export async function assertCauseAllowedForMatter(
   matterId: string,
   causeId?: string | null,
 ) {
+  const prisma = await getTenantPrisma();
   const matter = await prisma.matter.findUnique({
     where: { id: matterId },
     select: {
@@ -47,6 +48,7 @@ export async function assertCauseAllowedForSelection(input: {
 }) {
   if (!input.causeId) return;
 
+  const prisma = await getTenantPrisma();
   const cause = await prisma.causeOfAction.findUnique({
     where: { id: input.causeId },
     select: { id: true, name: true, category: true, code: true, active: true },

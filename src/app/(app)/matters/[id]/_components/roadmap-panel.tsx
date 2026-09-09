@@ -12,6 +12,7 @@ import {
   FolderOpen,
 } from "lucide-react";
 import { cn, formatCurrency } from "@/lib/utils";
+import { procedureTypeLabel, litigationStandingLabel } from "@/lib/enums";
 import type { Prisma } from "@prisma/client";
 
 type DocumentItem = Prisma.DocumentGetPayload<{
@@ -82,6 +83,34 @@ type RoadmapItem = {
   stageName?: string | null;
 };
 
+const EVENT_TYPE_LABELS: Record<string, string> = {
+  MATTER_CREATED: "Caso creado",
+  MATTER_CLOSED: "Caso cerrado",
+  MATTER_REOPENED: "Caso reabierto",
+  MATTER_ON_HOLD: "Caso en pausa",
+  MATTER_ARCHIVE_REQUESTED: "Solicitud de archivo",
+  MATTER_ARCHIVED: "Caso archivado",
+  TEAM_CHANGED: "Equipo modificado",
+  DOCUMENT_UPLOADED: "Documento subido",
+  FEE_RECEIVED: "Pago recibido",
+  PROCEDURE_UPDATED: "Procedimiento actualizado",
+  HEARING_SCHEDULED: "Audiencia programada",
+  DEADLINE_CREATED: "Plazo creado",
+  NOTE_ADDED: "Nota agregada",
+  STAGE_ADD: "Etapa agregada",
+  STAGE_COMPLETED: "Etapa completada",
+  STAGE_REOPENED: "Etapa reabierta",
+};
+
+const DOCUMENT_CATEGORY_LABELS: Record<string, string> = {
+  PLEADING: "Escrito",
+  EVIDENCE: "Prueba",
+  PROCEDURE: "Trámite",
+  JUDGMENT: "Sentencia",
+  CONTRACT: "Contrato",
+  OTHER: "Otro",
+};
+
 const DOCUMENT_STATUS_LABELS: Record<string, string> = {
   DRAFT: "Borrador",
   PENDING_REVIEW: "En revision",
@@ -125,9 +154,9 @@ export function RoadmapPanel({
       date: new Date(doc.createdAt),
       status: DOCUMENT_STATUS_LABELS[doc.status] ?? doc.status,
       user: doc.uploadedBy?.name ?? "Sistema",
-      detail: doc.procedure?.customLabel ?? doc.procedure?.type ?? doc.category,
+      detail: doc.procedure?.customLabel ?? (doc.procedure?.type ? procedureTypeLabel[doc.procedure.type as keyof typeof procedureTypeLabel] : undefined) ?? DOCUMENT_CATEGORY_LABELS[doc.category] ?? doc.category,
       stageId: doc.stageId ?? null,
-      stageName: doc.procedure?.customLabel ?? doc.procedure?.type ?? null,
+      stageName: doc.procedure?.customLabel ?? (doc.procedure?.type ? procedureTypeLabel[doc.procedure.type as keyof typeof procedureTypeLabel] : null),
     });
   }
 
@@ -139,7 +168,7 @@ export function RoadmapPanel({
       date: new Date(hearing.startsAt),
       status: "Programada",
       user: "Sistema",
-      detail: hearing.procedure?.customLabel ?? hearing.procedure?.type ?? "",
+      detail: hearing.procedure?.customLabel ?? (hearing.procedure?.type ? procedureTypeLabel[hearing.procedure.type as keyof typeof procedureTypeLabel] : ""),
     });
   }
 
@@ -151,7 +180,7 @@ export function RoadmapPanel({
       date: new Date(deadline.dueAt),
       status: deadline.completed ? "Completado" : "Pendiente",
       user: "Sistema",
-      detail: deadline.procedure?.customLabel ?? deadline.procedure?.type ?? "",
+      detail: deadline.procedure?.customLabel ?? (deadline.procedure?.type ? procedureTypeLabel[deadline.procedure.type as keyof typeof procedureTypeLabel] : ""),
     });
   }
 
@@ -163,7 +192,7 @@ export function RoadmapPanel({
       date: new Date(event.occurredAt),
       status: "Registrado",
       user: "Sistema",
-      detail: event.eventType,
+      detail: EVENT_TYPE_LABELS[event.eventType] ?? event.eventType,
     });
   }
 

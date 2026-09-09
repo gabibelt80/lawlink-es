@@ -79,7 +79,7 @@ export function Topbar({
   const [searchOpen, setSearchOpen] = useState(false);
   const [toolsOpen, setToolsOpen] = useState(false);
   const user = session?.user;
-  const isSystemAdmin = user?.role === "SYSTEM_ADMIN" || user?.role === "ADMIN";
+  const isSystemAdmin = user?.role === "SYSTEM_ADMIN";
   const displayName = user?.name ?? "";
   const roleLabel = user?.role ? (roleLabels[user.role] ?? user.role) : "";
   const initial = displayName ? displayName.charAt(0) : "?";

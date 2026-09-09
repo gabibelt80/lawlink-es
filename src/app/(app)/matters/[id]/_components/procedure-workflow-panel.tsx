@@ -673,6 +673,7 @@ export function ProcedureWorkflowPanel({
 }) {
   const router = useRouter();
   const [selectedKey, setSelectedKey] = useState<string | null>(initialStageKey ?? null);
+  const stageRefs = useRef<Record<string, HTMLButtonElement | null>>({});
   const [templateOpen, setTemplateOpen] = useState(false);
   const [taskStage, setTaskStage] = useState<WorkflowStage | null>(null);
   const [stageCreateOpen, setStageCreateOpen] = useState(false);
@@ -686,6 +687,17 @@ export function ProcedureWorkflowPanel({
   useEffect(() => {
     if (initialStageKey) {
       setSelectedKey(initialStageKey);
+      // Scroll a la etapa después de un pequeño delay
+      setTimeout(() => {
+        const el = stageRefs.current[initialStageKey];
+        if (el) {
+          el.scrollIntoView({ behavior: "smooth", block: "center" });
+          el.classList.add("ring-2", "ring-primary/40");
+          setTimeout(() => {
+            el.classList.remove("ring-2", "ring-primary/40");
+          }, 2000);
+        }
+      }, 300);
     }
   }, [initialStageKey]);
   const workflowItems: WorkflowItem[] = matterInfoNode ? [MATTER_INFO_ITEM, ...stages] : stages;
@@ -755,6 +767,7 @@ export function ProcedureWorkflowPanel({
             {workflowItems.map((stage) => (
               <button
                 key={stage.key}
+                ref={(el) => { stageRefs.current[stage.key] = el; }}
                 type="button"
                 onClick={() => setSelectedKey(stage.key)}
                 className={cn(

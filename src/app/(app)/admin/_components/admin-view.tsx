@@ -43,6 +43,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { PLANS, getPlan } from "@/lib/plans";
+import { formatARS } from "@/lib/currency";
 import { getPlanModules, MODULES } from "@/lib/modules";
 import {
   createFirmAction,
@@ -409,7 +410,7 @@ export function AdminView({
                           </div>
                           {f.lastPaymentAmount && (
                             <div className="text-[10px] text-muted-foreground">
-                              ${Number(f.lastPaymentAmount).toLocaleString("es-AR")}
+                              ${formatARS(Number(f.lastPaymentAmount))}
                             </div>
                           )}
                         </div>

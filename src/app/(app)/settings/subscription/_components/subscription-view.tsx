@@ -17,6 +17,7 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { PLANS, PlanKey, PlanInfo } from "@/lib/plans";
+import { formatARS } from "@/lib/currency";
 import { canChangePlan } from "@/lib/plan-hierarchy";
 
 type FirmSubscription = {
@@ -133,7 +134,7 @@ export function SubscriptionView({ firm, plans, currentModules }: SubscriptionVi
           <div className="rounded-lg bg-muted/30 p-3">
             <div className="text-[10px] text-muted-foreground">Precio mensual</div>
             <div className="mt-1 text-lg font-semibold">
-              ${firm.planPrice.toLocaleString("es-AR")}
+              ${formatARS(firm.planPrice)}
             </div>
           </div>
           <div className="rounded-lg bg-muted/30 p-3">
@@ -164,7 +165,7 @@ export function SubscriptionView({ firm, plans, currentModules }: SubscriptionVi
         {firm.lastPaymentAt && (
           <div className="mt-2 text-xs text-muted-foreground">
             Último pago: {new Date(firm.lastPaymentAt).toLocaleDateString("es-AR")}
-            {firm.lastPaymentAmount ? ` - $${firm.lastPaymentAmount.toLocaleString("es-AR")}` : ""}
+            {firm.lastPaymentAmount ? ` - ${formatARS(firm.lastPaymentAmount)}` : ""}
           </div>
         )}
 
@@ -218,7 +219,7 @@ export function SubscriptionView({ firm, plans, currentModules }: SubscriptionVi
 
                 <div className="mt-3">
                   <span className="text-xl font-bold">
-                    ${plan.price.toLocaleString("es-AR")}
+                    ${formatARS(plan.price)}
                   </span>
                   <span className="text-[10px] text-muted-foreground">/mes</span>
                 </div>
