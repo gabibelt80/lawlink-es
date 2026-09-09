@@ -30,5 +30,13 @@ export default async function AdminPage() {
   });
   const customModules = (planModulesRow?.value as Record<string, string[]>) ?? {};
 
-  return <AdminView firms={firms} customModules={customModules} />;
+  // Métricas de suscripción
+  const subscriptionStats = {
+    active: firms.filter(f => f.subscriptionStatus === "active" && f.active).length,
+    pastDue: firms.filter(f => f.subscriptionStatus === "past_due").length,
+    canceled: firms.filter(f => f.subscriptionStatus === "canceled").length,
+    suspended: firms.filter(f => f.subscriptionStatus === "suspended" || f.suspendedAt).length,
+  };
+
+  return <AdminView firms={firms} customModules={customModules} subscriptionStats={subscriptionStats} />;
 }

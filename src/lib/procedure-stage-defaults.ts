@@ -66,6 +66,26 @@ const ARBITRATION_PRESETS: ProcedureStagePreset[] = [
   { name: "Archivo del caso", kind: "required", description: "Informe de cierre arbitral, archivo y devolucion de originales." }
 ];
 
+const ADMIN_PRE_LITIGATION_PRESETS: ProcedureStagePreset[] = [
+  { name: "Autorizacion", kind: "required", description: "Tramites de mandato administrativo, documentos de autorizacion y entrega de materiales." },
+  { name: "Analisis del caso", kind: "required", description: "Orden de hechos, analisis normativo, jurisprudencia administrativa y plan de accion." },
+  { name: "Reclamo administrativo", kind: "required", description: "Redaccion y presentacion del reclamo administrativo previo, acuse de recibo y seguimiento." },
+  { name: "Prueba documental", kind: "required", description: "Recopilacion de documentacion respaldatoria, informe tecnico y evidencia complementaria." },
+  { name: "Audiencia o vista", kind: "optional", description: "Audiencia administrativa, vista oral, alegatos y registro." },
+  { name: "Resolucion administrativa", kind: "required", description: "Recepcion de resolucion, analisis de fundamentos, notificacion al cliente y evaluacion de proximos pasos." },
+  { name: "Recursos", kind: "optional", description: "Interposicion de reconsideracion, jerarquico o alzada segun corresponda." },
+  { name: "Archivo del caso", kind: "required", description: "Informe de cierre, integridad de materiales, devolucion de originales y solicitud de archivo." }
+];
+
+const ADMIN_RECONSIDERATION_PRESETS: ProcedureStagePreset[] = [
+  { name: "Autorizacion", kind: "required", description: "Tramites de mandato y entrega de materiales para reconsideracion." },
+  { name: "Analisis de resolucion", kind: "required", description: "Analisis de la resolucion recurrida, fundamentos y jurisprudencia aplicable." },
+  { name: "Presentacion de reconsideracion", kind: "required", description: "Redaccion y presentacion del recurso de reconsideracion, acuse y seguimiento." },
+  { name: "Prueba", kind: "optional", description: "Ofrecimiento de nueva prueba, informe complementario y alegatos." },
+  { name: "Resolucion del recurso", kind: "required", description: "Recepcion de resolucion del recurso, notificacion y evaluacion de instancia judicial." },
+  { name: "Archivo del caso", kind: "required", description: "Informe de cierre, archivo y devolucion de originales." }
+];
+
 const CRIMINAL_INVESTIGATION_PRESETS: ProcedureStagePreset[] = [
   { name: "Autorizacion", kind: "required", description: "Tramites de mandato penal, materiales de autorizacion y gestion de entrevista." },
   { name: "Entrevista", kind: "required", description: "Reserva de entrevista, acta, comunicacion con familiares y aviso de riesgos." },
@@ -80,6 +100,8 @@ export function procedureStagePresetsForProcedure(type: ProcedureType): Procedur
   if (type === "ENFORCEMENT" || type === "ENFORCEMENT_OBJECTION") return ENFORCEMENT_PRESETS;
   if (type === "COMMERCIAL_ARBITRATION" || type === "LABOR_ARBITRATION") return ARBITRATION_PRESETS;
   if (type === "INVESTIGATION") return CRIMINAL_INVESTIGATION_PRESETS;
+  if (type === "ADMIN_PRE_LITIGATION") return ADMIN_PRE_LITIGATION_PRESETS;
+  if (type === "ADMIN_RECONSIDERATION") return ADMIN_RECONSIDERATION_PRESETS;
   return CIVIL_TRIAL_PRESETS;
 }
 

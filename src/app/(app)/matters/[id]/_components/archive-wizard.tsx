@@ -35,7 +35,7 @@ import {
 } from "@/components/ui/select";
 import { archiveMatter, getArchivePrepData } from "@/server/archive/actions";
 import { uploadDocument } from "@/server/documents/actions";
-import { CLOSED_REASON_CN } from "@/server/archive/schemas";
+import { CLOSED_REASON_LABEL } from "@/server/archive/schemas";
 import type {
   ArchiveChecklist,
   ArchiveChecklistItem,
@@ -266,10 +266,10 @@ export function ArchiveWizardDialog({ matterId, open, onOpenChange }: Props) {
                       </SelectTrigger>
                       <SelectContent>
                         {(
-                          Object.keys(CLOSED_REASON_CN) as ArchiveClosedReason[]
+                          Object.keys(CLOSED_REASON_LABEL) as ArchiveClosedReason[]
                         ).map((k) => (
                           <SelectItem key={k} value={k}>
-                            {CLOSED_REASON_CN[k]}
+                            {CLOSED_REASON_LABEL[k]}
                           </SelectItem>
                         ))}
                       </SelectContent>

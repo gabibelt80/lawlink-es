@@ -19,6 +19,7 @@ import {
   Compass,
   Megaphone,
   BookText,
+  Building2,
 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -45,8 +46,7 @@ const roleLabels: Record<string, string> = {
   FINANCE: "Finanzas",
 };
 
-// Entrada de menú de aplicaciones (v0.38: cada categoría volvió a páginas independientes; herramientas prácticas = ventana global; navegación legal = enlace externo)
-// kind: "tools" dispara la ventana de herramientas (sin navegar); "external" abre enlace externo en pestaña nueva; el resto son Links a páginas independientes
+// Entrada de menú de aplicaciones
 const APP_ITEMS = [
   { label: "Herramientas prácticas", icon: Calculator, kind: "tools" },
   { label: "Seguimiento de envíos", href: "/express", icon: Package, kind: "link" },
@@ -79,6 +79,7 @@ export function Topbar({
   const [searchOpen, setSearchOpen] = useState(false);
   const [toolsOpen, setToolsOpen] = useState(false);
   const user = session?.user;
+  const isSystemAdmin = user?.role === "SYSTEM_ADMIN" || user?.role === "ADMIN";
   const displayName = user?.name ?? "";
   const roleLabel = user?.role ? (roleLabels[user.role] ?? user.role) : "";
   const initial = displayName ? displayName.charAt(0) : "?";
@@ -95,7 +96,8 @@ export function Topbar({
           <Menu className="h-4 w-4" />
         </button>
       )}
-      {/* Buscar */}
+
+      {/* Buscar - adaptativo según rol */}
       <button
         onClick={() => setSearchOpen(true)}
         className={cn(
@@ -103,67 +105,55 @@ export function Topbar({
           "text-[13px] text-muted-foreground transition-colors hover:border-border hover:bg-muted hover:text-foreground",
           "focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary/35",
         )}
-        aria-label="Búsqueda global (Cmd+K)"
+        aria-label={isSystemAdmin ? "Buscar estudios" : "Búsqueda global (Cmd+K)"}
       >
-        <Search className="h-3.5 w-3.5 shrink-0" strokeWidth={1.8} />
+        {isSystemAdmin ? (
+          <Building2 className="h-3.5 w-3.5 shrink-0" strokeWidth={1.8} />
+        ) : (
+          <Search className="h-3.5 w-3.5 shrink-0" strokeWidth={1.8} />
+        )}
         <span className="flex-1 truncate">
-          Buscar casos, clientes, materiales...
+          {isSystemAdmin ? "Buscar estudios jurídicos..." : "Buscar casos, clientes, materiales..."}
         </span>
-        <kbd className="hidden h-4 items-center gap-0.5 rounded bg-muted/80 px-1.5 font-mono text-[10px] font-medium text-muted-foreground sm:inline-flex">
-          ⌘K
-        </kbd>
+        {!isSystemAdmin && (
+          <kbd className="hidden h-4 items-center gap-0.5 rounded bg-muted/80 px-1.5 font-mono text-[10px] font-medium text-muted-foreground sm:inline-flex">
+            ⌘K
+          </kbd>
+        )}
       </button>
 
       <div className="flex-1 hidden sm:block" />
 
-      {/* Grupo de botones de herramientas */}
-      <div className="flex items-center gap-1.5">
-        {/* Menú de aplicaciones (entrada agregada estilo Caso cloud) */}
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <button
-              type="button"
-              className={cn(
-                "inline-flex h-8 items-center gap-1.5 rounded-full border border-input bg-card px-2.5 text-[13px] shadow-[var(--shadow-low)]",
-                "text-muted-foreground transition-colors hover:bg-muted hover:text-foreground",
-              )}
-              title="Aplicaciones"
-            >
-              <LayoutGrid
-                className="h-3.5 w-3.5 shrink-0 text-primary"
-                strokeWidth={1.8}
-              />
-              <span className="hidden sm:inline">Aplicaciones</span>
-            </button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-44">
-            {APP_ITEMS.map((it) => {
-              // Herramientas prácticas: abre la ventana global de herramientas, sin navegar ni cambiar la ruta
-              if (it.kind === "tools") {
-                return (
-                  <DropdownMenuItem
-                    key={it.label}
-                    onSelect={(e) => {
-                      e.preventDefault();
-                      setToolsOpen(true);
-                    }}
-                    className="cursor-pointer"
-                  >
-                    <it.icon
-                      className="mr-2 h-4 w-4 text-muted-foreground"
-                      strokeWidth={1.8}
-                    />
-                    {it.label}
-                  </DropdownMenuItem>
-                );
-              }
-              return (
-                <DropdownMenuItem key={it.label} asChild>
-                  {it.kind === "external" ? (
-                    <a
-                      href={it.href}
-                      target="_blank"
-                      rel="noreferrer"
+      {/* Grupo de botones de herramientas - solo para usuarios de estudio */}
+      {!isSystemAdmin && (
+        <div className="flex items-center gap-1.5">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button
+                type="button"
+                className={cn(
+                  "inline-flex h-8 items-center gap-1.5 rounded-full border border-input bg-card px-2.5 text-[13px] shadow-[var(--shadow-low)]",
+                  "text-muted-foreground transition-colors hover:bg-muted hover:text-foreground",
+                )}
+                title="Aplicaciones"
+              >
+                <LayoutGrid
+                  className="h-3.5 w-3.5 shrink-0 text-primary"
+                  strokeWidth={1.8}
+                />
+                <span className="hidden sm:inline">Aplicaciones</span>
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-44">
+              {APP_ITEMS.map((it) => {
+                if (it.kind === "tools") {
+                  return (
+                    <DropdownMenuItem
+                      key={it.label}
+                      onSelect={(e) => {
+                        e.preventDefault();
+                        setToolsOpen(true);
+                      }}
                       className="cursor-pointer"
                     >
                       <it.icon
@@ -171,35 +161,52 @@ export function Topbar({
                         strokeWidth={1.8}
                       />
                       {it.label}
-                    </a>
-                  ) : (
-                    <Link href={it.href} className="cursor-pointer">
-                      <it.icon
-                        className="mr-2 h-4 w-4 text-muted-foreground"
-                        strokeWidth={1.8}
-                      />
-                      {it.label}
-                    </Link>
-                  )}
-                </DropdownMenuItem>
-              );
-            })}
-          </DropdownMenuContent>
-        </DropdownMenu>
+                    </DropdownMenuItem>
+                  );
+                }
+                return (
+                  <DropdownMenuItem key={it.label} asChild>
+                    {it.kind === "external" ? (
+                      <a
+                        href={it.href}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="cursor-pointer"
+                      >
+                        <it.icon
+                          className="mr-2 h-4 w-4 text-muted-foreground"
+                          strokeWidth={1.8}
+                        />
+                        {it.label}
+                      </a>
+                    ) : (
+                      <Link href={it.href} className="cursor-pointer">
+                        <it.icon
+                          className="mr-2 h-4 w-4 text-muted-foreground"
+                          strokeWidth={1.8}
+                        />
+                        {it.label}
+                      </Link>
+                    )}
+                  </DropdownMenuItem>
+                );
+              })}
+            </DropdownMenuContent>
+          </DropdownMenu>
 
-        <Button
-          size="sm"
-          onClick={() => router.push("/matters?tab=intake&new=1")}
-          className="h-8 gap-1.5 px-2.5 text-[13px]"
-        >
-          <Plus className="h-3.5 w-3.5" strokeWidth={2} />
-          <span className="hidden sm:inline">Nuevo caso</span>
-        </Button>
+          <Button
+            size="sm"
+            onClick={() => router.push("/matters?tab=intake&new=1")}
+            className="h-8 gap-1.5 px-2.5 text-[13px]"
+          >
+            <Plus className="h-3.5 w-3.5" strokeWidth={2} />
+            <span className="hidden sm:inline">Nuevo caso</span>
+          </Button>
 
-        <div className="mx-0.5 hidden h-6 w-px bg-border sm:block" />
-
-        <NotificationPopover />
-      </div>
+          <div className="mx-0.5 hidden h-6 w-px bg-border sm:block" />
+          <NotificationPopover />
+        </div>
+      )}
 
       {/* Usuario */}
       <DropdownMenu>
@@ -232,18 +239,29 @@ export function Topbar({
             {displayName ? `${displayName} · ${roleLabel}` : "Cargando..."}
           </DropdownMenuLabel>
           <DropdownMenuSeparator />
-          <DropdownMenuItem asChild>
-            <Link href="/settings/profile" className="cursor-pointer">
-              <User className="mr-2 h-4 w-4" />
-              Información personal
-            </Link>
-          </DropdownMenuItem>
-          <DropdownMenuItem asChild>
-            <Link href="/settings" className="cursor-pointer">
-              <SettingsIcon className="mr-2 h-4 w-4" />
-              Preferencias
-            </Link>
-          </DropdownMenuItem>
+          {isSystemAdmin ? (
+            <DropdownMenuItem asChild>
+              <Link href="/admin" className="cursor-pointer">
+                <Building2 className="mr-2 h-4 w-4" />
+                Panel de administración
+              </Link>
+            </DropdownMenuItem>
+          ) : (
+            <>
+              <DropdownMenuItem asChild>
+                <Link href="/settings/profile" className="cursor-pointer">
+                  <User className="mr-2 h-4 w-4" />
+                  Información personal
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                <Link href="/settings" className="cursor-pointer">
+                  <SettingsIcon className="mr-2 h-4 w-4" />
+                  Preferencias
+                </Link>
+              </DropdownMenuItem>
+            </>
+          )}
           <DropdownMenuSeparator />
           <DropdownMenuItem
             onSelect={(e) => {

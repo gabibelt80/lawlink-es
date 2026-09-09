@@ -14,6 +14,7 @@ export default async function AdminLayout({
     where: { email: session.user.email },
   });
 
+  // Solo SYSTEM_ADMIN (firmId = null) puede acceder a /admin
   if (!firmUser || firmUser.firmId !== null) {
     redirect("/");
   }

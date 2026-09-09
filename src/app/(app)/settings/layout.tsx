@@ -1,5 +1,7 @@
 import Link from "next/link";
 import {
+  CreditCard,
+  AlertTriangle,
   Settings,
   Users,
   Layers,
@@ -9,7 +11,6 @@ import {
   Package,
   ListChecks,
   Building2,
-  Boxes,
 } from "lucide-react";
 import { getSession } from "@/lib/auth/session";
 
@@ -48,16 +49,16 @@ export default async function SettingsLayout({
                 >
                   Integración de envíos
                 </SettingsNavLink>
-                <SettingsNavLink
-                  href="/settings/modules"
-                  icon={<Boxes className="h-3.5 w-3.5" />}
-                >
-                  Módulos del sistema
-                </SettingsNavLink>
-              </>
+                              </>
             )}
             {isAdmin && (
               <>
+                <SettingsNavLink
+                  href="/settings/subscription"
+                  icon={<CreditCard className="h-3.5 w-3.5" />}
+                >
+                  Suscripción y facturación
+                </SettingsNavLink>
                 <SettingsNavLink
                   href="/settings/firm-profile"
                   icon={<Building2 className="h-3.5 w-3.5" />}
@@ -93,6 +94,12 @@ export default async function SettingsLayout({
                   icon={<ScrollText className="h-3.5 w-3.5" />}
                 >
                   Registro de auditoría
+                </SettingsNavLink>
+                <SettingsNavLink
+                  href="/settings/danger-zone"
+                  icon={<AlertTriangle className="h-3.5 w-3.5 text-destructive" />}
+                >
+                  Zona de peligro
                 </SettingsNavLink>
               </>
             )}

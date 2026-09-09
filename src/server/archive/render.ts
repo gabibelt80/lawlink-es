@@ -16,7 +16,7 @@ import {
   type RenderContext,
 } from "@/lib/template-engine";
 import { suggestFolderByTemplateCategory } from "@/lib/default-folders";
-import { CLOSED_REASON_CN } from "./schemas";
+import { CLOSED_REASON_LABEL } from "./schemas";
 import type { ArchiveClosedReason } from "@prisma/client";
 
 const CATEGORY_CN_DOC: Record<string, string> = {
@@ -129,7 +129,7 @@ export async function renderArchiveCover(
     ...baseCtx,
     archive: {
       archiveNo: opts.extras.archiveNo,
-      closedReasonCN: CLOSED_REASON_CN[opts.extras.closedReason],
+      closedReasonCN: CLOSED_REASON_LABEL[opts.extras.closedReason],
       completedAtCN: toCNDate(opts.extras.completedAt),
       archivedAtCN: toCNDate(opts.extras.archivedAt),
       judgmentSummary: opts.extras.judgmentSummary ?? "",
@@ -235,7 +235,7 @@ export async function renderArchiveCatalog(
     ...baseCtx,
     archive: {
       archiveNo: opts.extras.archiveNo,
-      closedReasonCN: CLOSED_REASON_CN[opts.extras.closedReason],
+      closedReasonCN: CLOSED_REASON_LABEL[opts.extras.closedReason],
       completedAtCN: toCNDate(opts.extras.completedAt),
       archivedAtCN: toCNDate(opts.extras.archivedAt),
       judgmentSummary: opts.extras.judgmentSummary ?? "",

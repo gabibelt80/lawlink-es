@@ -154,6 +154,18 @@ export function AiSettingsForm({
           )}
         </header>
 
+        {/* Aviso de facturación independiente */}
+        <div className="mb-4 rounded-lg border border-amber-500/30 bg-amber-500/5 p-3">
+          <p className="text-[11px] text-amber-700 leading-relaxed">
+            <strong className="font-semibold">Importante sobre costos:</strong>{" "}
+            JURIDICTAS habilita la funcionalidad de IA, pero{" "}
+            <strong>el consumo de IA lo factura directamente el proveedor</strong>{" "}
+            (DeepSeek, OpenAI, Anthropic, etc.) según tu propia API key.
+            JURIDICTAS <strong>no cobra nada</strong> por el uso de IA.
+            El costo depende del proveedor que elijas y de cuánto uses.
+          </p>
+        </div>
+
         <p className="mb-4 text-[12px] text-muted-foreground">
           Usa protocolo compatible con OpenAI y admite cualquier endpoint compatible. Una vez configurada, podes habilitar:
           <span className="text-foreground/85">

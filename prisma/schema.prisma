@@ -1851,7 +1851,15 @@ model Firm {
   suspensionReason String?
   deletedAt      DateTime?
   deletedAtScheduled DateTime?
-  users FirmUser[]
+    subscriptionStatus           String    @default("active") // active, past_due, canceled, suspended
+  subscriptionPeriodStart      DateTime?
+  subscriptionPeriodEnd        DateTime?
+  lastPaymentAt                DateTime?
+  lastPaymentAmount            Decimal?  @db.Decimal(10, 2)
+  paymentProvider              String    @default("mercado_pago")
+  paymentProviderCustomerId    String?
+  paymentProviderSubscriptionId String?
+users FirmUser[]
 }
 
 model FirmUser {

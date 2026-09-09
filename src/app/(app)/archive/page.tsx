@@ -4,20 +4,23 @@ import {
   listArchivedMatters,
   listPendingArchiveRecords
 } from "@/server/archive/actions";
-import { CLOSED_REASON_CN } from "@/server/archive/schemas";
+import { CLOSED_REASON_LABEL } from "@/server/archive/schemas";
 import { Badge } from "@/components/ui/badge";
 import { requireSession } from "@/lib/auth/session";
 import { PendingArchiveTable } from "./_components/pending-archive-table";
 import { ArchiveTabs } from "./_components/archive-tabs";
+import { ArchiveExplorer } from "./_components/archive-explorer";
 import { matterHref } from "@/lib/matters/route";
 
-const CATEGORY_CN: Record<string, string> = {
+const CATEGORY_LABEL: Record<string, string> = {
   CIVIL_COMMERCIAL: "Civil/Comercial",
   CRIMINAL: "Penal",
   ADMINISTRATIVE: "Administrativo",
   NON_LITIGATION: "No contencioso",
   LEGAL_COUNSEL: "Consultoría",
-  SPECIAL_PROJECT: "Proyecto especial"
+  SPECIAL_PROJECT: "Proyecto especial",
+  LABOR_ARBITRATION: "Arbitraje laboral",
+  COMMERCIAL_ARBITRATION: "Arbitraje comercial",
 };
 
 export default async function ArchivePage({
@@ -27,11 +30,11 @@ export default async function ArchivePage({
 }) {
   const session = await requireSession();
   const isAdmin = session.user.role === "ADMIN";
-  const activeTab =
-    isAdmin && searchParams?.tab === "pending" ? "pending" : "approved";
+  const tab = searchParams?.tab ?? "approved";
+  const activeTab = isAdmin && tab === "pending" ? "pending" : tab === "explorer" ? "explorer" : "approved";
 
   const [items, pending] = await Promise.all([
-    listArchivedMatters(),
+    activeTab === "explorer" ? [] : listArchivedMatters(),
     isAdmin ? listPendingArchiveRecords() : Promise.resolve([])
   ]);
 
@@ -44,15 +47,19 @@ export default async function ArchivePage({
             Gestión de archivo
           </h1>
           <p className="text-xs text-muted-foreground mt-1">
-            {isAdmin
-              ? "Vista de administrador: aprobación de solicitudes pendientes de archivo + ver casos archivados."
-              : "Los casos archivados se ordenan por fecha de archivo descendente. Al entrar al detalle del caso podés ver la portada y el índice del expediente, o exportar el paquete de archivo."}
+            {activeTab === "explorer"
+              ? "Explorá las carpetas de casos archivados, seleccioná y descargá documentos."
+              : isAdmin
+                ? "Vista de administrador: aprobación de solicitudes pendientes de archivo + ver casos archivados."
+                : "Los casos archivados se ordenan por fecha de archivo descendente."}
           </p>
         </div>
         <span className="text-xs text-muted-foreground">
           {activeTab === "pending"
             ? `Pendientes de aprobación ${pending.length} casos`
-            : `Archivados ${items.length} casos`}
+            : activeTab === "explorer"
+              ? "Explorador de carpetas"
+              : `Archivados ${items.length} casos`}
         </span>
       </header>
 
@@ -62,9 +69,11 @@ export default async function ArchivePage({
 
       {activeTab === "pending" && isAdmin ? (
         <PendingArchiveTable records={pending as any} />
+      ) : activeTab === "explorer" ? (
+        <ArchiveExplorer />
       ) : items.length === 0 ? (
         <div className="rounded-lg border border-dashed border-border/60 py-16 text-center text-sm text-muted-foreground">
-          No hay casos archivados. Completá el flujo de archivo en la parte superior del detalle del caso («Estado → Archivar») y aparecerán aquí.
+          No hay casos archivados.
         </div>
       ) : (
         <div className="rounded-lg border border-border/60 overflow-hidden">
@@ -99,14 +108,14 @@ export default async function ArchivePage({
                     </Link>
                   </td>
                   <td className="px-3 py-2.5 text-xs">
-                    {CATEGORY_CN[rec.matter.category] ?? rec.matter.category}
+                    {CATEGORY_LABEL[rec.matter.category] ?? rec.matter.category}
                   </td>
                   <td className="px-3 py-2.5 text-xs">
                     <User className="h-3 w-3 inline mr-1 text-muted-foreground" />
                     {rec.matter.primaryClient?.name ?? "—"}
                   </td>
                   <td className="px-3 py-2.5 text-xs">
-                    {rec.closedReason ? CLOSED_REASON_CN[rec.closedReason] : "—"}
+                    {rec.closedReason ? CLOSED_REASON_LABEL[rec.closedReason] : "—"}
                   </td>
                   <td className="px-3 py-2.5 text-xs text-muted-foreground">
                     <Calendar className="h-3 w-3 inline mr-1" />

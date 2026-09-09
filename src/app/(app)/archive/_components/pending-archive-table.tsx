@@ -19,7 +19,7 @@ import {
   batchApproveArchiveRecords,
   batchRejectArchiveRecords,
 } from "@/server/archive/actions";
-import { CLOSED_REASON_CN } from "@/server/archive/schemas";
+import { CLOSED_REASON_LABEL } from "@/server/archive/schemas";
 import {
   Dialog,
   DialogContent,
@@ -211,8 +211,8 @@ export function PendingArchiveTable({ records }: { records: PendingRecord[] }) {
                 </td>
                 <td className="px-3 py-2.5 text-xs">
                   {rec.closedReason
-                    ? CLOSED_REASON_CN[
-                        rec.closedReason as keyof typeof CLOSED_REASON_CN
+                    ? CLOSED_REASON_LABEL[
+                        rec.closedReason as keyof typeof CLOSED_REASON_LABEL
                       ]
                     : "—"}
                 </td>
@@ -855,8 +855,8 @@ function DetailDialog({
               label="Forma de cierre"
               value={
                 record.closedReason
-                  ? CLOSED_REASON_CN[
-                      record.closedReason as keyof typeof CLOSED_REASON_CN
+                  ? CLOSED_REASON_LABEL[
+                      record.closedReason as keyof typeof CLOSED_REASON_LABEL
                     ]
                   : "—"
               }

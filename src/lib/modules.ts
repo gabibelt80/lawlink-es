@@ -2,7 +2,6 @@ export type ModuleKey =
   | "WRITINGS"
   | "IA"
   | "JURISPRUDENCE"
-  | "CHAT_CLIENTES"
   | "FINANCE"
   | "NOTIFICATIONS"
   | "GOOGLE_CALENDAR"
@@ -38,13 +37,6 @@ export const MODULES: Record<ModuleKey, ModuleInfo> = {
     label: "Jurisprudencia",
     description: "Base de fallos y búsqueda jurídica",
     icon: "Scale",
-    defaultEnabled: false,
-  },
-  CHAT_CLIENTES: {
-    key: "CHAT_CLIENTES",
-    label: "Chat con Clientes",
-    description: "Comunicación directa con clientes",
-    icon: "MessageSquare",
     defaultEnabled: false,
   },
   FINANCE: {
@@ -99,9 +91,9 @@ export const PLAN_MODULES: PlanModules = {
   trial: ["WRITINGS", "FINANCE", "NOTIFICATIONS", "GOOGLE_CALENDAR", "GOOGLE_DRIVE"],
   basic: ["WRITINGS", "FINANCE", "NOTIFICATIONS", "GOOGLE_CALENDAR", "GOOGLE_DRIVE"],
   professional: ["WRITINGS", "FINANCE", "NOTIFICATIONS", "GOOGLE_CALENDAR", "GOOGLE_DRIVE", "IA"],
-  studio: ["WRITINGS", "CHAT_CLIENTES", "GOOGLE_CALENDAR", "PADRON_ABOGADOS", "IA", "FINANCE", "GOOGLE_DRIVE", "JURISPRUDENCE", "NOTIFICATIONS", "MEV_SYNC"],
-  plus: ["WRITINGS", "FINANCE", "NOTIFICATIONS", "GOOGLE_CALENDAR", "GOOGLE_DRIVE", "IA", "JURISPRUDENCE", "CHAT_CLIENTES"],
-  sync: ["WRITINGS", "FINANCE", "NOTIFICATIONS", "GOOGLE_CALENDAR", "GOOGLE_DRIVE", "IA", "JURISPRUDENCE", "CHAT_CLIENTES", "MEV_SYNC", "PADRON_ABOGADOS"],
+  studio: ["WRITINGS", "GOOGLE_CALENDAR", "PADRON_ABOGADOS", "IA", "FINANCE", "GOOGLE_DRIVE", "JURISPRUDENCE", "NOTIFICATIONS", "MEV_SYNC"],
+  plus: ["WRITINGS", "FINANCE", "NOTIFICATIONS", "GOOGLE_CALENDAR", "GOOGLE_DRIVE", "IA", "JURISPRUDENCE"],
+  sync: ["WRITINGS", "FINANCE", "NOTIFICATIONS", "GOOGLE_CALENDAR", "GOOGLE_DRIVE", "IA", "JURISPRUDENCE", "MEV_SYNC", "PADRON_ABOGADOS"],
 };
 
 export function getPlanModules(plan: string): ModuleKey[] {

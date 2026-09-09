@@ -17,7 +17,7 @@ import { renderArchiveCover, renderArchiveCatalog } from "./render";
 import {
   archiveSubmitSchema,
   type ArchiveSubmitInput,
-  CLOSED_REASON_CN,
+  CLOSED_REASON_LABEL,
 } from "./schemas";
 import { matterHref } from "@/lib/matters/route";
 import { revalidateMatter } from "@/server/matters/route";
@@ -141,7 +141,7 @@ export async function archiveMatter(input: ArchiveSubmitInput) {
         matterId: matter.id,
         eventType: "MATTER_ARCHIVE_REQUESTED",
         title: `Se envio la solicitud de archivo (${archiveNo}, pendiente de aprobacion)`,
-        content: `Modo de cierre: ${CLOSED_REASON_CN[data.closedReason]}. ${data.summary}`,
+        content: `Modo de cierre: ${CLOSED_REASON_LABEL[data.closedReason]}. ${data.summary}`,
         occurredAt: now,
       },
     });

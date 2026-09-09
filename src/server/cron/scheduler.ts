@@ -5,6 +5,7 @@ import { runAuditCleanup } from "./jobs/audit-cleanup";
 import { scanDueReminders } from "./jobs/scan-due-reminders";
 import { scanSealBackfillReminders } from "./jobs/scan-seal-backfill-reminders";
 import { runDatabaseBackup, backupCronEnabled } from "./jobs/backup-database";
+import { scanSubscriptions } from "./jobs/scan-subscriptions";
 import { audit } from "@/server/audit";
 
 const TIMEZONE = "America/Argentina/Buenos_Aires";
@@ -121,7 +122,19 @@ export function registerCronJobs() {
     );
   }
 
+  // Todos los días 08:00 - escaneo de suscripciones y cobros
+  cron.schedule(
+    "0 8 * * *",
+    () =>
+      runWithFailureAudit(
+        "Escaneo de suscripciones",
+        "SUBSCRIPTION_SCAN_FAILED_CRON",
+        () => scanSubscriptions()
+      ),
+    { timezone: TIMEZONE }
+  );
+
   console.log(
-    `[cron] ${backupCronEnabled() ? 6 : 5} tareas programadas registradas`
+    `[cron] ${backupCronEnabled() ? 7 : 6} tareas programadas registradas`
   );
 }

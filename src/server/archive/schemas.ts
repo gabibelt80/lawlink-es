@@ -23,7 +23,7 @@ export const archiveSubmitSchema = z.object({
 
 export type ArchiveSubmitInput = z.infer<typeof archiveSubmitSchema>;
 
-export const CLOSED_REASON_CN: Record<
+export const CLOSED_REASON_LABEL: Record<
   z.infer<typeof archiveClosedReasonSchema>,
   string
 > = {
