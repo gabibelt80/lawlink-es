@@ -77,6 +77,8 @@ export default async function MatterDetailPage({ params }: PageProps) {
         familyId: true,
         encrypted: true,
         createdAt: true,
+        uploadedBy: { select: { id: true, name: true } },
+        procedure: { select: { id: true, type: true, customLabel: true } },
         uploadedById: true,
         stageId: true,
         procedureId: true,

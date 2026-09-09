@@ -1,5 +1,5 @@
-﻿/**
- * Storage facade â€” re-exports the active provider based on STORAGE_PROVIDER
+/**
+ * Storage facade — re-exports the active provider based on STORAGE_PROVIDER
  * env var (default: "local").
  *
  * Usage:
@@ -24,8 +24,9 @@ export function getStorageProvider(): StorageProvider {
       return _instance;
     }
     case "s3": {
-      // v0.17: @aws-sdk/client-s3 å·²ä¸ºæ­£å¼ä¾èµ–ï¼›æŒ‰éœ€ require é¿å… local æ¨¡å¼
-      // åœ¨å¯åŠ¨æ—¶Cargarå®ƒçš„ ~47 ä¸ªä¼ é€’ä¾èµ–ã€‚
+      // v0.17: @aws-sdk/client-s3 es dependencia formal;
+      // se requiere bajo demanda para evitar cargar ~47 dependencias
+      // en modo local al iniciar.
       const { S3StorageProvider } = require("./s3") as typeof import("./s3");
       _instance = new S3StorageProvider();
       return _instance;
@@ -37,4 +38,3 @@ export function getStorageProvider(): StorageProvider {
 
 /** Singleton storage provider for the configured backend. */
 export const storage: StorageProvider = getStorageProvider();
-

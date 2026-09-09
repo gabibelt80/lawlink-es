@@ -1,16 +1,10 @@
 ﻿/**
- * v0.9.4 å½’æ¡£ ZIP å¯¼å‡º
+ * Exportación ZIP de archivo de caso
  *
- * ç»“æž„ï¼š
+ * Estructura:
  *   {archiveNo}/
- *     README.md                 â€” å½’æ¡£è¯´æ˜Ž + ç»“æž„ç´¢å¼•
- *     manifest.json             â€” ç»“æž„åŒ–å…¨é‡æ•°æ®ï¼ˆmatter + parties + procedures + ...ï¼‰
- *     å°çš®å’Œç›®å½•/
- *       å·å®—å°çš®.docx
- *       å·å®—ç›®å½•.docx
- *     ææ–™/
- *       {category}/
- *         {N}_{åŽŸæ–‡ä»¶å}
+ *     README.md
+ *     {nombre-archivo}.docx
  */
 import PizZip from "pizzip";
 import { prisma } from "@/lib/prisma";
@@ -25,12 +19,12 @@ interface ZipResult {
 }
 
 const CATEGORY_DIR: Record<string, string> = {
-  EVIDENCE: "è¯æ®",
-  PLEADING: "è¯‰è®¼æ–‡ä¹¦",
-  PROCEDURE: "ç¨‹åºæ–‡ä¹¦",
-  JUDGMENT: "è£åˆ¤æ–‡ä¹¦",
-  CONTRACT: "åˆåŒ",
-  OTHER: "å…¶ä»–",
+  EVIDENCE: "é¯æ",
+  PLEADING: "é¯‰é¼æ–‡ä¹¦",
+  PROCEDURE: "é¨‹áºæ–‡ä¹¦",
+  JUDGMENT: "é£áˆ¤æ–‡ä¹¦",
+  CONTRACT: "áˆáŒ",
+  OTHER: "á…¶ä»–",
 };
 
 function safeName(s: string): string {
@@ -45,7 +39,7 @@ async function readDocumentBuffer(doc: {
 }): Promise<Buffer> {
   const raw = await storage.readFile(doc.path);
   if (!doc.encrypted) return raw;
-  if (!doc.iv || !doc.authTag) throw new Error("åŠ å¯†pesosæ•°æ®æŸå");
+  if (!doc.iv || !doc.authTag) throw new Error("áŠ á¯†pesosæ•°ææŸá");
   return decryptBuffer(raw, doc.iv, doc.authTag);
 }
 
@@ -100,7 +94,7 @@ export async function buildArchiveZip(matterId: string): Promise<ZipResult> {
   const zip = new PizZip();
   const root = safeName(archive.archiveNo);
 
-  // ===== manifest.jsonï¼šç»“æž„åŒ–æ•°æ®å¿«ç…§ï¼ˆè„±æ•ï¼šContraseÃ±aã€apiKeyã€authTag etc.ä¸å¯¼å‡ºï¼‰
+  // ===== manifest.jsonï¼šé»“æž„áŒ–æ•°æá¿«é…§ï¼ˆé„±æ•ï¼šContraseÃ±aã€apiKeyã€authTag etc.ä¸á¯¼á‡ºï¼‰
   const manifest = {
     archiveNo: archive.archiveNo,
     archivedAt: archive.archivedAt.toISOString(),
@@ -171,7 +165,7 @@ export async function buildArchiveZip(matterId: string): Promise<ZipResult> {
       refType: e.refType,
       refId: e.refId,
     })),
-    // v0.48ï¼šPreservaciÃ³næ”¹è¯»ä¸‰å±‚æ¨¡åž‹ï¼Œmanifest ä»æŒ‰"æ¯Ã­temsè´¢äº§ä¸€æ¡"æ‰å¹³è¾“å‡ºï¼Œå­—æ®µyæ—§ç‰ˆå…¼å®¹
+    // v0.48ï¼šPreservaciÃ³næ”¹é¯»ä¸‰á±‚æ¨¡áž‹ï¼Œmanifest ä»æŒ‰"æ¯Ã­temsé´¢äº§ä¸€æ¡"æ‰á¹³é¾“á‡ºï¼Œá­—æµyæ—§é‰ˆá…¼á¹
     preservations: matter.preservationCases.flatMap((c) =>
       c.targets.flatMap((t) =>
         t.properties.map((p) => ({
@@ -225,59 +219,59 @@ export async function buildArchiveZip(matterId: string): Promise<ZipResult> {
   const md = [
     `# ${matter.title}`,
     "",
-    `å½’æ¡£ç¼–å·ï¼š**${archive.archiveNo}**  `,
-    `Casoç¼–å·ï¼š${matter.internalCode}  `,
-    `å½’æ¡£Fechaï¼š${archive.archivedAt.toISOString().slice(0, 10)}  `,
-    `å½’æ¡£äººï¼š${archive.archivedBy}  `,
+    `á½’æ¡£é¼–á·ï¼š**${archive.archiveNo}**  `,
+    `Casoé¼–á·ï¼š${matter.internalCode}  `,
+    `á½’æ¡£Fechaï¼š${archive.archivedAt.toISOString().slice(0, 10)}  `,
+    `á½’æ¡£äººï¼š${archive.archivedBy}  `,
     archive.completedAt
       ? `Cerrar casoFechaï¼š${archive.completedAt.toISOString().slice(0, 10)}`
       : "",
     "",
-    "## Cerrar casoå°ç»“",
+    "## Cerrar casoá°é»“",
     "",
     archive.summary,
     "",
     archive.judgmentSummary
-      ? "## è£åˆ¤ç»“æžœ\n\n" + archive.judgmentSummary + "\n"
+      ? "## é£áˆ¤é»“æžœ\n\n" + archive.judgmentSummary + "\n"
       : "",
-    "## ç›®å½•",
+    "## é›á½•",
     "",
-    "- `manifest.json` â€” Casoå…¨é‡ç»“æž„åŒ–æ•°æ®ï¼ˆJSON æ ¼å¼ï¼‰",
-    "- `å°çš®å’Œç›®å½•/` â€” è‡ªåŠ¨ç”Ÿæˆçš„å·å®—å°çš®yå·å®—ç›®å½•",
-    "- `ææ–™/` â€” Ver todosä¸Šä¼ ææ–™æŒ‰ç±»åˆ«åˆ†ç›®å½•å½’æ¡£",
+    "- `manifest.json` â€” Casoá…¨é‡é»“æž„áŒ–æ•°æï¼ˆJSON æ ¼á¼ï¼‰",
+    "- `á°éšá’Œé›á½•/` â€” é‡ªáŠ¨é”Ÿæˆéš„á·á—á°éšyá·á—é›á½•",
+    "- `ææ–™/` â€” Ver todosä¸Šä¼ ææ–™æŒ‰é±»áˆ«áˆ†é›á½•á½’æ¡£",
     "",
     archive.missingItems.length > 0
-      ? `âš ï¸ å½’æ¡£æ—¶å­˜åœ¨ç¼ºÃ­temsï¼š${archive.missingItems.length} Ã­temsï¼ˆè¯¦è§ manifest.jsonï¼‰`
+      ? `âš ï¸ á½’æ¡£æ—¶á­˜áœ¨é¼ºÃ­temsï¼š${archive.missingItems.length} Ã­temsï¼ˆé¯¦é§ manifest.jsonï¼‰`
       : "",
   ]
     .filter(Boolean)
     .join("\n");
   zip.file(`${root}/README.md`, md);
 
-  // ===== å°çš®å’Œç›®å½•
+  // ===== á°éšá’Œé›á½•
   if (archive.coverDocId) {
     const cover = docs.find((d) => d.id === archive.coverDocId);
     if (cover) {
       const buf = await readDocumentBuffer(cover);
-      zip.file(`${root}/å°çš®å’Œç›®å½•/å·å®—å°çš®.docx`, buf);
+      zip.file(`${root}/á°éšá’Œé›á½•/á·á—á°éš.docx`, buf);
     }
   }
   if (archive.catalogDocId) {
     const catalog = docs.find((d) => d.id === archive.catalogDocId);
     if (catalog) {
       const buf = await readDocumentBuffer(catalog);
-      zip.file(`${root}/å°çš®å’Œç›®å½•/å·å®—ç›®å½•.docx`, buf);
+      zip.file(`${root}/á°éšá’Œé›á½•/á·á—é›á½•.docx`, buf);
     }
   }
 
-  // ===== ææ–™ï¼šè·³è¿‡å·²ç»æ”¾è¿›"å°çš®å’Œç›®å½•"çš„ä¸¤ä»½
+  // ===== ææ–™ï¼šé·³é¿‡á·²é»æ”¾é¿›"á°éšá’Œé›á½•"éš„ä¸¤ä»½
   const skipIds = new Set(
     [archive.coverDocId, archive.catalogDocId].filter((x): x is string => !!x),
   );
   const seqByCategory: Record<string, number> = {};
   for (const d of docs) {
     if (skipIds.has(d.id)) continue;
-    const dir = CATEGORY_DIR[d.category] ?? "å…¶ä»–";
+    const dir = CATEGORY_DIR[d.category] ?? "á…¶ä»–";
     const n = (seqByCategory[dir] ?? 0) + 1;
     seqByCategory[dir] = n;
     try {
@@ -285,11 +279,11 @@ export async function buildArchiveZip(matterId: string): Promise<ZipResult> {
       const seq = String(n).padStart(3, "0");
       zip.file(`${root}/ææ–™/${dir}/${seq}_${safeName(d.name)}`, buf);
     } catch (err) {
-      console.error(`[archive-export] ææ–™è¯»å–Errorï¼š${d.id}`, err);
-      // å•æ–‡ä»¶Errorä¸é˜»æ–­ï¼›å†™ä¸€æ¡è¯´æ˜Ž
+      console.error(`[archive-export] ææ–™é¯»á–Errorï¼š${d.id}`, err);
+      // á•æ–‡ä»¶Errorä¸é˜»æ–­ï¼›á†™ä¸€æ¡é¯´æ˜Ž
       zip.file(
-        `${root}/ææ–™/${dir}/_è¯»å–Error_${safeName(d.name)}.txt`,
-        `è¯¥æ–‡ä»¶è¯»å–Errorï¼š${err instanceof Error ? err.message : String(err)}`,
+        `${root}/ææ–™/${dir}/_é¯»á–Error_${safeName(d.name)}.txt`,
+        `é¯¥æ–‡ä»¶é¯»á–Errorï¼š${err instanceof Error ? err.message : String(err)}`,
       );
     }
   }

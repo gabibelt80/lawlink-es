@@ -767,6 +767,7 @@ export function ProcedureWorkflowPanel({
             {workflowItems.map((stage) => (
               <button
                 key={stage.key}
+                data-stage-key={stage.key}
                 ref={(el) => { stageRefs.current[stage.key] = el; }}
                 type="button"
                 onClick={() => setSelectedKey(stage.key)}
@@ -1532,7 +1533,7 @@ function StageMaterialsPanel({
             const icon = iconForDocument(doc);
             const pUrl = documentPreviewUrl(doc);
             return (
-              <li key={doc.id} className="group flex min-w-0 items-center gap-2 rounded border border-border bg-card px-2.5 py-2">
+              <li key={doc.id} data-doc-id={doc.id} className="group flex min-w-0 items-center gap-2 rounded border border-border bg-card px-2.5 py-2">
                 <Image src={icon.src} alt={icon.alt} width={20} height={20} className="h-5 w-5 shrink-0" />
                 <div className="min-w-0 flex-1">
                   {pUrl ? (

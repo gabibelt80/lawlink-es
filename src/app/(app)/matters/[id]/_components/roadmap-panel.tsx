@@ -154,7 +154,7 @@ export function RoadmapPanel({
       date: new Date(doc.createdAt),
       status: DOCUMENT_STATUS_LABELS[doc.status] ?? doc.status,
       user: doc.uploadedBy?.name ?? "Sistema",
-      detail: doc.procedure?.customLabel ?? (doc.procedure?.type ? procedureTypeLabel[doc.procedure.type as keyof typeof procedureTypeLabel] : undefined) ?? DOCUMENT_CATEGORY_LABELS[doc.category] ?? doc.category,
+      detail: doc.procedure?.customLabel ?? (doc.procedure?.type ? procedureTypeLabel[doc.procedure.type as keyof typeof procedureTypeLabel] : undefined) ?? (doc.stageName ? `Etapa: ${doc.stageName}` : DOCUMENT_CATEGORY_LABELS[doc.category] ?? doc.category),
       stageId: doc.stageId ?? null,
       stageName: doc.procedure?.customLabel ?? (doc.procedure?.type ? procedureTypeLabel[doc.procedure.type as keyof typeof procedureTypeLabel] : null),
     });
@@ -309,9 +309,11 @@ export function RoadmapPanel({
       ) : (
         <div className="relative space-y-3">
           <div className="absolute left-[19px] top-0 h-full w-px bg-border" />
-          {items.map((item) => (
-            <RoadmapItemCard key={`${item.type}-${item.id}`} item={item} />
+          <div className="max-h-[400px] overflow-y-auto pr-1 space-y-1 rounded-lg border border-border/50 bg-muted/20 p-3">
+        {items.map((item) => (
+          <RoadmapItemCard key={`${item.type}-${item.id}`} item={item} />
           ))}
+        </div>
         </div>
       )}
     </div>
@@ -356,14 +358,27 @@ function RoadmapItemCard({ item }: { item: RoadmapItem }) {
         )}
         onClick={() => {
           if (item.type === "DOCUMENT") {
-            const path = window.location.pathname;
-            if (item.stageId) {
-              router.push(`${path}?stage=${item.stageId}`);
-            } else if (item.stageName) {
-              router.push(`${path}?stage=${encodeURIComponent(item.stageName)}`);
-            } else {
-              router.push(path);
+            const targetId = item.stageId || item.stageName || item.id;
+            if (!targetId) return;
+            
+            // Primero buscar el stage y hacer scroll a él
+            const stageEl = document.querySelector<HTMLElement>('[data-stage-key="' + targetId + '"]');
+            if (stageEl) {
+              stageEl.click();
+              stageEl.scrollIntoView({ behavior: "smooth", block: "center" });
             }
+            
+            // Luego buscar el documento y hacer scroll
+            setTimeout(() => {
+              const targetEl = document.querySelector<HTMLElement>('[data-doc-id="' + item.id + '"]');
+              if (targetEl) {
+                targetEl.scrollIntoView({ behavior: "smooth", block: "center" });
+                targetEl.classList.add("ring-2", "ring-primary", "bg-primary/10");
+                setTimeout(() => {
+                  targetEl.classList.remove("ring-2", "ring-primary", "bg-primary/10");
+                }, 2500);
+              }
+            }, 500);
           }
         }}
       >
