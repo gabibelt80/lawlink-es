@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { signIn } from "next-auth/react";
+import { signIn, getSession } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Loader2, AlertCircle, Eye, EyeOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -12,10 +12,11 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { cn } from "@/lib/utils";
+import type { AppSession } from "@/lib/auth/use-app-session";
 
 const schema = z.object({
   email: z.string().email("Ingresá un email válido"),
-  password: z.string().min(1, "Ingresá tu contraseña")
+  password: z.string().min(1, "Ingresá tu contraseña"),
 });
 
 type FormValues = z.infer<typeof schema>;
@@ -23,16 +24,16 @@ type FormValues = z.infer<typeof schema>;
 export function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const callbackUrl = searchParams.get("callbackUrl") ?? "/";
+  const callbackUrl = searchParams.get("callbackUrl");
   const [authError, setAuthError] = useState<string | null>(null);
   const [showPassword, setShowPassword] = useState(false);
 
   const {
     register,
     handleSubmit,
-    formState: { errors, isSubmitting }
+    formState: { errors, isSubmitting },
   } = useForm<FormValues>({
-    resolver: zodResolver(schema)
+    resolver: zodResolver(schema),
   });
 
   async function onSubmit(values: FormValues) {
@@ -40,12 +41,25 @@ export function LoginForm() {
     const res = await signIn("credentials", {
       email: values.email,
       password: values.password,
-      redirect: false
+      redirect: false,
     });
-    if (res?.ok) {
-      window.location.href = callbackUrl === "/" ? "/" : callbackUrl;
-    } else {
+
+    if (!res?.ok) {
       setAuthError("Email o contraseña incorrectos");
+      return;
+    }
+
+    // Obtener la sesión para saber el rol
+    const session = (await getSession()) as AppSession | null;
+    const isSystemAdmin = session?.user?.role === "SYSTEM_ADMIN";
+
+    // Redirigir según rol y callbackUrl
+    if (callbackUrl && callbackUrl !== "/") {
+      window.location.href = callbackUrl;
+    } else if (isSystemAdmin) {
+      window.location.href = "/admin";
+    } else {
+      window.location.href = "/dashboard";
     }
   }
 
@@ -59,7 +73,9 @@ export function LoginForm() {
       ) : null}
 
       <div className="space-y-1.5">
-        <Label htmlFor="email" className="text-slate-700">Email</Label>
+        <Label htmlFor="email" className="text-slate-700">
+          Email
+        </Label>
         <Input
           id="email"
           type="email"
@@ -72,13 +88,13 @@ export function LoginForm() {
           )}
           {...register("email")}
         />
-        {errors.email && (
-          <p className="text-xs text-red-500">{errors.email.message}</p>
-        )}
+        {errors.email && <p className="text-xs text-red-500">{errors.email.message}</p>}
       </div>
 
       <div className="space-y-1.5">
-        <Label htmlFor="password" className="text-slate-700">Contraseña</Label>
+        <Label htmlFor="password" className="text-slate-700">
+          Contraseña
+        </Label>
         <div className="relative">
           <Input
             id="password"
@@ -101,9 +117,7 @@ export function LoginForm() {
             {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
           </button>
         </div>
-        {errors.password && (
-          <p className="text-xs text-red-500">{errors.password.message}</p>
-        )}
+        {errors.password && <p className="text-xs text-red-500">{errors.password.message}</p>}
       </div>
 
       <Button

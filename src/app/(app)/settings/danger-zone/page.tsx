@@ -12,7 +12,7 @@ export default async function DangerZonePage() {
     include: { firm: true },
   });
 
-  if (!firmUser?.firm) redirect("/");
+  if (!firmUser?.firm) redirect("/dashboard");
 
   const firm = firmUser.firm;
 

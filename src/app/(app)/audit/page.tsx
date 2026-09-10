@@ -19,7 +19,7 @@ export default async function AuditPage({
   const session = await getSession();
   if (!session?.user) redirect("/login");
   if (session.user.role !== "ADMIN" && session.user.role !== "PRINCIPAL_LAWYER") {
-    redirect("/");
+    redirect("/dashboard");
   }
 
   const filter = {

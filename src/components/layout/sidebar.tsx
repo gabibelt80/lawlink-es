@@ -54,7 +54,7 @@ export function NavContent({ firm }: { firm: FirmBrand }) {
   return (
     <>
       <Link
-        href="/"
+        href="/dashboard"
         className="flex h-12 items-center gap-2.5 px-3.5 transition-colors hover:bg-muted/50"
         aria-label="Volver al panel de control"
       >

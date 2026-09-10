@@ -12,7 +12,7 @@ export default async function AdminPage() {
   });
 
   if (!firmUser || firmUser.firmId !== null) {
-    redirect("/");
+    redirect("/dashboard");
   }
 
   const firms = await prisma.firm.findMany({

@@ -16,7 +16,7 @@ export default async function AdminLayout({
 
   // Solo SYSTEM_ADMIN (firmId = null) puede acceder a /admin
   if (!firmUser || firmUser.firmId !== null) {
-    redirect("/");
+    redirect("/dashboard");
   }
 
   return (

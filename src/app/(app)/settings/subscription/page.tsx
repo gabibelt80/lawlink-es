@@ -13,7 +13,7 @@ export default async function SubscriptionPage() {
     include: { firm: true },
   });
 
-  if (!firmUser?.firm) redirect("/");
+  if (!firmUser?.firm) redirect("/dashboard");
 
   const firm = firmUser.firm;
   const currentPlan = getPlan(firm.plan);

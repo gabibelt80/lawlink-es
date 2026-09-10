@@ -26,7 +26,7 @@ export type NavItem = {
 };
 
 export const primaryNav: NavItem[] = [
-  { label: "Panel", href: "/", icon: LayoutDashboard },
+  { label: "Panel", href: "/dashboard", icon: LayoutDashboard },
   { label: "Casos", href: "/matters", icon: FolderOpen },
   { label: "Clientes", href: "/clients", icon: Users },
   { label: "Finanzas", href: "/finance", icon: Wallet, module: "FINANCE" },

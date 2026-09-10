@@ -4,7 +4,7 @@ import { RegisterForm } from "./_components/register-form";
 
 export default async function RegisterPage() {
   const session = await getSession();
-  if (session?.user) redirect("/");
+  if (session?.user) redirect("/dashboard");
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-muted/30 px-4">

@@ -5,7 +5,7 @@ import { PlansManager } from "./_components/plans-manager";
 export default async function PlansPage() {
   const session = await getSession();
   if (!session?.user) redirect("/login");
-  if (session.user.role !== "SYSTEM_ADMIN") redirect("/");
+  if (session.user.role !== "SYSTEM_ADMIN") redirect("/dashboard");
 
   return <PlansManager />;
 }

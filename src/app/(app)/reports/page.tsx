@@ -17,7 +17,7 @@ export default async function ReportsPage({
   const session = await getSession();
   if (!session?.user) redirect("/login");
   if (session.user.role !== "ADMIN" && session.user.role !== "PRINCIPAL_LAWYER") {
-    redirect("/");
+    redirect("/dashboard");
   }
 
   const resolved = resolveReportPeriod(params);
