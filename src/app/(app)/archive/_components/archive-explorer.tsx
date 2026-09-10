@@ -202,27 +202,12 @@ export function ArchiveExplorer() {
         return;
       }
 
-      // Descargar archivos uno por uno
+      // Descargar: archivos individuales, carpetas como ZIP
       for (const item of selectedItems) {
         if (item.type === "file") {
-          try {
-            window.open(`/api/documents/${item.id}/download`, "_blank");
-          } catch (err) {
-            console.error(`Error descargando ${item.name}:`, err);
-          }
+          window.open(`/api/documents/${item.id}/download`, "_blank");
         } else {
-          // Para carpetas, descargar todos los docs dentro
-          const matter = cases.find((c) => c.id === item.matterId);
-          const folder = matter?.folders.find((f) => f.id === item.id);
-          if (folder) {
-            for (const doc of folder.documents) {
-              try {
-                window.open(`/api/documents/${doc.id}/download`, "_blank");
-              } catch (err) {
-                console.error(`Error descargando ${doc.name}:`, err);
-              }
-            }
-          }
+          window.open(`/api/archive/folder/${item.id}/download`, "_blank");
         }
       }
 
