@@ -79,6 +79,8 @@ export async function createTask(input: TaskCreateInput) {
   }
 
   await revalidateMatter(data.matterId);
+  const { revalidatePath: rp1 } = await import("next/cache");
+  rp1("/schedule");
   return { ok: true, id: created.id };
 }
 
@@ -132,6 +134,8 @@ export async function updateTask(input: TaskUpdateInput) {
   });
 
   await revalidateMatter(matterId);
+  const { revalidatePath: rp2 } = await import("next/cache");
+  rp2("/schedule");
   return { ok: true };
 }
 
@@ -160,6 +164,11 @@ export async function toggleTaskCompleted(id: string) {
   });
 
   await revalidateMatter(current.matterId);
+  
+  // Invalidar caché del calendario para que la tarea completada desaparezca
+  const { revalidatePath } = await import("next/cache");
+  revalidatePath("/schedule");
+  
   return { ok: true };
 }
 
@@ -172,6 +181,8 @@ export async function deleteTask(id: string) {
   await assertMatterWritable(current.matterId);
 
   await prisma.task.delete({ where: { id } });
+  const { revalidatePath: rp3 } = await import("next/cache");
+  rp3("/schedule");
 
   await audit({
     userId: session.user.id,

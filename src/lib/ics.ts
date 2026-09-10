@@ -1,28 +1,27 @@
-﻿/**
- * v0.9.3 ICS æ—¥åŽ†æ–‡ä»¶ç”Ÿæˆï¼ˆRFC 5545 ç®€åŒ–ç‰ˆï¼‰
- *
- * ç”¨äºŽï¼šPreservaciÃ³nåˆ°æœŸ / å¼€åº­ / Plazo ä¸€é”®å¯¼å‡º .icsï¼Œæ‹–è¿› Apple æ—¥åŽ† / Google
- * Calendar / Outlook å³å¯åœ¨æ‰‹æœºåŽŸç”Ÿæ—¥åŽ†çœ‹åˆ°Recordatoriosã€‚
- *
- * ä¸ä¾èµ–ç¬¬ä¸‰æ–¹åº“ï¼›çº¯å­—ç¬¦ä¸²æ‹¼æŽ¥ã€‚
+/**
+ * Generador de calendarios ICS (RFC 5545)
+ * 
+ * Usado para:
+ * - Suscripción al calendario del usuario (Google Calendar, Apple Calendar, Outlook)
+ * - Descarga de archivos .ics desde el navegador
  */
 
-export interface IcsEvent {
+export type IcsEvent = {
   uid: string;
   title: string;
   start: Date;
-  end?: Date;       // ä¸ä¼  = 1 å°æ—¶äº‹ä»¶ï¼›å¦‚æžœæ˜¯ allDay ç”¨ startAllDay
-  allDay?: boolean; // true â†’ ç”¨ DTSTART;VALUE=DATE
+  end?: Date;
+  allDay?: boolean;
   description?: string;
   location?: string;
-  reminderMinutes?: number[]; // æå‰å¤šå°‘åˆ†é’ŸRecordatoriosï¼ˆå¤šä¸ªï¼‰
-}
+  reminderMinutes?: number[];
+};
 
 function pad(n: number) {
   return String(n).padStart(2, "0");
 }
 
-// YYYYMMDDTHHmmssZ
+// Formato UTC: YYYYMMDDTHHmmssZ
 function fmtUtc(d: Date): string {
   return (
     `${d.getUTCFullYear()}${pad(d.getUTCMonth() + 1)}${pad(d.getUTCDate())}` +
@@ -30,21 +29,22 @@ function fmtUtc(d: Date): string {
   );
 }
 
-// YYYYMMDDï¼ˆall-day ç”¨ï¼‰
+// Formato fecha local: YYYYMMDD (para eventos de todo el día)
+// Usa la fecha LOCAL, no UTC, para evitar desfases
 function fmtDate(d: Date): string {
   return `${d.getFullYear()}${pad(d.getMonth() + 1)}${pad(d.getDate())}`;
 }
 
-// ICS æ–‡æœ¬è¦åšçš„è½¬ä¹‰ï¼š\, ; , \n
+// Escapa caracteres especiales según RFC 5545
 function esc(s: string): string {
   return s
     .replace(/\\/g, "\\\\")
     .replace(/;/g, "\\;")
     .replace(/,/g, "\\,")
-    .replace(/\n/g, "\\n");
+    .replace(/\r?\n/g, "\\n");
 }
 
-// é•¿è¡ŒæŠ˜å ï¼ˆ>75 å­—èŠ‚æŒ‰ ICS è§„èŒƒæŠ˜è¡Œï¼‰
+// Pliega líneas largas (>75 bytes según RFC 5545)
 function fold(line: string): string {
   if (line.length <= 75) return line;
   const out: string[] = [];
@@ -60,44 +60,63 @@ function fold(line: string): string {
 export function buildIcs(opts: {
   prodId?: string;
   calendarName?: string;
+  timezone?: string;
+  refreshMinutes?: number;
   events: IcsEvent[];
 }): string {
-  const prodId = opts.prodId ?? "-//LawLink//ZH-CN";
+  const prodId = opts.prodId ?? "-//JURIDICTAS//Calendario//ES";
+  const timezone = opts.timezone ?? "America/Argentina/Buenos_Aires";
+  const refreshMinutes = opts.refreshMinutes ?? 60;
+
   const lines: string[] = [
     "BEGIN:VCALENDAR",
     "VERSION:2.0",
     `PRODID:${prodId}`,
     "CALSCALE:GREGORIAN",
-    "METHOD:PUBLISH"
+    "METHOD:PUBLISH",
+    `X-WR-TIMEZONE:${timezone}`,
+    `X-WR-CALNAME:${esc(opts.calendarName ?? "JURIDICTAS")}`,
+    `REFRESH-INTERVAL;VALUE=DURATION:PT${refreshMinutes}M`,
+    `X-PUBLISHED-TTL:PT${refreshMinutes}M`,
   ];
-  if (opts.calendarName) {
-    lines.push(fold(`X-WR-CALNAME:${esc(opts.calendarName)}`));
-  }
 
   const now = new Date();
+  const dtstamp = fmtUtc(now);
+
   for (const ev of opts.events) {
     lines.push("BEGIN:VEVENT");
-    lines.push(`UID:${ev.uid}@lawlink.local`);
-    lines.push(`DTSTAMP:${fmtUtc(now)}`);
+    // UID único: si ya viene con @, no agregar otro
+    const uid = ev.uid.includes("@") ? ev.uid : `${ev.uid}@juridictas.ar`;
+    lines.push(`UID:${uid}`);
+    lines.push(`DTSTAMP:${dtstamp}`);
+    lines.push(`CREATED:${dtstamp}`);
+
     if (ev.allDay) {
-      lines.push(`DTSTART;VALUE=DATE:${fmtDate(ev.start)}`);
-      const end = ev.end ?? new Date(ev.start.getTime() + 86400000);
-      lines.push(`DTEND;VALUE=DATE:${fmtDate(end)}`);
+      // Todo el día: DTEND es el día SIGUIENTE (exclusivo)
+      const startDate = fmtDate(ev.start);
+      const endDate = ev.end
+        ? fmtDate(ev.end)
+        : fmtDate(new Date(ev.start.getTime() + 86400000));
+      lines.push(`DTSTART;VALUE=DATE:${startDate}`);
+      lines.push(`DTEND;VALUE=DATE:${endDate}`);
     } else {
       lines.push(`DTSTART:${fmtUtc(ev.start)}`);
       const end = ev.end ?? new Date(ev.start.getTime() + 3600000);
       lines.push(`DTEND:${fmtUtc(end)}`);
     }
+
     lines.push(fold(`SUMMARY:${esc(ev.title)}`));
     if (ev.description) lines.push(fold(`DESCRIPTION:${esc(ev.description)}`));
     if (ev.location) lines.push(fold(`LOCATION:${esc(ev.location)}`));
+
     for (const m of ev.reminderMinutes ?? []) {
       lines.push("BEGIN:VALARM");
       lines.push("ACTION:DISPLAY");
-      lines.push(`DESCRIPTION:${esc(ev.title)}`);
+      lines.push(fold(`DESCRIPTION:${esc(ev.title)}`));
       lines.push(`TRIGGER:-PT${m}M`);
       lines.push("END:VALARM");
     }
+
     lines.push("END:VEVENT");
   }
 
@@ -105,7 +124,7 @@ export function buildIcs(opts: {
   return lines.join("\r\n") + "\r\n";
 }
 
-/** æµè§ˆå™¨ç«¯ï¼šä¸‹è½½ .ics æ–‡ä»¶ */
+/** Descarga un .ics en el navegador */
 export function downloadIcs(filename: string, content: string) {
   const blob = new Blob([content], { type: "text/calendar;charset=utf-8" });
   const url = URL.createObjectURL(blob);
@@ -117,4 +136,3 @@ export function downloadIcs(filename: string, content: string) {
   document.body.removeChild(a);
   setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
-

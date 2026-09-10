@@ -73,7 +73,7 @@ export async function GET(
       const isTimed = item.type === "hearing";
 
       return {
-        uid: `${item.type}-${item.id}@juridictas`,
+        uid: `${item.type}-${item.id}@juridictas.ar`,
         title: `${prefix} ${who}`,
         summary: item.title,
         description: item.description ?? item.title,
@@ -81,12 +81,17 @@ export async function GET(
         start: item.occurredAt,
         end: isTimed
           ? new Date(item.occurredAt.getTime() + 60 * 60 * 1000)
-          : new Date(item.occurredAt.getTime() + 30 * 60 * 1000),
+          : new Date(item.occurredAt.getTime() + 24 * 60 * 60 * 1000),
         allDay: !isTimed,
       };
     });
 
-    const ics = buildIcs({ events });
+    const ics = buildIcs({
+      events,
+      calendarName: `${firmUser.firm.slug} - ${user.name}`,
+      timezone: "America/Argentina/Buenos_Aires",
+      refreshMinutes: 60,
+    });
     return new NextResponse(ics, {
       headers: {
         "Content-Type": "text/calendar; charset=utf-8",

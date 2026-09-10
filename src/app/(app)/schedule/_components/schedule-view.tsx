@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import {
   Calendar,
@@ -48,6 +49,7 @@ export function ScheduleView({
   matters: { id: string; internalCode: string; title: string }[];
   users?: { id: string; name: string; role: string }[];
 }) {
+  const router = useRouter();
   const [view, setView] = useState<"list" | "calendar">("calendar");
   const [monthOffset, setMonthOffset] = useState(0);
 
@@ -55,17 +57,33 @@ export function ScheduleView({
   const [addOpen, setAddOpen] = useState(false);
   const [addDate, setAddDate] = useState<Date | null>(null);
 
+  // Estado local para eliminar tareas visualmente sin recargar
+  const [hiddenIds, setHiddenIds] = useState<Set<string>>(new Set());
+
+  // today calculado solo en el cliente para evitar hidratación inconsistente
+  const [today, setToday] = useState<Date>(() => {
+    const d = new Date();
+    d.setHours(0, 0, 0, 0);
+    return d;
+  });
+
+  useEffect(() => {
+    const d = new Date();
+    d.setHours(0, 0, 0, 0);
+    setToday(d);
+  }, []);
+
   const itemsWithDate = useMemo(
     () =>
-      items.map((it) => ({
-        ...it,
-        dateKey: dateKey(new Date(it.occurredAt))
-      })),
-    [items]
+      items
+        .filter((it) => !hiddenIds.has(it.id))
+        .map((it) => ({
+          ...it,
+          dateKey: dateKey(new Date(it.occurredAt))
+        })),
+    [items, hiddenIds]
   );
 
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
   const weekEnd = new Date(today.getTime() + 7 * 24 * 60 * 60 * 1000);
 
   function openAddDialog(date?: Date | null) {
@@ -142,7 +160,12 @@ export function ScheduleView({
           onAddDay={openAddDialog}
         />
       )}
-      <ScheduleItemDialog item={detailItem} onOpenChange={(open) => !open && setDetailItem(null)} />
+      <ScheduleItemDialog
+        item={detailItem}
+        onOpenChange={(open) => !open && setDetailItem(null)}
+        onTaskCompleted={(id) => setHiddenIds((prev) => new Set(prev).add(id))}
+        router={router}
+      />
       <AddTaskDialog
         open={addOpen}
         onOpenChange={setAddOpen}
@@ -571,10 +594,14 @@ function ScheduleSideItem({
 
 function ScheduleItemDialog({
   item,
-  onOpenChange
+  onOpenChange,
+  onTaskCompleted,
+  router
 }: {
   item: ScheduleItem | null;
   onOpenChange: (open: boolean) => void;
+  onTaskCompleted: (id: string) => void;
+  router: ReturnType<typeof useRouter>;
 }) {
   const open = Boolean(item);
   const meta = item ? typeMeta[item.type] : typeMeta.task;
@@ -651,12 +678,18 @@ function ScheduleItemDialog({
                 <Button
                   onClick={async () => {
                     try {
+                      const taskId = item.id.replace(/^t-/, "");
                       const { toggleTaskCompleted } = await import("@/server/tasks/actions");
-                      await toggleTaskCompleted(item.id);
-                      onOpenChange(false);
-                      window.location.reload();
+                      const result = await toggleTaskCompleted(taskId);
+                      if (result.ok) {
+                        // Ocultar la tarea del UI sin recargar
+                        onTaskCompleted(item.id);
+                        onOpenChange(false);
+                        // Refrescar datos del servidor en background
+                        router.refresh();
+                      }
                     } catch (err) {
-                      console.error(err);
+                      console.error("[ERROR]", err);
                     }
                   }}
                   className="gap-1.5"

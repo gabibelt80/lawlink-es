@@ -4,6 +4,7 @@ import { randomBytes } from "node:crypto";
 import { getTenantPrisma } from "@/lib/tenant-prisma";
 import { requireSession } from "@/lib/auth/session";
 import { audit } from "@/server/audit";
+import { prisma } from "@/lib/prisma";
 
 function newToken() {
   return randomBytes(24).toString("base64url");
@@ -25,6 +26,17 @@ async function resolveTenantUserId(email: string, prisma: any): Promise<string |
   return user?.id ?? null;
 }
 
+/**
+ * Sincroniza el token con la base central (FirmUser.calendarToken)
+ * para que la ruta pública /api/calendar/[token] pueda encontrar el tenant
+ */
+async function syncTokenToCentral(email: string, token: string) {
+  await prisma.firmUser.updateMany({
+    where: { email },
+    data: { calendarToken: token },
+  });
+}
+
 export async function getCalendarToken() {
   const prisma = await getTenantPrisma();
   const session = await requireSession();
@@ -36,13 +48,20 @@ export async function getCalendarToken() {
     where: { id: tenantUserId },
     select: { calendarToken: true }
   });
-  if (user?.calendarToken) return { token: user.calendarToken };
+
+  if (user?.calendarToken) {
+    // Sincronizar con la base central por si se desincronizó
+    await syncTokenToCentral(session.user.email ?? "", user.calendarToken);
+    return { token: user.calendarToken };
+  }
 
   const token = newToken();
   await prisma.user.update({
     where: { id: tenantUserId },
     data: { calendarToken: token }
   });
+  await syncTokenToCentral(session.user.email ?? "", token);
+
   await audit({
     userId: tenantUserId,
     action: "CALENDAR_TOKEN_CREATE",
@@ -63,6 +82,8 @@ export async function regenerateCalendarToken() {
     where: { id: tenantUserId },
     data: { calendarToken: token }
   });
+  await syncTokenToCentral(session.user.email ?? "", token);
+
   await audit({
     userId: tenantUserId,
     action: "CALENDAR_TOKEN_REGENERATE",
