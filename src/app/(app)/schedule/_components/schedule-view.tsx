@@ -12,7 +12,8 @@ import {
   AlertTriangle,
   List,
   Plus,
-  Grid3X3
+  Grid3X3,
+  CheckCircle2
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -40,10 +41,12 @@ const VISIBLE_ITEMS_PER_DAY = 4;
 
 export function ScheduleView({
   items,
-  matters
+  matters,
+  users
 }: {
   items: ScheduleItem[];
   matters: { id: string; internalCode: string; title: string }[];
+  users?: { id: string; name: string; role: string }[];
 }) {
   const [view, setView] = useState<"list" | "calendar">("calendar");
   const [monthOffset, setMonthOffset] = useState(0);
@@ -145,6 +148,7 @@ export function ScheduleView({
         onOpenChange={setAddOpen}
         date={addDate}
         matters={matters}
+        users={users}
       />
     </div>
   );
@@ -639,10 +643,28 @@ function ScheduleItemDialog({
               )}
             </div>
 
-            <DialogFooter>
+            <DialogFooter className="gap-2">
               <Button variant="outline" onClick={() => onOpenChange(false)}>
                 Cerrar
               </Button>
+              {item.type === "task" && !item.completed && (
+                <Button
+                  onClick={async () => {
+                    try {
+                      const { toggleTaskCompleted } = await import("@/server/tasks/actions");
+                      await toggleTaskCompleted(item.id);
+                      onOpenChange(false);
+                      window.location.reload();
+                    } catch (err) {
+                      console.error(err);
+                    }
+                  }}
+                  className="gap-1.5"
+                >
+                  <CheckCircle2 className="h-4 w-4" />
+                  Marcar como completada
+                </Button>
+              )}
               <Button asChild>
                 <Link href={matterHref(item.matter)}>Ver caso</Link>
               </Button>

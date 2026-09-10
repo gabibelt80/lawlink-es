@@ -30,9 +30,10 @@ export async function queryScheduleItems(
     to?: Date;
     includeCompleted?: boolean;
     onlyMine?: boolean;
+    prisma?: any;
   } = {}
 ): Promise<ScheduleItem[]> {
-  const prisma = await getTenantPrisma();
+  const prisma = params.prisma ?? await getTenantPrisma();
   const from = params.from ?? new Date(new Date().setHours(0, 0, 0, 0));
   const to = params.to ?? new Date(from.getTime() + 365 * 24 * 60 * 60 * 1000);
   const matterFilter = params.onlyMine

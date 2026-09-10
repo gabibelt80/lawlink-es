@@ -32,11 +32,13 @@ export function AddTaskDialog({
   onOpenChange,
   date,
   matters,
+  users,
 }: {
   open: boolean;
   onOpenChange: (o: boolean) => void;
   date: Date | null;
   matters: MatterPickerItem[];
+  users?: { id: string; name: string; role: string }[];
 }) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();

@@ -71,7 +71,7 @@ export async function createTask(input: TaskCreateInput) {
       userId: data.assigneeId,
       type: "TASK_ASSIGNED",
       title: "Tenés una nueva tarea",
-      content: `La tarea「${created.title}」te fue asignada`,
+      content: `La tarea«${created.title}»te fue asignada`,
       href: await matterHrefById(data.matterId),
       refType: "Task",
       refId: created.id
@@ -101,6 +101,28 @@ export async function updateTask(input: TaskUpdateInput) {
       stageId: rest.stageId || null
     }
   });
+
+  // Notificar si cambió el asignado (y no es el que edita)
+  const before = await prisma.task.findUnique({
+    where: { id },
+    select: { assigneeId: true, title: true },
+  });
+  
+  if (
+    rest.assigneeId &&
+    rest.assigneeId !== session.user.id &&
+    rest.assigneeId !== before?.assigneeId
+  ) {
+    await createNotification({
+      userId: rest.assigneeId,
+      type: "TASK_ASSIGNED",
+      title: "Tenés una nueva tarea",
+      content: `La tarea «${rest.title}» te fue asignada`,
+      href: await matterHrefById(matterId),
+      refType: "Task",
+      refId: id,
+    });
+  }
 
   await audit({
     userId: session.user.id,

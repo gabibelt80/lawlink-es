@@ -1372,29 +1372,23 @@ export function IntakeSheet({
 
             {/* 3. 律师费 */}
             <Section title={kind === "counsel" ? "③ Honorarios de asesoría" : "③ Honorarios de abogado"}>
-              <div
-                className={cn(
-                  "grid grid-cols-1 gap-3",
-                  feeType
-                    ? "lg:grid-cols-[minmax(13rem,0.95fr)_minmax(10rem,0.65fr)_minmax(15rem,1fr)_minmax(12rem,0.85fr)]"
-                    : "lg:grid-cols-[minmax(13rem,0.95fr)]"
-                )}
-              >
+              <div className="space-y-4">
+                {/* Modalidad de cobro */}
                 <Field label="Modalidad de cobro">
                   <div
                     className={cn(
-                      "grid gap-1.5",
-                      kind === "counsel" ? "grid-cols-2" : "grid-cols-3"
+                      "grid gap-2",
+                      kind === "counsel" ? "grid-cols-2" : "grid-cols-3",
+                      "max-w-2xl"
                     )}
                   >
-                    {/* 顾问费不含风险代理 */}
                     {FEE_TYPES.filter((t) => kind !== "counsel" || t !== "CONTINGENCY").map((t) => (
                       <button
                         key={t}
                         type="button"
                         onClick={() => setValue("feeType", t, { shouldDirty: true })}
                         className={cn(
-                          "flex h-[34px] items-center justify-center whitespace-nowrap rounded-sm border px-2 text-[12px] font-medium transition-colors",
+                          "flex h-[34px] items-center justify-center whitespace-nowrap rounded-sm border px-3 text-[12px] font-medium transition-colors",
                           feeType === t
                             ? "border-primary bg-primary/15 text-primary"
                             : "border-[#c6d0dd] bg-white text-muted-foreground shadow-[var(--shadow-inset-deep)] hover:border-input hover:bg-muted hover:text-foreground"
@@ -1406,73 +1400,86 @@ export function IntakeSheet({
                   </div>
                 </Field>
 
+                {/* Monto + Hitos en 2 columnas */}
                 {feeType && (
-                  <Field
-                    label={
-                      feeType === "TIMED"
-                        ? "Tarifa por hora ($/hora)"
-                        : feeType === "CONTINGENCY"
-                          ? "Honorario base ($)"
-                          : "Monto total ($)"
-                    }
-                    required
-                    error={errors.feeAmount?.message}
-                  >
-                    <Input
-                      type="number"
-                      inputMode="decimal"
-                      step="0.01"
-                      placeholder="0.00"
-                      className="font-mono"
-                      {...register("feeAmount", {
-                        setValueAs: (value) => (value === "" ? undefined : Number(value))
-                      })}
-                    />
-                  </Field>
-                )}
-
-                {feeType && (
-                  <Field label={feeType === "TIMED" ? "Detalle de facturación / Ciclo de liquidación" : "Hitos de pago / Acuerdo de cuotas"}>
-                    <Input
-                      placeholder={
+                  <div className="grid grid-cols-1 gap-4 md:grid-cols-[minmax(0,1fr)_minmax(0,2fr)]">
+                    <Field
+                      label={
                         feeType === "TIMED"
-                          ? "Ej.: liquidación mensual, socio $2000/hora"
+                          ? "Tarifa por hora ($/hora)"
                           : feeType === "CONTINGENCY"
-                            ? "Ej.: honorario base se paga al firmar; el honorario de éxito se paga dentro de los 7 días de percibido"
-                            : "Ej.: 50% al firmar, 30% antes de la audiencia, 20% al cierre"
+                            ? "Honorario base ($)"
+                            : "Monto total ($)"
                       }
-                      {...register("feeSchedule")}
-                    />
-                  </Field>
+                      required
+                      error={errors.feeAmount?.message}
+                    >
+                      <Input
+                        type="number"
+                        inputMode="decimal"
+                        step="0.01"
+                        placeholder="0.00"
+                        className="font-mono"
+                        {...register("feeAmount", {
+                          setValueAs: (value) => (value === "" ? undefined : Number(value))
+                        })}
+                      />
+                    </Field>
+
+                    <Field
+                      label={
+                        feeType === "TIMED"
+                          ? "Detalle de facturación / Ciclo de liquidación"
+                          : "Hitos de pago / Acuerdo de cuotas"
+                      }
+                    >
+                      <Input
+                        placeholder={
+                          feeType === "TIMED"
+                            ? "Ej.: liquidación mensual, socio $2000/hora"
+                            : feeType === "CONTINGENCY"
+                              ? "Ej.: honorario base al firmar; el éxito dentro de los 7 días de percibido"
+                              : "Ej.: 50% al firmar, 30% antes de audiencia, 20% al cierre"
+                        }
+                        {...register("feeSchedule")}
+                      />
+                    </Field>
+                  </div>
                 )}
 
+                {/* Observaciones - solo para no contingencia */}
                 {feeType && feeType !== "CONTINGENCY" && (
                   <Field label="Observaciones sobre honorarios (opcional)">
                     <Input placeholder="Ej.: incluye viáticos / incluye anticipo de costas" {...register("feeNote")} />
                   </Field>
                 )}
-              </div>
 
-              {feeType === "CONTINGENCY" && (
-                <div className="grid grid-cols-1 gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(12rem,0.55fr)]">
-                  <Field label="Modalidad de honorario de éxito" required hint="Ej.: 15% al percibir el cobro; o escalas según el monto obtenido">
-                    <Textarea
-                      rows={2}
-                      placeholder="Describí en detalle la modalidad del honorario de éxito / condiciones que lo activan / porcentaje aplicado"
-                      className="min-h-[68px]"
-                      {...register("contingencyTerms")}
-                    />
-                  </Field>
-                  <Field label="Observaciones sobre honorarios (opcional)">
-                    <Textarea
-                      rows={2}
-                      placeholder="Ej.: incluye viáticos / incluye anticipo de costas"
-                      className="min-h-[68px]"
-                      {...register("feeNote")}
-                    />
-                  </Field>
-                </div>
-              )}
+                {/* Contingencia: modalidad de éxito + observaciones */}
+                {feeType === "CONTINGENCY" && (
+                  <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                    <Field
+                      label="Modalidad de honorario de éxito"
+                      required
+                      hint="Ej.: 15% al percibir el cobro; o escalas según el monto obtenido"
+                    >
+                      <Textarea
+                        rows={3}
+                        placeholder="Describí la modalidad del honorario de éxito, condiciones que lo activan y porcentaje aplicado"
+                        className="min-h-[80px]"
+                        {...register("contingencyTerms")}
+                      />
+                    </Field>
+                    <Field label="Observaciones sobre honorarios (opcional)">
+                      <Textarea
+                        rows={3}
+                        placeholder="Ej.: incluye viáticos / incluye anticipo de costas"
+                        className="min-h-[80px]"
+                        {...register("feeNote")}
+                      />
+                    </Field>
+                  </div>
+                )}
+              </div>
             </Section>
 
             {/* 4. 合同 */}
