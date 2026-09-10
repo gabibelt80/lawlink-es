@@ -123,6 +123,7 @@ export const matterCategoryLabel: Record<MatterCategory, string> = {
   COMMERCIAL_ARBITRATION: "Empresarial",
   CRIMINAL: "Penal",
   ADMINISTRATIVE: "Administrativo",
+  ADMINISTRATIVE_CLAIM: "Reclamo Administrativo",
   NON_LITIGATION: "Extrajudicial",
   LEGAL_COUNSEL: "Consumo",
   SPECIAL_PROJECT: "Sucesiones",
@@ -134,6 +135,7 @@ export const matterCategoryColor: Record<MatterCategory, string> = {
   COMMERCIAL_ARBITRATION: "#38BDF8",
   CRIMINAL: "#FB923C",
   ADMINISTRATIVE: "#FBBF24",
+  ADMINISTRATIVE_CLAIM: "#F59E0B",
   NON_LITIGATION: "#4FD1C5",
   LEGAL_COUNSEL: "#9B7BF7",
   SPECIAL_PROJECT: "#60A5FA"
@@ -146,6 +148,7 @@ export const matterCategoryShort: Record<MatterCategory, string> = {
   COMMERCIAL_ARBITRATION: "A",
   CRIMINAL: "P",
   ADMINISTRATIVE: "D",
+  ADMINISTRATIVE_CLAIM: "R",
   NON_LITIGATION: "N",
   LEGAL_COUNSEL: "G",
   SPECIAL_PROJECT: "S"

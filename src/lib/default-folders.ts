@@ -9,6 +9,7 @@ export const DEFAULT_FOLDERS_BY_CATEGORY: Record<MatterCategory, readonly string
   CIVIL_COMMERCIAL: ["æ”¶æ¡ˆ", "ç«‹æ¡ˆ", "å§”æ‰˜æ‰‹ç»­", "è¯æ®", "ç¨‹åºæ–‡ä¹¦", "åº­å®¡", "è£åˆ¤", "Cerrar caso"],
   LABOR_ARBITRATION: ["æ”¶æ¡ˆ", "å§”æ‰˜æ‰‹ç»­", "è¯æ®", "ä»²è£æ–‡ä¹¦", "å¼€åº­", "è£å†³", "è¯‰è®¼", "Cerrar caso"],
   COMMERCIAL_ARBITRATION: ["æ”¶æ¡ˆ", "å§”æ‰˜æ‰‹ç»­", "è¯æ®", "ä»²è£æ–‡ä¹¦", "å¼€åº­", "è£å†³", "Cerrar caso"],
+  ADMINISTRATIVE_CLAIM: ["Reclamo Administrativo"],
   ADMINISTRATIVE: ["æ”¶æ¡ˆ", "ç«‹æ¡ˆ", "å§”æ‰˜æ‰‹ç»­", "è¯æ®", "ç¨‹åºæ–‡ä¹¦", "åº­å®¡", "è£åˆ¤", "Cerrar caso"],
   CRIMINAL: ["æ”¶æ¡ˆ", "å§”æ‰˜æ‰‹ç»­", "é˜…å·", "ä¼šè§", "å–è¯", "åº­å‰", "åº­å®¡", "åˆ¤å†³yä¸Šè¯‰", "Cerrar caso"],
   NON_LITIGATION: ["ç«‹Ã­tems", "è°ƒç ”", "å·¥ä½œåº•ç¨¿", "å‡ºå…·æ–‡ä»¶", "å½’æ¡£"],

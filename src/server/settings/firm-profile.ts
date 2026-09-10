@@ -22,6 +22,7 @@ export const CATEGORY_WORD_DEFAULTS: Record<MatterCategory, string> = {
   COMMERCIAL_ARBITRATION: "Comercial",
   CRIMINAL: "Penal",
   ADMINISTRATIVE: "Admin",
+  ADMINISTRATIVE_CLAIM: "RecAdmin",
   NON_LITIGATION: "NoCont",
   LEGAL_COUNSEL: "AsesorÃ­a",
   SPECIAL_PROJECT: "Proyecto"
@@ -34,6 +35,7 @@ export const CATEGORY_ABBR: Record<MatterCategory, string> = {
   COMMERCIAL_ARBITRATION: "A",
   CRIMINAL: "P",
   ADMINISTRATIVE: "D",
+  ADMINISTRATIVE_CLAIM: "R",
   NON_LITIGATION: "N",
   LEGAL_COUNSEL: "G",
   SPECIAL_PROJECT: "E"

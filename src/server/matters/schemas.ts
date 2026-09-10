@@ -6,6 +6,7 @@ export const matterCategorySchema = z.enum([
   "COMMERCIAL_ARBITRATION",
   "CRIMINAL",
   "ADMINISTRATIVE",
+  "ADMINISTRATIVE_CLAIM",
   "NON_LITIGATION",
   "LEGAL_COUNSEL",
   "SPECIAL_PROJECT"

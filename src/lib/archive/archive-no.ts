@@ -4,9 +4,9 @@
  * æ ¼å¼ï¼šYYYY-ç±»åˆ«-NNNN
  *   - YYYY = å½’æ¡£å¹´ä»½ï¼ˆarchivedAt å½“å¹´ï¼‰
  *   - ç±»åˆ«ç®€ç§° = 1 ä¸ªæ±‰å­—
- *   - NNNN = å¹´å†…åŒç±»åˆ«å½’æ¡£åºå·ï¼ˆé›¶å¡« 4 ä½ï¼Œä»Ž 0001 èµ·ï¼‰
+ *   - NNNN = å¹´å†…åŒç±»åˆ«å½’æ¡£åºå·ï¼ˆN›¶å¡« 4 ä½ï¼Œä»Ž 0001 èµ·ï¼‰
  *
- * ç¤ºä¾‹ï¼š2026-æ°‘-0017
+ * ç¤ºä¾‹ï¼š2026-C-0017
  *
  * å¹¶å‘ï¼šä¾èµ– @@unique(archiveNo)ã€‚é‡å¤æ—¶å›žåˆ°æŸ¥ max å† +1ï¼ˆæœ€å¤šé‡è¯• 3 æ¬¡ï¼‰ã€‚
  */
@@ -15,10 +15,11 @@ import type { PrismaClient } from "@prisma/client";
 
 const CATEGORY_SHORT: Record<MatterCategory, string> = {
   CIVIL_COMMERCIAL: "æ°‘",
-  LABOR_ARBITRATION: "åŠ³",
-  COMMERCIAL_ARBITRATION: "å•†",
-  CRIMINAL: "åˆ‘",
-  ADMINISTRATIVE: "è¡Œ",
+  LABOR_ARBITRATION: "L",
+  COMMERCIAL_ARBITRATION: "M",
+  CRIMINAL: "P",
+  ADMINISTRATIVE: "A",
+  ADMINISTRATIVE_CLAIM: "R",
   NON_LITIGATION: "éž",
   LEGAL_COUNSEL: "é¡¾",
   SPECIAL_PROJECT: "ä¸“"
