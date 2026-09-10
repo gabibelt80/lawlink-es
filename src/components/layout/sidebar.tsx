@@ -8,6 +8,7 @@ import { Scale, LayoutDashboard, Package, Activity } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { primaryNav, secondaryNav, filterNavByModules, type NavItem } from "./nav-config";
 import type { ModuleKey } from "@/lib/modules";
+import { isSystemAdmin as checkSystemAdmin } from "@/lib/auth/roles";
 
 /** v0.42 ítem 1: Marca de la barra lateral (configurable en Configuración → Información del estudio) */
 export type FirmBrand = {
@@ -29,7 +30,7 @@ export function Sidebar({ firm }: { firm: FirmBrand }) {
 export function NavContent({ firm }: { firm: FirmBrand }) {
   const pathname = usePathname();
   const { session } = useAppSession();
-  const isSystemAdmin = session?.user?.role === "SYSTEM_ADMIN";
+  const isSystemAdmin = checkSystemAdmin(session);
   const [enabledModules, setEnabledModules] = useState<ModuleKey[]>([]);
 
   useEffect(() => {

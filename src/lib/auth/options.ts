@@ -1,132 +1,101 @@
 import type { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
-import bcrypt from "bcryptjs";
+import { compare } from "bcryptjs";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
-import { UserRole } from "@prisma/client";
 
 const credentialsSchema = z.object({
   email: z.string().email(),
-  password: z.string().min(1)
+  password: z.string().min(1),
 });
 
 export const authOptions: NextAuthOptions = {
-  session: { strategy: "jwt", maxAge: 12 * 60 * 60 },
+  session: {
+    strategy: "jwt",
+    maxAge: 30 * 24 * 60 * 60,
+  },
   pages: {
-    signIn: "/login"
+    signIn: "/login",
   },
   cookies: {
     sessionToken: {
-      name: "next-auth.session-token",
+      name:
+        process.env.NODE_ENV === "production"
+          ? "__Secure-next-auth.session-token"
+          : "next-auth.session-token",
       options: {
         httpOnly: true,
         sameSite: "lax",
         path: "/",
-        secure: false,
+        secure: process.env.NODE_ENV === "production",
       },
     },
   },
   providers: [
     CredentialsProvider({
-      name: "Email y contrasena",
+      name: "Email y contraseña",
       credentials: {
         email: { label: "Email", type: "email" },
-        password: { label: "Contrasena", type: "password" }
+        password: { label: "Contraseña", type: "password" },
       },
       async authorize(credentials) {
         const parsed = credentialsSchema.safeParse(credentials);
         if (!parsed.success) return null;
 
+        const { email, password } = parsed.data;
+
         const firmUser = await prisma.firmUser.findUnique({
-          where: { email: parsed.data.email },
+          where: { email },
+          include: { firm: true },
         });
 
         if (!firmUser || !firmUser.active) return null;
 
-        const matches = await bcrypt.compare(parsed.data.password, firmUser.passwordHash);
-        if (!matches) return null;
+        const ok = await compare(password, firmUser.passwordHash);
+        if (!ok) return null;
 
-        // SYSTEM_ADMIN: firmId es null
-        if (firmUser.firmId === null) {
-          await prisma.firmUser.update({
-            where: { id: firmUser.id },
-            data: { lastLoginAt: new Date() }
-          }).catch(() => {});
-
-          return {
-            id: firmUser.id,
-            name: firmUser.name,
-            email: firmUser.email,
-            role: "SYSTEM_ADMIN",
-            avatar: firmUser.avatar,
-            firmId: null as string | null,
-            firmSlug: "",
-            firmName: "Sistema",
-          };
-        }
-
-        // Tenant admin: buscar el firm
-        const firm = await prisma.firm.findUnique({
-          where: { id: firmUser.firmId },
-        });
-
-        if (!firm || !firm.active) return null;
-
-        await prisma.firmUser.update({
-          where: { id: firmUser.id },
-          data: { lastLoginAt: new Date() }
-        }).catch(() => {});
+        const isSystemAdmin = firmUser.firmId === null;
 
         return {
           id: firmUser.id,
-          name: firmUser.name,
           email: firmUser.email,
-          role: "ADMIN",
+          name: firmUser.name,
+          role: isSystemAdmin ? "SYSTEM_ADMIN" : "ADMIN",
+          firmId: firmUser.firmId,
+          firmSlug: firmUser.firm?.slug ?? "",
+          firmName: firmUser.firm?.name ?? "",
+          isSystemAdmin,
           avatar: firmUser.avatar,
-          firmId: firmUser.firmId as string,
-          firmSlug: firm.slug,
-          firmName: firm.name,
         };
-      }
-    })
+      },
+    }),
   ],
   callbacks: {
     async jwt({ token, user }) {
       if (user) {
-        const appUser = user as typeof user & {
-          role: string;
-          avatar: string | null;
-          firmId: string | null;
-          firmSlug: string;
-          firmName: string;
-        };
-        token.id = appUser.id;
-        token.role = appUser.role;
-        token.avatar = appUser.avatar;
-        token.firmId = appUser.firmId;
-        token.firmSlug = appUser.firmSlug;
-        token.firmName = appUser.firmName;
+        token.id = (user as any).id;
+        token.role = (user as any).role;
+        token.firmId = (user as any).firmId;
+        token.firmSlug = (user as any).firmSlug;
+        token.firmName = (user as any).firmName;
+        token.isSystemAdmin = (user as any).isSystemAdmin;
+        token.avatar = (user as any).avatar;
       }
       return token;
     },
     async session({ session, token }) {
       if (session.user) {
-        const appUser = session.user as typeof session.user & {
-          id: string;
-          role: UserRole;
-          avatar: string | null;
-          firmId: string | null;
-          firmSlug: string;
-          firmName: string;
-        };
-        appUser.id = token.id as string;
-        appUser.role = token.role as UserRole;
-        appUser.avatar = token.avatar as string | null;
-        appUser.firmId = token.firmId as string | null;
-        appUser.firmSlug = token.firmSlug as string;
-        appUser.firmName = token.firmName as string;
+        (session.user as any).id = token.id;
+        (session.user as any).role = token.role;
+        (session.user as any).firmId = token.firmId;
+        (session.user as any).firmSlug = token.firmSlug;
+        (session.user as any).firmName = token.firmName;
+        (session.user as any).isSystemAdmin = token.isSystemAdmin;
+        (session.user as any).avatar = token.avatar;
       }
       return session;
-    }
-  }
+    },
+  },
+  secret: process.env.NEXTAUTH_SECRET,
+  debug: process.env.NODE_ENV === "development",
 };

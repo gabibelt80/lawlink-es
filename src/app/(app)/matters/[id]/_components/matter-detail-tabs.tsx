@@ -532,7 +532,7 @@ function ProcedureChainBar({
   canDelete,
   onSelect,
   onAdd,
-  onDelete
+  onDelete,
 }: {
   procedures: ProcedureItem[];
   currentProcedure: ProcedureItem | null;
@@ -549,7 +549,60 @@ function ProcedureChainBar({
 
   return (
     <section className="ll-surface overflow-hidden">
-      <div className="flex min-h-[46px] flex-wrap items-center gap-1 px-3.5 py-2.5">
+      {/* Vista móvil (< md): selector compacto */}
+      <div className="flex min-h-[46px] items-center gap-2 px-3 py-2.5 md:hidden">
+        <span className="shrink-0 text-[10.5px] font-semibold uppercase tracking-[0.05em] text-muted-foreground">
+          Proc.
+        </span>
+        {procedures.length === 0 ? (
+          <span className="text-[11.5px] text-muted-foreground">Sin procedimientos</span>
+        ) : (
+          <div className="min-w-0 flex-1">
+            <select
+              value={currentProcedure?.id ?? ""}
+              onChange={(e) => onSelect(e.target.value)}
+              className="w-full rounded-md border border-input bg-background px-2 py-1.5 text-[12px] font-medium text-foreground focus:outline-none focus:ring-1 focus:ring-primary"
+            >
+              {procedures.map((procedure, index) => {
+                const label = procedure.customLabel ?? procedureTypeLabel[procedure.type];
+                const status = procedure.status === "CONCLUDED" ? " ✓" : "";
+                return (
+                  <option key={procedure.id} value={procedure.id}>
+                    {roman[index] ?? index + 1}. {label}{status}
+                  </option>
+                );
+              })}
+            </select>
+          </div>
+        )}
+        {canAdd && (
+          <button
+            type="button"
+            onClick={onAdd}
+            className="inline-flex h-[30px] w-[30px] shrink-0 items-center justify-center rounded-md border border-dashed border-input text-muted-foreground transition-colors hover:border-primary hover:text-primary"
+            title="Agregar procedimiento"
+          >
+            <Plus className="h-3.5 w-3.5" strokeWidth={1.8} />
+          </button>
+        )}
+        {canDelete && currentProcedure && (
+          <button
+            type="button"
+            onClick={() => {
+              if (confirm(deleteProcedureWarning(currentProcedure, currentLabel))) {
+                onDelete(currentProcedure.id);
+              }
+            }}
+            className="inline-flex h-[30px] w-[30px] shrink-0 items-center justify-center rounded-md border border-input text-muted-foreground transition-colors hover:border-destructive hover:text-destructive"
+            title="Eliminar procedimiento actual"
+          >
+            <X className="h-3.5 w-3.5" strokeWidth={1.8} />
+          </button>
+        )}
+      </div>
+
+      {/* Vista desktop (md+): chips horizontales */}
+      <div className="hidden min-h-[46px] flex-wrap items-center gap-1 px-3.5 py-2.5 md:flex">
         <span className="mr-1 shrink-0 text-[10.5px] font-semibold uppercase tracking-[0.05em] text-muted-foreground">
           Procedimientos
         </span>
@@ -630,14 +683,13 @@ function ProcedureChainBar({
           )}
         </div>
         <div className="ml-auto flex shrink-0 items-center gap-2 pl-2 text-[11.5px] text-muted-foreground">
-          <span className="hidden sm:inline">Actual:</span>
+          <span className="hidden lg:inline">Actual:</span>
           <span className="max-w-[260px] truncate font-mono tabular">{currentLabel}</span>
         </div>
       </div>
     </section>
   );
 }
-
 function nextUncompletedDeadline(procedures: ProcedureItem[]) {
   const all = procedures
     .flatMap((procedure) => procedure.deadlines)

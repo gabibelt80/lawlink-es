@@ -1,21 +1,24 @@
-﻿import { getServerSession } from "next-auth";
+import { getServerSession } from "next-auth";
 import { redirect } from "next/navigation";
 import { authOptions } from "./options";
 import type { Session } from "next-auth";
 import type { UserRole } from "@prisma/client";
 
+export type AppSessionUser = {
+  id: string;
+  role: UserRole;
+  avatar: string | null;
+  firmId: string | null;
+  firmSlug: string;
+  firmName: string;
+  isSystemAdmin: boolean;
+  name?: string | null;
+  email?: string | null;
+  image?: string | null;
+};
+
 export type AppSession = Session & {
-  user: {
-    id: string;
-    role: UserRole;
-    avatar: string | null;
-    firmId: string | null;
-    firmSlug: string;
-    firmName: string;
-    name?: string | null;
-    email?: string | null;
-    image?: string | null;
-  };
+  user: AppSessionUser;
 };
 
 export async function getSession(): Promise<AppSession | null> {

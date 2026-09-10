@@ -52,3 +52,5 @@ tsconfig.tsbuildinfo
 outputs/
 # Escritos locales (no versionar)
 escritos/
+ecosystem.config.js
+start.sh

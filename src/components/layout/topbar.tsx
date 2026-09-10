@@ -37,6 +37,7 @@ import { NotificationPopover } from "@/components/layout/notification-popover";
 import { SearchDialog } from "@/components/layout/search-dialog";
 import { ToolsDialog } from "@/components/layout/tools-dialog";
 import { cn } from "@/lib/utils";
+import { isSystemAdmin as checkSystemAdmin, roleLabel as getRoleLabel } from "@/lib/auth/roles";
 
 const roleLabels: Record<string, string> = {
   ADMIN: "Administrador del sistema",
@@ -79,7 +80,7 @@ export function Topbar({
   const [searchOpen, setSearchOpen] = useState(false);
   const [toolsOpen, setToolsOpen] = useState(false);
   const user = session?.user;
-  const isSystemAdmin = user?.role === "SYSTEM_ADMIN";
+  const isSystemAdmin = checkSystemAdmin(session);
   const displayName = user?.name ?? "";
   const roleLabel = user?.role ? (roleLabels[user.role] ?? user.role) : "";
   const initial = displayName ? displayName.charAt(0) : "?";
