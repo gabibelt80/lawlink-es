@@ -11,15 +11,16 @@ import { ReportsView } from "./_components/reports-view";
 export default async function ReportsPage({
   searchParams
 }: {
-  searchParams: { period?: string; start?: string; end?: string };
+  searchParams: Promise<{ period?: string; start?: string; end?: string }>;
 }) {
+  const params = (await searchParams) ?? {};
   const session = await getSession();
   if (!session?.user) redirect("/login");
   if (session.user.role !== "ADMIN" && session.user.role !== "PRINCIPAL_LAWYER") {
     redirect("/");
   }
 
-  const resolved = resolveReportPeriod(searchParams);
+  const resolved = resolveReportPeriod(params);
   const [data, cycle, reviewAnalysis] = await Promise.all([
     getReportData(resolved.period),
     getCaseCycleAnalysis(resolved.period),

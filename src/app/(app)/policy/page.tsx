@@ -11,8 +11,9 @@ import { FirmFilesView } from "@/app/(app)/firm-resources/_components/firm-files
 export default async function PolicyPage({
   searchParams,
 }: {
-  searchParams: { q?: string; includeOld?: string };
+  searchParams: Promise<{ q?: string; includeOld?: string }>;
 }) {
+  const params = (await searchParams) ?? {};
   const session = await getSession();
   if (!session?.user) redirect("/login");
 
@@ -21,8 +22,8 @@ export default async function PolicyPage({
 
   const files = await listFirmFiles({
     category: "POLICY",
-    search: searchParams.q?.trim(),
-    includeSuperseded: searchParams.includeOld === "1",
+    search: params.q?.trim(),
+    includeSuperseded: params.includeOld === "1",
   });
 
   return (
@@ -30,8 +31,8 @@ export default async function PolicyPage({
       files={files}
       canUpload={isManager}
       currentCategory="POLICY"
-      currentSearch={searchParams.q ?? ""}
-      includeSuperseded={searchParams.includeOld === "1"}
+      currentSearch={params.q ?? ""}
+      includeSuperseded={params.includeOld === "1"}
       basePath="/policy"
       hideCategoryNav
       headerTitle="Normativas internas"

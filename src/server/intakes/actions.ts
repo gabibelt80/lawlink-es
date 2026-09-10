@@ -61,6 +61,7 @@ type IntakeConflictQuery = {
 };
 
 type IntakeConflictGateInput = {
+  category: string;
   client: { name: string; idNumber: string | null } | null;
   parties: { role: string; name: string; idNumber: string | null }[];
   conflictChecks: {
@@ -138,14 +139,27 @@ function getCheckedConflictQueries(payload: Prisma.JsonValue) {
 }
 
 function assertConflictReviewAllowsConversion(intake: IntakeConflictGateInput) {
+  // Los Reclamos Administrativos no requieren búsqueda de conflictos
+  // porque no hay contraparte formal al inicio del reclamo
+  if (intake.category === "ADMINISTRATIVE_CLAIM") {
+    return;
+  }
+
   const expectedQueries = buildExpectedConflictQueries(intake);
   if (expectedQueries.length === 0) {
-    throw new Error("Complete primero el cliente o la contraparte y luego ejecute la busqueda de conflictos");
+    throw new Error(
+      "📋 Falta completar datos: cargá el cliente y la contraparte antes de convertir a caso formal. " +
+      "Andá a la pestaña 'Partes' y agregá esa información."
+    );
   }
 
   const latestCheck = intake.conflictChecks[0];
   if (!latestCheck) {
-    throw new Error("Antes de convertir a caso formal debe ejecutar la busqueda de conflictos");
+    throw new Error(
+      "🔍 Falta ejecutar la búsqueda de conflictos. " +
+      "Andá a la pestaña 'Conflictos' y presioná el botón 'Buscar conflictos' para verificar que no haya " +
+      "conflictos de intereses antes de aceptar el caso."
+    );
   }
 
   const checkedKeys = new Set(
@@ -154,7 +168,8 @@ function assertConflictReviewAllowsConversion(intake: IntakeConflictGateInput) {
   const missingQueries = expectedQueries.filter((q) => !checkedKeys.has(conflictQueryKey(q)));
   if (missingQueries.length > 0) {
     throw new Error(
-      `Las partes de la admision cambiaron, ejecute nuevamente la busqueda de conflictos. Faltan: ${missingQueries
+      `⚠️ Las partes de la admisión cambiaron después de la última búsqueda de conflictos. ` +
+      `Volvé a la pestaña 'Conflictos' y ejecutá nuevamente la búsqueda. Faltan verificar: ${missingQueries
         .map(formatConflictQuery)
         .join(", ")}`
     );
@@ -578,7 +593,10 @@ export async function resubmitIntake(id: string) {
   return { ok: true };
 }
 
-export async function convertIntakeToMatter(intakeId: string) {
+export async function convertIntakeToMatter(
+  intakeId: string,
+  options?: { convertToLitigation?: boolean }
+) {
   const prisma = await getTenantPrisma();
   const session = await requireSession();
   requireApprover(session.user.role);
@@ -602,23 +620,35 @@ export async function convertIntakeToMatter(intakeId: string) {
   });
   if (!intake) throw new Error("admision no encontrada");
   if (intake.status === "CONVERTED") throw new Error("Esta admision ya fue convertida");
-  assertConflictReviewAllowsConversion(intake);
+
+  // Si es un Reclamo Administrativo y el usuario eligió "convertir a litigio",
+  // se cambia el fuero a ADMINISTRATIVE (contencioso) y se exige búsqueda de conflictos
+  const isAdminClaim = intake.category === "ADMINISTRATIVE_CLAIM";
+  const shouldConvertToLitigation = isAdminClaim && options?.convertToLitigation === true;
+  const targetCategory = shouldConvertToLitigation ? "ADMINISTRATIVE" : intake.category;
+
+  // La validación de conflictos se aplica excepto para reclamos que se mantienen como reclamo
+  if (!isAdminClaim || shouldConvertToLitigation) {
+    assertConflictReviewAllowsConversion(intake);
+  }
 
   const { generateInternalCode, generateFirmCaseNo } = await import("@/server/matters/code-generator");
-  const internalCode = await generateInternalCode(intake.category);
-  const firmCaseNo = await generateFirmCaseNo(intake.category);
+  const internalCode = await generateInternalCode(targetCategory);
+  const firmCaseNo = await generateFirmCaseNo(targetCategory);
 
   const firstProcedureType =
     intake.firstProcedureType ??
-    (intake.category === "CIVIL_COMMERCIAL" ||
-    intake.category === "CRIMINAL" ||
-    intake.category === "ADMINISTRATIVE"
+    (targetCategory === "CIVIL_COMMERCIAL" ||
+    targetCategory === "CRIMINAL" ||
+    targetCategory === "ADMINISTRATIVE"
       ? "FIRST_INSTANCE"
-      : "NON_LITIGATION_PHASE");
+      : targetCategory === "ADMINISTRATIVE_CLAIM"
+        ? "ADMIN_PRE_LITIGATION"
+        : "NON_LITIGATION_PHASE");
   assertAgencyAllowedForProcedure(intake.firstAgency, firstProcedureType);
   await assertCauseAllowedForSelection({
     causeId: intake.causeId,
-    category: intake.category,
+    category: targetCategory as any,
     procedureType: firstProcedureType
   });
 
@@ -630,7 +660,7 @@ export async function convertIntakeToMatter(intakeId: string) {
         internalCode,
         firmCaseNo,
         title: intake.title,
-        category: intake.category,
+        category: targetCategory as any,
         ownerId,
         causeId: intake.causeId,
         causeFreeText: intake.causeFreeText,

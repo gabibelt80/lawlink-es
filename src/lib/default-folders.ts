@@ -1,25 +1,25 @@
-﻿import type { MatterCategory } from "@prisma/client";
+import type { MatterCategory } from "@prisma/client";
 import type { Prisma } from "@prisma/client";
 
 /**
- * v0.8 é»˜è®¤å·å®—ç»“æž„ï¼ˆæŒ‰Casoç±»åˆ«ï¼‰
- * æ–°å»º Matter æ—¶è‡ªåŠ¨ seedï¼›isDefault=true ä¸å¯åˆ ï¼Œå¯æ”¹åã€‚
+ * v0.8 Estructura de carpetas por defecto (según categoría del caso).
+ * Se crean automáticamente al crear un Matter; isDefault=true → no se pueden eliminar, solo renombrar.
  */
 export const DEFAULT_FOLDERS_BY_CATEGORY: Record<MatterCategory, readonly string[]> = {
-  CIVIL_COMMERCIAL: ["æ”¶æ¡ˆ", "ç«‹æ¡ˆ", "å§”æ‰˜æ‰‹ç»­", "è¯æ®", "ç¨‹åºæ–‡ä¹¦", "åº­å®¡", "è£åˆ¤", "Cerrar caso"],
-  LABOR_ARBITRATION: ["æ”¶æ¡ˆ", "å§”æ‰˜æ‰‹ç»­", "è¯æ®", "ä»²è£æ–‡ä¹¦", "å¼€åº­", "è£å†³", "è¯‰è®¼", "Cerrar caso"],
-  COMMERCIAL_ARBITRATION: ["æ”¶æ¡ˆ", "å§”æ‰˜æ‰‹ç»­", "è¯æ®", "ä»²è£æ–‡ä¹¦", "å¼€åº­", "è£å†³", "Cerrar caso"],
-  ADMINISTRATIVE_CLAIM: ["Reclamo Administrativo"],
-  ADMINISTRATIVE: ["æ”¶æ¡ˆ", "ç«‹æ¡ˆ", "å§”æ‰˜æ‰‹ç»­", "è¯æ®", "ç¨‹åºæ–‡ä¹¦", "åº­å®¡", "è£åˆ¤", "Cerrar caso"],
-  CRIMINAL: ["æ”¶æ¡ˆ", "å§”æ‰˜æ‰‹ç»­", "é˜…å·", "ä¼šè§", "å–è¯", "åº­å‰", "åº­å®¡", "åˆ¤å†³yä¸Šè¯‰", "Cerrar caso"],
-  NON_LITIGATION: ["ç«‹Ã­tems", "è°ƒç ”", "å·¥ä½œåº•ç¨¿", "å‡ºå…·æ–‡ä»¶", "å½’æ¡£"],
-  LEGAL_COUNSEL: ["ç«‹Ã­tems", "è°ƒç ”", "å·¥ä½œåº•ç¨¿", "å‡ºå…·æ–‡ä»¶", "å½’æ¡£"],
-  SPECIAL_PROJECT: ["ç«‹Ã­tems", "è°ƒç ”", "å·¥ä½œåº•ç¨¿", "å‡ºå…·æ–‡ä»¶", "å½’æ¡£"]
+  CIVIL_COMMERCIAL: ["01. Recepción", "02. Inicio", "03. Poderes", "04. Prueba", "05. Escritos", "06. Audiencias", "07. Sentencia", "08. Cierre"],
+  LABOR_ARBITRATION: ["01. Recepción", "02. Poderes", "03. Prueba", "04. Escritos arbitrales", "05. Audiencias", "06. Laudo", "07. Litigio", "08. Cierre"],
+  COMMERCIAL_ARBITRATION: ["01. Recepción", "02. Poderes", "03. Prueba", "04. Escritos arbitrales", "05. Audiencias", "06. Laudo", "07. Cierre"],
+  ADMINISTRATIVE: ["01. Recepción", "02. Inicio", "03. Poderes", "04. Prueba", "05. Escritos", "06. Audiencias", "07. Sentencia", "08. Cierre"],
+  ADMINISTRATIVE_CLAIM: ["01. Recepción", "02. Reclamo presentado", "03. Seguimiento", "04. Resolución", "05. Cierre"],
+  CRIMINAL: ["01. Recepción", "02. Poderes", "03. Expediente", "04. Entrevistas", "05. Prueba", "06. Preparación", "07. Juicio oral", "08. Sentencia y apelación", "09. Cierre"],
+  NON_LITIGATION: ["01. Inicio", "02. Investigación", "03. Borradores", "04. Entregables", "05. Archivo"],
+  LEGAL_COUNSEL: ["01. Inicio", "02. Investigación", "03. Borradores", "04. Entregables", "05. Archivo"],
+  SPECIAL_PROJECT: ["01. Inicio", "02. Investigación", "03. Borradores", "04. Entregables", "05. Archivo"]
 } as const;
 
 /**
- * åœ¨äº‹åŠ¡ä¸­ä¸ºæ–° Matter Crearé»˜è®¤å·å®—ã€‚
- * è°ƒç”¨æ–¹æä¾› txï¼›æœ¬å‡½æ•°åªå†™åº“ï¼Œä¸åšæƒé™/æ ¡éªŒã€‚
+ * Crea las carpetas por defecto de un Matter nuevo dentro de una transacción.
+ * El llamador provee `tx`; esta función solo escribe en BD, sin validar permisos.
  */
 export async function seedDefaultFolders(
   tx: Prisma.TransactionClient,
@@ -39,8 +39,9 @@ export async function seedDefaultFolders(
 }
 
 /**
- * æŒ‰æ¨¡æ¿å¤§ç±»æŽ¨èé»˜è®¤å½’æ¡£å·å®—åï¼ˆç”¨äºŽ"ä»Žæ¨¡æ¿æ–°å»º"æ—¶è‡ªåŠ¨é€‰ç›®æ ‡å·å®—ï¼‰ã€‚
- * æŽ¨èä¸åˆ°æ—¶Volver nullï¼Œç”± UI è®©ç”¨æˆ·æ‰‹é€‰ã€‚
+ * Sugiere la carpeta destino por defecto según la categoría de la plantilla
+ * (usado al crear un documento "desde plantilla").
+ * Devuelve null cuando no hay una carpeta clara, para que el usuario elija manualmente.
  */
 export function suggestFolderByTemplateCategory(
   templateCategory: string,
@@ -52,28 +53,27 @@ export function suggestFolderByTemplateCategory(
     matterCategory === "CRIMINAL";
 
   const mapLitigation: Record<string, string> = {
-    INTAKE: "æ”¶æ¡ˆ",
-    RETAINER: "å§”æ‰˜æ‰‹ç»­",
-    LITIGATION: matterCategory === "CRIMINAL" ? "åº­å‰" : "ç¨‹åºæ–‡ä¹¦",
-    HEARING: matterCategory === "CRIMINAL" ? "åº­å®¡" : "åº­å®¡",
-    WORK_PRODUCT: matterCategory === "CRIMINAL" ? "å–è¯" : "è¯æ®",
-    ARCHIVE: matterCategory === "CRIMINAL" ? "Cerrar caso" : "Cerrar caso",
-    CLOSING: "Cerrar caso",
-    BLANK: matterCategory === "CRIMINAL" ? "æ”¶æ¡ˆ" : "æ”¶æ¡ˆ"
+    INTAKE: "01. Recepción",
+    RETAINER: "03. Poderes",
+    LITIGATION: matterCategory === "CRIMINAL" ? "06. Preparación" : "05. Escritos",
+    HEARING: "06. Audiencias",
+    WORK_PRODUCT: matterCategory === "CRIMINAL" ? "05. Prueba" : "04. Prueba",
+    ARCHIVE: matterCategory === "CRIMINAL" ? "09. Cierre" : "08. Cierre",
+    CLOSING: matterCategory === "CRIMINAL" ? "09. Cierre" : "08. Cierre",
+    BLANK: "01. Recepción"
   };
 
   const mapNonLitigation: Record<string, string> = {
-    INTAKE: "ç«‹Ã­tems",
-    RETAINER: "ç«‹Ã­tems",
-    LITIGATION: "å‡ºå…·æ–‡ä»¶",
-    HEARING: "å·¥ä½œåº•ç¨¿",
-    WORK_PRODUCT: "å‡ºå…·æ–‡ä»¶",
-    ARCHIVE: "å½’æ¡£",
-    CLOSING: "å½’æ¡£",
-    BLANK: "å·¥ä½œåº•ç¨¿"
+    INTAKE: "01. Inicio",
+    RETAINER: "01. Inicio",
+    LITIGATION: "04. Entregables",
+    HEARING: "03. Borradores",
+    WORK_PRODUCT: "04. Entregables",
+    ARCHIVE: "05. Archivo",
+    CLOSING: "05. Archivo",
+    BLANK: "03. Borradores"
   };
 
   const map = isLitigation ? mapLitigation : mapNonLitigation;
   return map[templateCategory] ?? null;
 }
-

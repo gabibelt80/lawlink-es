@@ -26,11 +26,12 @@ const CATEGORY_LABEL: Record<string, string> = {
 export default async function ArchivePage({
   searchParams
 }: {
-  searchParams?: { tab?: string };
+  searchParams?: Promise<{ tab?: string }>;
 }) {
   const session = await requireSession();
   const isAdmin = session.user.role === "ADMIN";
-  const tab = searchParams?.tab ?? "approved";
+  const params = (await searchParams) ?? {};
+  const tab = params.tab ?? "approved";
   const activeTab = isAdmin && tab === "pending" ? "pending" : tab === "explorer" ? "explorer" : "approved";
 
   const [items, pending] = await Promise.all([

@@ -1,5 +1,5 @@
 /**
- * v0.38: Documentos del estudio volvió a ser página independiente (en v0.37 se había integrado a /service-center, ahora se separa de nuevo como página real)
+ * v0.38: Documentos del estudio volvió a ser página independiente
  * v0.44: La clasificación cambió a contratos/cartas/licencias/otros
  */
 import type { FirmFileCategory } from "@prisma/client";
@@ -13,8 +13,9 @@ const VALID_CATEGORIES: FirmFileCategory[] = ["CONTRACT", "LETTER", "LICENSE", "
 export default async function FirmResourcesPage({
   searchParams
 }: {
-  searchParams: { category?: string; q?: string; includeOld?: string };
+  searchParams: Promise<{ category?: string; q?: string; includeOld?: string }>;
 }) {
+  const params = (await searchParams) ?? {};
   const session = await getSession();
   if (!session?.user) redirect("/login");
 
@@ -22,14 +23,14 @@ export default async function FirmResourcesPage({
     session.user.role === "ADMIN" || session.user.role === "PRINCIPAL_LAWYER";
 
   const category =
-    searchParams.category && (VALID_CATEGORIES as string[]).includes(searchParams.category)
-      ? (searchParams.category as FirmFileCategory)
+    params.category && (VALID_CATEGORIES as string[]).includes(params.category)
+      ? (params.category as FirmFileCategory)
       : undefined;
 
   const files = await listFirmFiles({
     category,
-    search: searchParams.q?.trim(),
-    includeSuperseded: searchParams.includeOld === "1"
+    search: params.q?.trim(),
+    includeSuperseded: params.includeOld === "1"
   });
 
   return (
@@ -37,8 +38,8 @@ export default async function FirmResourcesPage({
       files={files}
       canUpload={isManager}
       currentCategory={category}
-      currentSearch={searchParams.q ?? ""}
-      includeSuperseded={searchParams.includeOld === "1"}
+      currentSearch={params.q ?? ""}
+      includeSuperseded={params.includeOld === "1"}
       categorySet="firm"
     />
   );

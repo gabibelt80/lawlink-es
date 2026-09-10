@@ -58,7 +58,7 @@ const APP_ITEMS = [
   },
   {
     label: "Navegación legal",
-    href: "https://yesen.cn",
+    href: "https://www.argentina.gob.ar/justicia/saij",
     icon: Compass,
     kind: "external",
   },
@@ -101,7 +101,7 @@ export function Topbar({
       <button
         onClick={() => setSearchOpen(true)}
         className={cn(
-          "flex h-8 min-w-0 flex-1 items-center gap-2 rounded-md border border-border/70 bg-card/80 px-2.5 text-left sm:w-[300px] sm:flex-initial",
+          "flex h-8 min-w-0 flex-1 items-center gap-2 rounded-md border border-border/70 bg-card/80 px-2.5 text-left md:w-[280px] md:flex-initial lg:w-[320px]",
           "text-[13px] text-muted-foreground transition-colors hover:border-border hover:bg-muted hover:text-foreground",
           "focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary/35",
         )}

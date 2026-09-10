@@ -6,15 +6,16 @@ import { AuditView } from "./_components/audit-view";
 export default async function AuditPage({
   searchParams
 }: {
-  searchParams: {
+  searchParams: Promise<{
     userId?: string;
     action?: string;
     targetType?: string;
     start?: string;
     end?: string;
     cursor?: string;
-  };
+  }>;
 }) {
+  const params = (await searchParams) ?? {};
   const session = await getSession();
   if (!session?.user) redirect("/login");
   if (session.user.role !== "ADMIN" && session.user.role !== "PRINCIPAL_LAWYER") {
@@ -22,12 +23,12 @@ export default async function AuditPage({
   }
 
   const filter = {
-    userId: searchParams.userId,
-    action: searchParams.action,
-    targetType: searchParams.targetType,
-    startStr: searchParams.start,
-    endStr: searchParams.end,
-    cursor: searchParams.cursor,
+    userId: params.userId,
+    action: params.action,
+    targetType: params.targetType,
+    startStr: params.start,
+    endStr: params.end,
+    cursor: params.cursor,
     limit: 50
   };
 

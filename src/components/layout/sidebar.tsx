@@ -19,7 +19,7 @@ export type FirmBrand = {
 /** Barra lateral de escritorio (visible desde md) */
 export function Sidebar({ firm }: { firm: FirmBrand }) {
   return (
-    <aside className="fixed left-0 top-0 z-30 hidden h-screen w-[208px] flex-col border-r border-border bg-sidebar md:flex">
+    <aside className="fixed left-0 top-0 z-30 hidden h-screen w-[var(--sidebar-width)] flex-col border-r border-border bg-sidebar md:flex">
       <NavContent firm={firm} />
     </aside>
   );

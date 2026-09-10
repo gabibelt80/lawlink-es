@@ -258,14 +258,83 @@ export function CaseListCard({
             : "rounded-lg px-4 py-3 hover:bg-muted",
         )}
       >
+        {/* Vista móvil - tarjeta apilable */}
+        <div className="lg:hidden space-y-2">
+          {/* Fila 1: categoría + título + estado */}
+          <div className="flex items-start gap-2">
+            <span
+              aria-hidden
+              className="inline-flex h-5 min-w-5 shrink-0 items-center justify-center rounded-sm border px-1 text-[10.5px] font-medium leading-none mt-0.5"
+              style={{
+                background: `${accent}14`,
+                borderColor: `${accent}66`,
+                color: accent,
+              }}
+            >
+              {categoryShort}
+            </span>
+            <div className="min-w-0 flex-1">
+              <div className="truncate text-[13.5px] font-medium leading-5 text-foreground">
+                {title || "(Sin nombre)"}
+              </div>
+              <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-[11px] text-muted-foreground">
+                {firmCaseNo && (
+                  <span className="font-mono tabular">{firmCaseNo}</span>
+                )}
+                <span>{formatDate(intakeDate)}</span>
+              </div>
+            </div>
+            <StatusChip label={status.label} dot={status.dot} />
+          </div>
+
+          {/* Fila 2: cliente + audiencia */}
+          <div className="flex flex-wrap items-center gap-2 text-[12px]">
+            {clientName && (
+              <span className="inline-flex items-center gap-1.5 rounded-md bg-muted/60 px-2 py-1">
+                <span className="flex h-4 w-4 items-center justify-center rounded bg-accent text-[9px] font-semibold text-primary">
+                  {clientName.charAt(0)}
+                </span>
+                <span className="truncate max-w-[140px]">{clientName}</span>
+              </span>
+            )}
+            {metaColumn === "hearing" && latestHearingAt && (
+              <span className="inline-flex items-center gap-1 rounded-md bg-primary/10 px-2 py-1 text-primary">
+                {formatDateTime(latestHearingAt)}
+              </span>
+            )}
+            {metaColumn === "firmCaseNo" && firmCaseNo && (
+              <span className="inline-flex items-center gap-1 rounded-md bg-muted/60 px-2 py-1 font-mono text-[11px]">
+                {firmCaseNo}
+              </span>
+            )}
+          </div>
+
+          {/* Fila 3: procedimiento + monto */}
+          <div className="flex flex-wrap items-center justify-between gap-2 text-[11px] text-muted-foreground">
+            <span className="inline-flex items-center gap-1.5 truncate">
+              {showProcedureDots && <span className="ll-dot bg-primary" />}
+              <span className={cn("truncate", procedureValueClassName ?? "font-mono tabular-nums")}>
+                {procedureLabel ?? procedureFallback}
+              </span>
+            </span>
+            {claimAmount != null && (
+              <span className="font-mono tabular-nums text-foreground/75">
+                {formatCurrency(claimAmount, { compact: true })}
+              </span>
+            )}
+          </div>
+        </div>
+
+        {/* Vista desktop - grid */}
         <div
-          className={
+          className={cn(
+            "hidden lg:grid",
             showArchiveDateColumn
               ? MATTER_ROW_GRID_WITH_ARCHIVE
               : showIntakeDateColumn
                 ? MATTER_ROW_GRID_WITH_INTAKE
                 : MATTER_ROW_GRID
-          }
+          )}
         >
           {hasLeadingDateColumn ? (
             <DataCell

@@ -4,7 +4,7 @@ import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { useAppSession } from "@/lib/auth/use-app-session";
 import { toast } from "sonner";
-import { ArrowRight, XCircle, Loader2, Clock, RotateCcw, AlertCircle } from "lucide-react";
+import { ArrowRight, XCircle, Loader2, Clock, RotateCcw, AlertCircle, Gavel, FileText } from "lucide-react";
 import type { IntakeStatus } from "@prisma/client";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -27,15 +27,18 @@ import { matterHref } from "@/lib/matters/route";
 
 export function IntakeActions({
   intakeId,
-  status
+  status,
+  category
 }: {
   intakeId: string;
   status?: IntakeStatus;
+  category?: string;
 }) {
   const router = useRouter();
   const { session } = useAppSession();
   const [isPending, startTransition] = useTransition();
-  const [dialogKind, setDialogKind] = useState<"decline" | "revision" | null>(null);
+  const [dialogKind, setDialogKind] = useState<"decline" | "revision" | "convert" | null>(null);
+  const [convertToLitigation, setConvertToLitigation] = useState<boolean | null>(null);
   const [reason, setReason] = useState("");
 
   const role = session?.user?.role;
@@ -85,11 +88,10 @@ export function IntakeActions({
     );
   }
 
-  function handleConvert() {
-    if (!confirm("¿Confirmar la conversión a caso formal? Se asignará un número de caso.")) return;
+  function handleConvert(convertToLitigation?: boolean) {
     startTransition(async () => {
       try {
-        const res = await convertIntakeToMatter(intakeId);
+        const res = await convertIntakeToMatter(intakeId, { convertToLitigation });
         toast.success(`Convertido a caso ${res.internalCode}`);
         router.push(matterHref({ id: res.matterId, internalCode: res.internalCode }));
       } catch (err) {
@@ -156,7 +158,16 @@ export function IntakeActions({
         </Button>
         <Button
           size="sm"
-          onClick={handleConvert}
+          onClick={() => {
+            if (category === "ADMINISTRATIVE_CLAIM") {
+              setConvertToLitigation(null);
+              setDialogKind("convert");
+            } else {
+              if (confirm("¿Confirmar la conversión a caso formal? Se asignará un número de caso.")) {
+                handleConvert();
+              }
+            }
+          }}
           disabled={isPending}
           className="gap-1.5"
         >
@@ -169,7 +180,92 @@ export function IntakeActions({
         </Button>
       </div>
 
-      <Dialog open={dialogKind !== null} onOpenChange={(o) => !o && setDialogKind(null)}>
+      {/* Diálogo especial para Reclamo Administrativo */}
+      <Dialog open={dialogKind === "convert"} onOpenChange={(o) => !o && setDialogKind(null)}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Gavel className="h-5 w-5 text-primary" />
+              Convertir a caso formal
+            </DialogTitle>
+            <DialogDescription>
+              Este es un Reclamo Administrativo Previo. ¿El reclamo derivó en juicio contencioso-administrativo?
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-3">
+            <button
+              type="button"
+              onClick={() => setConvertToLitigation(true)}
+              className={`w-full rounded-lg border-2 p-4 text-left transition-colors ${
+                convertToLitigation === true
+                  ? "border-primary bg-primary/5"
+                  : "border-border hover:border-primary/40 hover:bg-muted/30"
+              }`}
+            >
+              <div className="flex items-center gap-2">
+                <Gavel className="h-4 w-4 text-primary" />
+                <span className="font-medium text-sm">Sí, ir a juicio contencioso-administrativo</span>
+              </div>
+              <p className="mt-1.5 text-xs text-muted-foreground">
+                Se convertirá en un caso de <strong>Derecho Administrativo</strong> con procedimiento contencioso.
+                Se exigirá la <strong>búsqueda de conflictos</strong> antes de continuar.
+              </p>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setConvertToLitigation(false)}
+              className={`w-full rounded-lg border-2 p-4 text-left transition-colors ${
+                convertToLitigation === false
+                  ? "border-primary bg-primary/5"
+                  : "border-border hover:border-primary/40 hover:bg-muted/30"
+              }`}
+            >
+              <div className="flex items-center gap-2">
+                <FileText className="h-4 w-4 text-amber-500" />
+                <span className="font-medium text-sm">No, sigue siendo un reclamo administrativo</span>
+              </div>
+              <p className="mt-1.5 text-xs text-muted-foreground">
+                Se convertirá en caso formal manteniendo el fuero de <strong>Reclamo Administrativo Previo</strong>.
+                No se exigirá búsqueda de conflictos.
+              </p>
+            </button>
+          </div>
+
+          <DialogFooter>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setDialogKind(null)}
+              disabled={isPending}
+            >
+              Cancelar
+            </Button>
+            <Button
+              type="button"
+              onClick={() => {
+                if (convertToLitigation === null) {
+                  toast.warning("Elegí una opción para continuar");
+                  return;
+                }
+                handleConvert(convertToLitigation);
+              }}
+              disabled={convertToLitigation === null || isPending}
+              className="gap-1.5"
+            >
+              {isPending ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <ArrowRight className="h-4 w-4" />
+              )}
+              Convertir
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={dialogKind === "decline" || dialogKind === "revision"} onOpenChange={(o) => !o && setDialogKind(null)}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>{isDecline ? "Marcar como rechazado" : "Marcar como pendiente de corrección"}</DialogTitle>

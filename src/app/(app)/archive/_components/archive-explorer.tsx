@@ -42,6 +42,8 @@ type CaseFolder = {
   internalCode: string;
   firmCaseNo: string | null;
   title: string;
+  status: string;
+  archivedAt: Date | null;
   folders: FolderItem[];
   rootDocuments: DocItem[];
 };
@@ -204,7 +206,7 @@ export function ArchiveExplorer() {
       for (const item of selectedItems) {
         if (item.type === "file") {
           try {
-            window.open(`/api/archive/download/${item.id}`, "_blank");
+            window.open(`/api/documents/${item.id}/download`, "_blank");
           } catch (err) {
             console.error(`Error descargando ${item.name}:`, err);
           }
@@ -215,7 +217,7 @@ export function ArchiveExplorer() {
           if (folder) {
             for (const doc of folder.documents) {
               try {
-                window.open(`/api/archive/download/${doc.id}`, "_blank");
+                window.open(`/api/documents/${doc.id}/download`, "_blank");
               } catch (err) {
                 console.error(`Error descargando ${doc.name}:`, err);
               }
@@ -363,7 +365,18 @@ export function ArchiveExplorer() {
                     )}
                   </button>
                   <div className="flex-1 min-w-0">
-                    <div className="font-medium text-sm truncate">{matter.title}</div>
+                    <div className="flex items-center gap-2">
+                      <span className="font-medium text-sm truncate">{matter.title}</span>
+                      {matter.status === "ARCHIVED" ? (
+                        <span className="shrink-0 rounded-full bg-purple-500/15 px-2 py-0.5 text-[9px] font-medium text-purple-700">
+                          Archivado
+                        </span>
+                      ) : (
+                        <span className="shrink-0 rounded-full bg-emerald-500/15 px-2 py-0.5 text-[9px] font-medium text-emerald-700">
+                          Activo
+                        </span>
+                      )}
+                    </div>
                     <div className="text-[10px] text-muted-foreground">
                       {matter.firmCaseNo ?? matter.internalCode}
                     </div>

@@ -4,7 +4,10 @@
 
 @layer base {
   :root {
-    /* v3.3: 冷调灰白底 + 原有 teal 主色 + 高密度业务界面 */
+    /* Ancho de la barra lateral (desktop) */
+    --sidebar-width: 208px;
+    
+    /* v3.3: fondo gris claro frío + color principal teal + interfaz de alta densidad */
     --background: 214 24% 94%;         /* #EDF0F4 */
     --foreground: 216 50% 12%;         /* #0F1B2D */
 

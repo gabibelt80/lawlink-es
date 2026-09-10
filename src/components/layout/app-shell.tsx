@@ -29,7 +29,7 @@ export function AppShell({
         onOpenChange={setMobileNavOpen}
         firm={firm}
       />
-      <div className="md:pl-[208px]">
+      <div className="md:pl-[var(--sidebar-width)]">
         <Topbar
           onMobileMenuToggle={() => setMobileNavOpen(true)}
           userAvatar={userAvatar ?? null}

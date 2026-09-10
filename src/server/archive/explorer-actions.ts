@@ -5,23 +5,31 @@ import { requireSession } from "@/lib/auth/session";
 import { audit } from "@/server/audit";
 
 /**
- * Lista las carpetas de todos los casos archivados (o todos los casos)
- * con sus documentos dentro de cada carpeta
+ * Lista las carpetas de TODOS los casos (activos y archivados)
+ * con sus documentos dentro de cada carpeta.
+ * 
+ * Usado por el Explorador de Carpetas para descargar archivos.
  */
 export async function listCaseFolders() {
   const prisma = await getTenantPrisma();
-  const session = await requireSession();
+  await requireSession();
 
   const matters = await prisma.matter.findMany({
     where: {
       deletedAt: null,
-      status: "ARCHIVED",
+      // Mostrar todos los casos con documentos o carpetas
+      OR: [
+        { folders: { some: {} } },
+        { documents: { some: { deletedAt: null } } },
+      ],
     },
     select: {
       id: true,
       internalCode: true,
       firmCaseNo: true,
       title: true,
+      status: true,
+      archivedAt: true,
       folders: {
         orderBy: { orderIndex: "asc" },
         select: {
@@ -57,7 +65,10 @@ export async function listCaseFolders() {
         orderBy: { createdAt: "asc" },
       },
     },
-    orderBy: { archivedAt: "desc" },
+    orderBy: [
+      { archivedAt: "desc" },
+      { updatedAt: "desc" },
+    ],
   });
 
   const result = matters.map((matter) => ({
@@ -65,6 +76,8 @@ export async function listCaseFolders() {
     internalCode: matter.internalCode,
     firmCaseNo: matter.firmCaseNo,
     title: matter.title,
+    status: matter.status,
+    archivedAt: matter.archivedAt,
     folders: matter.folders.map((folder) => ({
       id: folder.id,
       name: folder.name,
@@ -90,7 +103,7 @@ export async function listCaseFolders() {
 }
 
 /**
- * Registra una descarga en el log
+ * Registra una descarga en el log de auditoría
  */
 export async function logDownloadAction(input: {
   matterId: string;
@@ -115,11 +128,11 @@ export async function logDownloadAction(input: {
 }
 
 /**
- * Obtiene el log de descargas
+ * Obtiene el log de descargas recientes
  */
 export async function getDownloadLogs() {
   const prisma = await getTenantPrisma();
-  const session = await requireSession();
+  await requireSession();
 
   const logs = await prisma.auditLog.findMany({
     where: {

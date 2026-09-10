@@ -168,7 +168,7 @@ export default async function IntakeDetailPage({ params }: PageProps) {
           </div>
 
           {intake.status !== "CONVERTED" && intake.status !== "DECLINED" && (
-            <IntakeActions intakeId={intake.id} status={intake.status} />
+            <IntakeActions intakeId={intake.id} status={intake.status} category={intake.category} />
           )}
         </div>
 
