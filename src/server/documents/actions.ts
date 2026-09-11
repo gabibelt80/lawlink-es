@@ -7,7 +7,7 @@ import { getTenantPrisma } from "@/lib/tenant-prisma";
 import { requireSession } from "@/lib/auth/session";
 import { audit } from "@/server/audit";
 import { assertDocumentWritable } from "@/lib/archive/guard";
-import { matterVisibilityFilter, isManager, assertCanAccessMatter, assertCanLeadMatter } from "@/lib/permissions";
+import { matterVisibilityFilter, isManager, assertCanAccessMatter, assertCanLeadMatter, getTenantUserId } from "@/lib/permissions";
 import { storage } from "@/lib/storage";
 import { validateUploadedFile } from "@/lib/storage/file-validator";
 import { encryptBuffer, sha256 } from "@/lib/storage/crypto";
@@ -31,6 +31,7 @@ const MAX_FILE_SIZE = 20 * 1024 * 1024; // 20MB
 export async function uploadDocument(formData: FormData) {
   const prisma = await getTenantPrisma();
   const session = await requireSession();
+  const tenantUserId = await getTenantUserId(session);
 
   const matterIdRaw = formData.get("matterId");
   const intakeIdRaw = formData.get("intakeId");
@@ -85,7 +86,7 @@ export async function uploadDocument(formData: FormData) {
   if (matterId) {
     const matter = await prisma.matter.findUnique({
       where: { id: matterId, deletedAt: null },
-      select: { id: true, status: true }
+      select: { id: true, status: true, internalCode: true }
     });
     if (!matter) throw new Error("El Caso no existe");
     await assertCanAccessMatter(session.user.id, session.user.role, matterId);
@@ -146,6 +147,8 @@ export async function uploadDocument(formData: FormData) {
   let authTag: string | null = null;
   let algorithm: string | null = null;
 
+  let sourcePathForTxt: string | null = null;
+
   if (encrypted) {
     const enc = encryptBuffer(raw);
     path = await storage.writeFile(storageBucket, enc.ciphertext);
@@ -154,6 +157,54 @@ export async function uploadDocument(formData: FormData) {
     algorithm = enc.algorithm;
   } else {
     path = await storage.writeFile(storageBucket, raw);
+  }
+
+  // v0.50: Si es DOCX/TXT, extraer el texto y guardarlo como .txt editable.
+  // El .bin original queda como sourcePath.
+  const sourceExt = name.split(".").pop()?.toLowerCase() ?? "";
+    const EDITABLE_EXTS = ["docx", "txt", "xlsx"];
+
+  if (matterId && EDITABLE_EXTS.includes(sourceExt) && !encrypted) {
+    try {
+      const matterForExtract = await prisma.matter.findUnique({
+        where: { id: matterId },
+        select: { internalCode: true }
+      });
+
+      if (matterForExtract?.internalCode) {
+        const { extractTextFromBuffer } = await import("@/lib/writings/extract-text");
+        const { getStorageRoot } = await import("@/lib/storage/local");
+        const fsp = await import("node:fs/promises");
+        const nodePath = await import("node:path");
+
+        const storageRoot = getStorageRoot();
+
+        const extracted = await extractTextFromBuffer(raw, sourceExt);
+
+        const caseDir = nodePath.join(storageRoot, "matters", matterForExtract.internalCode);
+        await fsp.mkdir(caseDir, { recursive: true });
+
+        const baseName = name.replace(/\.[^.]+$/, "").replace(/[^a-zA-Z0-9_-]+/g, "_");
+        let fileName = `${matterForExtract.internalCode}-${baseName}.txt`;
+        let counter = 1;
+        while (true) {
+          try {
+            await fsp.access(nodePath.join(caseDir, fileName));
+            counter += 1;
+            fileName = `${matterForExtract.internalCode}-${baseName}-${counter}.txt`;
+          } catch {
+            break;
+          }
+        }
+
+        const fullTxtPath = nodePath.join(caseDir, fileName);
+        await fsp.writeFile(fullTxtPath, extracted, "utf-8");
+
+        sourcePathForTxt = nodePath.posix.join("matters", matterForExtract.internalCode, fileName);
+      }
+    } catch (err) {
+      console.error("Error extrayendo texto del DOCX/TXT:", err);
+    }
   }
 
   const archiveChecklistItemId =
@@ -174,8 +225,10 @@ export async function uploadDocument(formData: FormData) {
         typeof sourcePartyRaw === "string" && sourcePartyRaw.trim()
           ? sourcePartyRaw.trim()
           : null,
-      path,
-      mimeType: file.type || "application/octet-stream",
+      path: sourcePathForTxt ?? path,
+      mimeType: sourcePathForTxt ? "text/plain" : (file.type || "application/octet-stream"),
+      sourcePath: sourcePathForTxt ? path : null,
+      sourceMimeType: sourcePathForTxt ? (file.type || "application/octet-stream") : null,
       size: file.size,
       sha256: hash,
       encrypted,
@@ -184,7 +237,7 @@ export async function uploadDocument(formData: FormData) {
       authTag,
       tags,
       archiveChecklistItemId,
-      uploadedById: session.user.id
+      uploadedById: tenantUserId
     }
   });
 

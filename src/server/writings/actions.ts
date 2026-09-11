@@ -246,8 +246,13 @@ export async function getDocumentContent(documentId: string) {
   if (!doc) throw new Error("Documento no encontrado");
 
   let content = "";
-  if (doc.path && existsSync(doc.path)) {
-    content = readFileSync(doc.path, "utf-8");
+  if (doc.path) {
+    const { getStorageRoot } = await import("@/lib/storage/local");
+    const { join } = await import("node:path");
+    const absPath = join(getStorageRoot(), doc.path);
+    if (existsSync(absPath)) {
+      content = readFileSync(absPath, "utf-8");
+    }
   }
 
   return { content, name: doc.name };
@@ -270,14 +275,16 @@ export async function updateDocumentContent(input: {
   if (!doc) throw new Error("Documento no encontrado");
 
   // Si no hay path, crear uno
-  let filePath = doc.path;
+  const { getStorageRoot: _getRoot } = await import("@/lib/storage/local");
+  const storageRoot = _getRoot();
+  let filePath = doc.path ? join(storageRoot, doc.path) : null;
   if (!filePath) {
     const matter = await prisma.matter.findUnique({
       where: { id: doc.matterId! },
       select: { internalCode: true }
     });
     if (!matter) throw new Error("Caso no encontrado");
-    const matterDir = join(process.cwd(), "storage", "matters", matter.internalCode);
+    const matterDir = join(storageRoot, "matters", matter.internalCode);
     mkdirSync(matterDir, { recursive: true });
         filePath = join(matterDir, `${matter.internalCode}-${input.name.replace(/[^a-zA-Z0-9]/g, "_")}.txt`);
   }

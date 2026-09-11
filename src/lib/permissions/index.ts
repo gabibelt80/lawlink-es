@@ -163,3 +163,30 @@ export function assertManagerOrRole(role: UserRole, ...allowed: UserRole[]): voi
   if (allowed.includes(role)) return;
   throw new Error("Permisos insuficientes");
 }
+
+/**
+ * Resuelve el User.id del TENANT a partir de la sesión (que puede traer el id
+ * del FirmUser central). Prueba primero por id, después por email.
+ */
+export async function getTenantUserId(session: {
+  user: { id: string; email?: string | null };
+}): Promise<string> {
+  const { getTenantPrisma } = await import("@/lib/tenant-prisma");
+  const prisma = await getTenantPrisma();
+
+  const byId = await prisma.user.findUnique({
+    where: { id: session.user.id },
+    select: { id: true },
+  });
+  if (byId) return byId.id;
+
+  if (session.user.email) {
+    const byEmail = await prisma.user.findUnique({
+      where: { email: session.user.email },
+      select: { id: true },
+    });
+    if (byEmail) return byEmail.id;
+  }
+
+  throw new Error("Usuario no encontrado en el tenant");
+}

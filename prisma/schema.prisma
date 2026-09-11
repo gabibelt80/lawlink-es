@@ -1047,6 +1047,10 @@ model Document {
   size     Int?
   sha256   String?
 
+  // v0.50: Ruta y tipo del archivo original cuando el .txt extraido es editable
+  sourcePath     String?
+  sourceMimeType String?
+
   encrypted Boolean @default(false)
   algorithm String?
   iv        String?
