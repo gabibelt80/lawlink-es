@@ -13,6 +13,8 @@ import {
   Landmark,
   FileText,
   Tag,
+  AlertTriangle,
+  ExternalLink,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -37,8 +39,10 @@ type JurisprudenceItem = {
   fullText: string;
   court: string | null;
   jurisdiction: string | null;
+  fuero: string | null;
   date: Date | null;
   source: string | null;
+  sourceUrl: string | null;
   category: string | null;
   tags: string[];
   createdAt: Date;
@@ -118,6 +122,19 @@ export function JurisprudenceView({ items }: { items: JurisprudenceItem[] }) {
         </Button>
       </header>
 
+      {/* Aviso legal */}
+      <div className="flex items-start gap-2 rounded-md border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-xs text-amber-800">
+        <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
+        <div>
+          <p className="font-medium">Material de referencia</p>
+          <p className="mt-0.5 text-amber-700">
+            Este material es solo a modo de referencia y no constituye
+            asesoramiento legal. Verificá siempre el fallo original en la
+            fuente oficial antes de citarlo.
+          </p>
+        </div>
+      </div>
+
       <div className="relative">
         <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
         <Input
@@ -151,6 +168,11 @@ export function JurisprudenceView({ items }: { items: JurisprudenceItem[] }) {
                     </p>
                   )}
                   <div className="mt-2 flex flex-wrap items-center gap-2 text-[11px] text-muted-foreground">
+                    {item.fuero && (
+                      <Badge variant="outline" className="text-[10px] border-primary/30 text-primary">
+                        {item.fuero}
+                      </Badge>
+                    )}
                     {item.court && (
                       <span className="inline-flex items-center gap-1">
                         <Landmark className="h-3 w-3" />
@@ -196,6 +218,17 @@ export function JurisprudenceView({ items }: { items: JurisprudenceItem[] }) {
               {item.source && (
                 <p className="mt-2 text-[10px] text-muted-foreground">
                   Fuente: {item.source}
+                  {item.sourceUrl && (
+                    <a
+                      href={item.sourceUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="ml-2 inline-flex items-center gap-1 text-primary hover:underline"
+                    >
+                      Ver fallo original
+                      <ExternalLink className="h-3 w-3" />
+                    </a>
+                  )}
                 </p>
               )}
             </div>

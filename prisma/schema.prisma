@@ -591,8 +591,8 @@ model Matter {
   procedures       MatterProcedure[]
   parties          Party[]
   relatedEntities  RelatedEntity[]
-  linksFrom        MatterLink[]    @relation("MatterLinkFrom") // v0.32 Casos relacionados (este caso → caso relacionado)
-  linksTo          MatterLink[]    @relation("MatterLinkTo") // Inverso (caso relacionado → este caso)
+  linksFrom        MatterLink[]    @relation("MatterLinkFrom") // v0.32 Casos relacionados (este caso â†’ caso relacionado)
+  linksTo          MatterLink[]    @relation("MatterLinkTo") // Inverso (caso relacionado â†’ este caso)
   notes            Note[]
   tasks            Task[]
   documents        Document[]
@@ -825,7 +825,7 @@ model Deadline {
   @@index([dueAt, completed])
 }
 
-// v0.49: Reglas de plazos legales (PRD §veinte). Las reglas deben verificarse antes de incluirse en seed,
+// v0.49: Reglas de plazos legales (PRD Â§veinte). Las reglas deben verificarse antes de incluirse en seed,
 // verifiedAt vacio significa no verificado, la UI no lo muestra como "base legal".
 model DeadlineRule {
   id           String             @id @default(cuid())
@@ -884,7 +884,7 @@ model Party {
   standing  LitigationStanding?
   ordinal   Int                 @default(1)
   name      String
-  // v0.27: El tipo de parte determina los campos obligatorios (persona fisica → documento; empresa → codigo + representante + direccion)
+  // v0.27: El tipo de parte determina los campos obligatorios (persona fisica â†’ documento; empresa â†’ codigo + representante + direccion)
   partyType PartyType           @default(NATURAL_PERSON)
   idNumber  String?
   phone     String?
@@ -939,7 +939,7 @@ model RelatedEntity {
   @@index([name])
 }
 
-// v0.32: Casos relacionados (caso ↔ caso, registro direccional, se muestran bidireccionalmente)
+// v0.32: Casos relacionados (caso â†” caso, registro direccional, se muestran bidireccionalmente)
 model MatterLink {
   id              String   @id @default(cuid())
   matterId        String
@@ -1093,7 +1093,7 @@ model Document {
 
 // ============================================================
 // Flujo de solicitud de factura (v0.5)
-// El abogado solicita desde el detalle del caso → finanzas revisa → sube contrato escaneado + factura electronica
+// El abogado solicita desde el detalle del caso â†’ finanzas revisa â†’ sube contrato escaneado + factura electronica
 // ============================================================
 
 model InvoiceRequest {
@@ -1383,7 +1383,7 @@ model DocumentFolder {
 // v0.8: Flujo de aprobacion de sellos
 // ============================================================
 
-// Configuracion de tipos de sello (decision §12.9.2: approverRoles: Role[] multi-rol OR)
+// Configuracion de tipos de sello (decision Â§12.9.2: approverRoles: Role[] multi-rol OR)
 model SealTypeConfig {
   type             SealType   @id
   label            String // Nombre visible
@@ -1433,7 +1433,7 @@ model SealRequest {
 
   rejectedAt DateTime?
 
-  // Cadena de reenvio despues de rechazo (vieja → nueva)
+  // Cadena de reenvio despues de rechazo (vieja â†’ nueva)
   parentSealRequestId String?
   parentSealRequest   SealRequest?  @relation("SealResubmission", fields: [parentSealRequestId], references: [id])
   resubmissions       SealRequest[] @relation("SealResubmission")
@@ -1538,7 +1538,7 @@ enum PreservationStatus {
 }
 
 // ============================================================
-// v0.44: Reestructuracion de medidas cautelares en 3 capas (caso → sujeto → bien)
+// v0.44: Reestructuracion de medidas cautelares en 3 capas (caso â†’ sujeto â†’ bien)
 // v0.48: Eliminados modelos viejos Preservation / PreservationRenewal,
 //         los datos existentes se migraron en la migracion al modelo de 3 capas
 // ============================================================
@@ -1628,8 +1628,8 @@ model PreservationPropertyRenewal {
 // ============================================================
 
 enum ExpressDirection {
-  OUTBOUND // Enviado (estudio → tribunal / parte / contraparte)
-  INBOUND // Recibido (tribunal / parte → estudio)
+  OUTBOUND // Enviado (estudio â†’ tribunal / parte / contraparte)
+  INBOUND // Recibido (tribunal / parte â†’ estudio)
 }
 
 model ExpressTracking {
@@ -1762,7 +1762,7 @@ model FirmFile {
   @@index([supersededById])
 }
 
-// v0.27: Centro de servicios —— Anuncios del estudio (modelo independiente, anuncios fijados como banner superior)
+// v0.27: Centro de servicios â€”â€” Anuncios del estudio (modelo independiente, anuncios fijados como banner superior)
 model Announcement {
   id          String   @id @default(cuid())
   title       String
@@ -1781,7 +1781,7 @@ model Announcement {
   @@index([authorId, createdAt])
 }
 
-// v0.27: Centro de servicios —— Contactos externos (tribunales / escribanias / abogados de otros estudios, etc.)
+// v0.27: Centro de servicios â€”â€” Contactos externos (tribunales / escribanias / abogados de otros estudios, etc.)
 enum ExternalContactCategory {
   COURT       // Tribunal
   PROSECUTOR  // Fiscalia
@@ -1842,7 +1842,7 @@ model Firm {
   logoDataUrl String?
   active      Boolean  @default(true)
   plan        String   @default("trial")
-  planExpiresAt DateTime? // Fecha de vencimiento del trial
+  planExpiresAt DateTime?
   maxUsers    Int      @default(1)
   maxBranch   Int      @default(1)
   createdAt   DateTime @default(now())
@@ -1851,7 +1851,7 @@ model Firm {
   suspensionReason String?
   deletedAt      DateTime?
   deletedAtScheduled DateTime?
-    subscriptionStatus           String    @default("active") // active, past_due, canceled, suspended
+  subscriptionStatus           String    @default("active")
   subscriptionPeriodStart      DateTime?
   subscriptionPeriodEnd        DateTime?
   lastPaymentAt                DateTime?
@@ -1859,7 +1859,8 @@ model Firm {
   paymentProvider              String    @default("mercado_pago")
   paymentProviderCustomerId    String?
   paymentProviderSubscriptionId String?
-users FirmUser[]
+
+  users   FirmUser[]
 }
 
 model FirmUser {
@@ -1878,18 +1879,25 @@ model FirmUser {
   updatedAt    DateTime @updatedAt
 }
 model Jurisprudence {
-  id          String    @id @default(cuid())
-  title       String
-  summary     String?
-  fullText    String    @db.Text
-  court       String?
+  id           String    @id @default(cuid())
+  title        String
+  summary      String?
+  fullText     String    @db.Text
+  court        String?
   jurisdiction String?
-  date        DateTime?
-  source      String?
-  category    String?
-  tags        String[]  @default([])
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
-  createdById String?
-  matterId    String?
+  fuero        String?
+  date         DateTime?
+  source       String?
+  sourceUrl    String?
+  category     String?
+  tags         String[]  @default([])
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  createdById  String?
+  matterId     String?
+
+  @@index([fuero])
+  @@index([jurisdiction])
+  @@index([category])
+  @@index([date])
 }

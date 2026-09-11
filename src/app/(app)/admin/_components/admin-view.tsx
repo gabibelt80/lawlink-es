@@ -21,6 +21,7 @@ import {
   CreditCard,
   DollarSign,
   TrendingUp,
+  Scale,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -249,6 +250,15 @@ export function AdminView({
           >
             <Package className="h-3.5 w-3.5" />
             Configurar planes
+          </Button>
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => router.push("/admin/jurisprudence")}
+            className="gap-1.5"
+          >
+            <Scale className="h-3.5 w-3.5" />
+            Jurisprudencia
           </Button>
           <Button
             size="sm"
