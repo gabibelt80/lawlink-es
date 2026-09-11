@@ -1460,7 +1460,9 @@ function StageMaterialsPanel({
         }
         await uploadDocument(fd);
         toast.success("Material de etapa subido");
-        setOpen(false);
+        setPicked(null);
+        setCustomName("");
+        if (fileRef.current) fileRef.current.value = "";
         router.refresh();
       } catch (err) {
         toast.error("Error al subir", { description: err instanceof Error ? err.message : "" });
@@ -1528,7 +1530,21 @@ function StageMaterialsPanel({
           )}
         </div>
       ) : (
-        <ul className="mt-3 grid grid-cols-1 gap-1.5 xl:grid-cols-2">
+        <>
+          {canManage && (
+            <div className="mt-3 flex justify-end">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={openUploadDialog}
+                className="h-7 gap-1 px-2 text-[11px]"
+              >
+                <Upload className="h-3 w-3" />
+                Subir material
+              </Button>
+            </div>
+          )}
+          <ul className="mt-3 grid grid-cols-1 gap-1.5 xl:grid-cols-2">
           {documents.map((doc) => {
             const icon = iconForDocument(doc);
             const pUrl = documentPreviewUrl(doc);
@@ -1632,6 +1648,7 @@ function StageMaterialsPanel({
             );
           })}
         </ul>
+        </>
       )}
 
       <Dialog open={open} onOpenChange={setOpen}>
