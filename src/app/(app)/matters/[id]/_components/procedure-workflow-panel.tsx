@@ -1571,23 +1571,35 @@ function StageMaterialsPanel({
                   >
                     <Pencil className="h-3.5 w-3.5" />
                   </button>
-                  <button
-                    type="button"
-                    onClick={async () => {
-                      setWritingOpen(false);
-                      try {
-                        const { getDocumentContent } = await import("@/server/writings/actions");
-                        const result = await getDocumentContent(doc.id);
-                        setEditingDoc({ ...doc, content: result.content });
-                      } catch (err) {
-                        toast.error("Error al cargar", { description: err instanceof Error ? err.message : "" });
-                      }
-                    }}
-                    className="p-1 text-muted-foreground hover:text-primary"
-                    title="Ver documento"
-                  >
-                    <Eye className="h-3.5 w-3.5" />
-                  </button>
+                  {officePreviewKind(doc.mimeType, doc.name) ? (
+                    <button
+                      type="button"
+                      onClick={async () => {
+                        setWritingOpen(false);
+                        try {
+                          const { getDocumentContent } = await import("@/server/writings/actions");
+                          const result = await getDocumentContent(doc.id);
+                          setEditingDoc({ ...doc, content: result.content });
+                        } catch (err) {
+                          toast.error("Error al cargar", { description: err instanceof Error ? err.message : "" });
+                        }
+                      }}
+                      className="p-1 text-muted-foreground hover:text-primary"
+                      title="Ver documento"
+                    >
+                      <Eye className="h-3.5 w-3.5" />
+                    </button>
+                  ) : pUrl ? (
+                    <a
+                      href={pUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="p-1 text-muted-foreground hover:text-primary"
+                      title="Ver documento"
+                    >
+                      <Eye className="h-3.5 w-3.5" />
+                    </a>
+                  ) : null}
                   <a
                     href={`/api/documents/${doc.id}/download`}
                     target="_blank"

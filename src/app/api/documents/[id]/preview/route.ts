@@ -77,6 +77,20 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
     }
   }
 
+  // v1.0: PDFs, imágenes y texto van directo al visor del navegador
+  const mime = (doc.mimeType ?? "").toLowerCase();
+  const isPdf = mime === "application/pdf" || doc.name.toLowerCase().endsWith(".pdf");
+  const isImage = mime.startsWith("image/");
+  const isText = mime.startsWith("text/") || doc.name.toLowerCase().endsWith(".txt");
+
+  if (isPdf || isImage || isText) {
+    const url = new URL(req.url);
+    url.pathname = `/api/documents/${doc.id}/download`;
+    url.searchParams.set("inline", "1");
+    return NextResponse.redirect(url);
+  }
+
+  // DOCX/XLSX requieren conversión a HTML
   const kind = officePreviewKind(doc.mimeType, doc.name);
   if (!kind) {
     return NextResponse.json(

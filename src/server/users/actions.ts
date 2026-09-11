@@ -94,9 +94,17 @@ export async function createUser(input: UserCreateInput) {
   const existing = await prisma.user.findUnique({ where: { email: data.email } });
   if (existing) throw new Error("El email ya esta en uso");
 
+  // Verificar que el email no exista en la base central tampoco
+  const { prisma: centralPrisma } = await import("@/lib/prisma");
+  const existingFirmUser = await centralPrisma.firmUser.findUnique({
+    where: { email: data.email },
+  });
+  if (existingFirmUser) throw new Error("El email ya esta en uso");
+
   const passwordHash = await bcrypt.hash(data.password, 12);
   const calendarToken = newCalendarToken();
 
+  // 1. Crear User en el tenant
   const created = await prisma.user.create({
     data: {
       name: data.name,
@@ -107,6 +115,28 @@ export async function createUser(input: UserCreateInput) {
       active: true,
       calendarToken
     }
+  });
+
+  // 2. Crear FirmUser en la base central con el mismo ID
+  const firmSlug = (session.user as { firmSlug?: string }).firmSlug;
+  if (!firmSlug) throw new Error("No se encontró el estudio del usuario");
+
+  const firm = await centralPrisma.firm.findUnique({
+    where: { slug: firmSlug },
+    select: { id: true },
+  });
+  if (!firm) throw new Error("Estudio no encontrado");
+
+  await centralPrisma.firmUser.create({
+    data: {
+      id: created.id, // MISMO ID para que el calendario funcione
+      name: data.name,
+      email: data.email,
+      passwordHash,
+      phone: data.phone || null,
+      active: true,
+      firmId: firm.id,
+    },
   });
 
   await audit({

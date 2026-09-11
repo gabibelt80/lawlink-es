@@ -30,6 +30,7 @@ enum MatterCategory {
   COMMERCIAL_ARBITRATION // Arbitraje comercial
   CRIMINAL // Litigio penal
   ADMINISTRATIVE // Litigio administrativo
+  ADMINISTRATIVE_CLAIM // Reclamo administrativo previo (puede derivar a juicio o cerrarse)
   NON_LITIGATION // Proyecto no contencioso
   LEGAL_COUNSEL // Asesoria permanente
   SPECIAL_PROJECT // Proyecto legal especial
