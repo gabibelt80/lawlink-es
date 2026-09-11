@@ -1532,7 +1532,7 @@ function StageMaterialsPanel({
       ) : (
         <>
           {canManage && (
-            <div className="mt-3 flex justify-end">
+            <div className="mt-3 flex justify-center">
               <Button
                 variant="outline"
                 size="sm"
@@ -1570,23 +1570,25 @@ function StageMaterialsPanel({
                   </div>
                 </div>
                 <div className="flex shrink-0 items-center gap-1 opacity-0 transition-opacity group-hover:opacity-100">
-                  <button
-                    type="button"
-                    onClick={async () => {
-                      setWritingOpen(false);
-                      try {
-                        const { getDocumentContent } = await import("@/server/writings/actions");
-                        const result = await getDocumentContent(doc.id);
-                        setEditingDoc({ ...doc, content: result.content });
-                      } catch (err) {
-                        toast.error("Error al cargar", { description: err instanceof Error ? err.message : "" });
-                      }
-                    }}
-                    className="p-1 text-muted-foreground hover:text-primary"
-                    title="Editar"
-                  >
-                    <Pencil className="h-3.5 w-3.5" />
-                  </button>
+                  {isEditableDocument(doc) ? (
+                    <button
+                      type="button"
+                      onClick={async () => {
+                        setWritingOpen(false);
+                        try {
+                          const { getDocumentContent } = await import("@/server/writings/actions");
+                          const result = await getDocumentContent(doc.id);
+                          setEditingDoc({ ...doc, content: result.content });
+                        } catch (err) {
+                          toast.error("Error al cargar", { description: err instanceof Error ? err.message : "" });
+                        }
+                      }}
+                      className="p-1 text-muted-foreground hover:text-primary"
+                      title="Editar"
+                    >
+                      <Pencil className="h-3.5 w-3.5" />
+                    </button>
+                  ) : null}
                   {officePreviewKind(doc.mimeType, doc.name) ? (
                     <button
                       type="button"
@@ -2314,6 +2316,10 @@ function stageMaterialTag(stageName: string) {
   return `etapa:${stageName}`;
 }
 
+function isEditableDocument(doc: Pick<WorkflowDocument, "mimeType" | "name">): boolean {
+  const ext = doc.name.split(".").pop()?.toLowerCase() ?? "";
+  return ["doc", "docx", "txt", "xlsx"].includes(ext);
+}
 function documentMatchesStage(
   document: WorkflowDocument,
   stage: { id: string | null; name: string }
