@@ -17,7 +17,7 @@ const tenantClients = new Map<string, PrismaClient>();
  */
 export function getTenantPrisma(firmSlug: string): PrismaClient {
   if (!tenantClients.has(firmSlug)) {
-    const schema = `juridictas_${firmSlug}`;
+    const schema = `juridictas_${firmSlug.replace(/-/g, "_")}`;
     const baseUrl = process.env.DATABASE_URL!;
     const url = new URL(baseUrl);
     const tenantUrl = `postgresql://${url.username}:${url.password}@${url.hostname}:${url.port}/juridictas?schema=${schema}&connection_limit=5`;
@@ -37,7 +37,7 @@ export function getTenantPrisma(firmSlug: string): PrismaClient {
  * Crea un nuevo schema para un estudio recién registrado.
  */
 export async function createTenantSchema(firmSlug: string): Promise<void> {
-  const schema = `juridictas_${firmSlug}`;
+  const schema = `juridictas_${firmSlug.replace(/-/g, "_")}`;
   const baseUrl = process.env.DATABASE_URL!;
   const url = new URL(baseUrl);
   const client = new Client({
@@ -56,7 +56,7 @@ export async function createTenantSchema(firmSlug: string): Promise<void> {
  * Elimina el schema de un estudio (para cancelación de suscripción).
  */
 export async function dropTenantSchema(firmSlug: string): Promise<void> {
-  const schema = `juridictas_${firmSlug}`;
+  const schema = `juridictas_${firmSlug.replace(/-/g, "_")}`;
   const baseUrl = process.env.DATABASE_URL!;
   const url = new URL(baseUrl);
   const client = new Client({
@@ -187,24 +187,29 @@ async function syncTenantEnums(schema: string): Promise<void> {
  * Aplica las migraciones al schema del estudio recién creado.
  */
 export async function migrateTenantSchema(firmSlug: string): Promise<void> {
-  const schema = `juridictas_${firmSlug}`;
+  const schema = `juridictas_${firmSlug.replace(/-/g, "_")}`;
   const baseUrl = process.env.DATABASE_URL!;
   const url = new URL(baseUrl);
   const tenantUrl = `postgresql://${url.username}:${url.password}@${url.hostname}:${url.port}/juridictas?schema=${schema}`;
   const { exec } = await import("child_process");
   await new Promise((resolve, reject) => {
     exec(
-      `npx prisma db push --schema prisma/schema.prisma --skip-generate --accept-data-loss`,
+      `npx prisma migrate deploy --schema prisma/schema.prisma`,
       {
         env: { ...process.env, DATABASE_URL: tenantUrl },
       },
-      (err, stdout) => {
-        if (err) reject(err);
-        else resolve(stdout);
+      (err, stdout, stderr) => {
+        if (err) {
+          console.error("[tenant] migrate deploy falló:", stderr);
+          reject(err);
+        } else {
+          console.log("[tenant] migrate deploy OK:", stdout);
+          resolve(stdout);
+        }
       }
     );
   });
 
-  // Después del db push, sincronizar valores de enums que Prisma no agrega
+  // Sincronizar valores de enums que Prisma no agrega en migraciones
   await syncTenantEnums(schema);
 }

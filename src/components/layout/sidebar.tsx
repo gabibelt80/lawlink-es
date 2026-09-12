@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useAppSession } from "@/lib/auth/use-app-session";
-import { Scale, LayoutDashboard, Package, Activity } from "lucide-react";
+import { Scale, LayoutDashboard, Package, Activity, Boxes } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { primaryNav, secondaryNav, filterNavByModules, type NavItem } from "./nav-config";
 import type { ModuleKey } from "@/lib/modules";
@@ -48,6 +48,7 @@ export function NavContent({ firm }: { firm: FirmBrand }) {
     ? [
         { label: "Panel de administración", href: "/admin", icon: LayoutDashboard },
         { label: "Planes y precios", href: "/admin/plans", icon: Package },
+        { label: "Módulos", href: "/admin/modules", icon: Boxes },
         { label: "Analíticas", href: "/admin/analytics", icon: Activity },
       ]
     : filteredPrimary;
