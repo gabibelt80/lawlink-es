@@ -33,7 +33,7 @@ export const primaryNav: NavItem[] = [
   { label: "Agenda", href: "/schedule", icon: Calendar },
   { label: "Aprobaciones", href: "/approvals/seals", icon: ClipboardCheck },
   { label: "Jurisprudencia", href: "/jurisprudence", icon: Scale, module: "JURISPRUDENCE" },
-  { label: "Agentes IA", href: "/agents/jurisprudence", icon: Activity, module: "IA" },
+  { label: "Agentes IA", href: "/agents", icon: Activity, module: "IA" },
 ];
 
 export const secondaryNav: NavItem[] = [

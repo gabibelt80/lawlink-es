@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useEditor, EditorContent, Extension } from "@tiptap/react";
 import { StarterKit } from "@tiptap/starter-kit";
 import { Underline } from "@tiptap/extension-underline";
@@ -122,6 +122,7 @@ export function WritingEditor({
   isPending,
 }: WritingEditorProps) {
   const [title, setTitle] = useState(initialTitle);
+  const [iaEnabled, setIaEnabled] = useState(false);
   const [chatOpen, setChatOpen] = useState(false);
   const [chatMessages, setChatMessages] = useState<{ role: "user" | "assistant"; content: string }[]>([]);
   const [chatInput, setChatInput] = useState("");
@@ -162,6 +163,21 @@ export function WritingEditor({
   });
 
   if (!open) return null;
+
+  useEffect(() => {
+    let cancelled = false;
+    import("@/server/settings/modules-actions")
+      .then((m) => m.getModuleEnabled("IA"))
+      .then((enabled) => {
+        if (!cancelled) setIaEnabled(enabled);
+      })
+      .catch(() => {
+        if (!cancelled) setIaEnabled(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   function handleSave() {
     if (!editor) return;
@@ -338,15 +354,17 @@ export function WritingEditor({
 
         <ToolbarDivider />
 
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => setChatOpen(!chatOpen)}
-          className="h-7 gap-1 px-2 text-[11px]"
-        >
-          <MessageSquare className="h-3.5 w-3.5" />
-          IA
-        </Button>
+        {iaEnabled && (
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setChatOpen(!chatOpen)}
+            className="h-7 gap-1 px-2 text-[11px]"
+          >
+            <MessageSquare className="h-3.5 w-3.5" />
+            IA
+          </Button>
+        )}
 
         <ToolbarDivider />
 
@@ -529,7 +547,7 @@ export function WritingEditor({
         </div>
 
         {/* Chat IA lateral */}
-        {chatOpen && (
+        {chatOpen && iaEnabled && (
           <div className="flex w-80 shrink-0 flex-col border-l border-border bg-white">
             <div className="flex items-center justify-between border-b border-border px-3 py-2">
               <span className="text-xs font-medium">Asistente IA</span>

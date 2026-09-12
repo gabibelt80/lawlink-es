@@ -6,6 +6,7 @@ import { aiChat, AiNotConfiguredError } from "@/lib/ai/client";
 import { readFileSync, existsSync } from "node:fs";
 import { join } from "node:path";
 import { getTenantPrisma } from "@/lib/tenant-prisma";
+import { requireModule } from "@/lib/auth/modules";
 
 export async function chatWithCase(input: {
   matterId: string;
@@ -14,6 +15,7 @@ export async function chatWithCase(input: {
   message: string;
 }) {
   await requireSession();
+  await requireModule("IA");
 
   const prisma = await getTenantPrisma();
   const aiSettings = await getAiSettings();
