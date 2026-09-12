@@ -1866,6 +1866,8 @@ model Firm {
   paymentProviderSubscriptionId String?
 
   users   FirmUser[]
+  moduleSubscriptions FirmModuleSubscription[]
+  enabledBaseModules  Json @default("[]")
 }
 
 model FirmUser {
@@ -1905,4 +1907,35 @@ model Jurisprudence {
   @@index([jurisdiction])
   @@index([category])
   @@index([date])
+}
+model ModuleConfig {
+  key         String   @id
+  label       String
+  description String?
+  price       Decimal  @db.Decimal(10, 2) @default(0)
+  premium     Boolean  @default(false)
+  enabled     Boolean  @default(true)
+  sortOrder   Int      @default(0)
+  updatedAt   DateTime @updatedAt
+}
+
+model FirmModuleSubscription {
+  id                     String    @id @default(cuid())
+  firmId                 String
+  firm                   Firm      @relation(fields: [firmId], references: [id], onDelete: Cascade)
+  moduleKey              String
+  active                 Boolean   @default(false)
+  autoRenew              Boolean   @default(true)
+  status                 String    @default("pending")
+  currentPeriodStart     DateTime?
+  currentPeriodEnd       DateTime?
+  lastPaymentAt          DateTime?
+  lastPaymentAmount      Decimal?  @db.Decimal(10, 2)
+  providerSubscriptionId String?   @unique
+  createdAt              DateTime  @default(now())
+  updatedAt              DateTime  @updatedAt
+
+  @@unique([firmId, moduleKey])
+  @@index([firmId])
+  @@index([status])
 }

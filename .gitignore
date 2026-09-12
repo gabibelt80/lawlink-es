@@ -54,3 +54,6 @@ outputs/
 escritos/
 ecosystem.config.js
 start.sh
+
+# Backup local de migraciones (no subir)
+prisma/migrations_backup_*/
