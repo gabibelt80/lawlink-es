@@ -33,6 +33,95 @@ export default async function IntakeDetailPage({ params }: PageProps) {
     select: { id: true, name: true }
   });
 
+  // Datos para el sheet de correccion
+  const [clients, colleagues] = await Promise.all([
+    prisma.client.findMany({
+      where: { deletedAt: null },
+      select: { id: true, name: true, type: true },
+      orderBy: { name: "asc" },
+    }),
+    prisma.user.findMany({
+      where: { active: true },
+      select: { id: true, name: true, role: true },
+      orderBy: { name: "asc" },
+    }),
+  ]);
+
+  const initialValues = {
+    title: intake.title ?? "",
+    category: intake.category,
+    causeId: intake.causeId ?? "",
+    causeFreeText: intake.causeFreeText ?? "",
+    description: intake.description ?? "",
+    receivedAt: intake.receivedAt,
+    firstProcedureType: intake.firstProcedureType ?? undefined,
+    firstAgency: intake.firstAgency ?? "",
+    jurisdiction: intake.jurisdiction ?? "",
+    ourStanding: intake.ourStanding ?? undefined,
+    claimAmount: intake.claimAmount ? Number(intake.claimAmount) : undefined,
+    claimDescription: intake.claimDescription ?? "",
+    barFiling: intake.barFiling ?? undefined,
+    counterclaim: intake.counterclaim ?? false,
+    clientId: intake.clientId ?? "",
+    clientName: intake.client?.name ?? "",
+    clientType: intake.clientType ?? "INDIVIDUAL",
+    contactName: intake.contactName ?? "",
+    contactPhone: intake.contactPhone ?? "",
+    clientIdNumber: intake.client?.idNumber ?? "",
+    clientAddress: intake.client?.address ?? "",
+    clientLegalRep: intake.client?.legalRep ?? "",
+    feeType: intake.feeType ?? undefined,
+    feeAmount: intake.feeAmount ? Number(intake.feeAmount) : undefined,
+    contingencyTerms: intake.contingencyTerms ?? "",
+    feeSchedule: intake.feeSchedule ?? "",
+    feeNote: intake.feeNote ?? "",
+    ownerUserId: intake.ownerUserId ?? "",
+    coUserIds: intake.coUserIds ?? [],
+    parties: [
+      ...(intake.client
+        ? [
+            {
+              role: "CLIENT_PARTY" as const,
+              standing: intake.ourStanding ?? undefined,
+              ordinal: 1,
+              partyType:
+                intake.client.type === "INDIVIDUAL"
+                  ? ("NATURAL_PERSON" as const)
+                  : intake.client.type === "COMPANY"
+                    ? ("COMPANY" as const)
+                    : ("OTHER_ORG" as const),
+              name: intake.client.name,
+              idNumber:
+                intake.client.type === "INDIVIDUAL" ? (intake.client.idNumber ?? "") : "",
+              enterpriseSocialCode:
+                intake.client.type === "INDIVIDUAL" ? "" : (intake.client.idNumber ?? ""),
+              enterpriseName: intake.client.type === "INDIVIDUAL" ? "" : intake.client.name,
+              phone: intake.client.phone ?? "",
+              address: intake.client.address ?? "",
+              legalRep: intake.client.legalRep ?? "",
+              contactName: intake.contactName ?? "",
+              notes: "",
+            },
+          ]
+        : []),
+      ...intake.parties.map((p) => ({
+        role: p.role,
+        standing: p.standing ?? undefined,
+        ordinal: p.ordinal,
+        partyType: p.partyType,
+        name: p.name,
+        idNumber: p.idNumber ?? "",
+        enterpriseSocialCode: p.enterpriseSocialCode ?? "",
+        enterpriseName: p.enterpriseName ?? "",
+        phone: p.phone ?? "",
+        address: p.address ?? "",
+        legalRep: p.legalRep ?? "",
+        contactName: p.contactName ?? "",
+        notes: p.notes ?? "",
+      })),
+    ],
+  };
+
   // Obtener el detalle del Matter correspondiente a cada hit (número / nombre / Causa / Titular / Rol de la parte)
   let latestCheck: Parameters<typeof ConflictSection>[0]["latestCheck"] = null;
   if (latestCheckRaw) {
@@ -168,7 +257,16 @@ export default async function IntakeDetailPage({ params }: PageProps) {
           </div>
 
           {intake.status !== "CONVERTED" && intake.status !== "DECLINED" && (
-            <IntakeActions intakeId={intake.id} status={intake.status} category={intake.category} />
+            <IntakeActions
+              intakeId={intake.id}
+              status={intake.status}
+              category={intake.category}
+              createdById={intake.createdById}
+              ownerUserId={intake.ownerUserId}
+              clientOptions={clients}
+              colleagues={colleagues}
+              initialValues={initialValues}
+            />
           )}
         </div>
 

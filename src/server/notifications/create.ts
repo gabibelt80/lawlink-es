@@ -1,6 +1,6 @@
-﻿// å†…éƒ¨ helperï¼šä»…ä¾› server action / cron è°ƒç”¨ï¼Œä¸åšé‰´æƒã€‚
-// ä¸èƒ½æ ‡ "use server"ï¼Œå¦åˆ™ä»»ä½•Clienteç«¯å¯ç›´æŽ¥è°ƒç”¨ç»™ä»»æ„ç”¨æˆ·ä¼ªé€ Notificacionesã€‚
-import { prisma } from "@/lib/prisma";
+﻿// Helper interno: solo lo llaman server actions / cron. No lleva "use server"
+// porque cualquier cliente podría invocarlo para crear notificaciones a usuarios arbitrarios.
+import { getTenantPrisma } from "@/lib/tenant-prisma";
 import type { NotificationPriority, NotificationType } from "@prisma/client";
 
 type CreateNotificationInput = {
@@ -14,8 +14,9 @@ type CreateNotificationInput = {
   refId?: string;
 };
 
-/** é€šç”¨NotificacionesCrear helperï¼Œè¢«å…¶ä»– server action è°ƒç”¨ */
+/** Helper generico para crear notificaciones, llamado por otras server actions. */
 export async function createNotification(input: CreateNotificationInput) {
+  const prisma = await getTenantPrisma();
   return prisma.notification.create({
     data: {
       userId: input.userId,
@@ -29,5 +30,3 @@ export async function createNotification(input: CreateNotificationInput) {
     },
   });
 }
-
-

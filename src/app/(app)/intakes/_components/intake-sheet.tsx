@@ -77,7 +77,7 @@ import {
   suggestHandlingAgency
 } from "@/lib/procedures-by-category";
 import { intakeCreateSchema, type IntakeCreateInput } from "@/server/intakes/schemas";
-import { createIntake } from "@/server/intakes/actions";
+import { createIntake, updateIntake } from "@/server/intakes/actions";
 import { uploadDocument } from "@/server/documents/actions";
 import { parsePleading } from "@/server/ai/parse-pleading";
 import {
@@ -206,12 +206,16 @@ export function IntakeSheet({
   open,
   onOpenChange,
   clientOptions,
-  colleagues
+  colleagues,
+  intakeId,
+  initialValues
 }: {
   open: boolean;
   onOpenChange: (o: boolean) => void;
   clientOptions: ClientOption[];
   colleagues: Colleague[];
+  intakeId?: string;
+  initialValues?: Partial<IntakeCreateInput>;
 }) {
   const router = useRouter();
   const { session } = useAppSession();
@@ -232,7 +236,11 @@ export function IntakeSheet({
 
   const methods = useForm<IntakeCreateInput>({
     resolver: zodResolver(intakeCreateSchema),
-    defaultValues: { ...defaults, ownerUserId: session?.user?.id ?? "" }
+    defaultValues: {
+      ...defaults,
+      ...(initialValues ?? {}),
+      ownerUserId: initialValues?.ownerUserId ?? session?.user?.id ?? "",
+    }
   });
   const {
     register,
@@ -388,6 +396,20 @@ export function IntakeSheet({
 
   async function performSubmit(values: IntakeCreateInput) {
     try {
+      // Modo edición: corregir intake existente
+      if (intakeId) {
+        await updateIntake({ ...values, id: intakeId });
+        toast.success("Admisión corregida y reenviada a aprobación");
+        reset({ ...defaults, ownerUserId: session?.user?.id ?? "" });
+        setTitleTouched(false);
+        setCauseName("");
+        setContracts([]);
+        onOpenChange(false);
+        router.refresh();
+        return;
+      }
+
+      // Modo creación: flujo actual
       const res = await createIntake(values);
       if (contracts.length > 0 && res.id) {
         for (const file of contracts) {
@@ -621,8 +643,11 @@ export function IntakeSheet({
     }
   }
 
-  // 主办 / 协办 / 律协备案 / 反诉 字段（多处复用）
   function leadField() {
+    // Abogado a cargo: solo ADMIN, PRINCIPAL_LAWYER o LAWYER
+    const lawyerColleagues = colleagues.filter(
+      (u) => u.role === "ADMIN" || u.role === "PRINCIPAL_LAWYER" || u.role === "LAWYER"
+    );
     return (
       <Field label="Abogado a cargo" required>
         <Select
@@ -633,7 +658,7 @@ export function IntakeSheet({
             <SelectValue placeholder="Seleccionar abogado a cargo" />
           </SelectTrigger>
           <SelectContent>
-            {colleagues.map((u) => (
+            {lawyerColleagues.map((u) => (
               <SelectItem key={u.id} value={u.id}>
                 {u.name}
               </SelectItem>
@@ -961,14 +986,14 @@ export function IntakeSheet({
             <div className="flex flex-wrap items-start justify-between gap-4">
               <div className="min-w-0">
                 <DialogTitle className="text-[17px] font-semibold leading-6 tracking-tight text-foreground">
-                  Nuevo registro de admisión
+  {intakeId ? "Corregir admisión" : "Nuevo registro de admisión"}
                 </DialogTitle>
                 <DialogDescription className="mt-0.5 text-[12px] leading-5 text-muted-foreground">
                   El caso comienza aquí su ciclo de vida
                 </DialogDescription>
               </div>
               <span className="rounded-full border border-primary/20 bg-primary/10 px-2.5 py-0.5 text-[11px] font-medium text-primary">
-                Pendiente de aprobación
+  {intakeId ? "Reenviando a aprobación" : "Pendiente de aprobación"}
               </span>
             </div>
           </div>
@@ -1553,11 +1578,11 @@ export function IntakeSheet({
             >
               Cancelar
             </Button>
-            <Button type="submit" disabled={isPending} className="h-8 rounded-full gap-2 px-5 text-[12.5px]">
-              {isPending && <Loader2 className="h-4 w-4 animate-spin" />}
-              Enviar a aprobación
-              <ChevronRight className="h-4 w-4" strokeWidth={2} />
-            </Button>
+<Button type="submit" disabled={isPending} className="h-8 rounded-full gap-2 px-5 text-[12.5px]">
+  {isPending && <Loader2 className="h-4 w-4 animate-spin" />}
+  {intakeId ? "Guardar y reenviar" : "Enviar a aprobación"}
+  <ChevronRight className="h-4 w-4" strokeWidth={2} />
+</Button>
           </DialogFooter>
         </form>
         </FormProvider>

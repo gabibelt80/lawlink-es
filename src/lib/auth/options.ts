@@ -54,19 +54,35 @@ export const authOptions: NextAuthOptions = {
         const ok = await compare(password, firmUser.passwordHash);
         if (!ok) return null;
 
-        const isSystemAdmin = firmUser.firmId === null;
+    const isSystemAdmin = firmUser.firmId === null;
 
-        return {
-          id: firmUser.id,
-          email: firmUser.email,
-          name: firmUser.name,
-          role: isSystemAdmin ? "SYSTEM_ADMIN" : "ADMIN",
-          firmId: firmUser.firmId,
-          firmSlug: firmUser.firm?.slug ?? "",
-          firmName: firmUser.firm?.name ?? "",
-          isSystemAdmin,
-          avatar: firmUser.avatar,
-        };
+    // Buscar el rol real en el User del tenant (schema del firm)
+    let role: string = isSystemAdmin ? "SYSTEM_ADMIN" : "LAWYER";
+    if (!isSystemAdmin && firmUser.firm) {
+      const { getTenantPrismaSync } = await import("@/lib/tenant-prisma");
+      try {
+        const tenantPrisma = getTenantPrismaSync(firmUser.firm.slug);
+        const tenantUser = await tenantPrisma.user.findUnique({
+          where: { email: firmUser.email },
+          select: { role: true },
+        });
+        if (tenantUser?.role) role = tenantUser.role;
+      } catch {
+        // Si falla, cae al default LAWYER
+      }
+    }
+
+    return {
+      id: firmUser.id,
+      email: firmUser.email,
+      name: firmUser.name,
+      role,
+      firmId: firmUser.firmId,
+      firmSlug: firmUser.firm?.slug ?? "",
+      firmName: firmUser.firm?.name ?? "",
+      isSystemAdmin,
+      avatar: firmUser.avatar,
+    };
       },
     }),
   ],

@@ -18,7 +18,7 @@ function isPublicPath(pathname: string): boolean {
   );
 }
 
-export default function proxy(request: NextRequest) {
+export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   const sessionCookie =
@@ -45,3 +45,5 @@ export const config = {
     "/((?!api/auth|api/health|api/calendar|api/billing|_next|favicon.ico|favicon.svg|apple-touch-icon.png|web-app-manifest|site.webmanifest|brand|file-icons|.*\\.(?:png|jpg|jpeg|svg|gif|webp|ico|json|xml|txt|webmanifest)).*)",
   ],
 };
+
+export default proxy;

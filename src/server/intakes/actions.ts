@@ -17,7 +17,7 @@ import {
   type DeclineIntakeInput
 } from "./schemas";
 import { seedDefaultFolders } from "@/lib/default-folders";
-import { notifyRoleApprovers } from "@/server/notifications/approval";
+import { notifyRoleApprovers, notifyDirectApprovers } from "@/server/notifications/approval";
 import { assertCauseAllowedForSelection } from "@/server/causes/validation";
 
 function emptyToNull<T extends Record<string, unknown>>(obj: T): T {
@@ -535,6 +535,31 @@ export async function markIntakeNeedsRevision(input: { id: string; reason: strin
     }
   });
 
+  // Notificar al creador y al dueño del intake
+  const intake = await prisma.intake.findUnique({
+    where: { id: input.id },
+    select: { title: true, createdById: true, ownerUserId: true }
+  });
+
+  if (intake) {
+    const userIds = Array.from(
+      new Set(
+        [intake.createdById, intake.ownerUserId].filter((x): x is string => Boolean(x))
+      )
+    );
+
+    await notifyDirectApprovers({
+      userIds,
+      excludeUserId: session.user.id,
+      title: "Tu admisión requiere corrección",
+      content: `Motivo: ${input.reason}`,
+      href: `/intakes/${input.id}`,
+      refType: "Intake",
+      refId: input.id,
+      priority: "HIGH"
+    });
+  }
+
   await audit({
     userId: session.user.id,
     action: "INTAKE_NEEDS_REVISION",
@@ -548,7 +573,173 @@ export async function markIntakeNeedsRevision(input: { id: string; reason: strin
   revalidatePath("/matters");
   return { ok: true };
 }
+export async function updateIntake(input: IntakeCreateInput & { id: string }) {
+  const prisma = await getTenantPrisma();
+  const session = await requireSession();
 
+  const intake = await prisma.intake.findUnique({
+    where: { id: input.id },
+    select: { id: true, status: true, title: true, createdById: true, ownerUserId: true },
+  });
+  if (!intake) throw new Error("Admisión no encontrada");
+  if (intake.status !== "NEEDS_REVISION") {
+    throw new Error("Solo se pueden corregir admisiones en estado Pendiente de corrección");
+  }
+  // Solo el creador o el dueño pueden corregir (o un ADMIN/PRINCIPAL_LAWYER)
+  const isOwner = intake.createdById === session.user.id || intake.ownerUserId === session.user.id;
+  const isApprover = session.user.role === "ADMIN" || session.user.role === "PRINCIPAL_LAWYER";
+  if (!isOwner && !isApprover) {
+    throw new Error("Solo el creador o el abogado a cargo pueden corregir esta admisión");
+  }
+
+  const data = intakeCreateSchema.parse(input);
+  assertAgencyAllowedForProcedure(data.firstAgency, data.firstProcedureType);
+  await assertCauseAllowedForSelection({
+    causeId: data.causeId,
+    category: data.category,
+    procedureType: data.firstProcedureType,
+  });
+
+  // Actualizar cliente si cambió
+  let resolvedClientId: string | null = data.clientId || null;
+  let resolvedClientName: string | null = null;
+
+  if (!resolvedClientId && data.clientName && data.clientName.trim()) {
+    const name = data.clientName.trim();
+    const newClient = await prisma.client.create({
+      data: {
+        name,
+        type: data.clientType ?? "INDIVIDUAL",
+        idNumber: data.clientIdNumber || null,
+        address: data.clientAddress || null,
+        legalRep: data.clientLegalRep || null,
+        phone: data.contactPhone || null,
+        tags: [],
+      },
+    });
+    resolvedClientId = newClient.id;
+    resolvedClientName = name;
+  } else if (resolvedClientId) {
+    const c = await prisma.client.findUnique({
+      where: { id: resolvedClientId },
+      select: { name: true },
+    });
+    resolvedClientName = c?.name ?? null;
+  }
+
+  let causeName: string | null = data.causeFreeText || null;
+  if (data.causeId) {
+    const cause = await prisma.causeOfAction.findUnique({
+      where: { id: data.causeId },
+      select: { name: true },
+    });
+    causeName = cause?.name ?? causeName;
+  }
+
+  const opposingNames = data.parties
+    .filter((p) => p.role === "OPPOSING_PARTY")
+    .map((p) => p.name)
+    .filter(Boolean);
+
+  const finalTitle =
+    data.title && data.title.trim()
+      ? data.title.trim()
+      : generateTitle(resolvedClientName, opposingNames, causeName);
+
+  await prisma.$transaction(async (tx) => {
+    // Borrar partes existentes y volver a crear
+    await tx.party.deleteMany({ where: { intakeId: input.id } });
+
+    await tx.intake.update({
+      where: { id: input.id },
+      data: {
+        title: finalTitle,
+        category: data.category,
+        causeId: data.causeId || null,
+        causeFreeText: data.causeFreeText || null,
+        description: data.description || null,
+        clientId: resolvedClientId,
+        clientType: data.clientType ?? null,
+        contactName: data.contactName?.trim() || null,
+        contactPhone: data.contactPhone?.trim() || null,
+
+        firstProcedureType: data.firstProcedureType ?? null,
+        firstAgency: data.firstAgency?.trim() || null,
+        jurisdiction: normalizeJurisdictionForAgency(data.firstAgency, data.jurisdiction),
+        ourStanding: data.ourStanding ?? null,
+        claimAmount: data.claimAmount ?? null,
+        claimDescription: data.claimDescription?.trim() || null,
+        barFiling: data.barFiling ?? null,
+        counterclaim: data.counterclaim ?? false,
+
+        businessType: data.businessType?.trim() || null,
+        serviceScope: data.serviceScope?.trim() || null,
+        deliverables: data.deliverables?.trim() || null,
+        counselType: data.counselType?.trim() || null,
+        serviceStart: data.serviceStart ?? null,
+        serviceEnd: data.serviceEnd ?? null,
+
+        feeType: data.feeType ?? null,
+        feeAmount: data.feeAmount ?? null,
+        contingencyTerms: data.contingencyTerms?.trim() || null,
+        feeSchedule: data.feeSchedule?.trim() || null,
+        feeNote: data.feeNote?.trim() || null,
+
+        ownerUserId: data.ownerUserId || session.user.id,
+        coUserIds: data.coUserIds,
+
+        // Pasa a pendiente de aprobación directamente
+        status: "PENDING_CONFIRMATION",
+        declinedReason: null,
+
+        parties: {
+          create: data.parties.map((p) =>
+            emptyToNull({
+              role: p.role,
+              standing: p.standing ?? null,
+              ordinal: p.ordinal,
+              name: p.name,
+              partyType: p.partyType,
+              idNumber: p.idNumber,
+              phone: p.phone,
+              address: p.address,
+              legalRep: p.legalRep,
+              contactName: p.contactName,
+              enterpriseSocialCode: p.enterpriseSocialCode,
+              enterpriseName: p.enterpriseName,
+              notes: p.notes,
+            })
+          ),
+        },
+      },
+    });
+  });
+
+  await audit({
+    userId: session.user.id,
+    action: "INTAKE_UPDATE_RESUBMIT",
+    targetType: "Intake",
+    targetId: input.id,
+    detail: { title: finalTitle },
+  });
+
+  await notifyRoleApprovers({
+    roles: ["ADMIN", "PRINCIPAL_LAWYER"],
+    excludeUserId: session.user.id,
+    title: "Admisión corregida y reenviada",
+    content: `${session.user.name ?? "Un usuario"} corrigió y reenvió: ${finalTitle}`,
+    href: `/intakes/${input.id}`,
+    refType: "Intake",
+    refId: input.id,
+    priority: "HIGH",
+  });
+
+  revalidatePath("/intakes");
+  revalidatePath(`/intakes/${input.id}`);
+  revalidatePath("/matters");
+
+  return { ok: true, id: input.id };
+}
 export async function resubmitIntake(id: string) {
   const prisma = await getTenantPrisma();
   const session = await requireSession();

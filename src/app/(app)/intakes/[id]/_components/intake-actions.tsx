@@ -1,6 +1,9 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { IntakeSheet } from "@/app/(app)/intakes/_components/intake-sheet";
+import type { ClientOption } from "@/app/(app)/matters/_components/matters-view";
+import type { UserRole } from "@prisma/client";
 import { useRouter } from "next/navigation";
 import { useAppSession } from "@/lib/auth/use-app-session";
 import { toast } from "sonner";
@@ -28,12 +31,23 @@ import { matterHref } from "@/lib/matters/route";
 export function IntakeActions({
   intakeId,
   status,
-  category
+  category,
+  createdById,
+  ownerUserId,
+  initialValues,
+  clientOptions,
+  colleagues
 }: {
   intakeId: string;
   status?: IntakeStatus;
   category?: string;
+  createdById?: string;
+  ownerUserId?: string | null;
+  initialValues?: Record<string, unknown>;
+  clientOptions?: ClientOption[];
+  colleagues?: { id: string; name: string; role: UserRole }[];
 }) {
+  const [editOpen, setEditOpen] = useState(false);
   const router = useRouter();
   const { session } = useAppSession();
   const [isPending, startTransition] = useTransition();
@@ -61,21 +75,70 @@ export function IntakeActions({
   }
 
   if (status === "NEEDS_REVISION") {
-    return (
-      <div className="flex items-center gap-2">
+    const userId = session?.user?.id;
+    const isCreator = userId === createdById || userId === ownerUserId;
+    const canEdit = isCreator && clientOptions && colleagues;
+
+    if (!isCreator && canApprove) {
+      // Supervisor: esperando que el creador corrija
+      return (
         <div className="inline-flex items-center gap-1.5 rounded-md border border-amber-500/40 bg-amber-500/10 px-3 py-1.5 text-xs text-amber-700">
           <AlertCircle className="h-3.5 w-3.5" />
-          Pendiente de corrección: después de completar los materiales podés reenviar
+          Esperando que el creador corrija y reenvíe
         </div>
-        <Button size="sm" onClick={handleResubmit} disabled={isPending} className="gap-1.5">
-          {isPending ? (
-            <Loader2 className="h-3.5 w-3.5 animate-spin" />
+      );
+    }
+
+    if (!isCreator) {
+      // Cualquier otro: sin acción
+      return (
+        <div className="inline-flex items-center gap-1.5 rounded-md border border-border bg-muted/30 px-3 py-1.5 text-xs text-muted-foreground">
+          <Clock className="h-3.5 w-3.5" />
+          Pendiente de corrección por el creador
+        </div>
+      );
+    }
+
+    return (
+      <>
+        <div className="flex items-center gap-2">
+          <div className="inline-flex items-center gap-1.5 rounded-md border border-amber-500/40 bg-amber-500/10 px-3 py-1.5 text-xs text-amber-700">
+            <AlertCircle className="h-3.5 w-3.5" />
+            Pendiente de corrección: revisá los materiales y reenviá
+          </div>
+          {canEdit ? (
+            <Button
+              size="sm"
+              onClick={() => setEditOpen(true)}
+              disabled={isPending}
+              className="gap-1.5"
+            >
+              <RotateCcw className="h-3.5 w-3.5" />
+              Corregir y reenviar
+            </Button>
           ) : (
-            <RotateCcw className="h-3.5 w-3.5" />
+            <Button size="sm" onClick={handleResubmit} disabled={isPending} className="gap-1.5">
+              {isPending ? (
+                <Loader2 className="h-3.5 w-3.5 animate-spin" />
+              ) : (
+                <RotateCcw className="h-3.5 w-3.5" />
+              )}
+              Reenviar
+            </Button>
           )}
-          Reenviar
-        </Button>
-      </div>
+        </div>
+
+        {canEdit && (
+          <IntakeSheet
+            open={editOpen}
+            onOpenChange={setEditOpen}
+            clientOptions={clientOptions}
+            colleagues={colleagues}
+            intakeId={intakeId}
+            initialValues={initialValues as never}
+          />
+        )}
+      </>
     );
   }
 
