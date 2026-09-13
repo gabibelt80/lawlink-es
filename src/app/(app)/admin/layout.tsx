@@ -8,14 +8,10 @@ export default async function AdminLayout({
   children: React.ReactNode;
 }) {
   const session = await getSession();
-  if (!session?.user?.email) redirect("/login");
+  if (!session?.user) redirect("/login");
 
-  const firmUser = await prisma.firmUser.findUnique({
-    where: { email: session.user.email },
-  });
-
-  // Solo SYSTEM_ADMIN (firmId = null) puede acceder a /admin
-  if (!firmUser || firmUser.firmId !== null) {
+  // Solo SYSTEM_ADMIN puede acceder a /admin
+  if (!session.user.isSystemAdmin) {
     redirect("/dashboard");
   }
 

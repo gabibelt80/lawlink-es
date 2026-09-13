@@ -1,0 +1,14 @@
+{
+  "version": 1,
+  "functions": {
+    "/api/archive/[matterId]/export": {},
+    "/api/archive/folder/[folderId]/download": {},
+    "/api/archive/matter/[matterId]/download": {},
+    "/api/documents/[id]/download": {},
+    "/api/documents/[id]/preview": {},
+    "/api/firm-files/[id]/download": {},
+    "/api/imports/matters/template": {},
+    "/api/matters/export": {},
+    "/api/reports/export": {}
+  }
+}

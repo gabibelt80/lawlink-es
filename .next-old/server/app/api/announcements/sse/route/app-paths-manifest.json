@@ -1,0 +1,3 @@
+{
+  "/api/announcements/sse/route": "app/api/announcements/sse/route.js"
+}

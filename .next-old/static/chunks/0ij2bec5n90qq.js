@@ -1,0 +1,1 @@
+(globalThis.TURBOPACK||(globalThis.TURBOPACK=[])).push(["object"==typeof document?document.currentScript:void 0,560004,e=>{"use strict";e.s([],950776),e.i(950776);var c=e.i(515603);let t=(0,c.createServerReference)("40af900a68668b85fb325ebc4263ee0cc56d942c94",c.callServer,void 0,c.findSourceMapURL,"chatWithCase");e.s(["chatWithCase",0,t],560004)}]);

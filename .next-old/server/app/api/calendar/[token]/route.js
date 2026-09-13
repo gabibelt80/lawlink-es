@@ -1,0 +1,11 @@
+var R=require("../../../../chunks/[turbopack]_runtime.js")("server/app/api/calendar/[token]/route.js")
+R.c("server/chunks/[root-of-the-server]__1op9c5u._.js")
+R.c("server/chunks/1rdk_next_1ex1_e6._.js")
+R.c("server/chunks/1rdk_07m0du_._.js")
+R.c("server/chunks/lawlink_20q9tfh._.js")
+R.c("server/chunks/[root-of-the-server]__01v1c6l._.js")
+R.c("server/chunks/1rdk_next_dist_0ugj50x._.js")
+R.c("server/chunks/1rdk_next_dist_esm_build_templates_app-route_0ersjq6.js")
+R.c("server/chunks/lawlink__next-internal_server_app_api_calendar_[token]_route_actions_0m971le.js")
+R.m(974497)
+module.exports=R.m(974497).exports

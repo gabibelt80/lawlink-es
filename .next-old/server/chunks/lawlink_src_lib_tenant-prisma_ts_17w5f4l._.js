@@ -1,0 +1,3 @@
+module.exports=[126750,e=>{"use strict";var r=e.i(693283),t=e.i(585571),s=e.i(402341);let n=new r.PrismaClient({log:["error"]}),i=new Map;async function a(){let e=await (0,t.getServerSession)(s.authOptions),r=e?.user?.firmSlug;return r&&""!==r?o(r):n}function o(e){let t=`juridictas_${e.replace(/-/g,"_")}`;if(i.has(t))return i.get(t);let s=new URL(process.env.DATABASE_URL),n=`postgresql://${s.username}:${s.password}@${s.hostname}:${s.port}/juridictas?schema=${t}&connection_limit=5`;console.log("TENANT URL:",n);let a=new r.PrismaClient({datasources:{db:{url:n}},log:["error"]});return i.set(t,a),a}e.s(["getTenantPrisma",0,a,"getTenantPrismaSync",0,o])}];
+
+//# sourceMappingURL=lawlink_src_lib_tenant-prisma_ts_17w5f4l._.js.map

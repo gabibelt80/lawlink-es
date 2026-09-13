@@ -1,0 +1,3 @@
+module.exports=[466408,a=>{"use strict";a.s([],80275),a.i(80275);var b=a.i(602579);b.callServer,b.findSourceMapURL;let c=(0,b.createServerReference)("40483af2aca37d823294ece8bf96fc7c07aa14f9c7",b.callServer,void 0,b.findSourceMapURL,"savePlansConfigAction");b.callServer,b.findSourceMapURL,a.s(["savePlansConfigAction",0,c],466408)}];
+
+//# sourceMappingURL=lawlink_src_server_tenant_plan-modules-actions_ts_147jr1t._.js.map

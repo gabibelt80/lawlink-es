@@ -1,0 +1,17 @@
+{
+  "node": {
+    "40ff787186ae9248a3eac867b504f81f56e1e8843b": {
+      "workers": {
+        "app/(auth)/register/page": {
+          "moduleId": 47133,
+          "async": true,
+          "exportedName": "registerFirm",
+          "filename": "lawlink/src/server/tenant/actions.ts"
+        }
+      },
+      "exportedName": "registerFirm",
+      "filename": "lawlink/src/server/tenant/actions.ts"
+    }
+  },
+  "edge": {}
+}

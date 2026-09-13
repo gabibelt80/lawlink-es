@@ -11,8 +11,8 @@ export default async function ModulesPage() {
     where: { email: session.user.email },
   });
 
-  // Solo SYSTEM_ADMIN (firmId = null)
-  if (!firmUser || firmUser.firmId !== null) {
+  // Solo SYSTEM_ADMIN
+  if (!session.user.isSystemAdmin) {
     redirect("/dashboard");
   }
 

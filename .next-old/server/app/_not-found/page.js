@@ -1,0 +1,13 @@
+var R=require("../../chunks/ssr/[turbopack]_runtime.js")("server/app/_not-found/page.js")
+R.c("server/chunks/ssr/[root-of-the-server]__0sme66j._.js")
+R.c("server/chunks/ssr/1rdk_next_dist_esm_build_templates_app-page_1fmk2cw.js")
+R.c("server/chunks/ssr/[root-of-the-server]__1c6gk3v._.js")
+R.c("server/chunks/ssr/1rdk_next_dist_1biagn7._.js")
+R.c("server/chunks/ssr/1rdk_next_dist_compiled_@opentelemetry_api_index_1466mq2.js")
+R.c("server/chunks/ssr/lawlink_src_0thdlsy._.js")
+R.c("server/chunks/ssr/1rdk_next_dist_client_components_0jaxoi1._.js")
+R.c("server/chunks/ssr/1rdk_next_dist_client_components_builtin_forbidden_02l0zfk.js")
+R.c("server/chunks/ssr/1rdk_next_dist_client_components_builtin_unauthorized_08cl0_3.js")
+R.c("server/chunks/ssr/lawlink__next-internal_server_app__not-found_page_actions_1qig787.js")
+R.m(785468)
+module.exports=R.m(785468).exports

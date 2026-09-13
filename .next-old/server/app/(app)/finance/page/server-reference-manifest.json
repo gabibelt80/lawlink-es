@@ -1,0 +1,401 @@
+{
+  "node": {
+    "001e51583bea9d8720b65b6de98d590586b86c0125": {
+      "workers": {
+        "app/(app)/finance/page": {
+          "moduleId": 787234,
+          "async": false,
+          "exportedName": "getModulesForCurrentFirm",
+          "filename": "lawlink/src/server/settings/modules-actions.ts"
+        }
+      },
+      "exportedName": "getModulesForCurrentFirm",
+      "filename": "lawlink/src/server/settings/modules-actions.ts"
+    },
+    "409c5fdc5778dbcc9eeb041b71dd0fe9caaa26f006": {
+      "workers": {
+        "app/(app)/finance/page": {
+          "moduleId": 787234,
+          "async": false,
+          "exportedName": "getModuleEnabled",
+          "filename": "lawlink/src/server/settings/modules-actions.ts"
+        }
+      },
+      "exportedName": "getModuleEnabled",
+      "filename": "lawlink/src/server/settings/modules-actions.ts"
+    },
+    "403181b521cee7e605d318f65ffe9da207854f30c2": {
+      "workers": {
+        "app/(app)/finance/page": {
+          "moduleId": 787234,
+          "async": false,
+          "exportedName": "getNotifications",
+          "filename": "lawlink/src/server/notifications/actions.ts"
+        }
+      },
+      "exportedName": "getNotifications",
+      "filename": "lawlink/src/server/notifications/actions.ts"
+    },
+    "00933c52d8c924f9ff104c9dfa92e52e3f7cfaffe9": {
+      "workers": {
+        "app/(app)/finance/page": {
+          "moduleId": 787234,
+          "async": false,
+          "exportedName": "getUnreadCount",
+          "filename": "lawlink/src/server/notifications/actions.ts"
+        }
+      },
+      "exportedName": "getUnreadCount",
+      "filename": "lawlink/src/server/notifications/actions.ts"
+    },
+    "40d1057ca95e8e354b91b026231cfd4cf4f188ce2d": {
+      "workers": {
+        "app/(app)/finance/page": {
+          "moduleId": 787234,
+          "async": false,
+          "exportedName": "markNotificationRead",
+          "filename": "lawlink/src/server/notifications/actions.ts"
+        }
+      },
+      "exportedName": "markNotificationRead",
+      "filename": "lawlink/src/server/notifications/actions.ts"
+    },
+    "00f25fd1381ebdc77ccb71c6135c56b38b137fefb6": {
+      "workers": {
+        "app/(app)/finance/page": {
+          "moduleId": 787234,
+          "async": false,
+          "exportedName": "markAllNotificationsRead",
+          "filename": "lawlink/src/server/notifications/actions.ts"
+        }
+      },
+      "exportedName": "markAllNotificationsRead",
+      "filename": "lawlink/src/server/notifications/actions.ts"
+    },
+    "40189708ed0780afb16d03c46926654392639c53b9": {
+      "workers": {
+        "app/(app)/finance/page": {
+          "moduleId": 787234,
+          "async": false,
+          "exportedName": "globalSearch",
+          "filename": "lawlink/src/server/search/actions.ts"
+        }
+      },
+      "exportedName": "globalSearch",
+      "filename": "lawlink/src/server/search/actions.ts"
+    },
+    "00f46897a85215cf8ecee6e505f835fe67120c06e0": {
+      "workers": {
+        "app/(app)/finance/page": {
+          "moduleId": 787234,
+          "async": false,
+          "exportedName": "listActiveBanners",
+          "filename": "lawlink/src/server/announcements/actions.ts"
+        }
+      },
+      "exportedName": "listActiveBanners",
+      "filename": "lawlink/src/server/announcements/actions.ts"
+    },
+    "401ee88a0ec67ecfc6b3250aebb5a65dd8f16cb66f": {
+      "workers": {
+        "app/(app)/finance/page": {
+          "moduleId": 787234,
+          "async": false,
+          "exportedName": "archiveAnnouncement",
+          "filename": "lawlink/src/server/announcements/actions.ts"
+        }
+      },
+      "exportedName": "archiveAnnouncement",
+      "filename": "lawlink/src/server/announcements/actions.ts"
+    },
+    "402edd8b0854ee596ebfa258049de9925062ff4a71": {
+      "workers": {
+        "app/(app)/finance/page": {
+          "moduleId": 787234,
+          "async": false,
+          "exportedName": "createAnnouncement",
+          "filename": "lawlink/src/server/announcements/actions.ts"
+        }
+      },
+      "exportedName": "createAnnouncement",
+      "filename": "lawlink/src/server/announcements/actions.ts"
+    },
+    "4084bb7a4f5ddbc6666bcaf9ce7d7950ee70f1bc0c": {
+      "workers": {
+        "app/(app)/finance/page": {
+          "moduleId": 787234,
+          "async": false,
+          "exportedName": "listAnnouncements",
+          "filename": "lawlink/src/server/announcements/actions.ts"
+        }
+      },
+      "exportedName": "listAnnouncements",
+      "filename": "lawlink/src/server/announcements/actions.ts"
+    },
+    "409ba5b9e7730daffc1931db38a12dc3df5c6e14d0": {
+      "workers": {
+        "app/(app)/finance/page": {
+          "moduleId": 787234,
+          "async": false,
+          "exportedName": "updateAnnouncement",
+          "filename": "lawlink/src/server/announcements/actions.ts"
+        }
+      },
+      "exportedName": "updateAnnouncement",
+      "filename": "lawlink/src/server/announcements/actions.ts"
+    },
+    "402c8505dca5075a5d5a755cab7defd07d7b69291e": {
+      "workers": {
+        "app/(app)/finance/page": {
+          "moduleId": 787234,
+          "async": false,
+          "exportedName": "setCommissionPlan",
+          "filename": "lawlink/src/server/finance/actions.ts"
+        }
+      },
+      "exportedName": "setCommissionPlan",
+      "filename": "lawlink/src/server/finance/actions.ts"
+    },
+    "40337885bf482ca0ddb7f59c20d92d07ade766ed68": {
+      "workers": {
+        "app/(app)/finance/page": {
+          "moduleId": 787234,
+          "async": false,
+          "exportedName": "createInvoiceRequest",
+          "filename": "lawlink/src/server/finance/actions.ts"
+        }
+      },
+      "exportedName": "createInvoiceRequest",
+      "filename": "lawlink/src/server/finance/actions.ts"
+    },
+    "4045732d93f533867289e9abb8bd82d05414c82b79": {
+      "workers": {
+        "app/(app)/finance/page": {
+          "moduleId": 787234,
+          "async": false,
+          "exportedName": "createBilling",
+          "filename": "lawlink/src/server/finance/actions.ts"
+        }
+      },
+      "exportedName": "createBilling",
+      "filename": "lawlink/src/server/finance/actions.ts"
+    },
+    "4058fd85962ea040bdd50dbad02bb7739193f8a976": {
+      "workers": {
+        "app/(app)/finance/page": {
+          "moduleId": 787234,
+          "async": false,
+          "exportedName": "createFeeEntry",
+          "filename": "lawlink/src/server/finance/actions.ts"
+        }
+      },
+      "exportedName": "createFeeEntry",
+      "filename": "lawlink/src/server/finance/actions.ts"
+    },
+    "406f0dd730c162960983b62085976bd305459c206f": {
+      "workers": {
+        "app/(app)/finance/page": {
+          "moduleId": 787234,
+          "async": false,
+          "exportedName": "searchMattersForInvoice",
+          "filename": "lawlink/src/server/finance/actions.ts"
+        }
+      },
+      "exportedName": "searchMattersForInvoice",
+      "filename": "lawlink/src/server/finance/actions.ts"
+    },
+    "40812d1dcc791bd302b4860d604982b309442c9ce8": {
+      "workers": {
+        "app/(app)/finance/page": {
+          "moduleId": 787234,
+          "async": false,
+          "exportedName": "getMonthlyRevenue",
+          "filename": "lawlink/src/server/finance/actions.ts"
+        }
+      },
+      "exportedName": "getMonthlyRevenue",
+      "filename": "lawlink/src/server/finance/actions.ts"
+    },
+    "40946433224731b93c3f21c0b6c3dcaa7af1baa77f": {
+      "workers": {
+        "app/(app)/finance/page": {
+          "moduleId": 787234,
+          "async": false,
+          "exportedName": "getMatterFinance",
+          "filename": "lawlink/src/server/finance/actions.ts"
+        }
+      },
+      "exportedName": "getMatterFinance",
+      "filename": "lawlink/src/server/finance/actions.ts"
+    },
+    "40b16b77f0ec2f1ca462e5fdbde22d7ab235593024": {
+      "workers": {
+        "app/(app)/finance/page": {
+          "moduleId": 787234,
+          "async": false,
+          "exportedName": "deleteFeeEntry",
+          "filename": "lawlink/src/server/finance/actions.ts"
+        }
+      },
+      "exportedName": "deleteFeeEntry",
+      "filename": "lawlink/src/server/finance/actions.ts"
+    },
+    "40cafa3e0ea0efba015dde619544fffdb19a0cf35a": {
+      "workers": {
+        "app/(app)/finance/page": {
+          "moduleId": 787234,
+          "async": false,
+          "exportedName": "getPersonalRevenue",
+          "filename": "lawlink/src/server/finance/actions.ts"
+        }
+      },
+      "exportedName": "getPersonalRevenue",
+      "filename": "lawlink/src/server/finance/actions.ts"
+    },
+    "40d386f91a712826c224a8e2a57770cea29db2bdaf": {
+      "workers": {
+        "app/(app)/finance/page": {
+          "moduleId": 787234,
+          "async": false,
+          "exportedName": "listAllFeeEntries",
+          "filename": "lawlink/src/server/finance/actions.ts"
+        }
+      },
+      "exportedName": "listAllFeeEntries",
+      "filename": "lawlink/src/server/finance/actions.ts"
+    },
+    "40d9bd21fdc22b0eeea999e2813b2ed53a02cb7fd9": {
+      "workers": {
+        "app/(app)/finance/page": {
+          "moduleId": 787234,
+          "async": false,
+          "exportedName": "deleteBilling",
+          "filename": "lawlink/src/server/finance/actions.ts"
+        }
+      },
+      "exportedName": "deleteBilling",
+      "filename": "lawlink/src/server/finance/actions.ts"
+    },
+    "40faa35908e9be217bc56f57c546190cad5a354958": {
+      "workers": {
+        "app/(app)/finance/page": {
+          "moduleId": 787234,
+          "async": false,
+          "exportedName": "getMatterInvoiceContext",
+          "filename": "lawlink/src/server/finance/actions.ts"
+        }
+      },
+      "exportedName": "getMatterInvoiceContext",
+      "filename": "lawlink/src/server/finance/actions.ts"
+    },
+    "40fdbce924a2f8f4568dd00fcb394298596d174f5f": {
+      "workers": {
+        "app/(app)/finance/page": {
+          "moduleId": 787234,
+          "async": false,
+          "exportedName": "listMatterInvoiceRequests",
+          "filename": "lawlink/src/server/finance/actions.ts"
+        }
+      },
+      "exportedName": "listMatterInvoiceRequests",
+      "filename": "lawlink/src/server/finance/actions.ts"
+    },
+    "009de6c1192252a3639b5d15ef94b549fef5c4be1a": {
+      "workers": {
+        "app/(app)/finance/page": {
+          "moduleId": 787234,
+          "async": false,
+          "exportedName": "getInvoiceStats",
+          "filename": "lawlink/src/server/invoices/actions.ts"
+        }
+      },
+      "exportedName": "getInvoiceStats",
+      "filename": "lawlink/src/server/invoices/actions.ts"
+    },
+    "4016f93e9272df4ae66cda6de7b1da8e6f92718014": {
+      "workers": {
+        "app/(app)/finance/page": {
+          "moduleId": 787234,
+          "async": false,
+          "exportedName": "rejectInvoiceRequest",
+          "filename": "lawlink/src/server/invoices/actions.ts"
+        }
+      },
+      "exportedName": "rejectInvoiceRequest",
+      "filename": "lawlink/src/server/invoices/actions.ts"
+    },
+    "405c2b0bfd40d49f1f4569fe4c2c0a01aa2248f3d8": {
+      "workers": {
+        "app/(app)/finance/page": {
+          "moduleId": 787234,
+          "async": false,
+          "exportedName": "listInvoiceRequests",
+          "filename": "lawlink/src/server/invoices/actions.ts"
+        }
+      },
+      "exportedName": "listInvoiceRequests",
+      "filename": "lawlink/src/server/invoices/actions.ts"
+    },
+    "406a21a88883170164515770732c768b027ebebc70": {
+      "workers": {
+        "app/(app)/finance/page": {
+          "moduleId": 787234,
+          "async": false,
+          "exportedName": "listInvoiceRequestsByMatter",
+          "filename": "lawlink/src/server/invoices/actions.ts"
+        }
+      },
+      "exportedName": "listInvoiceRequestsByMatter",
+      "filename": "lawlink/src/server/invoices/actions.ts"
+    },
+    "40c83fc44a6d5ffbebdd26dca42caeca68f3802c03": {
+      "workers": {
+        "app/(app)/finance/page": {
+          "moduleId": 787234,
+          "async": false,
+          "exportedName": "createInvoiceRequest",
+          "filename": "lawlink/src/server/invoices/actions.ts"
+        }
+      },
+      "exportedName": "createInvoiceRequest",
+      "filename": "lawlink/src/server/invoices/actions.ts"
+    },
+    "40f73930b69f412051ce8c2f12350ff04a97b4167a": {
+      "workers": {
+        "app/(app)/finance/page": {
+          "moduleId": 787234,
+          "async": false,
+          "exportedName": "approveInvoiceRequest",
+          "filename": "lawlink/src/server/invoices/actions.ts"
+        }
+      },
+      "exportedName": "approveInvoiceRequest",
+      "filename": "lawlink/src/server/invoices/actions.ts"
+    },
+    "40179dbc80d397e5a81c317323f257537996c1be73": {
+      "workers": {
+        "app/(app)/finance/page": {
+          "moduleId": 787234,
+          "async": false,
+          "exportedName": "recognizeInvoiceFromImage",
+          "filename": "lawlink/src/server/ai/actions.ts"
+        }
+      },
+      "exportedName": "recognizeInvoiceFromImage",
+      "filename": "lawlink/src/server/ai/actions.ts"
+    },
+    "4037937f6019cb376aa274323484c7c06d5c6ed998": {
+      "workers": {
+        "app/(app)/finance/page": {
+          "moduleId": 787234,
+          "async": false,
+          "exportedName": "uploadDocument",
+          "filename": "lawlink/src/server/documents/actions.ts"
+        }
+      },
+      "exportedName": "uploadDocument",
+      "filename": "lawlink/src/server/documents/actions.ts"
+    }
+  },
+  "edge": {}
+}

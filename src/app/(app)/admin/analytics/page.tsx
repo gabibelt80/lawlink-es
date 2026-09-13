@@ -6,7 +6,7 @@ import { AnalyticsView } from "./_components/analytics-view";
 export default async function AnalyticsPage() {
   const session = await getSession();
   if (!session?.user) redirect("/login");
-  if (session.user.role !== "SYSTEM_ADMIN") redirect("/dashboard");
+  if (!session.user.isSystemAdmin) redirect("/dashboard");
 
   const firms = await prisma.firm.findMany({
     orderBy: { createdAt: "desc" },

@@ -1,0 +1,3 @@
+{
+  "/api/firm-files/[id]/download/route": "app/api/firm-files/[id]/download/route.js"
+}

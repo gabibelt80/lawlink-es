@@ -88,7 +88,6 @@ const ENUM_VALUES: Record<string, string[]> = {
     "SPECIAL_PROJECT",
   ],
   UserRole: [
-    "SYSTEM_ADMIN",
     "ADMIN",
     "PRINCIPAL_LAWYER",
     "LAWYER",

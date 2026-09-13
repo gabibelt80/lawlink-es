@@ -8,8 +8,8 @@
   },
   "scripts": {
     "dev": "next dev -p 3000",
-    "build": "NEXT_DIST_DIR=.next-build next build",
-    "start": "next start",
+    "build": "next build",
+    "start": "NEXT_DIST_DIR=.next-build next start",
     "lint": "eslint .",
     "typecheck": "NEXT_DIST_DIR=.next-dev next typegen && tsc --noEmit",
     "prisma:validate": "prisma validate",

@@ -49,7 +49,7 @@ import {
 } from "@/server/users/actions";
 import { userRoleLabel } from "@/lib/enums";
 
-const ROLES: UserRole[] = ["SYSTEM_ADMIN", "ADMIN", "PRINCIPAL_LAWYER", "LAWYER", "ASSISTANT", "FINANCE"];
+const ROLES: UserRole[] = ["ADMIN", "PRINCIPAL_LAWYER", "LAWYER", "ASSISTANT", "FINANCE"];
 
 const createSchema = z.object({
   name: z.string().min(1).max(40),
@@ -144,7 +144,10 @@ function UserRow({
     if (role === user.role) return;
     startTransition(async () => {
       try {
-        await updateUserRole({ id: user.id, role });
+        await updateUserRole({
+          id: user.id,
+          role: role as "ADMIN" | "PRINCIPAL_LAWYER" | "LAWYER" | "ASSISTANT" | "FINANCE"
+        });
         toast.success("Rol actualizado");
       } catch (err) {
         toast.error("Error al actualizar", { description: err instanceof Error ? err.message : "" });

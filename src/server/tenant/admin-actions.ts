@@ -114,7 +114,7 @@ export async function updateFirmPlanAction({ firmId, plan }: { firmId: string; p
 }
 export async function suspendFirmAction({ firmId, reason }: { firmId: string; reason?: string }) {
   const session = await requireSession();
-  if (session.user.role !== "SYSTEM_ADMIN") {
+  if (!session.user.isSystemAdmin) {
     throw new Error("Solo el administrador del sistema puede suspender estudios");
   }
 
@@ -133,7 +133,7 @@ export async function suspendFirmAction({ firmId, reason }: { firmId: string; re
 
 export async function scheduleFirmDeletionAction({ firmId }: { firmId: string }) {
   const session = await requireSession();
-  if (session.user.role !== "SYSTEM_ADMIN") {
+  if (!session.user.isSystemAdmin) {
     throw new Error("Solo el administrador del sistema puede eliminar estudios");
   }
 
@@ -151,7 +151,7 @@ export async function scheduleFirmDeletionAction({ firmId }: { firmId: string })
 
 export async function cancelFirmDeletionAction({ firmId }: { firmId: string }) {
   const session = await requireSession();
-  if (session.user.role !== "SYSTEM_ADMIN") {
+  if (!session.user.isSystemAdmin) {
     throw new Error("Solo el administrador del sistema puede cancelar eliminación");
   }
 
@@ -169,7 +169,7 @@ export async function cancelFirmDeletionAction({ firmId }: { firmId: string }) {
 
 export async function hardDeleteFirmAction({ firmId }: { firmId: string }) {
   const session = await requireSession();
-  if (session.user.role !== "SYSTEM_ADMIN") {
+  if (!session.user.isSystemAdmin) {
     throw new Error("Solo el administrador del sistema puede eliminar permanentemente");
   }
 

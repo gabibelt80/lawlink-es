@@ -1,0 +1,1241 @@
+{
+  "node": {
+    "001e51583bea9d8720b65b6de98d590586b86c0125": {
+      "workers": {
+        "app/(app)/matters/[id]/page": {
+          "moduleId": 713329,
+          "async": true,
+          "exportedName": "getModulesForCurrentFirm",
+          "filename": "lawlink/src/server/settings/modules-actions.ts"
+        }
+      },
+      "exportedName": "getModulesForCurrentFirm",
+      "filename": "lawlink/src/server/settings/modules-actions.ts"
+    },
+    "409c5fdc5778dbcc9eeb041b71dd0fe9caaa26f006": {
+      "workers": {
+        "app/(app)/matters/[id]/page": {
+          "moduleId": 713329,
+          "async": true,
+          "exportedName": "getModuleEnabled",
+          "filename": "lawlink/src/server/settings/modules-actions.ts"
+        }
+      },
+      "exportedName": "getModuleEnabled",
+      "filename": "lawlink/src/server/settings/modules-actions.ts"
+    },
+    "403181b521cee7e605d318f65ffe9da207854f30c2": {
+      "workers": {
+        "app/(app)/matters/[id]/page": {
+          "moduleId": 713329,
+          "async": true,
+          "exportedName": "getNotifications",
+          "filename": "lawlink/src/server/notifications/actions.ts"
+        }
+      },
+      "exportedName": "getNotifications",
+      "filename": "lawlink/src/server/notifications/actions.ts"
+    },
+    "00933c52d8c924f9ff104c9dfa92e52e3f7cfaffe9": {
+      "workers": {
+        "app/(app)/matters/[id]/page": {
+          "moduleId": 713329,
+          "async": true,
+          "exportedName": "getUnreadCount",
+          "filename": "lawlink/src/server/notifications/actions.ts"
+        }
+      },
+      "exportedName": "getUnreadCount",
+      "filename": "lawlink/src/server/notifications/actions.ts"
+    },
+    "40d1057ca95e8e354b91b026231cfd4cf4f188ce2d": {
+      "workers": {
+        "app/(app)/matters/[id]/page": {
+          "moduleId": 713329,
+          "async": true,
+          "exportedName": "markNotificationRead",
+          "filename": "lawlink/src/server/notifications/actions.ts"
+        }
+      },
+      "exportedName": "markNotificationRead",
+      "filename": "lawlink/src/server/notifications/actions.ts"
+    },
+    "00f25fd1381ebdc77ccb71c6135c56b38b137fefb6": {
+      "workers": {
+        "app/(app)/matters/[id]/page": {
+          "moduleId": 713329,
+          "async": true,
+          "exportedName": "markAllNotificationsRead",
+          "filename": "lawlink/src/server/notifications/actions.ts"
+        }
+      },
+      "exportedName": "markAllNotificationsRead",
+      "filename": "lawlink/src/server/notifications/actions.ts"
+    },
+    "40189708ed0780afb16d03c46926654392639c53b9": {
+      "workers": {
+        "app/(app)/matters/[id]/page": {
+          "moduleId": 713329,
+          "async": true,
+          "exportedName": "globalSearch",
+          "filename": "lawlink/src/server/search/actions.ts"
+        }
+      },
+      "exportedName": "globalSearch",
+      "filename": "lawlink/src/server/search/actions.ts"
+    },
+    "00f46897a85215cf8ecee6e505f835fe67120c06e0": {
+      "workers": {
+        "app/(app)/matters/[id]/page": {
+          "moduleId": 713329,
+          "async": true,
+          "exportedName": "listActiveBanners",
+          "filename": "lawlink/src/server/announcements/actions.ts"
+        }
+      },
+      "exportedName": "listActiveBanners",
+      "filename": "lawlink/src/server/announcements/actions.ts"
+    },
+    "401ee88a0ec67ecfc6b3250aebb5a65dd8f16cb66f": {
+      "workers": {
+        "app/(app)/matters/[id]/page": {
+          "moduleId": 713329,
+          "async": true,
+          "exportedName": "archiveAnnouncement",
+          "filename": "lawlink/src/server/announcements/actions.ts"
+        }
+      },
+      "exportedName": "archiveAnnouncement",
+      "filename": "lawlink/src/server/announcements/actions.ts"
+    },
+    "402edd8b0854ee596ebfa258049de9925062ff4a71": {
+      "workers": {
+        "app/(app)/matters/[id]/page": {
+          "moduleId": 713329,
+          "async": true,
+          "exportedName": "createAnnouncement",
+          "filename": "lawlink/src/server/announcements/actions.ts"
+        }
+      },
+      "exportedName": "createAnnouncement",
+      "filename": "lawlink/src/server/announcements/actions.ts"
+    },
+    "4084bb7a4f5ddbc6666bcaf9ce7d7950ee70f1bc0c": {
+      "workers": {
+        "app/(app)/matters/[id]/page": {
+          "moduleId": 713329,
+          "async": true,
+          "exportedName": "listAnnouncements",
+          "filename": "lawlink/src/server/announcements/actions.ts"
+        }
+      },
+      "exportedName": "listAnnouncements",
+      "filename": "lawlink/src/server/announcements/actions.ts"
+    },
+    "409ba5b9e7730daffc1931db38a12dc3df5c6e14d0": {
+      "workers": {
+        "app/(app)/matters/[id]/page": {
+          "moduleId": 713329,
+          "async": true,
+          "exportedName": "updateAnnouncement",
+          "filename": "lawlink/src/server/announcements/actions.ts"
+        }
+      },
+      "exportedName": "updateAnnouncement",
+      "filename": "lawlink/src/server/announcements/actions.ts"
+    },
+    "40073ac0b029ce8fca085e67d3f0dbf914680f8327": {
+      "workers": {
+        "app/(app)/matters/[id]/page": {
+          "moduleId": 713329,
+          "async": true,
+          "exportedName": "updateMatterBasicInfo",
+          "filename": "lawlink/src/server/matters/actions.ts"
+        }
+      },
+      "exportedName": "updateMatterBasicInfo",
+      "filename": "lawlink/src/server/matters/actions.ts"
+    },
+    "4009b9080e1e8fd49cbf2cceb5e45311392c015f48": {
+      "workers": {
+        "app/(app)/matters/[id]/page": {
+          "moduleId": 713329,
+          "async": true,
+          "exportedName": "listMatters",
+          "filename": "lawlink/src/server/matters/actions.ts"
+        }
+      },
+      "exportedName": "listMatters",
+      "filename": "lawlink/src/server/matters/actions.ts"
+    },
+    "4053f5b83fd87a48ee27dab148436c0c3b0058fd16": {
+      "workers": {
+        "app/(app)/matters/[id]/page": {
+          "moduleId": 713329,
+          "async": true,
+          "exportedName": "createMatter",
+          "filename": "lawlink/src/server/matters/actions.ts"
+        }
+      },
+      "exportedName": "createMatter",
+      "filename": "lawlink/src/server/matters/actions.ts"
+    },
+    "408c018d2ae6ec6a3f70dfec6d6d1c6bce3810570a": {
+      "workers": {
+        "app/(app)/matters/[id]/page": {
+          "moduleId": 713329,
+          "async": true,
+          "exportedName": "softDeleteMatter",
+          "filename": "lawlink/src/server/matters/actions.ts"
+        }
+      },
+      "exportedName": "softDeleteMatter",
+      "filename": "lawlink/src/server/matters/actions.ts"
+    },
+    "40a6c6631449c5de450e028a5d4620b6e8864d5185": {
+      "workers": {
+        "app/(app)/matters/[id]/page": {
+          "moduleId": 713329,
+          "async": true,
+          "exportedName": "updateProcedureInfo",
+          "filename": "lawlink/src/server/matters/actions.ts"
+        }
+      },
+      "exportedName": "updateProcedureInfo",
+      "filename": "lawlink/src/server/matters/actions.ts"
+    },
+    "40ca1ab87d6b2f41f6e8af00aa063687a113f5544f": {
+      "workers": {
+        "app/(app)/matters/[id]/page": {
+          "moduleId": 713329,
+          "async": true,
+          "exportedName": "updateMatterTeam",
+          "filename": "lawlink/src/server/matters/actions.ts"
+        }
+      },
+      "exportedName": "updateMatterTeam",
+      "filename": "lawlink/src/server/matters/actions.ts"
+    },
+    "40d19c0448acdddf7d49a4b06398bd62571d06eb0b": {
+      "workers": {
+        "app/(app)/matters/[id]/page": {
+          "moduleId": 713329,
+          "async": true,
+          "exportedName": "getMatterById",
+          "filename": "lawlink/src/server/matters/actions.ts"
+        }
+      },
+      "exportedName": "getMatterById",
+      "filename": "lawlink/src/server/matters/actions.ts"
+    },
+    "60559c0cc7023e76a202b5390536afdd05820bcfbb": {
+      "workers": {
+        "app/(app)/matters/[id]/page": {
+          "moduleId": 713329,
+          "async": true,
+          "exportedName": "searchMattersForLink",
+          "filename": "lawlink/src/server/matters/actions.ts"
+        }
+      },
+      "exportedName": "searchMattersForLink",
+      "filename": "lawlink/src/server/matters/actions.ts"
+    },
+    "60be8f2288b75f64a1136fbfc1507698f40568eb8e": {
+      "workers": {
+        "app/(app)/matters/[id]/page": {
+          "moduleId": 713329,
+          "async": true,
+          "exportedName": "addMatterLink",
+          "filename": "lawlink/src/server/matters/actions.ts"
+        }
+      },
+      "exportedName": "addMatterLink",
+      "filename": "lawlink/src/server/matters/actions.ts"
+    },
+    "60fc5e3c05553527e8cec92a65cfaa1b622a46d943": {
+      "workers": {
+        "app/(app)/matters/[id]/page": {
+          "moduleId": 713329,
+          "async": true,
+          "exportedName": "removeMatterLink",
+          "filename": "lawlink/src/server/matters/actions.ts"
+        }
+      },
+      "exportedName": "removeMatterLink",
+      "filename": "lawlink/src/server/matters/actions.ts"
+    },
+    "40052dc89fe93250d7ab1e6a94b08989262dd90a06": {
+      "workers": {
+        "app/(app)/matters/[id]/page": {
+          "moduleId": 713329,
+          "async": true,
+          "exportedName": "generateCaseJson",
+          "filename": "lawlink/src/server/matters/case-json.ts"
+        }
+      },
+      "exportedName": "generateCaseJson",
+      "filename": "lawlink/src/server/matters/case-json.ts"
+    },
+    "402c8505dca5075a5d5a755cab7defd07d7b69291e": {
+      "workers": {
+        "app/(app)/matters/[id]/page": {
+          "moduleId": 713329,
+          "async": true,
+          "exportedName": "setCommissionPlan",
+          "filename": "lawlink/src/server/finance/actions.ts"
+        }
+      },
+      "exportedName": "setCommissionPlan",
+      "filename": "lawlink/src/server/finance/actions.ts"
+    },
+    "40337885bf482ca0ddb7f59c20d92d07ade766ed68": {
+      "workers": {
+        "app/(app)/matters/[id]/page": {
+          "moduleId": 713329,
+          "async": true,
+          "exportedName": "createInvoiceRequest",
+          "filename": "lawlink/src/server/finance/actions.ts"
+        }
+      },
+      "exportedName": "createInvoiceRequest",
+      "filename": "lawlink/src/server/finance/actions.ts"
+    },
+    "4045732d93f533867289e9abb8bd82d05414c82b79": {
+      "workers": {
+        "app/(app)/matters/[id]/page": {
+          "moduleId": 713329,
+          "async": true,
+          "exportedName": "createBilling",
+          "filename": "lawlink/src/server/finance/actions.ts"
+        }
+      },
+      "exportedName": "createBilling",
+      "filename": "lawlink/src/server/finance/actions.ts"
+    },
+    "4058fd85962ea040bdd50dbad02bb7739193f8a976": {
+      "workers": {
+        "app/(app)/matters/[id]/page": {
+          "moduleId": 713329,
+          "async": true,
+          "exportedName": "createFeeEntry",
+          "filename": "lawlink/src/server/finance/actions.ts"
+        }
+      },
+      "exportedName": "createFeeEntry",
+      "filename": "lawlink/src/server/finance/actions.ts"
+    },
+    "406f0dd730c162960983b62085976bd305459c206f": {
+      "workers": {
+        "app/(app)/matters/[id]/page": {
+          "moduleId": 713329,
+          "async": true,
+          "exportedName": "searchMattersForInvoice",
+          "filename": "lawlink/src/server/finance/actions.ts"
+        }
+      },
+      "exportedName": "searchMattersForInvoice",
+      "filename": "lawlink/src/server/finance/actions.ts"
+    },
+    "40812d1dcc791bd302b4860d604982b309442c9ce8": {
+      "workers": {
+        "app/(app)/matters/[id]/page": {
+          "moduleId": 713329,
+          "async": true,
+          "exportedName": "getMonthlyRevenue",
+          "filename": "lawlink/src/server/finance/actions.ts"
+        }
+      },
+      "exportedName": "getMonthlyRevenue",
+      "filename": "lawlink/src/server/finance/actions.ts"
+    },
+    "40946433224731b93c3f21c0b6c3dcaa7af1baa77f": {
+      "workers": {
+        "app/(app)/matters/[id]/page": {
+          "moduleId": 713329,
+          "async": true,
+          "exportedName": "getMatterFinance",
+          "filename": "lawlink/src/server/finance/actions.ts"
+        }
+      },
+      "exportedName": "getMatterFinance",
+      "filename": "lawlink/src/server/finance/actions.ts"
+    },
+    "40b16b77f0ec2f1ca462e5fdbde22d7ab235593024": {
+      "workers": {
+        "app/(app)/matters/[id]/page": {
+          "moduleId": 713329,
+          "async": true,
+          "exportedName": "deleteFeeEntry",
+          "filename": "lawlink/src/server/finance/actions.ts"
+        }
+      },
+      "exportedName": "deleteFeeEntry",
+      "filename": "lawlink/src/server/finance/actions.ts"
+    },
+    "40cafa3e0ea0efba015dde619544fffdb19a0cf35a": {
+      "workers": {
+        "app/(app)/matters/[id]/page": {
+          "moduleId": 713329,
+          "async": true,
+          "exportedName": "getPersonalRevenue",
+          "filename": "lawlink/src/server/finance/actions.ts"
+        }
+      },
+      "exportedName": "getPersonalRevenue",
+      "filename": "lawlink/src/server/finance/actions.ts"
+    },
+    "40d386f91a712826c224a8e2a57770cea29db2bdaf": {
+      "workers": {
+        "app/(app)/matters/[id]/page": {
+          "moduleId": 713329,
+          "async": true,
+          "exportedName": "listAllFeeEntries",
+          "filename": "lawlink/src/server/finance/actions.ts"
+        }
+      },
+      "exportedName": "listAllFeeEntries",
+      "filename": "lawlink/src/server/finance/actions.ts"
+    },
+    "40d9bd21fdc22b0eeea999e2813b2ed53a02cb7fd9": {
+      "workers": {
+        "app/(app)/matters/[id]/page": {
+          "moduleId": 713329,
+          "async": true,
+          "exportedName": "deleteBilling",
+          "filename": "lawlink/src/server/finance/actions.ts"
+        }
+      },
+      "exportedName": "deleteBilling",
+      "filename": "lawlink/src/server/finance/actions.ts"
+    },
+    "40faa35908e9be217bc56f57c546190cad5a354958": {
+      "workers": {
+        "app/(app)/matters/[id]/page": {
+          "moduleId": 713329,
+          "async": true,
+          "exportedName": "getMatterInvoiceContext",
+          "filename": "lawlink/src/server/finance/actions.ts"
+        }
+      },
+      "exportedName": "getMatterInvoiceContext",
+      "filename": "lawlink/src/server/finance/actions.ts"
+    },
+    "40fdbce924a2f8f4568dd00fcb394298596d174f5f": {
+      "workers": {
+        "app/(app)/matters/[id]/page": {
+          "moduleId": 713329,
+          "async": true,
+          "exportedName": "listMatterInvoiceRequests",
+          "filename": "lawlink/src/server/finance/actions.ts"
+        }
+      },
+      "exportedName": "listMatterInvoiceRequests",
+      "filename": "lawlink/src/server/finance/actions.ts"
+    },
+    "0019b56bd53c71c9892fa56e0399197c4988c3b11d": {
+      "workers": {
+        "app/(app)/matters/[id]/page": {
+          "moduleId": 713329,
+          "async": true,
+          "exportedName": "listActiveColleagues",
+          "filename": "lawlink/src/server/users/actions.ts"
+        }
+      },
+      "exportedName": "listActiveColleagues",
+      "filename": "lawlink/src/server/users/actions.ts"
+    },
+    "0067d8679fd6928a26abb1f9a91a167286820ce7fa": {
+      "workers": {
+        "app/(app)/matters/[id]/page": {
+          "moduleId": 713329,
+          "async": true,
+          "exportedName": "listUsers",
+          "filename": "lawlink/src/server/users/actions.ts"
+        }
+      },
+      "exportedName": "listUsers",
+      "filename": "lawlink/src/server/users/actions.ts"
+    },
+    "407e64016ca3cc06b434ef1a63a167d7b54c86d2bf": {
+      "workers": {
+        "app/(app)/matters/[id]/page": {
+          "moduleId": 713329,
+          "async": true,
+          "exportedName": "changeMyPassword",
+          "filename": "lawlink/src/server/users/actions.ts"
+        }
+      },
+      "exportedName": "changeMyPassword",
+      "filename": "lawlink/src/server/users/actions.ts"
+    },
+    "407ea011575baf8545afce34c833161c2b5966f9b8": {
+      "workers": {
+        "app/(app)/matters/[id]/page": {
+          "moduleId": 713329,
+          "async": true,
+          "exportedName": "resetUserPassword",
+          "filename": "lawlink/src/server/users/actions.ts"
+        }
+      },
+      "exportedName": "resetUserPassword",
+      "filename": "lawlink/src/server/users/actions.ts"
+    },
+    "407ec75537a8afd0c907a63e13d02866fa486d08ca": {
+      "workers": {
+        "app/(app)/matters/[id]/page": {
+          "moduleId": 713329,
+          "async": true,
+          "exportedName": "updateUserRole",
+          "filename": "lawlink/src/server/users/actions.ts"
+        }
+      },
+      "exportedName": "updateUserRole",
+      "filename": "lawlink/src/server/users/actions.ts"
+    },
+    "409bbe14fdbca3e69de6b8c88ad7807e820961472d": {
+      "workers": {
+        "app/(app)/matters/[id]/page": {
+          "moduleId": 713329,
+          "async": true,
+          "exportedName": "createUser",
+          "filename": "lawlink/src/server/users/actions.ts"
+        }
+      },
+      "exportedName": "createUser",
+      "filename": "lawlink/src/server/users/actions.ts"
+    },
+    "40b9b1a2a7fd1f4ba4284f1a3f99fed2a14ef08fcd": {
+      "workers": {
+        "app/(app)/matters/[id]/page": {
+          "moduleId": 713329,
+          "async": true,
+          "exportedName": "saveMyAvatar",
+          "filename": "lawlink/src/server/users/actions.ts"
+        }
+      },
+      "exportedName": "saveMyAvatar",
+      "filename": "lawlink/src/server/users/actions.ts"
+    },
+    "40d0b0239ec75405e7feb0fcb4e9bdf1faf0e7bbc8": {
+      "workers": {
+        "app/(app)/matters/[id]/page": {
+          "moduleId": 713329,
+          "async": true,
+          "exportedName": "toggleUserActive",
+          "filename": "lawlink/src/server/users/actions.ts"
+        }
+      },
+      "exportedName": "toggleUserActive",
+      "filename": "lawlink/src/server/users/actions.ts"
+    },
+    "003111c3c809d3a43e75494d4300dcd638edecb549": {
+      "workers": {
+        "app/(app)/matters/[id]/page": {
+          "moduleId": 713329,
+          "async": true,
+          "exportedName": "listArchivedMatters",
+          "filename": "lawlink/src/server/archive/actions.ts"
+        }
+      },
+      "exportedName": "listArchivedMatters",
+      "filename": "lawlink/src/server/archive/actions.ts"
+    },
+    "00aeeb7fc804123bd3cd04df8085ba1c11b523468f": {
+      "workers": {
+        "app/(app)/matters/[id]/page": {
+          "moduleId": 713329,
+          "async": true,
+          "exportedName": "listRejectedArchiveRecords",
+          "filename": "lawlink/src/server/archive/actions.ts"
+        }
+      },
+      "exportedName": "listRejectedArchiveRecords",
+      "filename": "lawlink/src/server/archive/actions.ts"
+    },
+    "00c56cda38d2ba07e5eadac10ce9b449d8c182ff96": {
+      "workers": {
+        "app/(app)/matters/[id]/page": {
+          "moduleId": 713329,
+          "async": true,
+          "exportedName": "listPendingArchiveRecords",
+          "filename": "lawlink/src/server/archive/actions.ts"
+        }
+      },
+      "exportedName": "listPendingArchiveRecords",
+      "filename": "lawlink/src/server/archive/actions.ts"
+    },
+    "4013546c716795a368e921491bb844c404d1b90d11": {
+      "workers": {
+        "app/(app)/matters/[id]/page": {
+          "moduleId": 713329,
+          "async": true,
+          "exportedName": "getArchivePrepData",
+          "filename": "lawlink/src/server/archive/actions.ts"
+        }
+      },
+      "exportedName": "getArchivePrepData",
+      "filename": "lawlink/src/server/archive/actions.ts"
+    },
+    "4064d0d5d44eac87e3de037094a550f4dd4dc896b4": {
+      "workers": {
+        "app/(app)/matters/[id]/page": {
+          "moduleId": 713329,
+          "async": true,
+          "exportedName": "archiveMatter",
+          "filename": "lawlink/src/server/archive/actions.ts"
+        }
+      },
+      "exportedName": "archiveMatter",
+      "filename": "lawlink/src/server/archive/actions.ts"
+    },
+    "408ccc3d4fff7a020f1b549039eabb104d2fee1cee": {
+      "workers": {
+        "app/(app)/matters/[id]/page": {
+          "moduleId": 713329,
+          "async": true,
+          "exportedName": "batchRejectArchiveRecords",
+          "filename": "lawlink/src/server/archive/actions.ts"
+        }
+      },
+      "exportedName": "batchRejectArchiveRecords",
+      "filename": "lawlink/src/server/archive/actions.ts"
+    },
+    "409500fdd3f1da9b7a148b39a2764a28a66968e196": {
+      "workers": {
+        "app/(app)/matters/[id]/page": {
+          "moduleId": 713329,
+          "async": true,
+          "exportedName": "getLatestArchiveRecord",
+          "filename": "lawlink/src/server/archive/actions.ts"
+        }
+      },
+      "exportedName": "getLatestArchiveRecord",
+      "filename": "lawlink/src/server/archive/actions.ts"
+    },
+    "40b58638525088c7d7a59aef71b751c93523a86f4a": {
+      "workers": {
+        "app/(app)/matters/[id]/page": {
+          "moduleId": 713329,
+          "async": true,
+          "exportedName": "rejectArchiveRecord",
+          "filename": "lawlink/src/server/archive/actions.ts"
+        }
+      },
+      "exportedName": "rejectArchiveRecord",
+      "filename": "lawlink/src/server/archive/actions.ts"
+    },
+    "40c96cf6da8f34cf052326b54623dfa7b80ddacc0a": {
+      "workers": {
+        "app/(app)/matters/[id]/page": {
+          "moduleId": 713329,
+          "async": true,
+          "exportedName": "approveArchiveRecord",
+          "filename": "lawlink/src/server/archive/actions.ts"
+        }
+      },
+      "exportedName": "approveArchiveRecord",
+      "filename": "lawlink/src/server/archive/actions.ts"
+    },
+    "40d5bac47b0173b5bf87cf7177bcf862d3903c21dd": {
+      "workers": {
+        "app/(app)/matters/[id]/page": {
+          "moduleId": 713329,
+          "async": true,
+          "exportedName": "batchApproveArchiveRecords",
+          "filename": "lawlink/src/server/archive/actions.ts"
+        }
+      },
+      "exportedName": "batchApproveArchiveRecords",
+      "filename": "lawlink/src/server/archive/actions.ts"
+    },
+    "4037937f6019cb376aa274323484c7c06d5c6ed998": {
+      "workers": {
+        "app/(app)/matters/[id]/page": {
+          "moduleId": 713329,
+          "async": true,
+          "exportedName": "uploadDocument",
+          "filename": "lawlink/src/server/documents/actions.ts"
+        }
+      },
+      "exportedName": "uploadDocument",
+      "filename": "lawlink/src/server/documents/actions.ts"
+    },
+    "40a784fa8a999921d1112480ca40e05802cfa47dfe": {
+      "workers": {
+        "app/(app)/matters/[id]/page": {
+          "moduleId": 713329,
+          "async": true,
+          "exportedName": "addDeadline",
+          "filename": "lawlink/src/server/procedures/actions.ts"
+        }
+      },
+      "exportedName": "addDeadline",
+      "filename": "lawlink/src/server/procedures/actions.ts"
+    },
+    "400c8267d9471bb9210f416cee136478d5c380d59d": {
+      "workers": {
+        "app/(app)/matters/[id]/page": {
+          "moduleId": 713329,
+          "async": true,
+          "exportedName": "addHearing",
+          "filename": "lawlink/src/server/procedures/actions.ts"
+        }
+      },
+      "exportedName": "addHearing",
+      "filename": "lawlink/src/server/procedures/actions.ts"
+    },
+    "40522ea5bef6b58588471d7fc65f464180e0f9057b": {
+      "workers": {
+        "app/(app)/matters/[id]/page": {
+          "moduleId": 713329,
+          "async": true,
+          "exportedName": "toggleDeadlineCompleted",
+          "filename": "lawlink/src/server/procedures/actions.ts"
+        }
+      },
+      "exportedName": "toggleDeadlineCompleted",
+      "filename": "lawlink/src/server/procedures/actions.ts"
+    },
+    "40dc5ed4a44fdf9fd993f2d0b8b608e59c1da5d696": {
+      "workers": {
+        "app/(app)/matters/[id]/page": {
+          "moduleId": 713329,
+          "async": true,
+          "exportedName": "deleteDeadline",
+          "filename": "lawlink/src/server/procedures/actions.ts"
+        }
+      },
+      "exportedName": "deleteDeadline",
+      "filename": "lawlink/src/server/procedures/actions.ts"
+    },
+    "405cf04eca08a5f1e884742f3f98942181d93ae754": {
+      "workers": {
+        "app/(app)/matters/[id]/page": {
+          "moduleId": 713329,
+          "async": true,
+          "exportedName": "deleteHearing",
+          "filename": "lawlink/src/server/procedures/actions.ts"
+        }
+      },
+      "exportedName": "deleteHearing",
+      "filename": "lawlink/src/server/procedures/actions.ts"
+    },
+    "408529e406c81b10abc58565d2dfe0629c68ac5910": {
+      "workers": {
+        "app/(app)/matters/[id]/page": {
+          "moduleId": 713329,
+          "async": true,
+          "exportedName": "addProcedureMemo",
+          "filename": "lawlink/src/server/procedures/actions.ts"
+        }
+      },
+      "exportedName": "addProcedureMemo",
+      "filename": "lawlink/src/server/procedures/actions.ts"
+    },
+    "4071cc62a7c95aa6d5319fd906dcd4d90563f8eaa5": {
+      "workers": {
+        "app/(app)/matters/[id]/page": {
+          "moduleId": 713329,
+          "async": true,
+          "exportedName": "deleteProcedureMemo",
+          "filename": "lawlink/src/server/procedures/actions.ts"
+        }
+      },
+      "exportedName": "deleteProcedureMemo",
+      "filename": "lawlink/src/server/procedures/actions.ts"
+    },
+    "40c8e2d56f66c12dc7c76a001827f460f320fa5b24": {
+      "workers": {
+        "app/(app)/matters/[id]/page": {
+          "moduleId": 713329,
+          "async": true,
+          "exportedName": "createExpress",
+          "filename": "lawlink/src/server/express/actions.ts"
+        }
+      },
+      "exportedName": "createExpress",
+      "filename": "lawlink/src/server/express/actions.ts"
+    },
+    "4016f61485e7921d721853b65186fd17de81cbb5b6": {
+      "workers": {
+        "app/(app)/matters/[id]/page": {
+          "moduleId": 713329,
+          "async": true,
+          "exportedName": "deleteExpress",
+          "filename": "lawlink/src/server/express/actions.ts"
+        }
+      },
+      "exportedName": "deleteExpress",
+      "filename": "lawlink/src/server/express/actions.ts"
+    },
+    "400fd4a1ec787542ae248586639f72324ea5511f42": {
+      "workers": {
+        "app/(app)/matters/[id]/page": {
+          "moduleId": 713329,
+          "async": true,
+          "exportedName": "parseExpressLabel",
+          "filename": "lawlink/src/server/ai/parse-express.ts"
+        }
+      },
+      "exportedName": "parseExpressLabel",
+      "filename": "lawlink/src/server/ai/parse-express.ts"
+    },
+    "4080b2fefaa0c6ad9530437967d674008bde9a37cf": {
+      "workers": {
+        "app/(app)/matters/[id]/page": {
+          "moduleId": 713329,
+          "async": true,
+          "exportedName": "parseSummons",
+          "filename": "lawlink/src/server/ai/parse-summons.ts"
+        }
+      },
+      "exportedName": "parseSummons",
+      "filename": "lawlink/src/server/ai/parse-summons.ts"
+    },
+    "40af900a68668b85fb325ebc4263ee0cc56d942c94": {
+      "workers": {
+        "app/(app)/matters/[id]/page": {
+          "moduleId": 713329,
+          "async": true,
+          "exportedName": "chatWithCase",
+          "filename": "lawlink/src/server/ai/case-chat.ts"
+        }
+      },
+      "exportedName": "chatWithCase",
+      "filename": "lawlink/src/server/ai/case-chat.ts"
+    },
+    "4028ff2aa53c61daccdf82a77aa58a559b977ef9ca": {
+      "workers": {
+        "app/(app)/matters/[id]/page": {
+          "moduleId": 713329,
+          "async": true,
+          "exportedName": "listWritings",
+          "filename": "lawlink/src/server/writings/actions.ts"
+        }
+      },
+      "exportedName": "listWritings",
+      "filename": "lawlink/src/server/writings/actions.ts"
+    },
+    "4065c34098025adf47aa4f972ceae7649ac03d77aa": {
+      "workers": {
+        "app/(app)/matters/[id]/page": {
+          "moduleId": 713329,
+          "async": true,
+          "exportedName": "createWriting",
+          "filename": "lawlink/src/server/writings/actions.ts"
+        }
+      },
+      "exportedName": "createWriting",
+      "filename": "lawlink/src/server/writings/actions.ts"
+    },
+    "60592213b0810dcaf160d53541bfdf2d60518e2817": {
+      "workers": {
+        "app/(app)/matters/[id]/page": {
+          "moduleId": 713329,
+          "async": true,
+          "exportedName": "updateWriting",
+          "filename": "lawlink/src/server/writings/actions.ts"
+        }
+      },
+      "exportedName": "updateWriting",
+      "filename": "lawlink/src/server/writings/actions.ts"
+    },
+    "40062b94f3d6d00b63ee3f3aba6077b2bba38f377b": {
+      "workers": {
+        "app/(app)/matters/[id]/page": {
+          "moduleId": 713329,
+          "async": true,
+          "exportedName": "deleteWriting",
+          "filename": "lawlink/src/server/writings/actions.ts"
+        }
+      },
+      "exportedName": "deleteWriting",
+      "filename": "lawlink/src/server/writings/actions.ts"
+    },
+    "0036e3c5a4829ffa282a9786ebccf47148bb497d88": {
+      "workers": {
+        "app/(app)/matters/[id]/page": {
+          "moduleId": 713329,
+          "async": true,
+          "exportedName": "syncWritingsFromFolder",
+          "filename": "lawlink/src/server/writings/actions.ts"
+        }
+      },
+      "exportedName": "syncWritingsFromFolder",
+      "filename": "lawlink/src/server/writings/actions.ts"
+    },
+    "40227f92703cf697ba88bc01d7e9401a1766cb35fa": {
+      "workers": {
+        "app/(app)/matters/[id]/page": {
+          "moduleId": 713329,
+          "async": true,
+          "exportedName": "saveWritingToMatter",
+          "filename": "lawlink/src/server/writings/actions.ts"
+        }
+      },
+      "exportedName": "saveWritingToMatter",
+      "filename": "lawlink/src/server/writings/actions.ts"
+    },
+    "40eb672673b7db9f572f2d26b72bdea4f2e0488063": {
+      "workers": {
+        "app/(app)/matters/[id]/page": {
+          "moduleId": 713329,
+          "async": true,
+          "exportedName": "getDocumentContent",
+          "filename": "lawlink/src/server/writings/actions.ts"
+        }
+      },
+      "exportedName": "getDocumentContent",
+      "filename": "lawlink/src/server/writings/actions.ts"
+    },
+    "404ec817d1f6298a0b35a536f27c07074461fe21cb": {
+      "workers": {
+        "app/(app)/matters/[id]/page": {
+          "moduleId": 713329,
+          "async": true,
+          "exportedName": "updateDocumentContent",
+          "filename": "lawlink/src/server/writings/actions.ts"
+        }
+      },
+      "exportedName": "updateDocumentContent",
+      "filename": "lawlink/src/server/writings/actions.ts"
+    },
+    "40e85b468174faf738358c09c7041c29479ec63a43": {
+      "workers": {
+        "app/(app)/matters/[id]/page": {
+          "moduleId": 713329,
+          "async": true,
+          "exportedName": "createTask",
+          "filename": "lawlink/src/server/tasks/actions.ts"
+        }
+      },
+      "exportedName": "createTask",
+      "filename": "lawlink/src/server/tasks/actions.ts"
+    },
+    "409ebd90e9a329db3d5fca59ee5b2305debc89cdde": {
+      "workers": {
+        "app/(app)/matters/[id]/page": {
+          "moduleId": 713329,
+          "async": true,
+          "exportedName": "createProcedureStage",
+          "filename": "lawlink/src/server/procedures/actions.ts"
+        }
+      },
+      "exportedName": "createProcedureStage",
+      "filename": "lawlink/src/server/procedures/actions.ts"
+    },
+    "40412e913d7f86442f7cf37854bc49d2bbf0ed0f03": {
+      "workers": {
+        "app/(app)/matters/[id]/page": {
+          "moduleId": 713329,
+          "async": true,
+          "exportedName": "ensureProcedureStage",
+          "filename": "lawlink/src/server/procedures/actions.ts"
+        }
+      },
+      "exportedName": "ensureProcedureStage",
+      "filename": "lawlink/src/server/procedures/actions.ts"
+    },
+    "401b05975ba68822326bfb1535568fec2344df9729": {
+      "workers": {
+        "app/(app)/matters/[id]/page": {
+          "moduleId": 713329,
+          "async": true,
+          "exportedName": "removeProcedureStage",
+          "filename": "lawlink/src/server/procedures/actions.ts"
+        }
+      },
+      "exportedName": "removeProcedureStage",
+      "filename": "lawlink/src/server/procedures/actions.ts"
+    },
+    "4061eb964233dd22b9258ff79b0d7b6ffb929c25d4": {
+      "workers": {
+        "app/(app)/matters/[id]/page": {
+          "moduleId": 713329,
+          "async": true,
+          "exportedName": "addProcedure",
+          "filename": "lawlink/src/server/procedures/actions.ts"
+        }
+      },
+      "exportedName": "addProcedure",
+      "filename": "lawlink/src/server/procedures/actions.ts"
+    },
+    "409779d5774611dbe072a96b9de3c3bcb028fbc451": {
+      "workers": {
+        "app/(app)/matters/[id]/page": {
+          "moduleId": 713329,
+          "async": true,
+          "exportedName": "listDeadlineRulesForProcedure",
+          "filename": "lawlink/src/server/deadline-rules/actions.ts"
+        }
+      },
+      "exportedName": "listDeadlineRulesForProcedure",
+      "filename": "lawlink/src/server/deadline-rules/actions.ts"
+    },
+    "40f9cc387980d95452e324231f7587e83bc851ed96": {
+      "workers": {
+        "app/(app)/matters/[id]/page": {
+          "moduleId": 713329,
+          "async": true,
+          "exportedName": "liftProperty",
+          "filename": "lawlink/src/server/preservations/actions-v2.ts"
+        }
+      },
+      "exportedName": "liftProperty",
+      "filename": "lawlink/src/server/preservations/actions-v2.ts"
+    },
+    "404c2075d153b9f73a48ab4913293fbd346b8d1345": {
+      "workers": {
+        "app/(app)/matters/[id]/page": {
+          "moduleId": 713329,
+          "async": true,
+          "exportedName": "createPreservationCase",
+          "filename": "lawlink/src/server/preservations/actions-v2.ts"
+        }
+      },
+      "exportedName": "createPreservationCase",
+      "filename": "lawlink/src/server/preservations/actions-v2.ts"
+    },
+    "40709f495d8a34d72897f70cdd9a29a7e5068e41ae": {
+      "workers": {
+        "app/(app)/matters/[id]/page": {
+          "moduleId": 713329,
+          "async": true,
+          "exportedName": "addTarget",
+          "filename": "lawlink/src/server/preservations/actions-v2.ts"
+        }
+      },
+      "exportedName": "addTarget",
+      "filename": "lawlink/src/server/preservations/actions-v2.ts"
+    },
+    "402a71fdee3d1ee61d8e164c035b10f8935d32ca8d": {
+      "workers": {
+        "app/(app)/matters/[id]/page": {
+          "moduleId": 713329,
+          "async": true,
+          "exportedName": "addProperty",
+          "filename": "lawlink/src/server/preservations/actions-v2.ts"
+        }
+      },
+      "exportedName": "addProperty",
+      "filename": "lawlink/src/server/preservations/actions-v2.ts"
+    },
+    "401df17277d77dd382627c2ad94fee03c1333bdabe": {
+      "workers": {
+        "app/(app)/matters/[id]/page": {
+          "moduleId": 713329,
+          "async": true,
+          "exportedName": "renewProperty",
+          "filename": "lawlink/src/server/preservations/actions-v2.ts"
+        }
+      },
+      "exportedName": "renewProperty",
+      "filename": "lawlink/src/server/preservations/actions-v2.ts"
+    },
+    "405350fdb90486de966b2af8db0d6b3beff0e4b88d": {
+      "workers": {
+        "app/(app)/matters/[id]/page": {
+          "moduleId": 713329,
+          "async": true,
+          "exportedName": "renderTemplate",
+          "filename": "lawlink/src/server/document-templates/actions.ts"
+        }
+      },
+      "exportedName": "renderTemplate",
+      "filename": "lawlink/src/server/document-templates/actions.ts"
+    },
+    "40811fce1f53794ade771dfc510430aafa524f1663": {
+      "workers": {
+        "app/(app)/matters/[id]/page": {
+          "moduleId": 713329,
+          "async": true,
+          "exportedName": "deleteDocument",
+          "filename": "lawlink/src/server/documents/actions.ts"
+        }
+      },
+      "exportedName": "deleteDocument",
+      "filename": "lawlink/src/server/documents/actions.ts"
+    },
+    "40523eb9af36a18f9dbf2505ea2a13204b257d0283": {
+      "workers": {
+        "app/(app)/matters/[id]/page": {
+          "moduleId": 713329,
+          "async": true,
+          "exportedName": "hardDeleteDocument",
+          "filename": "lawlink/src/server/documents/actions.ts"
+        }
+      },
+      "exportedName": "hardDeleteDocument",
+      "filename": "lawlink/src/server/documents/actions.ts"
+    },
+    "40239590fe27524edc4e2083a27c0d40ec6a1a716c": {
+      "workers": {
+        "app/(app)/matters/[id]/page": {
+          "moduleId": 713329,
+          "async": true,
+          "exportedName": "listAllDocuments",
+          "filename": "lawlink/src/server/documents/actions.ts"
+        }
+      },
+      "exportedName": "listAllDocuments",
+      "filename": "lawlink/src/server/documents/actions.ts"
+    },
+    "40a643f3267a7c6ce09be0ae51630490095bf02907": {
+      "workers": {
+        "app/(app)/matters/[id]/page": {
+          "moduleId": 713329,
+          "async": true,
+          "exportedName": "submitDocumentForReview",
+          "filename": "lawlink/src/server/documents/actions.ts"
+        }
+      },
+      "exportedName": "submitDocumentForReview",
+      "filename": "lawlink/src/server/documents/actions.ts"
+    },
+    "40829a9845e1a9f6f2df43ab508eb3a5c01a7c17ae": {
+      "workers": {
+        "app/(app)/matters/[id]/page": {
+          "moduleId": 713329,
+          "async": true,
+          "exportedName": "approveDocument",
+          "filename": "lawlink/src/server/documents/actions.ts"
+        }
+      },
+      "exportedName": "approveDocument",
+      "filename": "lawlink/src/server/documents/actions.ts"
+    },
+    "60b35b2f497e955f734122cb0b71f6850acd3b14a0": {
+      "workers": {
+        "app/(app)/matters/[id]/page": {
+          "moduleId": 713329,
+          "async": true,
+          "exportedName": "rejectDocument",
+          "filename": "lawlink/src/server/documents/actions.ts"
+        }
+      },
+      "exportedName": "rejectDocument",
+      "filename": "lawlink/src/server/documents/actions.ts"
+    },
+    "402ebc3e13973bb47a4866bcfe1ece6b10775a0082": {
+      "workers": {
+        "app/(app)/matters/[id]/page": {
+          "moduleId": 713329,
+          "async": true,
+          "exportedName": "fileDocument",
+          "filename": "lawlink/src/server/documents/actions.ts"
+        }
+      },
+      "exportedName": "fileDocument",
+      "filename": "lawlink/src/server/documents/actions.ts"
+    },
+    "40ed116666c4fe820c2b9803a3412f5487ab1a4d8e": {
+      "workers": {
+        "app/(app)/matters/[id]/page": {
+          "moduleId": 713329,
+          "async": true,
+          "exportedName": "createSealRequest",
+          "filename": "lawlink/src/server/seals/actions.ts"
+        }
+      },
+      "exportedName": "createSealRequest",
+      "filename": "lawlink/src/server/seals/actions.ts"
+    },
+    "001890475e50527359729800759da6041064510bb2": {
+      "workers": {
+        "app/(app)/matters/[id]/page": {
+          "moduleId": 713329,
+          "async": true,
+          "exportedName": "listSealTypeConfigs",
+          "filename": "lawlink/src/server/seals/actions.ts"
+        }
+      },
+      "exportedName": "listSealTypeConfigs",
+      "filename": "lawlink/src/server/seals/actions.ts"
+    },
+    "403e666fc7be6db1fbd4db441933b7a4d71f44e518": {
+      "workers": {
+        "app/(app)/matters/[id]/page": {
+          "moduleId": 713329,
+          "async": true,
+          "exportedName": "deleteProcedure",
+          "filename": "lawlink/src/server/procedures/actions.ts"
+        }
+      },
+      "exportedName": "deleteProcedure",
+      "filename": "lawlink/src/server/procedures/actions.ts"
+    },
+    "60552c88187dcbf75d189c7fed9b2c945281b08b57": {
+      "workers": {
+        "app/(app)/matters/[id]/page": {
+          "moduleId": 713329,
+          "async": true,
+          "exportedName": "saveMatterCustomValues",
+          "filename": "lawlink/src/server/custom-fields/actions.ts"
+        }
+      },
+      "exportedName": "saveMatterCustomValues",
+      "filename": "lawlink/src/server/custom-fields/actions.ts"
+    },
+    "40a34de48cb288f0ecd47314c988af94a17b72c67a": {
+      "workers": {
+        "app/(app)/matters/[id]/page": {
+          "moduleId": 713329,
+          "async": true,
+          "exportedName": "closeMatter",
+          "filename": "lawlink/src/server/matters/lifecycle.ts"
+        }
+      },
+      "exportedName": "closeMatter",
+      "filename": "lawlink/src/server/matters/lifecycle.ts"
+    },
+    "40cb603528b4ba9136f94e87c854299bf034d200dc": {
+      "workers": {
+        "app/(app)/matters/[id]/page": {
+          "moduleId": 713329,
+          "async": true,
+          "exportedName": "reopenMatter",
+          "filename": "lawlink/src/server/matters/lifecycle.ts"
+        }
+      },
+      "exportedName": "reopenMatter",
+      "filename": "lawlink/src/server/matters/lifecycle.ts"
+    },
+    "407bd0da76ef8e19cf901ec8ca00f3c8165f21f2bb": {
+      "workers": {
+        "app/(app)/matters/[id]/page": {
+          "moduleId": 713329,
+          "async": true,
+          "exportedName": "holdMatter",
+          "filename": "lawlink/src/server/matters/lifecycle.ts"
+        }
+      },
+      "exportedName": "holdMatter",
+      "filename": "lawlink/src/server/matters/lifecycle.ts"
+    },
+    "40d2a9e067a9d37f952834657b22be389263d264b9": {
+      "workers": {
+        "app/(app)/matters/[id]/page": {
+          "moduleId": 713329,
+          "async": true,
+          "exportedName": "searchCauses",
+          "filename": "lawlink/src/server/causes/actions.ts"
+        }
+      },
+      "exportedName": "searchCauses",
+      "filename": "lawlink/src/server/causes/actions.ts"
+    },
+    "40350c864453dc02947e5ab2795f49e038760cc622": {
+      "workers": {
+        "app/(app)/matters/[id]/page": {
+          "moduleId": 713329,
+          "async": true,
+          "exportedName": "batchReviewMatterDocuments",
+          "filename": "lawlink/src/server/ai/batch-review-matter.ts"
+        }
+      },
+      "exportedName": "batchReviewMatterDocuments",
+      "filename": "lawlink/src/server/ai/batch-review-matter.ts"
+    }
+  },
+  "edge": {}
+}

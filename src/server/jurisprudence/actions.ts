@@ -126,7 +126,7 @@ export async function importJurisprudenceBatch(
   // Solo admin puede importar
   if (
     session.user.role !== "ADMIN" &&
-    session.user.role !== "SYSTEM_ADMIN"
+    !session.user.isSystemAdmin
   ) {
     throw new Error("Solo el administrador puede importar jurisprudencia");
   }

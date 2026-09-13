@@ -1,0 +1,3 @@
+module.exports=[109283,(a,b,c)=>{let{createClientModuleProxy:d}=a.r(237591);a.n(d("[project]/lawlink/node_modules/next/dist/client/components/builtin/global-error.js <module evaluation>"))},911730,(a,b,c)=>{let{createClientModuleProxy:d}=a.r(237591);a.n(d("[project]/lawlink/node_modules/next/dist/client/components/builtin/global-error.js"))},425887,a=>{"use strict";a.i(109283);var b=a.i(911730);a.n(b)},123886,a=>{a.n(a.i(425887))}];
+
+//# sourceMappingURL=1rdk_next_dist_client_components_builtin_global-error_0tfzn54.js.map

@@ -74,10 +74,10 @@ export const PARTY_TYPE_OPTIONS: PartyType[] = [
 // v0.30: Requiere inscripcion en el colegio de abogados
 export const barFilingLabel: Record<BarFilingType, string> = {
   NONE: "No",
-  COLLECTIVE: "SÃ­, caso colectivo",
-  SENSITIVE: "SÃ­, caso sensible",
-  MAJOR: "SÃ­, caso de gran envergadura",
-  OTHER: "SÃ­, otro caso especial"
+  COLLECTIVE: "Si­, caso colectivo",
+  SENSITIVE: "Si­, caso sensible",
+  MAJOR: "Si­, caso de gran envergadura",
+  OTHER: "Si­, otro caso especial"
 };
 
 export const BAR_FILING_OPTIONS: BarFilingType[] = [
@@ -171,8 +171,7 @@ export const intakeStatusLabel: Record<IntakeStatus, string> = {
 };
 
 export const userRoleLabel: Record<UserRole, string> = {
-  SYSTEM_ADMIN: "Super Administrador",
-  ADMIN: "Administrador del sistema",
+  ADMIN: "Administrador del estudio",
   PRINCIPAL_LAWYER: "Abogado principal",
   LAWYER: "Abogado a cargo",
   ASSISTANT: "Asistente",

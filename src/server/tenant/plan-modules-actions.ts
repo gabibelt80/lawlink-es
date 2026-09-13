@@ -24,7 +24,7 @@ const plansSchema = z.object({
 
 export async function getPlanConfigAction() {
   const session = await requireSession();
-  if (session.user.role !== "SYSTEM_ADMIN") {
+  if (!session.user.isSystemAdmin) {
     throw new Error("Solo el administrador del sistema puede configurar planes");
   }
 
@@ -76,7 +76,7 @@ export async function getPlanConfigAction() {
 
 export async function savePlansConfigAction(input: z.infer<typeof plansSchema>) {
   const session = await requireSession();
-  if (session.user.role !== "SYSTEM_ADMIN") {
+  if (!session.user.isSystemAdmin) {
     throw new Error("Solo el administrador del sistema puede configurar planes");
   }
 
@@ -116,7 +116,7 @@ export async function savePlansConfigAction(input: z.infer<typeof plansSchema>) 
 
 export async function savePlanModulesAction(input: z.infer<typeof planModulesSchema>) {
   const session = await requireSession();
-  if (session.user.role !== "SYSTEM_ADMIN") {
+  if (!session.user.isSystemAdmin) {
     throw new Error("Solo el administrador del sistema puede configurar planes");
   }
 

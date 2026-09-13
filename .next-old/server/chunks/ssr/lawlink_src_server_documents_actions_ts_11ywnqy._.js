@@ -1,0 +1,3 @@
+module.exports=[763090,a=>{"use strict";a.s([],227900),a.i(227900),a.i(648844);var b=a.i(602579);let c=(0,b.createServerReference)("40811fce1f53794ade771dfc510430aafa524f1663",b.callServer,void 0,b.findSourceMapURL,"deleteDocument");b.callServer,b.findSourceMapURL,b.callServer,b.findSourceMapURL,b.callServer,b.findSourceMapURL,b.callServer,b.findSourceMapURL,b.callServer,b.findSourceMapURL,b.callServer,b.findSourceMapURL,a.s(["deleteDocument",0,c],763090)}];
+
+//# sourceMappingURL=lawlink_src_server_documents_actions_ts_11ywnqy._.js.map

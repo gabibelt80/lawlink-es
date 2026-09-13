@@ -1,0 +1,3 @@
+module.exports=[153410,a=>{"use strict";var b=a.i(417237),c=a.i(108687);a.i(820459);var d=a.i(600605),e=a.i(991013);async function f({children:a}){let g=await (0,c.getSession)();g?.user?.email||(0,d.redirect)("/login");let h=await e.prisma.firmUser.findUnique({where:{email:g.user.email}});return h&&null===h.firmId||(0,d.redirect)("/dashboard"),(0,b.jsx)("div",{className:"min-h-screen bg-muted/30 px-4 py-6 lg:px-8",children:(0,b.jsx)("div",{className:"mx-auto max-w-6xl",children:a})})}a.s(["default",0,f])},340446,a=>{a.n(a.i(153410))}];
+
+//# sourceMappingURL=lawlink_src_app_%28app%29_admin_layout_tsx_16oq67g._.js.map

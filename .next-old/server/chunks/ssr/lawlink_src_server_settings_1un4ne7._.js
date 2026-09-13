@@ -1,0 +1,3 @@
+module.exports=[751965,a=>{"use strict";var b=a.i(602579);let c=(0,b.createServerReference)("40ada378f71382df7a9b6005677e66314d7558d1b3",b.callServer,void 0,b.findSourceMapURL,"saveAgentsConfigAction");a.s(["saveAgentsConfigAction",0,c])},351143,a=>{"use strict";a.s([],553529),a.i(553529),a.i(751965);var b=a.i(602579);b.callServer,b.findSourceMapURL;let c=(0,b.createServerReference)("00e7eb52a4546244ac44bba045885f5e86dc6aa1c2",b.callServer,void 0,b.findSourceMapURL,"getAgentsStatus"),d=(0,b.createServerReference)("40f94da0d20b62d6773c1502ba8827e228881e6032",b.callServer,void 0,b.findSourceMapURL,"askAgentAboutCase");a.s(["askAgentAboutCase",0,d,"getAgentsStatus",0,c],351143)}];
+
+//# sourceMappingURL=lawlink_src_server_settings_1un4ne7._.js.map

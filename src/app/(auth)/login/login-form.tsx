@@ -51,7 +51,7 @@ export function LoginForm() {
 
     // Obtener la sesión para saber el rol
     const session = (await getSession()) as AppSession | null;
-    const isSystemAdmin = session?.user?.role === "SYSTEM_ADMIN";
+    const isSystemAdmin = session?.user?.isSystemAdmin === true;
 
     // Redirigir según rol y callbackUrl
     if (callbackUrl && callbackUrl !== "/") {

@@ -5,13 +5,9 @@ import { AdminView } from "./_components/admin-view";
 
 export default async function AdminPage() {
   const session = await getSession();
-  if (!session?.user?.email) redirect("/login");
+  if (!session?.user) redirect("/login");
 
-  const firmUser = await prisma.firmUser.findUnique({
-    where: { email: session.user.email },
-  });
-
-  if (!firmUser || firmUser.firmId !== null) {
+  if (!session.user.isSystemAdmin) {
     redirect("/dashboard");
   }
 

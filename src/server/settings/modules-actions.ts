@@ -18,7 +18,7 @@ import { prisma } from "@/lib/prisma";
 export async function getModulesForCurrentFirm(): Promise<ModuleKey[]> {
   const session = await requireSession();
 
-  if (session.user.role === "SYSTEM_ADMIN") {
+  if (session.user.isSystemAdmin) {
     return Object.keys(MODULES) as ModuleKey[];
   }
 

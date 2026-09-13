@@ -1,0 +1,281 @@
+{
+  "node": {
+    "001e51583bea9d8720b65b6de98d590586b86c0125": {
+      "workers": {
+        "app/(app)/settings/audit/page": {
+          "moduleId": 968843,
+          "async": false,
+          "exportedName": "getModulesForCurrentFirm",
+          "filename": "lawlink/src/server/settings/modules-actions.ts"
+        }
+      },
+      "exportedName": "getModulesForCurrentFirm",
+      "filename": "lawlink/src/server/settings/modules-actions.ts"
+    },
+    "409c5fdc5778dbcc9eeb041b71dd0fe9caaa26f006": {
+      "workers": {
+        "app/(app)/settings/audit/page": {
+          "moduleId": 968843,
+          "async": false,
+          "exportedName": "getModuleEnabled",
+          "filename": "lawlink/src/server/settings/modules-actions.ts"
+        }
+      },
+      "exportedName": "getModuleEnabled",
+      "filename": "lawlink/src/server/settings/modules-actions.ts"
+    },
+    "403181b521cee7e605d318f65ffe9da207854f30c2": {
+      "workers": {
+        "app/(app)/settings/audit/page": {
+          "moduleId": 968843,
+          "async": false,
+          "exportedName": "getNotifications",
+          "filename": "lawlink/src/server/notifications/actions.ts"
+        }
+      },
+      "exportedName": "getNotifications",
+      "filename": "lawlink/src/server/notifications/actions.ts"
+    },
+    "00933c52d8c924f9ff104c9dfa92e52e3f7cfaffe9": {
+      "workers": {
+        "app/(app)/settings/audit/page": {
+          "moduleId": 968843,
+          "async": false,
+          "exportedName": "getUnreadCount",
+          "filename": "lawlink/src/server/notifications/actions.ts"
+        }
+      },
+      "exportedName": "getUnreadCount",
+      "filename": "lawlink/src/server/notifications/actions.ts"
+    },
+    "40d1057ca95e8e354b91b026231cfd4cf4f188ce2d": {
+      "workers": {
+        "app/(app)/settings/audit/page": {
+          "moduleId": 968843,
+          "async": false,
+          "exportedName": "markNotificationRead",
+          "filename": "lawlink/src/server/notifications/actions.ts"
+        }
+      },
+      "exportedName": "markNotificationRead",
+      "filename": "lawlink/src/server/notifications/actions.ts"
+    },
+    "00f25fd1381ebdc77ccb71c6135c56b38b137fefb6": {
+      "workers": {
+        "app/(app)/settings/audit/page": {
+          "moduleId": 968843,
+          "async": false,
+          "exportedName": "markAllNotificationsRead",
+          "filename": "lawlink/src/server/notifications/actions.ts"
+        }
+      },
+      "exportedName": "markAllNotificationsRead",
+      "filename": "lawlink/src/server/notifications/actions.ts"
+    },
+    "40189708ed0780afb16d03c46926654392639c53b9": {
+      "workers": {
+        "app/(app)/settings/audit/page": {
+          "moduleId": 968843,
+          "async": false,
+          "exportedName": "globalSearch",
+          "filename": "lawlink/src/server/search/actions.ts"
+        }
+      },
+      "exportedName": "globalSearch",
+      "filename": "lawlink/src/server/search/actions.ts"
+    },
+    "00f46897a85215cf8ecee6e505f835fe67120c06e0": {
+      "workers": {
+        "app/(app)/settings/audit/page": {
+          "moduleId": 968843,
+          "async": false,
+          "exportedName": "listActiveBanners",
+          "filename": "lawlink/src/server/announcements/actions.ts"
+        }
+      },
+      "exportedName": "listActiveBanners",
+      "filename": "lawlink/src/server/announcements/actions.ts"
+    },
+    "401ee88a0ec67ecfc6b3250aebb5a65dd8f16cb66f": {
+      "workers": {
+        "app/(app)/settings/audit/page": {
+          "moduleId": 968843,
+          "async": false,
+          "exportedName": "archiveAnnouncement",
+          "filename": "lawlink/src/server/announcements/actions.ts"
+        }
+      },
+      "exportedName": "archiveAnnouncement",
+      "filename": "lawlink/src/server/announcements/actions.ts"
+    },
+    "402edd8b0854ee596ebfa258049de9925062ff4a71": {
+      "workers": {
+        "app/(app)/settings/audit/page": {
+          "moduleId": 968843,
+          "async": false,
+          "exportedName": "createAnnouncement",
+          "filename": "lawlink/src/server/announcements/actions.ts"
+        }
+      },
+      "exportedName": "createAnnouncement",
+      "filename": "lawlink/src/server/announcements/actions.ts"
+    },
+    "4084bb7a4f5ddbc6666bcaf9ce7d7950ee70f1bc0c": {
+      "workers": {
+        "app/(app)/settings/audit/page": {
+          "moduleId": 968843,
+          "async": false,
+          "exportedName": "listAnnouncements",
+          "filename": "lawlink/src/server/announcements/actions.ts"
+        }
+      },
+      "exportedName": "listAnnouncements",
+      "filename": "lawlink/src/server/announcements/actions.ts"
+    },
+    "409ba5b9e7730daffc1931db38a12dc3df5c6e14d0": {
+      "workers": {
+        "app/(app)/settings/audit/page": {
+          "moduleId": 968843,
+          "async": false,
+          "exportedName": "updateAnnouncement",
+          "filename": "lawlink/src/server/announcements/actions.ts"
+        }
+      },
+      "exportedName": "updateAnnouncement",
+      "filename": "lawlink/src/server/announcements/actions.ts"
+    },
+    "0068097f66e5d88437f698a7b6835c2f2763b98b64": {
+      "workers": {
+        "app/(app)/settings/audit/page": {
+          "moduleId": 968843,
+          "async": false,
+          "exportedName": "listStageTemplates",
+          "filename": "lawlink/src/server/settings/actions.ts"
+        }
+      },
+      "exportedName": "listStageTemplates",
+      "filename": "lawlink/src/server/settings/actions.ts"
+    },
+    "400ebde00934c780637e099637f2dea34f654923a8": {
+      "workers": {
+        "app/(app)/settings/audit/page": {
+          "moduleId": 968843,
+          "async": false,
+          "exportedName": "upsertStageTemplate",
+          "filename": "lawlink/src/server/settings/actions.ts"
+        }
+      },
+      "exportedName": "upsertStageTemplate",
+      "filename": "lawlink/src/server/settings/actions.ts"
+    },
+    "40e46a3ca240109f242e106e3465188a044ecab2ca": {
+      "workers": {
+        "app/(app)/settings/audit/page": {
+          "moduleId": 968843,
+          "async": false,
+          "exportedName": "listAuditLogs",
+          "filename": "lawlink/src/server/settings/actions.ts"
+        }
+      },
+      "exportedName": "listAuditLogs",
+      "filename": "lawlink/src/server/settings/actions.ts"
+    },
+    "0019b56bd53c71c9892fa56e0399197c4988c3b11d": {
+      "workers": {
+        "app/(app)/settings/audit/page": {
+          "moduleId": 968843,
+          "async": false,
+          "exportedName": "listActiveColleagues",
+          "filename": "lawlink/src/server/users/actions.ts"
+        }
+      },
+      "exportedName": "listActiveColleagues",
+      "filename": "lawlink/src/server/users/actions.ts"
+    },
+    "0067d8679fd6928a26abb1f9a91a167286820ce7fa": {
+      "workers": {
+        "app/(app)/settings/audit/page": {
+          "moduleId": 968843,
+          "async": false,
+          "exportedName": "listUsers",
+          "filename": "lawlink/src/server/users/actions.ts"
+        }
+      },
+      "exportedName": "listUsers",
+      "filename": "lawlink/src/server/users/actions.ts"
+    },
+    "407e64016ca3cc06b434ef1a63a167d7b54c86d2bf": {
+      "workers": {
+        "app/(app)/settings/audit/page": {
+          "moduleId": 968843,
+          "async": false,
+          "exportedName": "changeMyPassword",
+          "filename": "lawlink/src/server/users/actions.ts"
+        }
+      },
+      "exportedName": "changeMyPassword",
+      "filename": "lawlink/src/server/users/actions.ts"
+    },
+    "407ea011575baf8545afce34c833161c2b5966f9b8": {
+      "workers": {
+        "app/(app)/settings/audit/page": {
+          "moduleId": 968843,
+          "async": false,
+          "exportedName": "resetUserPassword",
+          "filename": "lawlink/src/server/users/actions.ts"
+        }
+      },
+      "exportedName": "resetUserPassword",
+      "filename": "lawlink/src/server/users/actions.ts"
+    },
+    "407ec75537a8afd0c907a63e13d02866fa486d08ca": {
+      "workers": {
+        "app/(app)/settings/audit/page": {
+          "moduleId": 968843,
+          "async": false,
+          "exportedName": "updateUserRole",
+          "filename": "lawlink/src/server/users/actions.ts"
+        }
+      },
+      "exportedName": "updateUserRole",
+      "filename": "lawlink/src/server/users/actions.ts"
+    },
+    "409bbe14fdbca3e69de6b8c88ad7807e820961472d": {
+      "workers": {
+        "app/(app)/settings/audit/page": {
+          "moduleId": 968843,
+          "async": false,
+          "exportedName": "createUser",
+          "filename": "lawlink/src/server/users/actions.ts"
+        }
+      },
+      "exportedName": "createUser",
+      "filename": "lawlink/src/server/users/actions.ts"
+    },
+    "40b9b1a2a7fd1f4ba4284f1a3f99fed2a14ef08fcd": {
+      "workers": {
+        "app/(app)/settings/audit/page": {
+          "moduleId": 968843,
+          "async": false,
+          "exportedName": "saveMyAvatar",
+          "filename": "lawlink/src/server/users/actions.ts"
+        }
+      },
+      "exportedName": "saveMyAvatar",
+      "filename": "lawlink/src/server/users/actions.ts"
+    },
+    "40d0b0239ec75405e7feb0fcb4e9bdf1faf0e7bbc8": {
+      "workers": {
+        "app/(app)/settings/audit/page": {
+          "moduleId": 968843,
+          "async": false,
+          "exportedName": "toggleUserActive",
+          "filename": "lawlink/src/server/users/actions.ts"
+        }
+      },
+      "exportedName": "toggleUserActive",
+      "filename": "lawlink/src/server/users/actions.ts"
+    }
+  },
+  "edge": {}
+}

@@ -34,7 +34,7 @@ export type ModuleConfigRow = {
  */
 export async function listModulesAction(): Promise<ModuleConfigRow[]> {
   const session = await requireSession();
-  if (session.user.role !== "SYSTEM_ADMIN") {
+  if (!session.user.isSystemAdmin) {
     throw new Error("Solo el administrador del sistema puede ver los módulos");
   }
 
@@ -96,7 +96,7 @@ const updateModuleSchema = z.object({
 
 export async function updateModuleAction(input: z.infer<typeof updateModuleSchema>) {
   const session = await requireSession();
-  if (session.user.role !== "SYSTEM_ADMIN") {
+  if (!session.user.isSystemAdmin) {
     throw new Error("Solo el administrador del sistema puede editar módulos");
   }
 
@@ -139,7 +139,7 @@ export type FirmWithModules = {
 
 export async function listFirmsWithModulesAction(query?: string): Promise<FirmWithModules[]> {
   const session = await requireSession();
-  if (session.user.role !== "SYSTEM_ADMIN") {
+  if (!session.user.isSystemAdmin) {
     throw new Error("Solo el administrador del sistema puede ver estudios");
   }
 
@@ -198,7 +198,7 @@ const setBaseModulesSchema = z.object({
 
 export async function setFirmBaseModulesAction(input: z.infer<typeof setBaseModulesSchema>) {
   const session = await requireSession();
-  if (session.user.role !== "SYSTEM_ADMIN") {
+  if (!session.user.isSystemAdmin) {
     throw new Error("Solo el administrador del sistema puede editar módulos del estudio");
   }
 
@@ -227,7 +227,7 @@ const togglePremiumSchema = z.object({
  */
 export async function setFirmPremiumModuleAction(input: z.infer<typeof togglePremiumSchema>) {
   const session = await requireSession();
-  if (session.user.role !== "SYSTEM_ADMIN") {
+  if (!session.user.isSystemAdmin) {
     throw new Error("Solo el administrador del sistema puede editar módulos del estudio");
   }
 

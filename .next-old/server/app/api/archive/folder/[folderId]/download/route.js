@@ -1,0 +1,12 @@
+var R=require("../../../../../../chunks/[turbopack]_runtime.js")("server/app/api/archive/folder/[folderId]/download/route.js")
+R.c("server/chunks/[root-of-the-server]__0k_hoah._.js")
+R.c("server/chunks/1rdk_07m0du_._.js")
+R.c("server/chunks/lawlink_0-s4yca._.js")
+R.c("server/chunks/1rdk_pizzip_0ifnvry._.js")
+R.c("server/chunks/lawlink_20q9tfh._.js")
+R.c("server/chunks/1rdk_next_dist_0ugj50x._.js")
+R.c("server/chunks/1rdk_next_1ex1_e6._.js")
+R.c("server/chunks/[root-of-the-server]__01v1c6l._.js")
+R.c("server/chunks/02z__server_app_api_archive_folder_[folderId]_download_route_actions_0-onl7-.js")
+R.m(337676)
+module.exports=R.m(337676).exports

@@ -3,6 +3,7 @@ import CredentialsProvider from "next-auth/providers/credentials";
 import { compare } from "bcryptjs";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
+import type { SessionRole } from "@/types/next-auth";
 
 const credentialsSchema = z.object({
   email: z.string().email(),
@@ -57,7 +58,7 @@ export const authOptions: NextAuthOptions = {
     const isSystemAdmin = firmUser.firmId === null;
 
     // Buscar el rol real en el User del tenant (schema del firm)
-    let role: string = isSystemAdmin ? "SYSTEM_ADMIN" : "LAWYER";
+    let role: SessionRole = isSystemAdmin ? "SYSTEM_ADMIN" : "LAWYER";
     if (!isSystemAdmin && firmUser.firm) {
       const { getTenantPrismaSync } = await import("@/lib/tenant-prisma");
       try {

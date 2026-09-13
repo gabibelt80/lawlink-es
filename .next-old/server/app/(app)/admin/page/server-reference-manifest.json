@@ -1,0 +1,233 @@
+{
+  "node": {
+    "001e51583bea9d8720b65b6de98d590586b86c0125": {
+      "workers": {
+        "app/(app)/admin/page": {
+          "moduleId": 415504,
+          "async": true,
+          "exportedName": "getModulesForCurrentFirm",
+          "filename": "lawlink/src/server/settings/modules-actions.ts"
+        }
+      },
+      "exportedName": "getModulesForCurrentFirm",
+      "filename": "lawlink/src/server/settings/modules-actions.ts"
+    },
+    "409c5fdc5778dbcc9eeb041b71dd0fe9caaa26f006": {
+      "workers": {
+        "app/(app)/admin/page": {
+          "moduleId": 415504,
+          "async": true,
+          "exportedName": "getModuleEnabled",
+          "filename": "lawlink/src/server/settings/modules-actions.ts"
+        }
+      },
+      "exportedName": "getModuleEnabled",
+      "filename": "lawlink/src/server/settings/modules-actions.ts"
+    },
+    "403181b521cee7e605d318f65ffe9da207854f30c2": {
+      "workers": {
+        "app/(app)/admin/page": {
+          "moduleId": 415504,
+          "async": true,
+          "exportedName": "getNotifications",
+          "filename": "lawlink/src/server/notifications/actions.ts"
+        }
+      },
+      "exportedName": "getNotifications",
+      "filename": "lawlink/src/server/notifications/actions.ts"
+    },
+    "00933c52d8c924f9ff104c9dfa92e52e3f7cfaffe9": {
+      "workers": {
+        "app/(app)/admin/page": {
+          "moduleId": 415504,
+          "async": true,
+          "exportedName": "getUnreadCount",
+          "filename": "lawlink/src/server/notifications/actions.ts"
+        }
+      },
+      "exportedName": "getUnreadCount",
+      "filename": "lawlink/src/server/notifications/actions.ts"
+    },
+    "40d1057ca95e8e354b91b026231cfd4cf4f188ce2d": {
+      "workers": {
+        "app/(app)/admin/page": {
+          "moduleId": 415504,
+          "async": true,
+          "exportedName": "markNotificationRead",
+          "filename": "lawlink/src/server/notifications/actions.ts"
+        }
+      },
+      "exportedName": "markNotificationRead",
+      "filename": "lawlink/src/server/notifications/actions.ts"
+    },
+    "00f25fd1381ebdc77ccb71c6135c56b38b137fefb6": {
+      "workers": {
+        "app/(app)/admin/page": {
+          "moduleId": 415504,
+          "async": true,
+          "exportedName": "markAllNotificationsRead",
+          "filename": "lawlink/src/server/notifications/actions.ts"
+        }
+      },
+      "exportedName": "markAllNotificationsRead",
+      "filename": "lawlink/src/server/notifications/actions.ts"
+    },
+    "40189708ed0780afb16d03c46926654392639c53b9": {
+      "workers": {
+        "app/(app)/admin/page": {
+          "moduleId": 415504,
+          "async": true,
+          "exportedName": "globalSearch",
+          "filename": "lawlink/src/server/search/actions.ts"
+        }
+      },
+      "exportedName": "globalSearch",
+      "filename": "lawlink/src/server/search/actions.ts"
+    },
+    "00f46897a85215cf8ecee6e505f835fe67120c06e0": {
+      "workers": {
+        "app/(app)/admin/page": {
+          "moduleId": 415504,
+          "async": true,
+          "exportedName": "listActiveBanners",
+          "filename": "lawlink/src/server/announcements/actions.ts"
+        }
+      },
+      "exportedName": "listActiveBanners",
+      "filename": "lawlink/src/server/announcements/actions.ts"
+    },
+    "401ee88a0ec67ecfc6b3250aebb5a65dd8f16cb66f": {
+      "workers": {
+        "app/(app)/admin/page": {
+          "moduleId": 415504,
+          "async": true,
+          "exportedName": "archiveAnnouncement",
+          "filename": "lawlink/src/server/announcements/actions.ts"
+        }
+      },
+      "exportedName": "archiveAnnouncement",
+      "filename": "lawlink/src/server/announcements/actions.ts"
+    },
+    "402edd8b0854ee596ebfa258049de9925062ff4a71": {
+      "workers": {
+        "app/(app)/admin/page": {
+          "moduleId": 415504,
+          "async": true,
+          "exportedName": "createAnnouncement",
+          "filename": "lawlink/src/server/announcements/actions.ts"
+        }
+      },
+      "exportedName": "createAnnouncement",
+      "filename": "lawlink/src/server/announcements/actions.ts"
+    },
+    "4084bb7a4f5ddbc6666bcaf9ce7d7950ee70f1bc0c": {
+      "workers": {
+        "app/(app)/admin/page": {
+          "moduleId": 415504,
+          "async": true,
+          "exportedName": "listAnnouncements",
+          "filename": "lawlink/src/server/announcements/actions.ts"
+        }
+      },
+      "exportedName": "listAnnouncements",
+      "filename": "lawlink/src/server/announcements/actions.ts"
+    },
+    "409ba5b9e7730daffc1931db38a12dc3df5c6e14d0": {
+      "workers": {
+        "app/(app)/admin/page": {
+          "moduleId": 415504,
+          "async": true,
+          "exportedName": "updateAnnouncement",
+          "filename": "lawlink/src/server/announcements/actions.ts"
+        }
+      },
+      "exportedName": "updateAnnouncement",
+      "filename": "lawlink/src/server/announcements/actions.ts"
+    },
+    "402ac7851ecd5a71831663362e145583459c7c5366": {
+      "workers": {
+        "app/(app)/admin/page": {
+          "moduleId": 415504,
+          "async": true,
+          "exportedName": "createFirmAction",
+          "filename": "lawlink/src/server/tenant/admin-actions.ts"
+        }
+      },
+      "exportedName": "createFirmAction",
+      "filename": "lawlink/src/server/tenant/admin-actions.ts"
+    },
+    "4076ab910be1441ca62f11b33c084532c57ee709b2": {
+      "workers": {
+        "app/(app)/admin/page": {
+          "moduleId": 415504,
+          "async": true,
+          "exportedName": "toggleFirmActiveAction",
+          "filename": "lawlink/src/server/tenant/admin-actions.ts"
+        }
+      },
+      "exportedName": "toggleFirmActiveAction",
+      "filename": "lawlink/src/server/tenant/admin-actions.ts"
+    },
+    "4007e02a3af0b1386b6656875395c36fb455405fad": {
+      "workers": {
+        "app/(app)/admin/page": {
+          "moduleId": 415504,
+          "async": true,
+          "exportedName": "updateFirmPlanAction",
+          "filename": "lawlink/src/server/tenant/admin-actions.ts"
+        }
+      },
+      "exportedName": "updateFirmPlanAction",
+      "filename": "lawlink/src/server/tenant/admin-actions.ts"
+    },
+    "40b329bfeeda8a827296b2d2494c7c6fe70bb5ea6c": {
+      "workers": {
+        "app/(app)/admin/page": {
+          "moduleId": 415504,
+          "async": true,
+          "exportedName": "suspendFirmAction",
+          "filename": "lawlink/src/server/tenant/admin-actions.ts"
+        }
+      },
+      "exportedName": "suspendFirmAction",
+      "filename": "lawlink/src/server/tenant/admin-actions.ts"
+    },
+    "40c37616e273a1e8cf49886ede832523aeb2a3fe5d": {
+      "workers": {
+        "app/(app)/admin/page": {
+          "moduleId": 415504,
+          "async": true,
+          "exportedName": "scheduleFirmDeletionAction",
+          "filename": "lawlink/src/server/tenant/admin-actions.ts"
+        }
+      },
+      "exportedName": "scheduleFirmDeletionAction",
+      "filename": "lawlink/src/server/tenant/admin-actions.ts"
+    },
+    "40a8532bd732c06e0d9a83885e9b3457173b2793e0": {
+      "workers": {
+        "app/(app)/admin/page": {
+          "moduleId": 415504,
+          "async": true,
+          "exportedName": "cancelFirmDeletionAction",
+          "filename": "lawlink/src/server/tenant/admin-actions.ts"
+        }
+      },
+      "exportedName": "cancelFirmDeletionAction",
+      "filename": "lawlink/src/server/tenant/admin-actions.ts"
+    },
+    "400f642182e0725bbd6d35256fcbb6d08a6fba7ba4": {
+      "workers": {
+        "app/(app)/admin/page": {
+          "moduleId": 415504,
+          "async": true,
+          "exportedName": "hardDeleteFirmAction",
+          "filename": "lawlink/src/server/tenant/admin-actions.ts"
+        }
+      },
+      "exportedName": "hardDeleteFirmAction",
+      "filename": "lawlink/src/server/tenant/admin-actions.ts"
+    }
+  },
+  "edge": {}
+}

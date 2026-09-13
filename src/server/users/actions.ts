@@ -9,7 +9,15 @@ import { requireSession } from "@/lib/auth/session";
 import { audit } from "@/server/audit";
 
 const userRoleSchema = z.enum([
-  "SYSTEM_ADMIN",
+  "ADMIN",
+  "PRINCIPAL_LAWYER",
+  "LAWYER",
+  "ASSISTANT",
+  "FINANCE"
+]);
+
+// Roles asignables desde el panel del estudio (nunca SYSTEM_ADMIN)
+const assignableRoleSchema = z.enum([
   "ADMIN",
   "PRINCIPAL_LAWYER",
   "LAWYER",
@@ -21,13 +29,13 @@ const userCreateSchema = z.object({
   name: z.string().min(1, "Nombre y apellido obligatorio").max(40),
   email: z.string().email("Email invalido"),
   password: z.string().min(8, "La contrasena debe tener al menos 8 caracteres").max(128),
-  role: userRoleSchema,
+  role: assignableRoleSchema,
   phone: z.string().max(30).optional().or(z.literal(""))
 });
 
 const userUpdateRoleSchema = z.object({
   id: z.string().cuid(),
-  role: userRoleSchema
+  role: assignableRoleSchema,
 });
 
 const resetPasswordSchema = z.object({

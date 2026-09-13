@@ -1,0 +1,3 @@
+module.exports=[120493,e=>{"use strict";async function s(){if("1"===process.env.DISABLE_CRON)return;let{registerCronJobs:s}=await e.A(916275);s()}e.s(["register",0,s])},916275,e=>{e.v(s=>Promise.all(["server/chunks/[root-of-the-server]__044ejyf._.js","server/chunks/lawlink_0qxs37u._.js","server/chunks/[root-of-the-server]__1iqj1vq._.js"].map(s=>e.l(s))).then(()=>s(778659)))}];
+
+//# sourceMappingURL=lawlink_src_02am_g6._.js.map
