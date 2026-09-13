@@ -40,7 +40,7 @@ import { cn } from "@/lib/utils";
 import { isSystemAdmin as checkSystemAdmin, roleLabel as getRoleLabel } from "@/lib/auth/roles";
 
 const roleLabels: Record<string, string> = {
-  ADMIN: "Administrador del sistema",
+  ADMIN: "Administrador del estudio",
   PRINCIPAL_LAWYER: "Abogado principal",
   LAWYER: "Abogado a cargo",
   ASSISTANT: "Asistente",
