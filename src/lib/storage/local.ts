@@ -16,14 +16,15 @@ export class LocalStorageProvider implements StorageProvider {
    * å†™å…¥æ–‡ä»¶åˆ° storage/<scope>/<yyyymm>/<uuid>.bin
    * Volverç›¸å¯¹ STORAGE_ROOT çš„ pathï¼ˆå­˜åˆ°æ•°æ®åº“ï¼‰
    */
-  async writeFile(scope: string, data: Buffer): Promise<string> {
+  async writeFile(scope: string, data: Buffer, extension?: string): Promise<string> {
     const now = new Date();
     const yyyymm = `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, "0")}`;
     const safeScope = scope.replace(/[^a-zA-Z0-9_-]/g, "_");
     const dir = path.join(STORAGE_ROOT, safeScope, yyyymm);
     await fs.mkdir(dir, { recursive: true });
 
-    const filename = `${randomUUID()}.bin`;
+    const ext = extension && extension.startsWith(".") ? extension : extension ? `.${extension}` : ".bin";
+    const filename = `${randomUUID()}${ext}`;
     const relPath = path.posix.join(safeScope, yyyymm, filename);
     await fs.writeFile(path.join(STORAGE_ROOT, relPath), data);
     return relPath;
@@ -64,8 +65,8 @@ const _instance = new LocalStorageProvider();
 // Legacy standalone function exports (backward compatibility)
 // ---------------------------------------------------------------------------
 
-export function writeFile(scope: string, data: Buffer): Promise<string> {
-  return _instance.writeFile(scope, data);
+export function writeFile(scope: string, data: Buffer, extension?: string): Promise<string> {
+  return _instance.writeFile(scope, data, extension);
 }
 
 export function readFile(relPath: string): Promise<Buffer> {

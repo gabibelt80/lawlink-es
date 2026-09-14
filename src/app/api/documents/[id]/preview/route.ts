@@ -42,7 +42,8 @@ function escapeHtml(s: string): string {
     .replace(/"/g, "&quot;");
 }
 
-export async function GET(req: Request, { params }: { params: { id: string } }) {
+export async function GET(req: Request, { params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
   const session = await getSession();
   if (!session?.user) {
     return NextResponse.json({ error: "No has iniciado sesión" }, { status: 401 });
@@ -51,7 +52,7 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
   const prisma = await getTenantPrisma();
 
   const doc = await prisma.document.findFirst({
-    where: { id: params.id, deletedAt: null }
+    where: { id, deletedAt: null }
   });
   if (!doc) return NextResponse.json({ error: "El material no existe" }, { status: 404 });
 
@@ -77,17 +78,57 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
     }
   }
 
-  // v1.0: PDFs, imágenes y texto van directo al visor del navegador
+  // PDFs, imágenes y texto: se sirven directamente con Content-Type correcto
+  // (sin redirect, para que el navegador no cachee ni abra pestaña nueva)
   const mime = (doc.mimeType ?? "").toLowerCase();
   const isPdf = mime === "application/pdf" || doc.name.toLowerCase().endsWith(".pdf");
   const isImage = mime.startsWith("image/");
   const isText = mime.startsWith("text/") || doc.name.toLowerCase().endsWith(".txt");
 
   if (isPdf || isImage || isText) {
-    const url = new URL(req.url);
-    url.pathname = `/api/documents/${doc.id}/download`;
-    url.searchParams.set("inline", "1");
-    return NextResponse.redirect(url);
+    let buf: Buffer;
+    try {
+      // El .txt extraído vive en sourcePath, el original en path
+      const realPath = doc.sourcePath ?? doc.path;
+      const stored = await storage.readFile(realPath);
+      if (doc.encrypted) {
+        if (!doc.iv || !doc.authTag) {
+          return NextResponse.json({ error: "Datos cifrados dañados" }, { status: 500 });
+        }
+        buf = decryptBuffer(stored, doc.iv, doc.authTag);
+      } else {
+        buf = stored;
+      }
+    } catch (err) {
+      console.error("[preview] Error al leer:", err);
+      return NextResponse.json({ error: "Error al leer" }, { status: 500 });
+    }
+
+    let contentType = doc.mimeType ?? "application/octet-stream";
+    if (isPdf) contentType = "application/pdf";
+    if (isText) contentType = "text/plain; charset=utf-8";
+
+    const arrayBuffer = buf.buffer.slice(buf.byteOffset, buf.byteOffset + buf.byteLength) as ArrayBuffer;
+
+    await audit({
+      userId: session.user.id,
+      action: "DOCUMENT_PREVIEW",
+      targetType: "Document",
+      targetId: doc.id,
+      detail: { matterId: doc.matterId, name: doc.name, kind: "inline" }
+    });
+
+    return new NextResponse(arrayBuffer, {
+      status: 200,
+      headers: {
+        "Content-Type": contentType,
+        "Content-Length": String(buf.byteLength),
+        "Content-Disposition": `inline; filename*=UTF-8''${encodeURIComponent(doc.name)}`,
+        "Cache-Control": "no-store, no-cache, must-revalidate, private",
+        "Pragma": "no-cache",
+        "Expires": "0"
+      }
+    });
   }
 
   // DOCX/XLSX requieren conversión a HTML

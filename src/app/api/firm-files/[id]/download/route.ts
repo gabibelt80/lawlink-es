@@ -10,8 +10,9 @@ export const dynamic = "force-dynamic";
 
 export async function GET(
   req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params;
   const session = await getSession();
   if (!session?.user) {
     return NextResponse.json({ error: "No has iniciado sesión" }, { status: 401 });
@@ -20,7 +21,7 @@ export async function GET(
   const prisma = await getTenantPrisma();
 
   const f = await prisma.firmFile.findUnique({
-    where: { id: params.id, archivedAt: null }
+    where: { id, archivedAt: null }
   });
   if (!f) return NextResponse.json({ error: "El material no existe" }, { status: 404 });
 
@@ -51,7 +52,7 @@ export async function GET(
       "Content-Length": String(buf.byteLength),
       "Content-Disposition": `${inline ? "inline" : "attachment"}; filename*=UTF-8''${encodeURIComponent(filename)}`,
       "X-Content-Type-Options": "nosniff",
-      "Cache-Control": "private, max-age=60"
+      "Cache-Control": "no-store, no-cache, must-revalidate, private"
     }
   });
 }

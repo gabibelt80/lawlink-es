@@ -98,11 +98,12 @@ export class S3StorageProvider implements StorageProvider {
    * y LocalStorageProvider ä¿æŒåŒæ ·çš„ layoutï¼Œä¾¿äºŽ local â†” s3 è¿ç§»ã€‚
    * æ•°æ®åº“é‡Œä»…å­˜ relPathï¼ˆä¸å« prefixï¼‰ï¼Œåˆ‡æ¢ prefix æ—¶æ— éœ€å›žå¡«ã€‚
    */
-  async writeFile(scope: string, data: Buffer): Promise<string> {
+  async writeFile(scope: string, data: Buffer, extension?: string): Promise<string> {
     const now = new Date();
     const yyyymm = `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, "0")}`;
     const safeScope = scope.replace(/[^a-zA-Z0-9_-]/g, "_");
-    const relPath = `${safeScope}/${yyyymm}/${randomUUID()}.bin`;
+    const ext = extension && extension.startsWith(".") ? extension : extension ? `.${extension}` : ".bin";
+    const relPath = `${safeScope}/${yyyymm}/${randomUUID()}${ext}`;
     const key = this.prefix + relPath;
 
     await this.client.send(

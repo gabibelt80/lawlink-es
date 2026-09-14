@@ -193,11 +193,11 @@ export async function saveWritingToMatter(input: {
   const matterDir = join(process.cwd(), "storage", "matters", matter.internalCode);
   mkdirSync(matterDir, { recursive: true });
 
-  // Guardar el archivo como .txt (texto plano legible)
-  const plainText = input.content.replace(/<[^>]*>/g, "");
-    const fileName = `${matter.internalCode}-${input.name.replace(/[^a-zA-Z0-9]/g, "_")}.txt`;
+  // Guardar el archivo como .html conservando el formato del editor
+  const html = input.content;
+  const fileName = `${matter.internalCode}-${input.name.replace(/[^a-zA-Z0-9]/g, "_")}.html`;
   const filePath = join(matterDir, fileName);
-  writeFileSync(filePath, plainText, "utf-8");
+  writeFileSync(filePath, html, "utf-8");
 
   const created = await prisma.document.create({
     data: {
@@ -208,8 +208,8 @@ export async function saveWritingToMatter(input: {
       category: "PLEADING",
       status: "DRAFT",
       path: filePath,
-      mimeType: "text/plain",
-      size: Buffer.byteLength(plainText, "utf-8"),
+      mimeType: "text/html",
+      size: Buffer.byteLength(html, "utf-8"),
       tags: [`etapa:${input.stageName}`],
       uploadedById: session.user.id,
       encrypted: false
@@ -286,20 +286,20 @@ export async function updateDocumentContent(input: {
     if (!matter) throw new Error("Caso no encontrado");
     const matterDir = join(storageRoot, "matters", matter.internalCode);
     mkdirSync(matterDir, { recursive: true });
-        filePath = join(matterDir, `${matter.internalCode}-${input.name.replace(/[^a-zA-Z0-9]/g, "_")}.txt`);
+        filePath = join(matterDir, `${matter.internalCode}-${input.name.replace(/[^a-zA-Z0-9]/g, "_")}.html`);
   }
 
-  // Guardar como texto plano
-  const plainText = input.content.replace(/<[^>]*>/g, "");
-  writeFileSync(filePath, plainText, "utf-8");
+  // Guardar como HTML conservando el formato
+  const html = input.content;
+  writeFileSync(filePath, html, "utf-8");
 
   await prisma.document.update({
     where: { id: input.documentId },
     data: {
       name: input.name,
       path: filePath,
-      size: Buffer.byteLength(plainText, "utf-8"),
-      mimeType: "text/plain",
+      size: Buffer.byteLength(html, "utf-8"),
+      mimeType: "text/html",
     }
   });
 

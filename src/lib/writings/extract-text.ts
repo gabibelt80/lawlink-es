@@ -10,7 +10,7 @@ export async function extractTextFromFile(path: string): Promise<string> {
 
   if (ext === ".docx") {
     const mammoth = await import("mammoth");
-    const result = await mammoth.extractRawText({ path });
+    const result = await mammoth.convertToHtml({ path });
     return result.value;
   }
 
@@ -60,7 +60,7 @@ export async function extractTextFromBuffer(
 
   if (e === "docx") {
     const mammoth = await import("mammoth");
-    const result = await mammoth.extractRawText({ buffer });
+    const result = await mammoth.convertToHtml({ buffer });
     return result.value;
   }
 

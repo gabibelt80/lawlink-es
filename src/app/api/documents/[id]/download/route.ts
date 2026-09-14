@@ -9,7 +9,8 @@ import { normalizeUploadedFilename } from "@/lib/filename";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-export async function GET(req: Request, { params }: { params: { id: string } }) {
+export async function GET(req: Request, { params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
   // ?inline=1 muestra en el navegador (PDF/imagen/texto), sino descarga
   const inline = new URL(req.url).searchParams.get("inline") === "1";
   const session = await getSession();
@@ -20,7 +21,7 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
   const prisma = await getTenantPrisma();
 
   const doc = await prisma.document.findFirst({
-    where: { id: params.id, deletedAt: null }
+    where: { id, deletedAt: null }
   });
   if (!doc) return NextResponse.json({ error: "El material no existe" }, { status: 404 });
 

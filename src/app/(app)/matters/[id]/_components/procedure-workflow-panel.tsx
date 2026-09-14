@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { WritingPickerDialog } from "./writing-picker-dialog";
 import { toast } from "sonner";
 import { WritingEditor } from "./writing-editor";
+import { DocumentPreviewDialog } from "./document-preview-dialog";
 import {
   AlertTriangle,
   CalendarClock,
@@ -1413,6 +1414,7 @@ function StageMaterialsPanel({
   const [open, setOpen] = useState(false);
   const [picked, setPicked] = useState<File | null>(null);
   const [editingDoc, setEditingDoc] = useState<WorkflowDocument | null>(null);
+  const [previewDoc, setPreviewDoc] = useState<WorkflowDocument | null>(null);
   const [customName, setCustomName] = useState("");
   const [sourceParty, setSourceParty] = useState("");
   const [category, setCategory] = useState<DocumentCategory>(defaultCategoryForStage(stageName));
@@ -1589,34 +1591,15 @@ function StageMaterialsPanel({
                       <Pencil className="h-3.5 w-3.5" />
                     </button>
                   ) : null}
-                  {officePreviewKind(doc.mimeType, doc.name) ? (
+                  {pUrl || officePreviewKind(doc.mimeType, doc.name) ? (
                     <button
                       type="button"
-                      onClick={async () => {
-                        setWritingOpen(false);
-                        try {
-                          const { getDocumentContent } = await import("@/server/writings/actions");
-                          const result = await getDocumentContent(doc.id);
-                          setEditingDoc({ ...doc, content: result.content });
-                        } catch (err) {
-                          toast.error("Error al cargar", { description: err instanceof Error ? err.message : "" });
-                        }
-                      }}
+                      onClick={() => setPreviewDoc(doc)}
                       className="p-1 text-muted-foreground hover:text-primary"
-                      title="Ver documento"
+                      title="Vista previa"
                     >
                       <Eye className="h-3.5 w-3.5" />
                     </button>
-                  ) : pUrl ? (
-                    <a
-                      href={pUrl}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="p-1 text-muted-foreground hover:text-primary"
-                      title="Ver documento"
-                    >
-                      <Eye className="h-3.5 w-3.5" />
-                    </a>
                   ) : null}
                   <a
                     href={`/api/documents/${doc.id}/download`}
@@ -1777,6 +1760,13 @@ function StageMaterialsPanel({
         stageName={stageName}
         onSaved={() => router.refresh()}
       />
+
+      {previewDoc && (
+        <DocumentPreviewDialog
+          doc={previewDoc}
+          onClose={() => setPreviewDoc(null)}
+        />
+      )}
     </section>
   );
 }
