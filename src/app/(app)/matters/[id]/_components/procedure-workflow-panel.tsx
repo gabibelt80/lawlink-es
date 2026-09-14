@@ -2307,8 +2307,12 @@ function stageMaterialTag(stageName: string) {
 }
 
 function isEditableDocument(doc: Pick<WorkflowDocument, "mimeType" | "name">): boolean {
+  const mime = (doc.mimeType ?? "").toLowerCase();
+  if (mime.includes("wordprocessingml") || mime === "application/msword") return true;
+  if (mime === "text/plain" || mime === "text/html") return true;
+  if (mime.includes("spreadsheetml") || mime === "application/vnd.ms-excel") return true;
   const ext = doc.name.split(".").pop()?.toLowerCase() ?? "";
-  return ["doc", "docx", "txt", "xlsx"].includes(ext);
+  return ["doc", "docx", "txt", "xlsx", "html"].includes(ext);
 }
 function documentMatchesStage(
   document: WorkflowDocument,

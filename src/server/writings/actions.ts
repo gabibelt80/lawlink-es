@@ -17,6 +17,13 @@ const writingSchema = z.object({
   enabled: z.boolean().default(true),
 });
 
+function toRelativePath(absPath: string, storageRoot: string): string {
+  return absPath
+    .replace(storageRoot, "")
+    .replace(/\\/g, "/")
+    .replace(/^\//, "");
+}
+
 export async function listWritings(search?: string) {
   const prisma = await getTenantPrisma();
   await requireSession();
@@ -39,7 +46,7 @@ export async function createWriting(input: z.infer<typeof writingSchema>) {
     throw new Error("Solo el Administrador o Abogado Principal puede crear escritos");
   }
   const data = writingSchema.parse(input);
-const created = await prisma.writingTemplate.create({
+  const created = await prisma.writingTemplate.create({
     data: {
       name: data.name ?? "Sin título",
       category: data.category ?? "OTRO",
@@ -87,8 +94,7 @@ export async function syncWritingsFromFolder() {
   }
 
   const WRITINGS_DIR = join(process.cwd(), "escritos");
-
-  const SUPPORTED_EXTENSIONS = new Set([".txt", ".docx", ".pdf", ".doc", ".rtf"]);
+  const SUPPORTED_EXTENSIONS = new Set([".txt", ".docx"]);
 
   const files = readdirSync(WRITINGS_DIR);
   const supportedFiles = files.filter((file) => {
@@ -115,7 +121,7 @@ export async function syncWritingsFromFolder() {
       if (existingNames.has(name)) {
         await prisma.writingTemplate.updateMany({
           where: { name },
-          data: { content },
+          data: { content, docxPath: fullPath },
         });
         updated++;
       } else {
@@ -125,6 +131,7 @@ export async function syncWritingsFromFolder() {
             category: "OTRO",
             stage: "TODAS",
             content,
+            docxPath: fullPath,
             enabled: true,
             createdById: session.user.id,
           },
@@ -161,7 +168,6 @@ export async function saveWritingToMatter(input: {
   const { writeFileSync, mkdirSync } = await import("node:fs");
   const { join } = await import("node:path");
 
-  // Resolver matterId: puede ser cuid o internalCode
   const matter = await prisma.matter.findFirst({
     where: {
       OR: [
@@ -177,7 +183,6 @@ export async function saveWritingToMatter(input: {
   const actualMatterId = matter.id;
   let finalStageId = input.stageId;
 
-  // Si la etapa no existe en la base de datos, crearla
   if (!finalStageId) {
     const { ensureProcedureStage } = await import("@/server/procedures/actions");
     const ensured = await ensureProcedureStage({
@@ -189,15 +194,19 @@ export async function saveWritingToMatter(input: {
     finalStageId = ensured.id;
   }
 
-  // Crear carpeta del caso si no existe (usando internalCode)
-  const matterDir = join(process.cwd(), "storage", "matters", matter.internalCode);
+  const { getStorageRoot } = await import("@/lib/storage/local");
+  const { htmlToDocxBuffer } = await import("@/lib/writings/html-to-docx");
+  const storageRoot = getStorageRoot();
+  const matterDir = join(storageRoot, "matters", matter.internalCode);
   mkdirSync(matterDir, { recursive: true });
 
-  // Guardar el archivo como .html conservando el formato del editor
   const html = input.content;
-  const fileName = `${matter.internalCode}-${input.name.replace(/[^a-zA-Z0-9]/g, "_")}.html`;
-  const filePath = join(matterDir, fileName);
-  writeFileSync(filePath, html, "utf-8");
+  const docxBuffer = await htmlToDocxBuffer(html, input.name);
+  const fileName = `${matter.internalCode}-${input.name.replace(/[^a-zA-Z0-9]/g, "_")}.docx`;
+  const absPath = join(matterDir, fileName);
+  writeFileSync(absPath, docxBuffer);
+
+  const filePath = toRelativePath(absPath, storageRoot);
 
   const created = await prisma.document.create({
     data: {
@@ -208,8 +217,8 @@ export async function saveWritingToMatter(input: {
       category: "PLEADING",
       status: "DRAFT",
       path: filePath,
-      mimeType: "text/html",
-      size: Buffer.byteLength(html, "utf-8"),
+      mimeType: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+      size: docxBuffer.length,
       tags: [`etapa:${input.stageName}`],
       uploadedById: session.user.id,
       encrypted: false
@@ -237,7 +246,6 @@ export async function saveWritingToMatter(input: {
 export async function getDocumentContent(documentId: string) {
   const prisma = await getTenantPrisma();
   await requireSession();
-  const { readFileSync, existsSync } = await import("node:fs");
 
   const doc = await prisma.document.findUnique({
     where: { id: documentId },
@@ -249,9 +257,18 @@ export async function getDocumentContent(documentId: string) {
   if (doc.path) {
     const { getStorageRoot } = await import("@/lib/storage/local");
     const { join } = await import("node:path");
+    const { readFileSync, existsSync } = await import("node:fs");
     const absPath = join(getStorageRoot(), doc.path);
+
     if (existsSync(absPath)) {
-      content = readFileSync(absPath, "utf-8");
+      const ext = doc.path.toLowerCase().split(".").pop();
+      if (ext === "docx") {
+        const mammoth = await import("mammoth");
+        const result = await mammoth.convertToHtml({ path: absPath });
+        content = result.value;
+      } else {
+        content = readFileSync(absPath, "utf-8");
+      }
     }
   }
 
@@ -264,7 +281,7 @@ export async function updateDocumentContent(input: {
   content: string;
 }) {
   const prisma = await getTenantPrisma();
-  const session = await requireSession();
+  await requireSession();
   const { writeFileSync, mkdirSync } = await import("node:fs");
   const { join } = await import("node:path");
 
@@ -274,11 +291,18 @@ export async function updateDocumentContent(input: {
   });
   if (!doc) throw new Error("Documento no encontrado");
 
-  // Si no hay path, crear uno
-  const { getStorageRoot: _getRoot } = await import("@/lib/storage/local");
-  const storageRoot = _getRoot();
-  let filePath = doc.path ? join(storageRoot, doc.path) : null;
-  if (!filePath) {
+  const { getStorageRoot } = await import("@/lib/storage/local");
+  const { htmlToDocxBuffer } = await import("@/lib/writings/html-to-docx");
+  const storageRoot = getStorageRoot();
+
+  let absPath: string;
+  if (doc.path) {
+    absPath = join(storageRoot, doc.path);
+    // Si el path viejo era .html, convertir a .docx
+    if (absPath.endsWith(".html")) {
+      absPath = absPath.replace(/\.html$/, ".docx");
+    }
+  } else {
     const matter = await prisma.matter.findUnique({
       where: { id: doc.matterId! },
       select: { internalCode: true }
@@ -286,20 +310,22 @@ export async function updateDocumentContent(input: {
     if (!matter) throw new Error("Caso no encontrado");
     const matterDir = join(storageRoot, "matters", matter.internalCode);
     mkdirSync(matterDir, { recursive: true });
-        filePath = join(matterDir, `${matter.internalCode}-${input.name.replace(/[^a-zA-Z0-9]/g, "_")}.html`);
+    absPath = join(matterDir, `${matter.internalCode}-${input.name.replace(/[^a-zA-Z0-9]/g, "_")}.docx`);
   }
 
-  // Guardar como HTML conservando el formato
   const html = input.content;
-  writeFileSync(filePath, html, "utf-8");
+  const docxBuffer = await htmlToDocxBuffer(html, input.name);
+  writeFileSync(absPath, docxBuffer);
+
+  const relPath = toRelativePath(absPath, storageRoot);
 
   await prisma.document.update({
     where: { id: input.documentId },
     data: {
       name: input.name,
-      path: filePath,
-      size: Buffer.byteLength(html, "utf-8"),
-      mimeType: "text/html",
+      path: relPath,
+      size: docxBuffer.length,
+      mimeType: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
     }
   });
 
@@ -320,5 +346,5 @@ export async function updateDocumentContent(input: {
     );
   }
 
-  return { ok: true, path: filePath };
+  return { ok: true, path: relPath };
 }
