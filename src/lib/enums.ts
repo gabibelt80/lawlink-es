@@ -171,13 +171,13 @@ export const intakeStatusLabel: Record<IntakeStatus, string> = {
 };
 
 export const userRoleLabel: Record<UserRole, string> = {
+  SYSTEM_ADMIN: "Administrador de plataforma",
   ADMIN: "Administrador del estudio",
   PRINCIPAL_LAWYER: "Abogado principal",
   LAWYER: "Abogado a cargo",
   ASSISTANT: "Asistente",
   FINANCE: "Finanzas"
 };
-
 export const litigationStandingLabel: Record<LitigationStanding, string> = {
   PLAINTIFF: "Demandante",
   JOINT_PLAINTIFF: "Codemandante",

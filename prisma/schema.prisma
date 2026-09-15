@@ -16,6 +16,7 @@ datasource db {
 // ============================================================
 
 enum UserRole {
+  SYSTEM_ADMIN
   ADMIN
   PRINCIPAL_LAWYER
   LAWYER

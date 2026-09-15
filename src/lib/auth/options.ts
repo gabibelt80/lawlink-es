@@ -73,16 +73,46 @@ export const authOptions: NextAuthOptions = {
           return null;
         }
 
-        console.error("[AUTH] 4 OK: login exitoso para", user.email);
+        // SYSTEM_ADMIN: sin firm, va al panel de plataforma
+        if (user.role === "SYSTEM_ADMIN") {
+          console.error("[AUTH] 5 OK: login SYSTEM_ADMIN", user.email);
+          return {
+            id: user.id,
+            email: user.email,
+            name: user.name,
+            role: user.role,
+            firmId: null,
+            firmSlug: "",
+            firmName: "",
+            isSystemAdmin: true,
+            avatar: user.avatar,
+          };
+        }
+
+        // Usuario de estudio: resolver firm desde FirmUser
+        const firmUser = await prisma.firmUser.findUnique({
+          where: { email },
+          select: {
+            firmId: true,
+            firm: { select: { slug: true, name: true } },
+          },
+        });
+
+        if (!firmUser || !firmUser.firm) {
+          console.error("[AUTH] 6 fail: firmUser no existe o no tiene firm");
+          return null;
+        }
+
+        console.error("[AUTH] 7 OK: login firm", firmUser.firm.slug, user.email);
 
         return {
           id: user.id,
           email: user.email,
           name: user.name,
           role: user.role,
-          firmId: null,
-          firmSlug: "",
-          firmName: "",
+          firmId: firmUser.firmId,
+          firmSlug: firmUser.firm.slug,
+          firmName: firmUser.firm.name,
           isSystemAdmin: false,
           avatar: user.avatar,
         };
