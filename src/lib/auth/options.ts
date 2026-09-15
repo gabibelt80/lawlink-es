@@ -29,61 +29,63 @@ export const authOptions: NextAuthOptions = {
         sameSite: "lax",
         path: "/",
         secure: process.env.NODE_ENV === "production",
+        maxAge: 30 * 24 * 60 * 60,
       },
     },
   },
   providers: [
     CredentialsProvider({
-      name: "Email y contraseña",
+      name: "Email y contrasena",
       credentials: {
         email: { label: "Email", type: "email" },
-        password: { label: "Contraseña", type: "password" },
+        password: { label: "Contrasena", type: "password" },
       },
       async authorize(credentials) {
         const parsed = credentialsSchema.safeParse(credentials);
-        if (!parsed.success) return null;
+        if (!parsed.success) {
+          console.error("[AUTH] 1 fail: schema invalido");
+          return null;
+        }
 
         const { email, password } = parsed.data;
 
-        const firmUser = await prisma.firmUser.findUnique({
+        const user = await prisma.user.findUnique({
           where: { email },
-          include: { firm: true },
+          select: {
+            id: true,
+            email: true,
+            name: true,
+            passwordHash: true,
+            role: true,
+            avatar: true,
+            active: true,
+          },
         });
 
-        if (!firmUser || !firmUser.active) return null;
+        if (!user || !user.active) {
+          console.error("[AUTH] 2 fail: user no existe o inactivo");
+          return null;
+        }
 
-        const ok = await compare(password, firmUser.passwordHash);
-        if (!ok) return null;
+        const ok = await compare(password, user.passwordHash);
+        if (!ok) {
+          console.error("[AUTH] 3 fail: password incorrecta");
+          return null;
+        }
 
-    const isSystemAdmin = firmUser.firmId === null;
+        console.error("[AUTH] 4 OK: login exitoso para", user.email);
 
-    // Buscar el rol real en el User del tenant (schema del firm)
-    let role: SessionRole = isSystemAdmin ? "SYSTEM_ADMIN" : "LAWYER";
-    if (!isSystemAdmin && firmUser.firm) {
-      const { getTenantPrismaSync } = await import("@/lib/tenant-prisma");
-      try {
-        const tenantPrisma = getTenantPrismaSync(firmUser.firm.slug);
-        const tenantUser = await tenantPrisma.user.findUnique({
-          where: { email: firmUser.email },
-          select: { role: true },
-        });
-        if (tenantUser?.role) role = tenantUser.role;
-      } catch {
-        // Si falla, cae al default LAWYER
-      }
-    }
-
-    return {
-      id: firmUser.id,
-      email: firmUser.email,
-      name: firmUser.name,
-      role,
-      firmId: firmUser.firmId,
-      firmSlug: firmUser.firm?.slug ?? "",
-      firmName: firmUser.firm?.name ?? "",
-      isSystemAdmin,
-      avatar: firmUser.avatar,
-    };
+        return {
+          id: user.id,
+          email: user.email,
+          name: user.name,
+          role: user.role,
+          firmId: null,
+          firmSlug: "",
+          firmName: "",
+          isSystemAdmin: false,
+          avatar: user.avatar,
+        };
       },
     }),
   ],
@@ -92,11 +94,8 @@ export const authOptions: NextAuthOptions = {
       if (user) {
         token.id = (user as any).id;
         token.role = (user as any).role;
-        token.firmId = (user as any).firmId;
         token.firmSlug = (user as any).firmSlug;
-        token.firmName = (user as any).firmName;
         token.isSystemAdmin = (user as any).isSystemAdmin;
-        token.avatar = (user as any).avatar;
       }
       return token;
     },
@@ -104,11 +103,8 @@ export const authOptions: NextAuthOptions = {
       if (session.user) {
         (session.user as any).id = token.id;
         (session.user as any).role = token.role;
-        (session.user as any).firmId = token.firmId;
         (session.user as any).firmSlug = token.firmSlug;
-        (session.user as any).firmName = token.firmName;
         (session.user as any).isSystemAdmin = token.isSystemAdmin;
-        (session.user as any).avatar = token.avatar;
       }
       return session;
     },

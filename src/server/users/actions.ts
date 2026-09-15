@@ -1,4 +1,4 @@
-﻿"use server";
+"use server";
 
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
@@ -16,7 +16,6 @@ const userRoleSchema = z.enum([
   "FINANCE"
 ]);
 
-// Roles asignables desde el panel del estudio (nunca SYSTEM_ADMIN)
 const assignableRoleSchema = z.enum([
   "ADMIN",
   "PRINCIPAL_LAWYER",
@@ -127,7 +126,7 @@ export async function createUser(input: UserCreateInput) {
 
   // 2. Crear FirmUser en la base central con el mismo ID
   const firmSlug = (session.user as { firmSlug?: string }).firmSlug;
-  if (!firmSlug) throw new Error("No se encontró el estudio del usuario");
+  if (!firmSlug) throw new Error("No se encontro el estudio del usuario");
 
   const firm = await centralPrisma.firm.findUnique({
     where: { slug: firmSlug },
@@ -137,10 +136,9 @@ export async function createUser(input: UserCreateInput) {
 
   await centralPrisma.firmUser.create({
     data: {
-      id: created.id, // MISMO ID para que el calendario funcione
+      id: created.id,
       name: data.name,
       email: data.email,
-      passwordHash,
       phone: data.phone || null,
       active: true,
       firmId: firm.id,
@@ -237,7 +235,7 @@ export async function changeMyPassword(input: ChangeMyPasswordInput) {
 
   const me = await prisma.user.findUnique({
     where: { id: session.user.id },
-    select: { passwordHash: true }
+    select: { passwordHash: true, email: true },
   });
   if (!me) throw new Error("El usuario no existe");
 
@@ -245,21 +243,21 @@ export async function changeMyPassword(input: ChangeMyPasswordInput) {
   if (!matches) throw new Error("La contrasena actual es incorrecta");
 
   const passwordHash = await bcrypt.hash(data.newPassword, 12);
+
   await prisma.user.update({
     where: { id: session.user.id },
-    data: { passwordHash }
+    data: { passwordHash },
   });
 
   await audit({
     userId: session.user.id,
     action: "USER_PASSWORD_CHANGE_SELF",
     targetType: "User",
-    targetId: session.user.id
+    targetId: session.user.id,
   });
 
   return { ok: true };
 }
-
 const AVATAR_MAX_CHARS = 256 * 1024;
 export async function saveMyAvatar(input: { avatar: string | null }) {
   const prisma = await getTenantPrisma();

@@ -49,11 +49,9 @@ export function LoginForm() {
       return;
     }
 
-    // Obtener la sesión para saber el rol
     const session = (await getSession()) as AppSession | null;
     const isSystemAdmin = session?.user?.isSystemAdmin === true;
 
-    // Redirigir según rol y callbackUrl
     if (callbackUrl && callbackUrl !== "/") {
       window.location.href = callbackUrl;
     } else if (isSystemAdmin) {
@@ -64,37 +62,61 @@ export function LoginForm() {
   }
 
   return (
-    <form method="post" onSubmit={handleSubmit(onSubmit)} className="space-y-4" noValidate>
+    <form
+      method="post"
+      onSubmit={handleSubmit(onSubmit)}
+      className="space-y-5"
+      noValidate
+    >
       {authError ? (
-        <Alert variant="destructive" className="border-red-200 bg-red-50">
-          <AlertCircle className="h-4 w-4 text-red-500" />
-          <AlertDescription className="text-red-600">{authError}</AlertDescription>
+        <Alert
+          variant="destructive"
+          className="border-destructive/30 bg-destructive/5"
+        >
+          <AlertCircle className="h-4 w-4" />
+          <AlertDescription>{authError}</AlertDescription>
         </Alert>
       ) : null}
 
-      <div className="space-y-1.5">
-        <Label htmlFor="email" className="text-slate-700">
+      {/* Email */}
+      <div className="space-y-2">
+        <Label
+          htmlFor="email"
+          className="text-[12.5px] font-medium text-foreground"
+        >
           Email
         </Label>
         <Input
           id="email"
           type="email"
+          inputMode="email"
           autoComplete="email"
+          autoCapitalize="off"
+          autoCorrect="off"
+          spellCheck={false}
           placeholder="tu@email.com"
           aria-invalid={!!errors.email}
           className={cn(
-            "h-11 border-slate-300 bg-white text-slate-900 placeholder:text-slate-400",
-            errors.email && "border-red-400"
+            "ll-form-control h-11 rounded-md text-[13.5px]",
+            errors.email && "border-destructive"
           )}
           {...register("email")}
         />
-        {errors.email && <p className="text-xs text-red-500">{errors.email.message}</p>}
+        {errors.email && (
+          <p className="text-[12px] text-destructive">{errors.email.message}</p>
+        )}
       </div>
 
-      <div className="space-y-1.5">
-        <Label htmlFor="password" className="text-slate-700">
-          Contraseña
-        </Label>
+      {/* Contraseña */}
+      <div className="space-y-2">
+        <div className="flex items-center justify-between">
+          <Label
+            htmlFor="password"
+            className="text-[12.5px] font-medium text-foreground"
+          >
+            Contraseña
+          </Label>
+        </div>
         <div className="relative">
           <Input
             id="password"
@@ -102,8 +124,8 @@ export function LoginForm() {
             autoComplete="current-password"
             aria-invalid={!!errors.password}
             className={cn(
-              "h-11 border-slate-300 bg-white pr-10 text-slate-900 placeholder:text-slate-400",
-              errors.password && "border-red-400"
+              "ll-form-control h-11 rounded-md pr-10 text-[13.5px]",
+              errors.password && "border-destructive"
             )}
             {...register("password")}
           />
@@ -112,25 +134,36 @@ export function LoginForm() {
             onClick={() => setShowPassword((v) => !v)}
             tabIndex={-1}
             aria-label={showPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
-            className="absolute inset-y-0 right-0 flex w-10 items-center justify-center text-slate-400 transition-colors hover:text-slate-600"
+            className="absolute inset-y-0 right-0 flex w-10 items-center justify-center text-muted-foreground transition-colors hover:text-foreground"
           >
-            {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+            {showPassword ? (
+              <EyeOff className="h-4 w-4" />
+            ) : (
+              <Eye className="h-4 w-4" />
+            )}
           </button>
         </div>
-        {errors.password && <p className="text-xs text-red-500">{errors.password.message}</p>}
+        {errors.password && (
+          <p className="text-[12px] text-destructive">
+            {errors.password.message}
+          </p>
+        )}
       </div>
 
+      {/* Botón principal */}
       <Button
         type="submit"
-        className="h-11 w-full gap-2 bg-blue-600 text-white shadow-md hover:bg-blue-700"
         disabled={isSubmitting}
+        className="h-11 w-full gap-2 rounded-md text-[13.5px] font-medium shadow-[var(--shadow-glow)] transition-all hover:shadow-[0_2px_4px_rgba(0,123,127,0.20),0_12px_28px_rgba(0,123,127,0.22)]"
       >
         {isSubmitting && <Loader2 className="h-4 w-4 animate-spin" />}
-        {isSubmitting ? "Iniciando sesión..." : "Iniciar Sesión"}
+        {isSubmitting ? "Iniciando sesión..." : "Iniciar sesión"}
       </Button>
 
-      <p className="text-center text-xs text-slate-400">
-        ¿Olvidaste tu contraseña? Contactá al administrador
+      {/* Footer */}
+      <p className="pt-1 text-center text-[12px] text-muted-foreground">
+        ¿Olvidaste tu contraseña?{" "}
+        <span className="text-foreground/70">Contactá al administrador</span>
       </p>
     </form>
   );
