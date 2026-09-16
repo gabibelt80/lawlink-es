@@ -75,8 +75,8 @@ export interface SaijDocumentParsed {
  * Documento normalizado para guardar en la tabla Jurisprudence.
  */
 export interface JurisprudenceNormalized {
-  fingerprint: string;      // hash unico para deduplicar
-  hash: string;             // sha256 del contenido
+  fingerprint: string;
+  hash: string;
   title: string;
   summary: string | null;
   fullText: string;
@@ -84,10 +84,15 @@ export interface JurisprudenceNormalized {
   jurisdiction: string | null;
   fuero: string | null;
   date: Date | null;
-  source: string;           // "SAIJ"
+  source: string;
   sourceUrl: string | null;
-  sourceId: string;         // uuid de SAIJ
+  sourceId: string;
   category: string | null;
   tags: string[];
-  status: string;           // "downloaded"
+  status: string;
+
+  // v0.4: campos extendidos
+  numeroSumario: string | null;
+  descriptors: unknown;
+  citesUuids: string[];
 }

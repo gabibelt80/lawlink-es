@@ -86,9 +86,14 @@ export function normalizeItem(
     metadata.uuid
   );
 
-  const hash = sha256(
-    `${metadata.uuid}|${title}|${fullText.slice(0, 500)}`
-  );
+  const hash = sha256(`${metadata.uuid}|${title}|${fullText.slice(0, 500)}`);
+
+  // v0.4: campos extendidos
+    const numeroSumario = content["numero-sumario"]
+    ? String(content["numero-sumario"])
+    : null;
+  const descriptors = content.descriptores || null;
+  const citesUuids = extractCites(descriptors);
 
   return {
     fingerprint: metadata.uuid,
@@ -106,9 +111,20 @@ export function normalizeItem(
     category: metadata["document-content-type"] || null,
     tags: [],
     status: "downloaded",
+    numeroSumario,
+    descriptors,
+    citesUuids,
   };
 }
 
+/**
+ * Extrae UUIDs de fallos citados desde los descriptores.
+ * (Por ahora devuelve array vacio; se llenara cuando SAIJ exponga citas)
+ */
+function extractCites(descriptors: unknown): string[] {
+  if (!descriptors || typeof descriptors !== "object") return [];
+  return [];
+}
 /**
  * Normaliza una lista completa de items. Filtra los que no se pueden parsear.
  */
