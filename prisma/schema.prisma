@@ -220,10 +220,10 @@ enum ClientType {
 
 // v0.39: Estado de cooperacion del cliente (ciclo de vida)
 enum ClientCooperationStatus {
-  POTENTIAL    // Potencial
-  NEGOTIATING  // En negociacion
-  SIGNED       // Firmado
-  TERMINATED   // Terminado
+  POTENTIAL // Potencial
+  NEGOTIATING // En negociacion
+  SIGNED // Firmado
+  TERMINATED // Terminado
 }
 
 // v0.39: Genero del cliente (cliente persona fisica)
@@ -338,60 +338,60 @@ enum Urgency {
 // ============================================================
 
 model User {
-  id           String    @id @default(cuid())
-  name         String
-  email        String    @unique
-  passwordHash String
-  role         UserRole  @default(LAWYER)
-  phone        String?
-  avatar       String?
-  active       Boolean   @default(true)
-  lastLoginAt  DateTime?
+  id            String    @id @default(cuid())
+  name          String
+  email         String    @unique
+  passwordHash  String
+  role          UserRole  @default(LAWYER)
+  phone         String?
+  avatar        String?
+  active        Boolean   @default(true)
+  lastLoginAt   DateTime?
   // v0.50: Token de suscripcion a calendario ICS (la URL es la credencial, se puede resetear)
-  calendarToken String?  @unique
+  calendarToken String?   @unique
 
-  ownedMatters          Matter[]              @relation("MatterOwner")
-  memberships           MatterMember[]
-  commissionPlans       CommissionPlan[]
-  feeEntriesBeneficiary FeeEntry[]            @relation("FeeBeneficiary")
-  feeEntriesRecorded    FeeEntry[]            @relation("FeeRecorder")
-  authoredNotes         Note[]                @relation("NoteAuthor")
-  uploadedDocuments     Document[]            @relation("DocumentUploader")
-  reviewedDocuments     Document[]            @relation("DocumentReviewer")
-  approvedDocuments     Document[]            @relation("DocumentApprover")
-  auditLogs             AuditLog[]
-  conflictDecisions     ConflictCheck[]       @relation("ConflictDecidedBy")
+  ownedMatters             Matter[]                      @relation("MatterOwner")
+  memberships              MatterMember[]
+  commissionPlans          CommissionPlan[]
+  feeEntriesBeneficiary    FeeEntry[]                    @relation("FeeBeneficiary")
+  feeEntriesRecorded       FeeEntry[]                    @relation("FeeRecorder")
+  authoredNotes            Note[]                        @relation("NoteAuthor")
+  uploadedDocuments        Document[]                    @relation("DocumentUploader")
+  reviewedDocuments        Document[]                    @relation("DocumentReviewer")
+  approvedDocuments        Document[]                    @relation("DocumentApprover")
+  auditLogs                AuditLog[]
+  conflictDecisions        ConflictCheck[]               @relation("ConflictDecidedBy")
   // v0.5
-  ownedIntakes          Intake[]              @relation("IntakeOwner")
-  invoiceRequests       InvoiceRequest[]      @relation("InvoiceRequester")
-  invoiceProcessing     InvoiceRequest[]      @relation("InvoiceProcessor")
+  ownedIntakes             Intake[]                      @relation("IntakeOwner")
+  invoiceRequests          InvoiceRequest[]              @relation("InvoiceRequester")
+  invoiceProcessing        InvoiceRequest[]              @relation("InvoiceProcessor")
   // v0.8: Creador de plantillas + solicitante/aprobador/sellador de sellos
-  createdTemplates      DocumentTemplate[]    @relation("TemplateCreator")
-  sealRequests          SealRequest[]         @relation("SealRequester")
-  sealApprovals         SealRequest[]         @relation("SealApprover")
-  sealStamps            SealRequest[]         @relation("SealStamper")
+  createdTemplates         DocumentTemplate[]            @relation("TemplateCreator")
+  sealRequests             SealRequest[]                 @relation("SealRequester")
+  sealApprovals            SealRequest[]                 @relation("SealApprover")
+  sealStamps               SealRequest[]                 @relation("SealStamper")
   // v0.9: Receptor de SMS / creador de envios
-  receivedSmsMessages   SmsMessage[]          @relation("SmsReceiver")
+  receivedSmsMessages      SmsMessage[]                  @relation("SmsReceiver")
   // v0.44: Reestructuracion de medidas cautelares en 3 capas (v0.48 elimina modelo viejo)
-  ownedPreservationCases PreservationCase[]      @relation("PreservationCaseOwner")
-  propertyRenewals        PreservationPropertyRenewal[] @relation("PropertyRenewalPerformer")
-  createdExpress        ExpressTracking[]     @relation("ExpressCreator")
+  ownedPreservationCases   PreservationCase[]            @relation("PreservationCaseOwner")
+  propertyRenewals         PreservationPropertyRenewal[] @relation("PropertyRenewalPerformer")
+  createdExpress           ExpressTracking[]             @relation("ExpressCreator")
   // v0.10: Notificaciones
-  notifications         Notification[]
+  notifications            Notification[]
   // v0.21: Historial de revision de documentos con IA (solicitante)
-  aiReviews             ReviewRecord[]        @relation("ReviewAuthor")
+  aiReviews                ReviewRecord[]                @relation("ReviewAuthor")
   // v0.22: Cargador de archivos del estudio
-  firmFilesUploaded     FirmFile[]            @relation("FirmFileUploader")
+  firmFilesUploaded        FirmFile[]                    @relation("FirmFileUploader")
   // v0.27: Centro de servicios - publicador de anuncios / cargador de contactos externos
-  publishedAnnouncements Announcement[]       @relation("AnnouncementAuthor")
-  createdExternalContacts ExternalContact[]   @relation("ExternalContactCreator")
-  reviewedExternalContacts ExternalContact[]  @relation("ExternalContactReviewer")
+  publishedAnnouncements   Announcement[]                @relation("AnnouncementAuthor")
+  createdExternalContacts  ExternalContact[]             @relation("ExternalContactCreator")
+  reviewedExternalContacts ExternalContact[]             @relation("ExternalContactReviewer")
   // v0.44: Abogado titular del procedimiento
-  leadProcedures         MatterProcedure[]     @relation("ProcedureLeadLawyer")
-  sessions              Session[]
-  accounts              Account[]
-  createdAt             DateTime              @default(now())
-  updatedAt             DateTime              @updatedAt
+  leadProcedures           MatterProcedure[]             @relation("ProcedureLeadLawyer")
+  sessions                 Session[]
+  accounts                 Account[]
+  createdAt                DateTime                      @default(now())
+  updatedAt                DateTime                      @updatedAt
 }
 
 // ============================================================
@@ -399,30 +399,30 @@ model User {
 // ============================================================
 
 model Client {
-  id          String         @id @default(cuid())
-  name        String
-  type        ClientType
-  idNumber    String?
-  address     String?
-  phone       String?
-  email       String?
-  source      String?
-  tags        String[]
-  notes       String?
-  legalRep    String?
+  id                String                  @id @default(cuid())
+  name              String
+  type              ClientType
+  idNumber          String?
+  address           String?
+  phone             String?
+  email             String?
+  source            String?
+  tags              String[]
+  notes             String?
+  legalRep          String?
   // v0.39: Campos complementarios estilo expediente en la nube
   internalCode      String?                 @unique // Codigo de cliente KH-{YYYY}-{4 digitos}
   cooperationStatus ClientCooperationStatus @default(SIGNED) // Estado de cooperacion
   industry          String? // Industria
   gender            ClientGender? // Genero (cliente persona fisica)
   ethnicity         String? // Nacionalidad (cliente persona fisica)
-  contacts    Contact[]
-  intakes     Intake[]
-  matterLinks MatterClient[]
-  matters     Matter[]
-  deletedAt   DateTime?
-  createdAt   DateTime       @default(now())
-  updatedAt   DateTime       @updatedAt
+  contacts          Contact[]
+  intakes           Intake[]
+  matterLinks       MatterClient[]
+  matters           Matter[]
+  deletedAt         DateTime?
+  createdAt         DateTime                @default(now())
+  updatedAt         DateTime                @updatedAt
 
   @@index([name])
   @@index([idNumber])
@@ -474,6 +474,7 @@ model CauseOfAction {
   @@index([name])
   @@index([parentId])
 }
+
 // ============================================================
 // Ingreso de casos
 // ============================================================
@@ -527,7 +528,7 @@ model Intake {
   // v0.5: Abogado titular + co-abogados (al convertir se genera MatterMember)
   ownerUserId String?
   ownerUser   User?    @relation("IntakeOwner", fields: [ownerUserId], references: [id])
-  coUserIds String[] @default([])
+  coUserIds   String[] @default([])
 
   parties        Party[]
   conflictChecks ConflictCheck[]
@@ -591,34 +592,34 @@ model Matter {
   closedAt        DateTime?
   archivedAt      DateTime?
 
-  procedures       MatterProcedure[]
-  parties          Party[]
-  relatedEntities  RelatedEntity[]
-  linksFrom        MatterLink[]    @relation("MatterLinkFrom") // v0.32 Casos relacionados (este caso â†’ caso relacionado)
-  linksTo          MatterLink[]    @relation("MatterLinkTo") // Inverso (caso relacionado â†’ este caso)
-  notes            Note[]
-  tasks            Task[]
-  documents        Document[]
-  timelineEvents   TimelineEvent[]
-  billings         Billing[]
-  feeEntries       FeeEntry[]
-  commissionPlans  CommissionPlan[]
-  archiveRecords   ArchiveRecord[]
-  invoiceRequests  InvoiceRequest[]
+  procedures        MatterProcedure[]
+  parties           Party[]
+  relatedEntities   RelatedEntity[]
+  linksFrom         MatterLink[]       @relation("MatterLinkFrom") // v0.32 Casos relacionados (este caso â†’ caso relacionado)
+  linksTo           MatterLink[]       @relation("MatterLinkTo") // Inverso (caso relacionado â†’ este caso)
+  notes             Note[]
+  tasks             Task[]
+  documents         Document[]
+  timelineEvents    TimelineEvent[]
+  billings          Billing[]
+  feeEntries        FeeEntry[]
+  commissionPlans   CommissionPlan[]
+  archiveRecords    ArchiveRecord[]
+  invoiceRequests   InvoiceRequest[]
   // v0.8: Carpetas + sellos
-  folders          DocumentFolder[]
-  sealRequests     SealRequest[]
+  folders           DocumentFolder[]
+  sealRequests      SealRequest[]
   // v0.9: SMS judiciales + medidas cautelares + envios (medidas v0.48 en adelante solo modelo 3 capas)
-  smsMessages      SmsMessage[]
+  smsMessages       SmsMessage[]
   preservationCases PreservationCase[]
-  expressTrackings ExpressTracking[]
+  expressTrackings  ExpressTracking[]
   // v0.21: Historial de revision de documentos con IA
-  reviewRecords    ReviewRecord[]
+  reviewRecords     ReviewRecord[]
 
   // v0.28: Valores de campos personalizados ({ [CustomFieldDef.key]: string })
-  customValues Json @default("{}")
+  customValues Json    @default("{}")
   // v1.0: Ruta al JSON maestro del caso
-  jsonPath String?
+  jsonPath     String?
 
   deletedAt DateTime?
   createdAt DateTime  @default(now())
@@ -725,13 +726,13 @@ model MatterProcedure {
   outcome     ProcedureOutcome?
   outcomeNote String?
 
-  stages    MatterStage[]
-  hearings  Hearing[]
-  deadlines Deadline[]
-  documents Document[]
+  stages           MatterStage[]
+  hearings         Hearing[]
+  deadlines        Deadline[]
+  documents        Document[]
   procedureParties ProcedureParty[]
   // v0.42: Notas del procedimiento (pendientes/completadas)
-  memos     ProcedureMemo[]
+  memos            ProcedureMemo[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -872,38 +873,39 @@ model ProcedureMemo {
 
   @@index([procedureId])
 }
+
 // ============================================================
 // Partes / Entidades relacionadas
 // ============================================================
 
 model Party {
-  id        String              @id @default(cuid())
-  intakeId  String?
-  intake    Intake?             @relation(fields: [intakeId], references: [id], onDelete: Cascade)
-  matterId  String?
-  matter    Matter?             @relation(fields: [matterId], references: [id], onDelete: Cascade)
-  role      PartyRole
+  id                   String              @id @default(cuid())
+  intakeId             String?
+  intake               Intake?             @relation(fields: [intakeId], references: [id], onDelete: Cascade)
+  matterId             String?
+  matter               Matter?             @relation(fields: [matterId], references: [id], onDelete: Cascade)
+  role                 PartyRole
   // v0.5: Posicion procesal especifica (segun procedimiento), role se mantiene como granularidad gruesa
-  standing  LitigationStanding?
-  ordinal   Int                 @default(1)
-  name      String
+  standing             LitigationStanding?
+  ordinal              Int                 @default(1)
+  name                 String
   // v0.27: El tipo de parte determina los campos obligatorios (persona fisica â†’ documento; empresa â†’ codigo + representante + direccion)
-  partyType PartyType           @default(NATURAL_PERSON)
-  idNumber  String?
-  phone     String?
-  address   String?
-  legalRep  String?
+  partyType            PartyType           @default(NATURAL_PERSON)
+  idNumber             String?
+  phone                String?
+  address              String?
+  legalRep             String?
   // v0.27: Contacto operativo (distinto del telefono de la parte, usado en empresas)
-  contactName String?
-  notes     String?
+  contactName          String?
+  notes                String?
   // v0.26: Consulta de riesgo de contraparte - vinculado a empresa
   enterpriseId         String?
   enterpriseSocialCode String?
   enterpriseName       String?
   enterpriseBoundAt    DateTime?
   procedureParties     ProcedureParty[]
-  createdAt DateTime            @default(now())
-  updatedAt DateTime            @updatedAt
+  createdAt            DateTime            @default(now())
+  updatedAt            DateTime            @updatedAt
 
   @@index([matterId, role, ordinal])
   @@index([name])
@@ -1017,32 +1019,32 @@ model Note {
 // ============================================================
 
 model Document {
-  id          String           @id @default(cuid())
+  id           String           @id @default(cuid())
   // v0.4: matterId puede ser nulo (en ingreso se cuelga de Intake), al convertir a Matter se rellena
-  matterId    String?
-  matter      Matter?          @relation(fields: [matterId], references: [id], onDelete: Cascade)
-  intakeId    String?
-  intake      Intake?          @relation(fields: [intakeId], references: [id], onDelete: Cascade)
-  procedureId String?
-  procedure   MatterProcedure? @relation(fields: [procedureId], references: [id])
+  matterId     String?
+  matter       Matter?          @relation(fields: [matterId], references: [id], onDelete: Cascade)
+  intakeId     String?
+  intake       Intake?          @relation(fields: [intakeId], references: [id], onDelete: Cascade)
+  procedureId  String?
+  procedure    MatterProcedure? @relation(fields: [procedureId], references: [id])
   // v0.48: Etapa de pertenencia (clave foranea, no se rompe al renombrar/ocultar etapa); al eliminar etapa se desvincula
-  stageId     String?
-  stage       MatterStage?     @relation(fields: [stageId], references: [id], onDelete: SetNull)
-  name        String
-  category    DocumentCategory @default(OTHER)
+  stageId      String?
+  stage        MatterStage?     @relation(fields: [stageId], references: [id], onDelete: SetNull)
+  name         String
+  category     DocumentCategory @default(OTHER)
   // v0.42: Parte de origen del material (nuestra/contraria/tercero, etc., tomado de las partes del caso, puede ser vacio)
-  sourceParty String?
+  sourceParty  String?
   // v0.10: Flujo de aprobacion de documentos
-  status      DocumentStatus   @default(DRAFT)
+  status       DocumentStatus   @default(DRAFT)
   reviewedById String?
   reviewedBy   User?            @relation("DocumentReviewer", fields: [reviewedById], references: [id])
   reviewedAt   DateTime?
   approvedById String?
   approvedBy   User?            @relation("DocumentApprover", fields: [approvedById], references: [id])
   approvedAt   DateTime?
-  version     Int              @default(1)
-  isLatest    Boolean          @default(true)
-  familyId    String?
+  version      Int              @default(1)
+  isLatest     Boolean          @default(true)
+  familyId     String?
 
   path     String
   mimeType String?
@@ -1104,27 +1106,27 @@ model Document {
 // ============================================================
 
 model InvoiceRequest {
-  id          String               @id @default(cuid())
+  id             String               @id @default(cuid())
   // v0.43 item 5: matterId puede ser nulo - soporta facturacion sin caso asociado (requiere noMatterReason)
-  matterId    String?
-  matter      Matter?              @relation(fields: [matterId], references: [id], onDelete: Cascade)
+  matterId       String?
+  matter         Matter?              @relation(fields: [matterId], references: [id], onDelete: Cascade)
   noMatterReason String? // Motivo cuando no hay caso asociado (obligatorio si matterId es vacio)
-  amount      Decimal              @db.Decimal(14, 2)
-  title       String? // Nota / nombre del cliente (compatibilidad, nuevo campo usa buyerName)
-  status      InvoiceRequestStatus @default(PENDING)
-  requestNote String?
+  amount         Decimal              @db.Decimal(14, 2)
+  title          String? // Nota / nombre del cliente (compatibilidad, nuevo campo usa buyerName)
+  status         InvoiceRequestStatus @default(PENDING)
+  requestNote    String?
 
   // v0.12: Tipo de factura + concepto + titular + CUIT + base
-  invoiceType    InvoiceType?
-  invoiceItem    InvoiceItem?
-  buyerName      String? // Titular de la factura (nombre del cliente, editable)
-  buyerTaxNo     String? // CUIT del cliente (obligatorio para factura con IVA)
+  invoiceType      InvoiceType?
+  invoiceItem      InvoiceItem?
+  buyerName        String? // Titular de la factura (nombre del cliente, editable)
+  buyerTaxNo       String? // CUIT del cliente (obligatorio para factura con IVA)
   // v0.42: Datos completos del comprador para factura con IVA (requisitos fiscales)
   buyerAddress     String? // Direccion del comprador (obligatorio)
   buyerPhone       String? // Telefono del comprador (obligatorio)
   buyerBank        String? // Banco del comprador (obligatorio)
   buyerBankAccount String? // Cuenta bancaria del comprador (obligatorio)
-  evidenceDocIds String[] @default([]) // Lista de Document ids de respaldo
+  evidenceDocIds   String[]     @default([]) // Lista de Document ids de respaldo
 
   // v0.14: Numero real de factura (cuando finanzas completa la emision)
   invoiceNo String?
@@ -1152,6 +1154,7 @@ model InvoiceRequest {
   @@index([status, requestedAt])
   @@index([requestedById])
 }
+
 // ============================================================
 // Finanzas: contratos / ingresos y egresos / comisiones
 // ============================================================
@@ -1263,7 +1266,7 @@ model ArchiveRecord {
   coverDocId   String?
   catalogDocId String?
 
-  archivedBy   String  // Nombre del solicitante (compatibilidad historica)
+  archivedBy   String // Nombre del solicitante (compatibilidad historica)
   archivedById String? // v0.18: User.id del solicitante, para ruteo de notificaciones
   archivedAt   DateTime @default(now())
   exportPath   String?
@@ -1393,13 +1396,13 @@ model DocumentFolder {
 
 // Configuracion de tipos de sello (decision Â§12.9.2: approverRoles: Role[] multi-rol OR)
 model SealTypeConfig {
-  type             SealType   @id
+  type             SealType @id
   label            String // Nombre visible
   description      String?
   approverRoles    Json // Multi-rol OR; array vacio = solo aplica requiresLegalRep
-  requiresLegalRep Boolean    @default(false) // Requiere aprobacion del representante legal (SystemSetting key=firmLegalRepUserId)
-  enabled          Boolean    @default(true)
-  updatedAt        DateTime   @updatedAt
+  requiresLegalRep Boolean  @default(false) // Requiere aprobacion del representante legal (SystemSetting key=firmLegalRepUserId)
+  enabled          Boolean  @default(true)
+  updatedAt        DateTime @updatedAt
 }
 
 // Solicitud de sello
@@ -1454,6 +1457,7 @@ model SealRequest {
   @@index([sealType, status])
   @@index([matterId])
 }
+
 // ============================================================
 // v0.9: Bandeja de entrada de SMS judiciales
 // ============================================================
@@ -1498,10 +1502,10 @@ model SmsMessage {
   generatedHearingId  String?
   generatedDeadlineId String?
 
-  processed   Boolean   @default(false)
-  processedAt DateTime?
+  processed         Boolean   @default(false)
+  processedAt       DateTime?
   // v0.48: Adjuntos de notificacion electronica requieren accion manual (requiere login/codigo/sin caso asociado)
-  needsManualAction Boolean @default(false)
+  needsManualAction Boolean   @default(false)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -1570,15 +1574,15 @@ model PreservationCase {
   remindDays Int[] @default([30, 15, 7, 3, 1])
 
   targets   PreservationTarget[]
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt DateTime             @default(now())
+  updatedAt DateTime             @updatedAt
 
   @@index([matterId])
   @@index([status])
 }
 
 model PreservationTarget {
-  id     String @id @default(cuid())
+  id     String           @id @default(cuid())
   caseId String
   case   PreservationCase @relation(fields: [caseId], references: [id], onDelete: Cascade)
 
@@ -1586,14 +1590,14 @@ model PreservationTarget {
   note String?
 
   properties PreservationProperty[]
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+  createdAt  DateTime               @default(now())
+  updatedAt  DateTime               @updatedAt
 
   @@index([caseId])
 }
 
 model PreservationProperty {
-  id       String @id @default(cuid())
+  id       String             @id @default(cuid())
   targetId String
   target   PreservationTarget @relation(fields: [targetId], references: [id], onDelete: Cascade)
 
@@ -1606,15 +1610,15 @@ model PreservationProperty {
   status         PreservationStatus @default(ACTIVE)
 
   renewals  PreservationPropertyRenewal[]
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt DateTime                      @default(now())
+  updatedAt DateTime                      @updatedAt
 
   @@index([targetId])
   @@index([status, expiryDate])
 }
 
 model PreservationPropertyRenewal {
-  id         String @id @default(cuid())
+  id         String               @id @default(cuid())
   propertyId String
   property   PreservationProperty @relation(fields: [propertyId], references: [id], onDelete: Cascade)
 
@@ -1625,7 +1629,7 @@ model PreservationPropertyRenewal {
   note            String?
 
   performedById String
-  performedBy   User @relation("PropertyRenewalPerformer", fields: [performedById], references: [id], onDelete: Restrict)
+  performedBy   User     @relation("PropertyRenewalPerformer", fields: [performedById], references: [id], onDelete: Restrict)
   createdAt     DateTime @default(now())
 
   @@index([propertyId])
@@ -1690,19 +1694,19 @@ enum NotificationPriority {
 }
 
 model Notification {
-  id         String               @id @default(cuid())
-  userId     String
-  user       User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
-  type       NotificationType
-  priority   NotificationPriority @default(NORMAL)
-  title      String
-  content    String?
-  href       String?
-  refType    String?
-  refId      String?
-  read       Boolean              @default(false)
-  readAt     DateTime?
-  createdAt  DateTime             @default(now())
+  id        String               @id @default(cuid())
+  userId    String
+  user      User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type      NotificationType
+  priority  NotificationPriority @default(NORMAL)
+  title     String
+  content   String?
+  href      String?
+  refType   String?
+  refId     String?
+  read      Boolean              @default(false)
+  readAt    DateTime?
+  createdAt DateTime             @default(now())
 
   @@index([userId, read, createdAt])
   @@index([userId, createdAt])
@@ -1720,10 +1724,10 @@ model ReviewRecord {
   reviewedBy   User     @relation("ReviewAuthor", fields: [reviewedById], references: [id])
   reviewedAt   DateTime @default(now())
 
-  itemCount         Int
-  itemsJson         Json    // ReviewItem[]
-  textPreviewChars  Int
-  truncated         Boolean @default(false)
+  itemCount        Int
+  itemsJson        Json // ReviewItem[]
+  textPreviewChars Int
+  truncated        Boolean @default(false)
 
   @@index([documentId, reviewedAt])
   @@index([matterId, reviewedAt])
@@ -1732,13 +1736,13 @@ model ReviewRecord {
 // v0.22: Biblioteca de recursos del estudio (sin relacion con casos)
 // Normas / guias / plantillas de referencia (distintas de las plantillas de generacion v0.8) / otros archivos
 enum FirmFileCategory {
-  POLICY     // Normas (manual del empleado, confidencialidad, salarios, etc.)
-  GUIDE      // Guias (guia de trabajo, guia de atencion al cliente, etc.)
-  TEMPLATE   // Plantillas de referencia (muestras que el abogado descarga y modifica, distintas de las generadas por docxtemplater)
-  REFERENCE  // Otros archivos (licencia comercial, escaneo de matricula, etc.)
-  CONTRACT   // Contratos
-  LETTER     // Notas y oficios
-  LICENSE    // Matriculas y habilitaciones
+  POLICY // Normas (manual del empleado, confidencialidad, salarios, etc.)
+  GUIDE // Guias (guia de trabajo, guia de atencion al cliente, etc.)
+  TEMPLATE // Plantillas de referencia (muestras que el abogado descarga y modifica, distintas de las generadas por docxtemplater)
+  REFERENCE // Otros archivos (licencia comercial, escaneo de matricula, etc.)
+  CONTRACT // Contratos
+  LETTER // Notas y oficios
+  LICENSE // Matriculas y habilitaciones
   OTHER_FIRM // Otros
 }
 
@@ -1772,18 +1776,18 @@ model FirmFile {
 
 // v0.27: Centro de servicios â€”â€” Anuncios del estudio (modelo independiente, anuncios fijados como banner superior)
 model Announcement {
-  id          String   @id @default(cuid())
+  id          String    @id @default(cuid())
   title       String
-  content     String   @db.Text
-  pinned      Boolean  @default(false)
-  publishedAt DateTime @default(now())
+  content     String    @db.Text
+  pinned      Boolean   @default(false)
+  publishedAt DateTime  @default(now())
   // Despues del vencimiento el banner no se muestra; la lista se mantiene
   expiresAt   DateTime?
   authorId    String
-  author      User     @relation("AnnouncementAuthor", fields: [authorId], references: [id])
+  author      User      @relation("AnnouncementAuthor", fields: [authorId], references: [id])
   archivedAt  DateTime? // borrado logico
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
 
   @@index([pinned, archivedAt, publishedAt])
   @@index([authorId, createdAt])
@@ -1791,20 +1795,20 @@ model Announcement {
 
 // v0.27: Centro de servicios â€”â€” Contactos externos (tribunales / escribanias / abogados de otros estudios, etc.)
 enum ExternalContactCategory {
-  COURT       // Tribunal
-  PROSECUTOR  // Fiscalia
-  POLICE      // Policia
-  NOTARY      // Escribania
+  COURT // Tribunal
+  PROSECUTOR // Fiscalia
+  POLICE // Policia
+  NOTARY // Escribania
   ARBITRATION // Tribunal arbitral
-  OTHER_FIRM  // Abogado de otro estudio
-  EXPERT      // Perito / tasador
-  OTHER       // Otro
+  OTHER_FIRM // Abogado de otro estudio
+  EXPERT // Perito / tasador
+  OTHER // Otro
 }
 
 enum ExternalContactStatus {
   PENDING_REVIEW // Pendiente de revision
-  APPROVED       // Aprobado
-  REJECTED       // Rechazado
+  APPROVED // Aprobado
+  REJECTED // Rechazado
 }
 
 model ExternalContact {
@@ -1821,15 +1825,15 @@ model ExternalContact {
   tags         String[]
 
   createdById  String
-  createdBy    User     @relation("ExternalContactCreator", fields: [createdById], references: [id])
+  createdBy    User                  @relation("ExternalContactCreator", fields: [createdById], references: [id])
   status       ExternalContactStatus @default(APPROVED)
   reviewedById String?
   reviewedBy   User?                 @relation("ExternalContactReviewer", fields: [reviewedById], references: [id])
   reviewedAt   DateTime?
   reviewNote   String?
   archivedAt   DateTime?
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  createdAt    DateTime              @default(now())
+  updatedAt    DateTime              @updatedAt
 
   @@index([category, archivedAt, name])
   @@index([status, archivedAt, createdAt])
@@ -1842,56 +1846,57 @@ model ExternalContact {
 // ============================================================
 
 model Firm {
-  id          String   @id @default(cuid())
-  name        String
-  slug        String   @unique
-  email       String   @unique
-  phone       String?
-  logoDataUrl String?
-  active      Boolean  @default(true)
-  plan        String   @default("trial")
-  planExpiresAt DateTime?
-  maxUsers    Int      @default(1)
-  maxBranch   Int      @default(1)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  suspendedAt    DateTime?
-  suspensionReason String?
-  deletedAt      DateTime?
-  deletedAtScheduled DateTime?
-  subscriptionStatus           String    @default("active")
-  subscriptionPeriodStart      DateTime?
-  subscriptionPeriodEnd        DateTime?
-  lastPaymentAt                DateTime?
-  lastPaymentAmount            Decimal?  @db.Decimal(10, 2)
-  paymentProvider              String    @default("mercado_pago")
-  paymentProviderCustomerId    String?
+  id                            String    @id @default(cuid())
+  name                          String
+  slug                          String    @unique
+  email                         String    @unique
+  phone                         String?
+  logoDataUrl                   String?
+  active                        Boolean   @default(true)
+  plan                          String    @default("trial")
+  planExpiresAt                 DateTime?
+  maxUsers                      Int       @default(1)
+  maxBranch                     Int       @default(1)
+  createdAt                     DateTime  @default(now())
+  updatedAt                     DateTime  @updatedAt
+  suspendedAt                   DateTime?
+  suspensionReason              String?
+  deletedAt                     DateTime?
+  deletedAtScheduled            DateTime?
+  subscriptionStatus            String    @default("active")
+  subscriptionPeriodStart       DateTime?
+  subscriptionPeriodEnd         DateTime?
+  lastPaymentAt                 DateTime?
+  lastPaymentAmount             Decimal?  @db.Decimal(10, 2)
+  paymentProvider               String    @default("mercado_pago")
+  paymentProviderCustomerId     String?
   paymentProviderSubscriptionId String?
 
-  users   FirmUser[]
+  users               FirmUser[]
   moduleSubscriptions FirmModuleSubscription[]
-  enabledBaseModules  Json @default("[]")
+  enabledBaseModules  Json                     @default("[]")
 }
 
 model FirmUser {
-  id           String   @id @default(cuid())
-  name         String
-  email        String   @unique
-  passwordHash String?
-  phone        String?
-  avatar       String?
-  active       Boolean  @default(true)
-  lastLoginAt  DateTime?
-  calendarToken String? @unique
-  firmId       String?
-  firm         Firm?    @relation(fields: [firmId], references: [id])
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  id            String    @id @default(cuid())
+  name          String
+  email         String    @unique
+  passwordHash  String?
+  phone         String?
+  avatar        String?
+  active        Boolean   @default(true)
+  lastLoginAt   DateTime?
+  calendarToken String?   @unique
+  firmId        String?
+  firm          Firm?     @relation(fields: [firmId], references: [id])
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
 }
+
 model Jurisprudence {
   id           String    @id @default(cuid())
   title        String
-  summary      String?
+  summary      String?   @db.Text
   fullText     String    @db.Text
   court        String?
   jurisdiction String?
@@ -1906,20 +1911,23 @@ model Jurisprudence {
   createdById  String?
   matterId     String?
 
+  // v0.3: campos para ingesta
+  fingerprint   String?   @unique
+  hash          String?
+  pdfPath       String?
+  status        String    @default("pending")
+  processedAt   DateTime?
+  ingestBatchId String?
+  sourceId      String?
+  tribunal      String?
+
   @@index([fuero])
   @@index([jurisdiction])
   @@index([category])
   @@index([date])
-}
-model ModuleConfig {
-  key         String   @id
-  label       String
-  description String?
-  price       Decimal  @db.Decimal(10, 2) @default(0)
-  premium     Boolean  @default(false)
-  enabled     Boolean  @default(true)
-  sortOrder   Int      @default(0)
-  updatedAt   DateTime @updatedAt
+  @@index([status])
+  @@index([sourceId])
+  @@index([fingerprint])
 }
 
 model FirmModuleSubscription {
@@ -1942,6 +1950,7 @@ model FirmModuleSubscription {
   @@index([firmId])
   @@index([status])
 }
+
 // ============================================================
 // NextAuth - Database Sessions
 // ============================================================
