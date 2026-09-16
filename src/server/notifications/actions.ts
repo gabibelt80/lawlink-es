@@ -49,5 +49,31 @@ export async function markAllNotificationsRead() {
   });
   return { ok: true };
 }
+export async function toggleNotificationRead(id: string) {
+  const prisma = await getTenantPrisma();
+  const session = await requireSession();
+  const notif = await prisma.notification.findFirst({
+    where: { id, userId: session.user.id },
+    select: { read: true },
+  });
+  if (!notif) throw new Error("La notificacion no existe");
 
+  return prisma.notification.update({
+    where: { id },
+    data: { read: !notif.read, readAt: notif.read ? null : new Date() },
+  });
+}
+
+export async function deleteNotification(id: string) {
+  const prisma = await getTenantPrisma();
+  const session = await requireSession();
+  const notif = await prisma.notification.findFirst({
+    where: { id, userId: session.user.id },
+    select: { id: true },
+  });
+  if (!notif) throw new Error("La notificacion no existe");
+
+  await prisma.notification.delete({ where: { id } });
+  return { ok: true };
+}
 

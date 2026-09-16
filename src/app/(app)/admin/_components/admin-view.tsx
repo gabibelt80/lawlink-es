@@ -231,47 +231,51 @@ export function AdminView({
   return (
     <div className="space-y-5">
       {/* Header */}
-      <header className="flex flex-wrap items-end justify-between gap-3">
-        <div>
-          <h1 className="text-xl flex items-center gap-2">
-            <Building2 className="h-5 w-5 text-primary" />
+      <header className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+        <div className="min-w-0">
+          <h1 className="flex items-center gap-2 text-lg font-semibold sm:text-xl">
+            <Building2 className="h-5 w-5 shrink-0 text-primary" />
             Panel de administración
           </h1>
           <p className="mt-1 text-xs text-muted-foreground">
             Gestión central del sistema LawLink
           </p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
           <Button
             size="sm"
             variant="outline"
             onClick={() => router.push("/admin/plans")}
-            className="gap-1.5"
+            className="h-9 gap-1.5 px-2.5 text-xs sm:h-8 sm:px-3"
           >
-            <Package className="h-3.5 w-3.5" />
-            Configurar planes
+            <Package className="h-3.5 w-3.5 shrink-0" />
+            <span className="truncate">Planes</span>
           </Button>
           <Button
             size="sm"
             variant="outline"
             onClick={() => router.push("/admin/jurisprudence")}
-            className="gap-1.5"
+            className="h-9 gap-1.5 px-2.5 text-xs sm:h-8 sm:px-3"
           >
-            <Scale className="h-3.5 w-3.5" />
-            Jurisprudencia
+            <Scale className="h-3.5 w-3.5 shrink-0" />
+            <span className="truncate">Jurisprudencia</span>
           </Button>
           <Button
             size="sm"
             variant="outline"
             onClick={() => router.push("/admin/analytics")}
-            className="gap-1.5"
+            className="h-9 gap-1.5 px-2.5 text-xs sm:h-8 sm:px-3"
           >
-            <Activity className="h-3.5 w-3.5" />
-            Analíticas
+            <Activity className="h-3.5 w-3.5 shrink-0" />
+            <span className="truncate">Analíticas</span>
           </Button>
-          <Button size="sm" onClick={() => setDialog({ type: "create" })} className="gap-1.5">
-            <Plus className="h-3.5 w-3.5" />
-            Nuevo estudio
+          <Button
+            size="sm"
+            onClick={() => setDialog({ type: "create" })}
+            className="h-9 gap-1.5 px-3 text-xs sm:h-8"
+          >
+            <Plus className="h-3.5 w-3.5 shrink-0" />
+            <span className="truncate">Nuevo estudio</span>
           </Button>
         </div>
       </header>

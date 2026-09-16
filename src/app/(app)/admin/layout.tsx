@@ -1,6 +1,5 @@
 import { getSession } from "@/lib/auth/session";
 import { redirect } from "next/navigation";
-import { prisma } from "@/lib/prisma";
 
 export default async function AdminLayout({
   children,
@@ -15,9 +14,5 @@ export default async function AdminLayout({
     redirect("/dashboard");
   }
 
-  return (
-    <div className="min-h-screen bg-muted/30 px-4 py-6 lg:px-8">
-      <div className="mx-auto max-w-6xl">{children}</div>
-    </div>
-  );
+  return <>{children}</>;
 }

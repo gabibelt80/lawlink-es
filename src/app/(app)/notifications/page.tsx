@@ -1,8 +1,10 @@
 import Link from "next/link";
-import { Bell, CheckCheck } from "lucide-react";
+import { Bell, CheckCheck, Check, Trash2 } from "lucide-react";
 import {
   getNotifications,
   markAllNotificationsRead,
+  toggleNotificationRead,
+  deleteNotification,
 } from "@/server/notifications/actions";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -33,6 +35,16 @@ export default async function NotificationsPage() {
   async function markAllReadAction() {
     "use server";
     await markAllNotificationsRead();
+  }
+
+  async function toggleReadAction(id: string) {
+    "use server";
+    await toggleNotificationRead(id);
+  }
+
+  async function deleteAction(id: string) {
+    "use server";
+    await deleteNotification(id);
   }
 
   return (
@@ -103,9 +115,40 @@ export default async function NotificationsPage() {
                       </p>
                     )}
                   </div>
-                  <time className="shrink-0 font-mono text-[10px] text-muted-foreground">
-                    {formatTime(n.createdAt)}
-                  </time>
+                  <div className="flex shrink-0 flex-col items-end gap-1">
+                    <time className="font-mono text-[10px] text-muted-foreground">
+                      {formatTime(n.createdAt)}
+                    </time>
+                    <div className="flex items-center gap-0.5">
+                      <form action={toggleReadAction.bind(null, n.id)}>
+                        <button
+                          type="submit"
+                          title={
+                            n.read
+                              ? "Marcar como no leída"
+                              : "Marcar como leída"
+                          }
+                          className="rounded-md p-1 text-muted-foreground transition-colors hover:bg-popover hover:text-primary"
+                        >
+                          <Check
+                            className={cn(
+                              "h-3.5 w-3.5",
+                              n.read && "text-primary",
+                            )}
+                          />
+                        </button>
+                      </form>
+                      <form action={deleteAction.bind(null, n.id)}>
+                        <button
+                          type="submit"
+                          title="Eliminar notificación"
+                          className="rounded-md p-1 text-muted-foreground transition-colors hover:bg-popover hover:text-destructive"
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </button>
+                      </form>
+                    </div>
+                  </div>
                 </div>
               );
 
@@ -126,7 +169,7 @@ export default async function NotificationsPage() {
 
 function formatTime(date: Date | string) {
   const d = new Date(date);
-  return d.toLocaleString("zh-CN", {
+  return d.toLocaleString("es-AR", {
     month: "2-digit",
     day: "2-digit",
     hour: "2-digit",

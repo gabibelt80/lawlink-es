@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useAppSession } from "@/lib/auth/use-app-session";
-import { useSession, signOut } from "next-auth/react";
+import { signOut } from "next-auth/react";
 import {
   Search,
   ChevronDown,
@@ -37,7 +37,7 @@ import { NotificationPopover } from "@/components/layout/notification-popover";
 import { SearchDialog } from "@/components/layout/search-dialog";
 import { ToolsDialog } from "@/components/layout/tools-dialog";
 import { cn } from "@/lib/utils";
-import { isSystemAdmin as checkSystemAdmin, roleLabel as getRoleLabel } from "@/lib/auth/roles";
+import { isSystemAdmin as checkSystemAdmin } from "@/lib/auth/roles";
 
 const roleLabels: Record<string, string> = {
   ADMIN: "Administrador del estudio",
@@ -82,7 +82,11 @@ export function Topbar({
   const user = session?.user;
   const isSystemAdmin = checkSystemAdmin(session);
   const displayName = user?.name ?? "";
-  const roleLabel = user?.role ? (roleLabels[user.role] ?? user.role) : "";
+  const roleLabel = isSystemAdmin
+    ? "Administrador de plataforma"
+    : user?.role
+      ? (roleLabels[user.role] ?? user.role)
+      : "";
   const initial = displayName ? displayName.charAt(0) : "?";
 
   return (
@@ -123,7 +127,7 @@ export function Topbar({
         )}
       </button>
 
-      <div className="flex-1 hidden sm:block" />
+      <div className="hidden flex-1 sm:block" />
 
       {/* Grupo de botones de herramientas - solo para usuarios de estudio */}
       {!isSystemAdmin && (
@@ -145,7 +149,12 @@ export function Topbar({
                 <span className="hidden sm:inline">Aplicaciones</span>
               </button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-44">
+            <DropdownMenuContent
+              align="end"
+              sideOffset={8}
+              collisionPadding={12}
+              className="w-[calc(100vw-1.5rem)] max-w-64 sm:w-44"
+            >
               {APP_ITEMS.map((it) => {
                 if (it.kind === "tools") {
                   return (
@@ -235,9 +244,21 @@ export function Topbar({
             />
           </button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="end" className="w-52">
-          <DropdownMenuLabel className="text-xs font-normal text-muted-foreground">
-            {displayName ? `${displayName} · ${roleLabel}` : "Cargando..."}
+        <DropdownMenuContent
+          align="end"
+          sideOffset={8}
+          collisionPadding={12}
+          className="w-[calc(100vw-1.5rem)] max-w-64 sm:w-56"
+        >
+          <DropdownMenuLabel className="font-normal">
+            <div className="flex flex-col gap-0.5">
+              <span className="truncate text-[12px] font-medium text-foreground">
+                {displayName || "Cargando..."}
+              </span>
+              <span className="truncate text-[10px] text-muted-foreground">
+                {roleLabel}
+              </span>
+            </div>
           </DropdownMenuLabel>
           <DropdownMenuSeparator />
           {isSystemAdmin ? (
@@ -258,7 +279,7 @@ export function Topbar({
               <DropdownMenuItem asChild>
                 <Link href="/settings" className="cursor-pointer">
                   <SettingsIcon className="mr-2 h-4 w-4" />
-                  Preferencias
+                  Configuración
                 </Link>
               </DropdownMenuItem>
             </>
