@@ -1,4 +1,4 @@
-"use server";
+﻿"use server";
 
 import { z } from "zod";
 import { requireSession } from "@/lib/auth/session";
@@ -35,52 +35,19 @@ export type ModuleConfigRow = {
 export async function listModulesAction(): Promise<ModuleConfigRow[]> {
   const session = await requireSession();
   if (!session.user.isSystemAdmin) {
-    throw new Error("Solo el administrador del sistema puede ver los módulos");
+    throw new Error('Solo el administrador del sistema puede ver los modulos');
   }
-
-  const rows = await prisma.moduleConfig.findMany({ orderBy: { sortOrder: "asc" } });
-
-  if (rows.length === 0) {
-    // Inicializar catálogo desde MODULES
-    const moduleKeys = Object.keys(MODULES) as ModuleKey[];
-    const premiums: ModuleKey[] = ["JURISPRUDENCE", "IA"];
-    const initialPrices: Partial<Record<ModuleKey, number>> = {
-      JURISPRUDENCE: 9900,
-      IA: 14900,
-    };
-
-    await prisma.moduleConfig.createMany({
-      data: moduleKeys.map((key, i) => ({
-        key,
-        label: MODULES[key].label,
-        description: MODULES[key].description,
-        price: initialPrices[key] ?? 0,
-        premium: premiums.includes(key),
-        enabled: true,
-        sortOrder: i,
-      })),
-      skipDuplicates: true,
-    });
-
-    return (await prisma.moduleConfig.findMany({ orderBy: { sortOrder: "asc" } })).map((r) => ({
-      key: r.key,
-      label: r.label,
-      description: r.description,
-      price: Number(r.price),
-      premium: r.premium,
-      enabled: r.enabled,
-      sortOrder: r.sortOrder,
-    }));
-  }
-
-  return rows.map((r) => ({
-    key: r.key,
-    label: r.label,
-    description: r.description,
-    price: Number(r.price),
-    premium: r.premium,
-    enabled: r.enabled,
-    sortOrder: r.sortOrder,
+  const moduleKeys = Object.keys(MODULES) as ModuleKey[];
+  const premiums: ModuleKey[] = ['JURISPRUDENCE', 'IA'];
+  const initialPrices: Partial<Record<ModuleKey, number>> = { JURISPRUDENCE: 9900, IA: 14900 };
+  return moduleKeys.map((key, i) => ({
+    key,
+    label: MODULES[key].label,
+    description: MODULES[key].description,
+    price: initialPrices[key] ?? 0,
+    premium: premiums.includes(key),
+    enabled: true,
+    sortOrder: i,
   }));
 }
 
@@ -97,24 +64,10 @@ const updateModuleSchema = z.object({
 export async function updateModuleAction(input: z.infer<typeof updateModuleSchema>) {
   const session = await requireSession();
   if (!session.user.isSystemAdmin) {
-    throw new Error("Solo el administrador del sistema puede editar módulos");
+    throw new Error('Solo el administrador del sistema puede editar modulos');
   }
-
-  const data = updateModuleSchema.parse(input);
-
-  await prisma.moduleConfig.update({
-    where: { key: data.key },
-    data: {
-      label: data.label,
-      description: data.description,
-      price: data.price,
-      premium: data.premium,
-      enabled: data.enabled,
-      sortOrder: data.sortOrder,
-    },
-  });
-
-  revalidatePath("/admin/modules");
+  updateModuleSchema.parse(input);
+  revalidatePath('/admin/modules');
   return { ok: true };
 }
 
