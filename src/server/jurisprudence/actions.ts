@@ -197,3 +197,110 @@ export async function getJurisprudenceFilterOptions() {
       .filter(Boolean) as string[],
   };
 }
+
+// ============================================================
+// Ingesta desde SAIJ (Commit 3)
+// Busca fallos en la API publica de SAIJ y los guarda en la DB.
+// Respeta el patron multi-tenant y de auth del resto del archivo.
+// ============================================================
+
+const runAgentSchema = z.object({
+  agentId: z.string().min(1),
+  keywords: z.array(z.string()).min(1),
+  pageSize: z.number().int().min(1).max(100).optional(),
+});
+
+export interface RunAgentResult {
+  ok: boolean;
+  saved: number;
+  skipped: number;
+  total: number;
+  error?: string;
+}
+
+export async function runJurisprudenceAgent(input: {
+  agentId: string;
+  keywords: string[];
+  pageSize?: number;
+}): Promise<RunAgentResult> {
+  const prisma = await getTenantPrisma();
+  await requireSession();
+
+  const parsed = runAgentSchema.parse(input);
+  const { agentId, keywords, pageSize = 20 } = parsed;
+
+  try {
+    const { searchJurisprudencia } = await import("@/lib/saij/search");
+
+    const termino = keywords[0];
+    console.log(
+      `[jurisprudence] Ejecutando agente ${agentId} con termino "${termino}"`
+    );
+
+    const result = await searchJurisprudencia({
+      query: `titulo:${termino}`,
+      pageSize,
+      offset: 0,
+    });
+
+    let saved = 0;
+    let skipped = 0;
+
+    for (const item of result.items) {
+      try {
+        const existing = await prisma.jurisprudence.findUnique({
+          where: { fingerprint: item.fingerprint },
+          select: { id: true },
+        });
+
+        if (existing) {
+          skipped++;
+          continue;
+        }
+
+        await prisma.jurisprudence.create({
+          data: {
+            title: item.title,
+            summary: item.summary,
+            fullText: item.fullText,
+            court: item.court,
+            jurisdiction: item.jurisdiction,
+            fuero: item.fuero,
+            date: item.date,
+            source: item.source,
+            sourceUrl: item.sourceUrl,
+            sourceId: item.sourceId,
+            category: item.category,
+            tags: item.tags,
+            fingerprint: item.fingerprint,
+            hash: item.hash,
+            status: item.status,
+          },
+        });
+        saved++;
+      } catch (err) {
+        console.error("[jurisprudence] Error guardando item:", err);
+        skipped++;
+      }
+    }
+
+    revalidatePath("/jurisprudence");
+    revalidatePath("/agents/jurisprudence");
+
+    return {
+      ok: true,
+      saved,
+      skipped,
+      total: result.total,
+    };
+  } catch (error) {
+    console.error("[jurisprudence] Error ejecutando agente:", error);
+    return {
+      ok: false,
+      saved: 0,
+      skipped: 0,
+      total: 0,
+      error: error instanceof Error ? error.message : "Error desconocido",
+    };
+  }
+}
