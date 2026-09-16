@@ -124,6 +124,7 @@ export const authOptions: NextAuthOptions = {
       if (user) {
         token.id = (user as any).id;
         token.role = (user as any).role;
+        token.firmId = (user as any).firmId;
         token.firmSlug = (user as any).firmSlug;
         token.isSystemAdmin = (user as any).isSystemAdmin;
       }
@@ -133,6 +134,7 @@ export const authOptions: NextAuthOptions = {
       if (session.user) {
         (session.user as any).id = token.id;
         (session.user as any).role = token.role;
+        (session.user as any).firmId = token.firmId;
         (session.user as any).firmSlug = token.firmSlug;
         (session.user as any).isSystemAdmin = token.isSystemAdmin;
       }

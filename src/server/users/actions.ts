@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import bcrypt from "bcryptjs";
 import { randomBytes } from "node:crypto";
-import { getTenantPrisma } from "@/lib/tenant-prisma";
+import { getTenantPrisma, centralPrisma } from "@/lib/tenant-prisma";
 import { requireSession } from "@/lib/auth/session";
 import { audit } from "@/server/audit";
 
@@ -65,9 +65,22 @@ async function requireAdmin() {
 }
 
 export async function listUsers() {
+  const session = await requireAdmin();
+
+  // 1. Traer solo los usuarios que pertenecen al estudio del admin actual
+  const firmUsers = await centralPrisma.firmUser.findMany({
+    where: { firmId: session.user.firmId ?? undefined },
+    select: { id: true },
+  });
+  const ids = firmUsers.map((fu) => fu.id);
+
+  // 2. Traer los datos completos (role, counts, etc.) desde User
   const prisma = await getTenantPrisma();
-  await requireAdmin();
   return prisma.user.findMany({
+    where: {
+      id: { in: ids },
+      role: { not: "SYSTEM_ADMIN" },
+    },
     orderBy: [{ active: "desc" }, { role: "asc" }, { createdAt: "asc" }],
     select: {
       id: true,
@@ -78,8 +91,8 @@ export async function listUsers() {
       active: true,
       lastLoginAt: true,
       createdAt: true,
-      _count: { select: { ownedMatters: true, memberships: true } }
-    }
+      _count: { select: { ownedMatters: true, memberships: true } },
+    },
   });
 }
 
@@ -165,6 +178,15 @@ export async function updateUserRole(input: UserUpdateRoleInput) {
     throw new Error("No podes modificar tu propio rol");
   }
 
+  // Verificar que el usuario pertenece al estudio del admin
+  const firmUser = await centralPrisma.firmUser.findUnique({
+    where: { id: data.id },
+    select: { firmId: true },
+  });
+  if (!firmUser || firmUser.firmId !== session.user.firmId) {
+    throw new Error("El usuario no pertenece a tu estudio");
+  }
+
   await prisma.user.update({
     where: { id: data.id },
     data: { role: data.role }
@@ -183,28 +205,48 @@ export async function updateUserRole(input: UserUpdateRoleInput) {
 }
 
 export async function toggleUserActive(id: string) {
-  const prisma = await getTenantPrisma();
   const session = await requireAdmin();
   if (id === session.user.id) {
     throw new Error("No podes deshabilitarte a vos mismo");
   }
-  const current = await prisma.user.findUnique({ where: { id }, select: { active: true } });
-  if (!current) throw new Error("El usuario no existe");
 
-  await prisma.user.update({
+  // Verificar que el usuario pertenece al estudio del admin
+  const firmUser = await centralPrisma.firmUser.findUnique({
     where: { id },
-    data: { active: !current.active }
+    select: { firmId: true, active: true, email: true },
+  });
+  if (!firmUser) throw new Error("El usuario no existe en este estudio");
+  if (firmUser.firmId !== session.user.firmId) {
+    throw new Error("El usuario no pertenece a tu estudio");
+  }
+
+  const prisma = await getTenantPrisma();
+  const current = await prisma.user.findUnique({
+    where: { id },
+    select: { active: true, role: true },
+  });
+  if (!current) throw new Error("El usuario no existe");
+  if (current.role === "SYSTEM_ADMIN") {
+    throw new Error("No se puede deshabilitar a un administrador de plataforma");
+  }
+
+  const newActive = !current.active;
+
+  await prisma.user.update({ where: { id }, data: { active: newActive } });
+  await centralPrisma.firmUser.update({
+    where: { id },
+    data: { active: newActive },
   });
 
   await audit({
     userId: session.user.id,
-    action: current.active ? "USER_DEACTIVATE" : "USER_ACTIVATE",
+    action: newActive ? "USER_ACTIVATE" : "USER_DEACTIVATE",
     targetType: "User",
-    targetId: id
+    targetId: id,
   });
 
   revalidatePath("/settings/users");
-  return { ok: true, active: !current.active };
+  return { ok: true, active: newActive };
 }
 
 export async function resetUserPassword(input: ResetPasswordInput) {
