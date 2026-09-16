@@ -1,11 +1,13 @@
-﻿/**
- * v0.50: æ•°æ®åº“ + æ–‡ä»¶å­˜å‚¨è‡ªåŠ¨å¤‡ä»½ï¼ˆPRD Â§å…­æ‰¿è¯ºçš„"å†…ç½®å¤‡ä»½"æœ€åŽä¸€å…¬é‡Œï¼‰ã€‚
+/**
+ * v0.50: Backup automático de base de datos + archivos (PRD §6 "backup integrado").
  *
- * æ¯dÃ­as 02:30 è°ƒ scripts/backup.shï¼ˆpg_dump + storage æ‰“åŒ…ï¼‰ï¼Œå¤‡ä»½åˆ°
- * BACKUP_DIRï¼ˆé»˜è®¤ ./backupsï¼‰ï¼Œå¹¶åšä¿ç•™æ•°æ¸…ç†ï¼ˆBACKUP_KEEPï¼Œé»˜è®¤ 14 ä»½ï¼‰ã€‚
- * Erroræ—¶ç»™æ‰€æœ‰ ADMIN å‘ç«™å†…Notificacionesâ€”â€”å¤‡ä»½é™é»˜Erroretc.äºŽæ²¡æœ‰å¤‡ä»½ã€‚
+ * Todos los días a las 02:30 ejecuta scripts/backup.sh (pg_dump + storage empaquetado),
+ * guarda en BACKUP_DIR (por defecto ./backups) y aplica retención
+ * (BACKUP_KEEP, por defecto 14 copias).
+ * Si hay error, notifica a todos los ADMIN — si el backup falla, no hay respaldo.
  *
- * Cerraræ–¹å¼ï¼šçŽ¯å¢ƒå˜é‡ BACKUP_CRON_ENABLED=falseï¼ˆéƒ¨ç½²çŽ¯å¢ƒæ²¡æœ‰ pg_dump æ—¶ï¼‰ã€‚
+ * Forma de desactivar: variable de entorno BACKUP_CRON_ENABLED=false
+ * (para entornos sin pg_dump).
  */
 import { spawn } from "node:child_process";
 import { readdir, rm, stat } from "node:fs/promises";
@@ -42,12 +44,12 @@ function runScript(baseDir: string): Promise<{ code: number; output: string }> {
   return new Promise((resolve, reject) => {
     const child = spawn("bash", [BACKUP_SCRIPT, baseDir], {
       cwd: process.cwd(),
-      env: process.env
+      env: process.env,
     });
     let output = "";
     const timer = setTimeout(() => {
       child.kill("SIGKILL");
-      reject(new Error("å¤‡ä»½è¶…æ—¶ï¼ˆ10 åˆ†é’Ÿï¼‰"));
+      reject(new Error("Backup excedió el tiempo límite (10 minutos)"));
     }, BACKUP_TIMEOUT_MS);
     child.stdout.on("data", (d) => (output += String(d)));
     child.stderr.on("data", (d) => (output += String(d)));
@@ -62,7 +64,7 @@ function runScript(baseDir: string): Promise<{ code: number; output: string }> {
   });
 }
 
-/** åªä¿ç•™æœ€è¿‘ N ä»½å¤‡ä»½ç›®å½•ï¼ˆç›®å½•åä»¥æ—¶é—´æˆ³å¼€å¤´ï¼Œå­—å…¸åºå³æ—¶é—´åºï¼‰ */
+/** Conserva solo las últimas N copias de backup (nombre con timestamp, orden lexicográfico = orden temporal) */
 async function pruneOldBackups(baseDir: string, keep: number): Promise<number> {
   let entries: string[];
   try {
@@ -72,12 +74,12 @@ async function pruneOldBackups(baseDir: string, keep: number): Promise<number> {
   }
   const backupDirs: string[] = [];
   for (const name of entries) {
-    if (!/^\d{8}_\d{6}$/.test(name)) continue; // åªæ¸…ç†æœ¬è„šæœ¬äº§ç”Ÿçš„ç›®å½•
+    if (!/^\d{8}_\d{6}$/.test(name)) continue; // solo limpia directorios creados por este script
     const full = path.join(baseDir, name);
     try {
       if ((await stat(full)).isDirectory()) backupDirs.push(name);
     } catch {
-      // å¿½ç•¥è¯»å–Errorçš„æ¡ç›®
+      // Ignorar si falla la lectura
     }
   }
   backupDirs.sort();
@@ -91,7 +93,7 @@ async function pruneOldBackups(baseDir: string, keep: number): Promise<number> {
 async function notifyAdmins(title: string, content: string) {
   const admins = await prisma.user.findMany({
     where: { role: "ADMIN", active: true },
-    select: { id: true }
+    select: { id: true },
   });
   for (const admin of admins) {
     await createNotification({
@@ -100,7 +102,7 @@ async function notifyAdmins(title: string, content: string) {
       priority: "HIGH",
       title,
       content,
-      href: "/settings"
+      href: "/settings",
     });
   }
 }
@@ -114,7 +116,7 @@ export async function runDatabaseBackup(): Promise<BackupResult> {
   try {
     const { code, output } = await runScript(baseDir);
     if (code !== 0) {
-      throw new Error(`backup.sh Cerrar sesiÃ³nç  ${code}ï¼š${output.slice(-500)}`);
+      throw new Error(`backup.sh terminó con código ${code}: ${output.slice(-500)}`);
     }
     const removedOld = await pruneOldBackups(baseDir, keepCount());
 
@@ -123,18 +125,16 @@ export async function runDatabaseBackup(): Promise<BackupResult> {
       action: "DATABASE_BACKUP_CRON",
       targetType: "Backup",
       targetId: baseDir,
-      detail: { removedOld, keep: keepCount() }
+      detail: { removedOld, keep: keepCount() },
     });
     return { ok: true, backupDir: baseDir, removedOld };
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
     await notifyAdmins(
-      "æ•°æ®åº“è‡ªåŠ¨å¤‡ä»½Error",
-      `${message.slice(0, 300)}ï½œè¯·æ£€æŸ¥ pg_dump æ˜¯å¦å¯ç”¨ã€BACKUP_DIR æ˜¯å¦å¯å†™ï¼›ä¿®å¤å‰Sistemaæ²¡æœ‰æ–°å¤‡ä»½ã€‚`
+      "Error en backup automático de base de datos",
+      `${message.slice(0, 300)} | Verificá que pg_dump esté disponible y que BACKUP_DIR sea escribible; si no, el sistema no tiene nuevos respaldos.`,
     );
-    // æŠ›å‡ºè®© scheduler ç»Ÿä¸€å†™ *_FAILED_CRON audit
+    // Re-lanzar para que el scheduler registre el *_FAILED_CRON audit
     throw err;
   }
 }
-
-
