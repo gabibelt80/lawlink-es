@@ -592,29 +592,30 @@ model Matter {
   closedAt        DateTime?
   archivedAt      DateTime?
 
-  procedures        MatterProcedure[]
-  parties           Party[]
-  relatedEntities   RelatedEntity[]
-  linksFrom         MatterLink[]       @relation("MatterLinkFrom") // v0.32 Casos relacionados (este caso â†’ caso relacionado)
-  linksTo           MatterLink[]       @relation("MatterLinkTo") // Inverso (caso relacionado â†’ este caso)
-  notes             Note[]
-  tasks             Task[]
-  documents         Document[]
-  timelineEvents    TimelineEvent[]
-  billings          Billing[]
-  feeEntries        FeeEntry[]
-  commissionPlans   CommissionPlan[]
-  archiveRecords    ArchiveRecord[]
-  invoiceRequests   InvoiceRequest[]
+  procedures         MatterProcedure[]
+  jurisprudenceLinks JurisprudenceMatterLink[]
+  parties            Party[]
+  relatedEntities    RelatedEntity[]
+  linksFrom          MatterLink[]              @relation("MatterLinkFrom") // v0.32 Casos relacionados (este caso â†’ caso relacionado)
+  linksTo            MatterLink[]              @relation("MatterLinkTo") // Inverso (caso relacionado â†’ este caso)
+  notes              Note[]
+  tasks              Task[]
+  documents          Document[]
+  timelineEvents     TimelineEvent[]
+  billings           Billing[]
+  feeEntries         FeeEntry[]
+  commissionPlans    CommissionPlan[]
+  archiveRecords     ArchiveRecord[]
+  invoiceRequests    InvoiceRequest[]
   // v0.8: Carpetas + sellos
-  folders           DocumentFolder[]
-  sealRequests      SealRequest[]
+  folders            DocumentFolder[]
+  sealRequests       SealRequest[]
   // v0.9: SMS judiciales + medidas cautelares + envios (medidas v0.48 en adelante solo modelo 3 capas)
-  smsMessages       SmsMessage[]
-  preservationCases PreservationCase[]
-  expressTrackings  ExpressTracking[]
+  smsMessages        SmsMessage[]
+  preservationCases  PreservationCase[]
+  expressTrackings   ExpressTracking[]
   // v0.21: Historial de revision de documentos con IA
-  reviewRecords     ReviewRecord[]
+  reviewRecords      ReviewRecord[]
 
   // v0.28: Valores de campos personalizados ({ [CustomFieldDef.key]: string })
   customValues Json    @default("{}")
@@ -1921,6 +1922,15 @@ model Jurisprudence {
   sourceId      String?
   tribunal      String?
 
+  // v0.4: campos para busqueda y escalado
+  numeroSumario String?
+  fechaUmod     DateTime?
+  descriptors   Json?
+  citesUuids    String[]  @default([])
+
+  // v0.4: relaciones
+  linksToMatters JurisprudenceMatterLink[]
+
   @@index([fuero])
   @@index([jurisdiction])
   @@index([category])
@@ -1928,6 +1938,42 @@ model Jurisprudence {
   @@index([status])
   @@index([sourceId])
   @@index([fingerprint])
+  @@index([numeroSumario])
+  @@index([date, fuero])
+}
+
+model JurisprudenceMatterLink {
+  id              String        @id @default(cuid())
+  jurisprudenceId String
+  jurisprudence   Jurisprudence @relation(fields: [jurisprudenceId], references: [id], onDelete: Cascade)
+  matterId        String
+  matter          Matter        @relation(fields: [matterId], references: [id], onDelete: Cascade)
+
+  relevanceScore Float    @default(0)
+  source         String   @default("manual")
+  note           String?
+  linkedAt       DateTime @default(now())
+
+  @@unique([jurisprudenceId, matterId])
+  @@index([matterId, relevanceScore])
+  @@index([jurisprudenceId])
+}
+
+model JurisprudenceIngestLog {
+  id         String    @id @default(cuid())
+  source     String
+  query      String
+  agentId    String?
+  totalFound Int       @default(0)
+  totalNew   Int       @default(0)
+  totalSkip  Int       @default(0)
+  startedAt  DateTime  @default(now())
+  finishedAt DateTime?
+  status     String    @default("running")
+  error      String?
+
+  @@index([startedAt])
+  @@index([status])
 }
 
 model FirmModuleSubscription {
