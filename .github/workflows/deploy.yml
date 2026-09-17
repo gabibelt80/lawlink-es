@@ -44,7 +44,7 @@ jobs:
             npx prisma db push --skip-generate
 
             echo "=== Building ==="
-            npx next build 2>&1 | tail -10
+            NEXT_DIST_DIR=.next-build npx next build0
 
             echo "=== Restarting PM2 ==="
             pm2 restart lawlink --update-env
