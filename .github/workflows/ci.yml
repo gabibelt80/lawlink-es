@@ -85,6 +85,10 @@ jobs:
       # 以下三步模拟「全新安装」：迁移 → seed → 用 README 所载账号验证可登录。
       # v0.44 曾因空迁移导致全新安装无法初始化，且两个多月无人发现，
       # 原因就是没有任何环节会从零装一次。这三步专门守住这条线。
+      - name: Reset test database
+        run: |
+          PGPASSWORD=lawlink psql -h localhost -U lawlink -d lawlink -c "DROP SCHEMA public CASCADE; CREATE SCHEMA public;"
+
       - name: Migrate fresh database
         run: npx prisma migrate deploy
 
