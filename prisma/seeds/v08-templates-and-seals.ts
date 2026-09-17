@@ -1,11 +1,13 @@
 /**
- * v0.8 seed：内置 8 个文档模板 + 5 个用章配置
+ * v0.8 seed: 8 plantillas de documentos integradas + 5 configuraciones de sellos
  *
- * 幂等策略：
- *   - DocumentTemplate：用 (name + isBuiltIn=true) 作为逻辑唯一键 findFirst，不存在才创建。重跑不覆盖。
- *   - SealTypeConfig：用 type 作 @id，upsert。
+ * Estrategia idempotente:
+ *   - DocumentTemplate: usa (name + isBuiltIn=true) como clave logica con findFirst,
+ *     solo crea si no existe. Re-ejecutar no sobreescribe.
+ *   - SealTypeConfig: usa type como @id, hace upsert.
  *
- * 模板 docx Buffer 由 src/lib/template-builder.ts 动态构造，加密入库为 Document(encrypted=true)。
+ * El Buffer docx de la plantilla se construye dinamicamente en
+ * src/lib/template-builder.ts, se encripta y se guarda como Document(encrypted=true).
  */
 import type { PrismaClient } from "@prisma/client";
 import { BUILTIN_TEMPLATES } from "../../src/lib/template-builder";
@@ -14,23 +16,25 @@ import { writeFile } from "../../src/lib/storage/local";
 import { encryptBuffer, sha256 } from "../../src/lib/storage/crypto";
 
 export async function seedV08Templates(prisma: PrismaClient) {
-  // 找一个 ADMIN 作为 uploadedBy
+  // Buscar un ADMIN como uploadedBy
   const admin = await prisma.user.findFirst({
     where: { role: "ADMIN" },
-    select: { id: true }
+    select: { id: true },
   });
   if (!admin) {
-    console.log("⚠ 跳过 v0.8 模板 seed：未发现 ADMIN 用户");
+    console.log(
+      "AVISO: se omite seed de plantillas v0.8. No se encontro usuario ADMIN"
+    );
     return;
   }
 
   let created = 0;
   let skipped = 0;
-  // v1.0 P3：首批 10 个 + 第二批 12 个（PRD §11.3 目标 20+）
+  // v1.0 P3: primer lote de 10 + segundo lote de 12 (objetivo PRD 11.3: 20+)
   for (const tmpl of [...BUILTIN_TEMPLATES, ...V1_TEMPLATES]) {
     const existing = await prisma.documentTemplate.findFirst({
       where: { name: tmpl.name, isBuiltIn: true },
-      select: { id: true }
+      select: { id: true },
     });
     if (existing) {
       skipped++;
@@ -46,16 +50,17 @@ export async function seedV08Templates(prisma: PrismaClient) {
         name: `${tmpl.name}.docx`,
         category: "OTHER",
         path,
-        mimeType: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        mimeType:
+          "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
         size: buf.length,
         sha256: sha256(buf),
         encrypted: true,
         algorithm: enc.algorithm,
         iv: enc.iv.toString("base64"),
         authTag: enc.authTag.toString("base64"),
-        tags: ["内置模板"],
-        uploadedById: admin.id
-      }
+        tags: ["plantilla integrada"],
+        uploadedById: admin.id,
+      },
     });
 
     await prisma.documentTemplate.create({
@@ -68,51 +73,58 @@ export async function seedV08Templates(prisma: PrismaClient) {
         variables: tmpl.variables,
         isBuiltIn: true,
         enabled: true,
-        createdById: admin.id
-      }
+        createdById: admin.id,
+      },
     });
     created++;
   }
-  console.log(`✓ v0.8 模板：${created} 个新建 / ${skipped} 个已存在`);
+  console.log(
+    `OK v0.8 plantillas: ${created} creadas / ${skipped} existentes`
+  );
 }
 
 export async function seedV08SealConfigs(prisma: PrismaClient) {
   const configs = [
     {
       type: "OFFICIAL_SEAL" as const,
-      label: "律师事务所公章",
-      description: "用于法律意见书、所函、律师函、对外正式文件等。",
+      label: "Sello oficial del estudio",
+      description:
+        "Para dictamenes legales, cartas del estudio, cartas documento y documentos formales externos.",
       approverRoles: ["PRINCIPAL_LAWYER" as const],
-      requiresLegalRep: false
+      requiresLegalRep: false,
     },
     {
       type: "CONTRACT_SEAL" as const,
-      label: "合同专用章",
-      description: "律所对外签订的合同（顾问、转介等）。",
+      label: "Sello de contratos",
+      description:
+        "Contratos que firma el estudio hacia afuera (consultoria, derivaciones, etc.).",
       approverRoles: ["PRINCIPAL_LAWYER" as const],
-      requiresLegalRep: false
+      requiresLegalRep: false,
     },
     {
       type: "FINANCE_SEAL" as const,
-      label: "财务专用章",
-      description: "发票、收据、对账单等财务文件。",
+      label: "Sello de finanzas",
+      description:
+        "Facturas, recibos, conciliaciones bancarias y otros documentos financieros.",
       approverRoles: ["FINANCE" as const],
-      requiresLegalRep: false
+      requiresLegalRep: false,
     },
     {
       type: "LEGAL_REP_SEAL" as const,
-      label: "法定代表人章",
-      description: "工商登记、银行类文件。仅法定代表人本人可审批。",
+      label: "Sello del representante legal",
+      description:
+        "Registros societarios, documentacion bancaria. Solo el representante legal puede aprobar.",
       approverRoles: [],
-      requiresLegalRep: true
+      requiresLegalRep: true,
     },
     {
       type: "CONTRACT_REVIEW_SEAL" as const,
-      label: "合同审核章",
-      description: "顾问单位送审合同盖审核章。",
+      label: "Sello de revision de contratos",
+      description:
+        "Contratos enviados por clientes de asesoria para su revision.",
       approverRoles: ["PRINCIPAL_LAWYER" as const],
-      requiresLegalRep: false
-    }
+      requiresLegalRep: false,
+    },
   ];
 
   for (const c of configs) {
@@ -122,10 +134,10 @@ export async function seedV08SealConfigs(prisma: PrismaClient) {
         label: c.label,
         description: c.description,
         approverRoles: c.approverRoles,
-        requiresLegalRep: c.requiresLegalRep
+        requiresLegalRep: c.requiresLegalRep,
       },
-      create: c
+      create: c,
     });
   }
-  console.log(`✓ v0.8 用章配置：${configs.length} 种已就绪`);
+  console.log(`OK v0.8 configuracion de sellos: ${configs.length} listas`);
 }
