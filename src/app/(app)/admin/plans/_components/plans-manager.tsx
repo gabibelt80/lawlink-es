@@ -182,7 +182,7 @@ export function PlansManager() {
                 <Label className="text-[11px]">Módulos incluidos</Label>
                 <div className="mt-2 grid grid-cols-1 gap-2 md:grid-cols-2 lg:grid-cols-3">
                   {(Object.keys(MODULES) as ModuleKey[]).map((moduleKey) => {
-                    const module = MODULES[moduleKey];
+                    const moduleInfo = MODULES[moduleKey];
                     const isActive = plan.modules.includes(moduleKey);
                     return (
                       <button
@@ -207,9 +207,9 @@ export function PlansManager() {
                           {isActive && <CheckCircle2 className="h-3 w-3" />}
                         </span>
                         <div>
-                          <div className="text-xs font-medium">{module.label}</div>
+                          <div className="text-xs font-medium">{moduleInfo.label}</div>
                           <div className="text-[9px] text-muted-foreground">
-                            {module.description}
+                            {moduleInfo.description}
                           </div>
                         </div>
                       </button>

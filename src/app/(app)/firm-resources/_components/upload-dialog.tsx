@@ -201,7 +201,7 @@ export function UploadDialog({
 
           <div>
             <Label className="text-[11px]">
-              ¿Reemplazar una versión anterior? (opcional; la versión anterior se marcará como "versión anterior")
+              ¿Reemplazar una version anterior? (opcional; la version anterior se marcara como version anterior)
             </Label>
             <Select value={supersedesId} onValueChange={setSupersedesId}>
               <SelectTrigger className="mt-1 h-9 text-xs">

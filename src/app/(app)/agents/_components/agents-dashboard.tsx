@@ -66,12 +66,6 @@ export function AgentsDashboard() {
   const [answer, setAnswer] = useState("");
   const [asking, setAsking] = useState(false);
 
-  useEffect(() => {
-    loadAgents();
-    const interval = setInterval(loadAgents, 3000);
-    return () => clearInterval(interval);
-  }, []);
-
   async function loadAgents() {
     try {
       const { getAgentsStatus } = await import(
@@ -86,6 +80,12 @@ export function AgentsDashboard() {
       setRefreshing(false);
     }
   }
+
+  useEffect(() => {
+    loadAgents();
+    const interval = setInterval(loadAgents, 3000);
+    return () => clearInterval(interval);
+  }, []);
 
   function handleRefresh() {
     setRefreshing(true);

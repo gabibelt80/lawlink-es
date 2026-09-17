@@ -1,5 +1,7 @@
+import Link from "next/link";
+
 export const metadata = {
-  title: "Términos y Condiciones · JURIDICTAS",
+  title: "Terminos y Condiciones · JURIDICTAS",
   description: "Términos y condiciones de uso de la plataforma JURIDICTAS.",
 };
 
@@ -8,7 +10,7 @@ export default function TerminosPage() {
 
   return (
     <>
-      <h1 className="text-3xl font-bold">Términos y Condiciones de Uso</h1>
+      <h1 className="text-3xl font-bold">Terminos y Condiciones de Uso</h1>
       <p className="text-sm text-slate-500">Última actualización: {lastUpdate}</p>
 
       <h2>1. Aceptación de los Términos</h2>
@@ -64,7 +66,7 @@ export default function TerminosPage() {
       <p>
         JURIDICTAS ofrece distintos planes de suscripción cuyos precios, límites y
         funcionalidades se encuentran publicados en{" "}
-        <a href="/#precios">la sección de precios</a>.
+        <Link href="/#precios">la seccion de precios</Link>.
       </p>
       <ul>
         <li>

@@ -2008,7 +2008,7 @@ function StageCreateDialog({
                 <SelectItem value="END">Al final</SelectItem>
                 {stages.map((stage) => (
                   <SelectItem key={stage.key} value={stage.id ? `AFTER_ID:${stage.id}` : `AFTER_NAME:${stage.name}`}>
-                    Despues de "{stage.name}"
+                    Despues de &quot;{stage.name}&quot;
                   </SelectItem>
                 ))}
               </SelectContent>

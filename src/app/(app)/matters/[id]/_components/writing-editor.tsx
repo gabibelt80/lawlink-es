@@ -112,6 +112,72 @@ const FONT_SIZES = [
   { label: "24", value: "24pt" },
 ];
 
+function ToolbarButton({
+  onClick,
+  active,
+  disabled,
+  title,
+  children,
+}: {
+  onClick: () => void;
+  active?: boolean;
+  disabled?: boolean;
+  title: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={disabled}
+      title={title}
+      className={cn(
+        "flex h-7 w-7 items-center justify-center rounded text-muted-foreground transition-colors hover:bg-muted hover:text-foreground",
+        active && "bg-primary/10 text-primary",
+        disabled && "opacity-40"
+      )}
+    >
+      {children}
+    </button>
+  );
+}
+
+function ToolbarDivider() {
+  return <div className="h-6 w-px bg-border" />;
+}
+
+function SelectWrapper({
+  value,
+  onChange,
+  options,
+  className,
+}: {
+  value: string;
+  onChange: (value: string) => void;
+  options: { label: string; value: string }[];
+  className?: string;
+}) {
+  return (
+    <div className="relative">
+      <select
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        className={cn(
+          "h-7 appearance-none rounded border border-border bg-white pl-2 pr-6 text-[11px] text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary",
+          className
+        )}
+      >
+        {options.map((opt) => (
+          <option key={opt.value} value={opt.value}>
+            {opt.label}
+          </option>
+        ))}
+      </select>
+      <ChevronDown className="pointer-events-none absolute right-1.5 top-1/2 h-3 w-3 -translate-y-1/2 text-muted-foreground" />
+    </div>
+  );
+}
+
 export function WritingEditor({
   open,
   onClose,
@@ -162,9 +228,8 @@ export function WritingEditor({
     },
   });
 
-  if (!open) return null;
-
   useEffect(() => {
+    if (!open) return;
     let cancelled = false;
     import("@/server/settings/modules-actions")
       .then((m) => m.getModuleEnabled("IA"))
@@ -177,7 +242,9 @@ export function WritingEditor({
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [open]);
+
+  if (!open) return null;
 
   function handleSave() {
     if (!editor) return;
@@ -252,66 +319,6 @@ export function WritingEditor({
     if (!editor) return;
     editor.chain().focus().setFontSize(value).run();
   }
-
-  const ToolbarButton = ({
-    onClick,
-    active,
-    disabled,
-    title,
-    children,
-  }: {
-    onClick: () => void;
-    active?: boolean;
-    disabled?: boolean;
-    title: string;
-    children: React.ReactNode;
-  }) => (
-    <button
-      type="button"
-      onClick={onClick}
-      disabled={disabled}
-      title={title}
-      className={cn(
-        "flex h-7 w-7 items-center justify-center rounded text-muted-foreground transition-colors hover:bg-muted hover:text-foreground",
-        active && "bg-primary/10 text-primary",
-        disabled && "opacity-40"
-      )}
-    >
-      {children}
-    </button>
-  );
-
-  const ToolbarDivider = () => <div className="h-6 w-px bg-border" />;
-
-  const SelectWrapper = ({
-    value,
-    onChange,
-    options,
-    className,
-  }: {
-    value: string;
-    onChange: (value: string) => void;
-    options: { label: string; value: string }[];
-    className?: string;
-  }) => (
-    <div className="relative">
-      <select
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        className={cn(
-          "h-7 appearance-none rounded border border-border bg-white pl-2 pr-6 text-[11px] text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary",
-          className
-        )}
-      >
-        {options.map((opt) => (
-          <option key={opt.value} value={opt.value}>
-            {opt.label}
-          </option>
-        ))}
-      </select>
-      <ChevronDown className="pointer-events-none absolute right-1.5 top-1/2 h-3 w-3 -translate-y-1/2 text-muted-foreground" />
-    </div>
-  );
 
   return (
     <div className="fixed inset-0 z-50 flex flex-col bg-[#f5f5f5]">
@@ -563,7 +570,7 @@ export function WritingEditor({
             <div className="flex-1 overflow-y-auto px-3 py-2 space-y-2">
               {chatMessages.length === 0 && (
                 <p className="text-[11px] text-muted-foreground text-center py-4">
-                  Pedile a la IA que modifique el documento, ej: "Cambiá el encabezado a formato legal"
+                  Pedile a la IA que modifique el documento, ej: &quot;Cambia el encabezado a formato legal&quot;
                 </p>
               )}
 
