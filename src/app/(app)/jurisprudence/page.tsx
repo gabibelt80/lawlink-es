@@ -12,6 +12,7 @@ export default async function JurisprudencePage() {
   const enabled = await hasModule("JURISPRUDENCE");
   if (!enabled) redirect("/dashboard");
 
+  const hasIa = await hasModule("IA");
   const isSystemAdmin = session.user.isSystemAdmin === true;
   const initialData = await searchJurisprudence({ page: 1, pageSize: 20 });
 
@@ -19,6 +20,7 @@ export default async function JurisprudencePage() {
     <JurisprudenceView
       initialData={initialData}
       isSystemAdmin={isSystemAdmin}
+      hasIaModule={hasIa}
     />
   );
 }

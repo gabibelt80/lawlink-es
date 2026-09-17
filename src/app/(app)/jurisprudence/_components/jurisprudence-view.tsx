@@ -51,9 +51,11 @@ type JurisprudenceItem = SearchJurisprudenceResult["items"][number];
 export function JurisprudenceView({
   initialData,
   isSystemAdmin = false,
+  hasIaModule = false,
 }: {
   initialData: SearchJurisprudenceResult;
   isSystemAdmin?: boolean;
+  hasIaModule?: boolean;
 }) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
@@ -77,6 +79,23 @@ export function JurisprudenceView({
   const [years, setYears] = useState<number[]>([]);
 
   const searchTimer = useRef<NodeJS.Timeout | null>(null);
+  const [analyzeOpen, setAnalyzeOpen] = useState(false);
+  const [analyzeCode, setAnalyzeCode] = useState("");
+  const [analyzing, setAnalyzing] = useState(false);
+  const [analyzeResult, setAnalyzeResult] = useState<{
+    context: {
+      matterCode: string;
+      title: string;
+      category: string;
+      causeName: string | null;
+      causeFreeText: string | null;
+      clientName: string | null;
+      keywords: string[];
+    } | null;
+    items: JurisprudenceItem[];
+    total: number;
+    error?: string;
+  } | null>(null);
 
   useEffect(() => {
     (async () => {
@@ -212,6 +231,42 @@ export function JurisprudenceView({
     });
   }
 
+  async function handleAnalyze() {
+    if (!analyzeCode.trim()) return;
+    setAnalyzing(true);
+    setAnalyzeResult(null);
+    try {
+      const { analyzeCaseWithIA } = await import(
+        "@/server/jurisprudence/actions"
+      );
+      const result = await analyzeCaseWithIA(analyzeCode.trim());
+
+      if (!result.ok) {
+        toast.error("Error en el analisis", {
+          description: result.error || "Error desconocido",
+        });
+        return;
+      }
+
+      setAnalyzeResult({
+        context: result.context,
+        items: result.items,
+        total: result.total,
+        error: result.error,
+      });
+
+      if (result.items.length === 0) {
+        toast.warning("No se encontraron fallos relevantes");
+      }
+    } catch (err) {
+      toast.error("Error", {
+        description: err instanceof Error ? err.message : "",
+      });
+    } finally {
+      setAnalyzing(false);
+    }
+  }
+
   async function openDetail(item: JurisprudenceItem) {
     setSelected(item);
     setFullDetail(null);
@@ -245,14 +300,31 @@ export function JurisprudenceView({
             estudio
           </p>
         </div>
-        <Button
-          size="sm"
-          onClick={() => setCreateOpen(true)}
-          className="gap-1.5"
-        >
-          <Plus className="h-3.5 w-3.5" />
-          Nueva jurisprudencia
-        </Button>
+        <div className="flex items-center gap-2">
+          {hasIaModule && (
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => {
+                setAnalyzeOpen(true);
+                setAnalyzeCode("");
+                setAnalyzeResult(null);
+              }}
+              className="gap-1.5"
+            >
+              <FileText className="h-3.5 w-3.5" />
+              Analizar caso con IA
+            </Button>
+          )}
+          <Button
+            size="sm"
+            onClick={() => setCreateOpen(true)}
+            className="gap-1.5"
+          >
+            <Plus className="h-3.5 w-3.5" />
+            Nueva jurisprudencia
+          </Button>
+        </div>
       </header>
 
       <div className="flex items-start gap-2 rounded-md border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-xs text-amber-800 dark:text-amber-200">
@@ -688,6 +760,181 @@ export function JurisprudenceView({
               </Button>
             </DialogFooter>
           </form>
+        </DialogContent>
+      </Dialog>
+      {/* Modal analisis con IA */}
+      <Dialog open={analyzeOpen} onOpenChange={setAnalyzeOpen}>
+        <DialogContent className="max-w-3xl max-h-[85vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <FileText className="h-5 w-5 text-primary" />
+              Analizar caso con IA
+            </DialogTitle>
+            <DialogDescription asChild>
+              <div className="space-y-1 pt-2 text-xs">
+                <div className="flex items-start gap-2 rounded-md border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-amber-800 dark:text-amber-200">
+                  <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+                  <span>
+                    Este analisis es generado automaticamente a modo de
+                    referencia. Puede cometer errores. Verifica siempre las
+                    fuentes oficiales antes de citar.
+                  </span>
+                </div>
+              </div>
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4">
+            <div>
+              <Label className="text-xs">Codigo del caso</Label>
+              <div className="mt-1 flex gap-2">
+                <Input
+                  value={analyzeCode}
+                  onChange={(e) => setAnalyzeCode(e.target.value)}
+                  placeholder="Ej: JD-2026-AD-0001"
+                  className="font-mono text-sm"
+                  disabled={analyzing}
+                />
+                <Button
+                  onClick={handleAnalyze}
+                  disabled={analyzing || !analyzeCode.trim()}
+                  className="gap-1.5"
+                >
+                  {analyzing ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <Search className="h-4 w-4" />
+                  )}
+                  Analizar
+                </Button>
+              </div>
+            </div>
+
+            {analyzeResult && analyzeResult.context && (
+              <>
+                <div className="rounded-lg border border-border bg-muted/20 p-4">
+                  <h4 className="mb-2 text-xs font-medium text-muted-foreground">
+                    Contexto detectado
+                  </h4>
+                  <div className="space-y-1 text-xs">
+                    <div>
+                      <span className="text-muted-foreground">Caso:</span>{" "}
+                      {analyzeResult.context.matterCode}
+                    </div>
+                    {analyzeResult.context.title && (
+                      <div>
+                        <span className="text-muted-foreground">Titulo:</span>{" "}
+                        {analyzeResult.context.title}
+                      </div>
+                    )}
+                    {analyzeResult.context.category && (
+                      <div>
+                        <span className="text-muted-foreground">
+                          Materia:
+                        </span>{" "}
+                        {analyzeResult.context.category}
+                      </div>
+                    )}
+                    {analyzeResult.context.causeName && (
+                      <div>
+                        <span className="text-muted-foreground">Causa:</span>{" "}
+                        {analyzeResult.context.causeName}
+                      </div>
+                    )}
+                    {analyzeResult.context.keywords.length > 0 && (
+                      <div className="pt-1">
+                        <span className="text-muted-foreground">
+                          Palabras clave:
+                        </span>
+                        <div className="mt-1 flex flex-wrap gap-1">
+                          {analyzeResult.context.keywords.map((kw) => (
+                            <span
+                              key={kw}
+                              className="rounded-full bg-muted/50 px-2 py-0.5 text-[10px] text-muted-foreground"
+                            >
+                              {kw}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                <div>
+                  <h4 className="mb-2 flex items-center gap-2 text-xs font-medium text-muted-foreground">
+                    <FileText className="h-3.5 w-3.5" />
+                    Fallos relevantes ({analyzeResult.items.length} de{" "}
+                    {analyzeResult.total.toLocaleString("es-AR")})
+                  </h4>
+
+                  {analyzeResult.items.length === 0 ? (
+                    <p className="rounded-md border border-dashed border-border py-6 text-center text-xs text-muted-foreground">
+                      No se encontraron fallos relevantes en la biblioteca.
+                    </p>
+                  ) : (
+                    <div className="space-y-2">
+                      {analyzeResult.items.map((item) => (
+                        <div
+                          key={item.id}
+                          className="rounded-lg border border-border bg-card p-3"
+                        >
+                          <div className="flex items-start justify-between gap-2">
+                            <div className="flex-1">
+                              <h5 className="text-xs font-medium leading-snug">
+                                {item.title}
+                              </h5>
+                              <div className="mt-1 flex flex-wrap items-center gap-2 text-[10px] text-muted-foreground">
+                                {item.fuero && (
+                                  <Badge
+                                    variant="outline"
+                                    className="text-[9px] border-primary/30 text-primary"
+                                  >
+                                    {item.fuero}
+                                  </Badge>
+                                )}
+                                {item.court && <span>{item.court}</span>}
+                                {item.date && (
+                                  <span>
+                                    {new Date(
+                                      item.date
+                                    ).toLocaleDateString("es-AR")}
+                                  </span>
+                                )}
+                                {item.rank !== undefined && (
+                                  <span className="font-mono">
+                                    score {item.rank.toFixed(2)}
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => {
+                                setAnalyzeOpen(false);
+                                openDetail(item);
+                              }}
+                              className="gap-1.5 text-xs shrink-0"
+                            >
+                              <FileText className="h-3 w-3" />
+                              Ver
+                            </Button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </>
+            )}
+
+            {analyzeResult?.error && (
+              <p className="rounded-md border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-xs text-amber-800 dark:text-amber-200">
+                {analyzeResult.error}
+              </p>
+            )}
+          </div>
         </DialogContent>
       </Dialog>
     </div>

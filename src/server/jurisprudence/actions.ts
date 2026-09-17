@@ -761,3 +761,186 @@ export async function getJurisprudenceById(id: string) {
 
   return item;
 }
+
+// ============================================================
+// Analisis de caso (Commit 9 — read-only, sin escritura IA)
+// ============================================================
+
+import { readFileSync, existsSync } from "node:fs";
+import { join } from "node:path";
+
+export interface CaseAnalysisContext {
+  matterCode: string;
+  title: string;
+  category: string;
+  causeName: string | null;
+  causeFreeText: string | null;
+  clientName: string | null;
+  keywords: string[];
+}
+
+export interface CaseAnalysisResult {
+  ok: boolean;
+  context: CaseAnalysisContext | null;
+  items: SearchJurisprudenceResult["items"];
+  total: number;
+  error?: string;
+}
+
+function extractKeywordsFromCase(caseJson: Record<string, unknown>): string[] {
+  const keywords = new Set<string>();
+
+  const caseData = caseJson.case as Record<string, unknown> | undefined;
+  if (caseData?.title && typeof caseData.title === "string") {
+    caseData.title.split(/\s+/).forEach((w) => {
+      const clean = w.trim().toLowerCase();
+      if (clean.length >= 4) keywords.add(clean);
+    });
+  }
+
+  const cause = caseJson.cause as Record<string, unknown> | null | undefined;
+  if (cause?.name && typeof cause.name === "string") {
+    cause.name.split(/\s+/).forEach((w) => {
+      const clean = w.trim().toLowerCase();
+      if (clean.length >= 4) keywords.add(clean);
+    });
+  }
+
+  if (
+    caseData?.causeFreeText &&
+    typeof caseData.causeFreeText === "string"
+  ) {
+    caseData.causeFreeText.split(/\s+/).forEach((w) => {
+      const clean = w.trim().toLowerCase();
+      if (clean.length >= 4) keywords.add(clean);
+    });
+  }
+
+  if (caseData?.category && typeof caseData.category === "string") {
+    const catMap: Record<string, string[]> = {
+      LABOR_ARBITRATION: ["laboral", "trabajo"],
+      CIVIL_COMMERCIAL: ["civil", "comercial"],
+      CRIMINAL: ["penal"],
+      ADMINISTRATIVE: ["administrativo"],
+      ADMINISTRATIVE_CLAIM: ["administrativo"],
+    };
+    const mapped = catMap[caseData.category as string];
+    if (mapped) mapped.forEach((k) => keywords.add(k));
+  }
+
+  const parties = caseJson.parties as Array<Record<string, unknown>> | undefined;
+  if (Array.isArray(parties)) {
+    parties.slice(0, 3).forEach((p) => {
+      if (p.notes && typeof p.notes === "string") {
+        p.notes.split(/\s+/).forEach((w) => {
+          const clean = w.trim().toLowerCase();
+          if (clean.length >= 5) keywords.add(clean);
+        });
+      }
+    });
+  }
+
+  return Array.from(keywords).slice(0, 10);
+}
+
+export async function analyzeCaseWithIA(
+  matterCode: string
+): Promise<CaseAnalysisResult> {
+  const prisma = await getTenantPrisma();
+  await requireSession();
+  await requireModule("JURISPRUDENCE");
+
+  try {
+    // 1. Verificar que existe el matter
+    const matter = await prisma.matter.findFirst({
+      where: { internalCode: matterCode },
+      select: { id: true, internalCode: true },
+    });
+
+    if (!matter) {
+      return {
+        ok: false,
+        context: null,
+        items: [],
+        total: 0,
+        error: "Caso no encontrado",
+      };
+    }
+
+    // 2. Leer code.json (SOLO LECTURA)
+    const jsonPath = join(
+      process.cwd(),
+      "storage",
+      "matters",
+      `${matterCode}.json`
+    );
+
+    if (!existsSync(jsonPath)) {
+      return {
+        ok: false,
+        context: null,
+        items: [],
+        total: 0,
+        error: "El caso no tiene JSON generado todavia",
+      };
+    }
+
+    const caseJson = JSON.parse(readFileSync(jsonPath, "utf-8")) as Record<
+      string,
+      unknown
+    >;
+
+    const caseData = caseJson.case as Record<string, unknown> | undefined;
+    const cause = caseJson.cause as Record<string, unknown> | null | undefined;
+    const primaryClient = caseJson.primaryClient as
+      | Record<string, unknown>
+      | null
+      | undefined;
+
+    // 3. Extraer contexto (con reglas, sin IA)
+    const keywords = extractKeywordsFromCase(caseJson);
+
+    const context: CaseAnalysisContext = {
+      matterCode,
+      title: (caseData?.title as string) || "",
+      category: (caseData?.category as string) || "",
+      causeName: (cause?.name as string) || null,
+      causeFreeText: (caseData?.causeFreeText as string) || null,
+      clientName: (primaryClient?.name as string) || null,
+      keywords,
+    };
+
+    if (keywords.length === 0) {
+      return {
+        ok: true,
+        context,
+        items: [],
+        total: 0,
+        error: "No se pudieron extraer palabras clave del caso",
+      };
+    }
+
+    // 4. Buscar en biblioteca (full-text)
+    const query = keywords.slice(0, 5).join(" ");
+    const result = await searchJurisprudence({
+      query,
+      page: 1,
+      pageSize: 10,
+    });
+
+    return {
+      ok: true,
+      context,
+      items: result.items,
+      total: result.total,
+    };
+  } catch (error) {
+    return {
+      ok: false,
+      context: null,
+      items: [],
+      total: 0,
+      error: error instanceof Error ? error.message : "Error desconocido",
+    };
+  }
+}
