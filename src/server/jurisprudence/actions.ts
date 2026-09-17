@@ -304,3 +304,246 @@ export async function runJurisprudenceAgent(input: {
     };
   }
 }
+
+// ============================================================
+// Estado del cron y trigger manual (Commit 8)
+// ============================================================
+
+export interface CronStatus {
+  enabled: boolean;
+  totalFallos: number;
+  lastRunAt: string | null;
+  lastRunNew: number;
+  lastRunTotal: number;
+  lastRunStatus: string | null;
+}
+
+export async function getJurisprudenceCronStatus(): Promise<CronStatus> {
+  const prisma = await getTenantPrisma();
+  await requireSession();
+
+  const [setting, totalFallos, lastLog] = await Promise.all([
+    prisma.systemSetting.findUnique({
+      where: { key: "jurisprudenceAgentConfig" },
+    }),
+    prisma.jurisprudence.count(),
+    prisma.jurisprudenceIngestLog.findFirst({
+      orderBy: { startedAt: "desc" },
+    }),
+  ]);
+
+  const config = setting?.value as { enabled?: boolean } | null;
+
+  return {
+    enabled: config?.enabled ?? false,
+    totalFallos,
+    lastRunAt: lastLog?.startedAt?.toISOString() ?? null,
+    lastRunNew: lastLog?.totalNew ?? 0,
+    lastRunTotal: lastLog?.totalFound ?? 0,
+    lastRunStatus: lastLog?.status ?? null,
+  };
+}
+
+export async function setJurisprudenceCronEnabled(enabled: boolean) {
+  const prisma = await getTenantPrisma();
+  await requireSession();
+
+  const current = await prisma.systemSetting.findUnique({
+    where: { key: "jurisprudenceAgentConfig" },
+  });
+
+  const existing = (current?.value as object) ?? {
+    enabled: false,
+    agents: [
+      {
+        id: "laboral_riesgos",
+        keywords: ["despido con causa", "injuria laboral", "perdida de confianza"],
+        maxPages: 3,
+        pageSize: 20,
+        enabled: true,
+      },
+      {
+        id: "civil_casacion",
+        keywords: ["recurso de casacion", "admisibilidad del recurso"],
+        maxPages: 3,
+        pageSize: 20,
+        enabled: true,
+      },
+      {
+        id: "penal_garantias",
+        keywords: ["garantias constitucionales", "debido proceso"],
+        maxPages: 3,
+        pageSize: 20,
+        enabled: true,
+      },
+    ],
+  };
+
+  const next = { ...existing, enabled };
+
+  await prisma.systemSetting.upsert({
+    where: { key: "jurisprudenceAgentConfig" },
+    update: { value: next },
+    create: { key: "jurisprudenceAgentConfig", value: next },
+  });
+
+  revalidatePath("/agents/jurisprudence");
+  return { ok: true, enabled };
+}
+
+export async function triggerJurisprudenceIngestNow(): Promise<RunAgentResult> {
+  const prisma = await getTenantPrisma();
+  await requireSession();
+
+  try {
+    const { ingestJurisprudence } = await import(
+      "@/server/cron/jobs/ingest-jurisprudence"
+    );
+
+    const result = await ingestJurisprudence();
+
+    revalidatePath("/agents/jurisprudence");
+    revalidatePath("/jurisprudence");
+
+    return {
+      ok: true,
+      saved: result.totalNew,
+      skipped: result.totalSkip,
+      total: result.totalNew + result.totalSkip,
+    };
+  } catch (error) {
+    console.error("[jurisprudence] Error trigger manual:", error);
+    return {
+      ok: false,
+      saved: 0,
+      skipped: 0,
+      total: 0,
+      error: error instanceof Error ? error.message : "Error desconocido",
+    };
+  }
+}
+
+// ============================================================
+// Admin de jurisprudencia (Commit 8.5 — solo super admin)
+// ============================================================
+
+export interface AdminJurisprudenceStats {
+  totalFallos: number;
+  totalFuentes: number;
+  totalAgentes: number;
+  cronEnabled: boolean;
+  lastRunAt: string | null;
+  lastRunNew: number;
+  lastRunStatus: string | null;
+}
+
+export async function getAdminJurisprudenceStats(): Promise<AdminJurisprudenceStats> {
+  const prisma = await getTenantPrisma();
+  const session = await requireSession();
+
+  if (!session.user.isSystemAdmin && session.user.role !== "ADMIN") {
+    throw new Error("Solo el super admin puede ver estas estadisticas");
+  }
+
+  const [totalFallos, setting, lastLog, distinctFuentes] = await Promise.all([
+    prisma.jurisprudence.count(),
+    prisma.systemSetting.findUnique({
+      where: { key: "jurisprudenceAgentConfig" },
+    }),
+    prisma.jurisprudenceIngestLog.findFirst({
+      orderBy: { startedAt: "desc" },
+    }),
+    prisma.jurisprudence.findMany({
+      select: { source: true },
+      distinct: ["source"],
+    }),
+  ]);
+
+  const config = setting?.value as
+    | { enabled?: boolean; agents?: { enabled?: boolean }[] }
+    | null;
+
+  const activeAgents =
+    config?.agents?.filter((a) => a.enabled).length ?? 0;
+
+  return {
+    totalFallos,
+    totalFuentes: distinctFuentes.length,
+    totalAgentes: activeAgents,
+    cronEnabled: config?.enabled ?? false,
+    lastRunAt: lastLog?.startedAt?.toISOString() ?? null,
+    lastRunNew: lastLog?.totalNew ?? 0,
+    lastRunStatus: lastLog?.status ?? null,
+  };
+}
+
+export interface AdminJurisprudenceAgent {
+  id: string;
+  keywords: string[];
+  maxPages: number;
+  pageSize: number;
+  enabled: boolean;
+}
+
+export async function getAdminJurisprudenceAgents(): Promise<AdminJurisprudenceAgent[]> {
+  const prisma = await getTenantPrisma();
+  const session = await requireSession();
+
+  if (!session.user.isSystemAdmin && session.user.role !== "ADMIN") {
+    throw new Error("Solo el super admin puede ver los agentes");
+  }
+
+  const setting = await prisma.systemSetting.findUnique({
+    where: { key: "jurisprudenceAgentConfig" },
+  });
+
+  const config = setting?.value as
+    | { agents?: AdminJurisprudenceAgent[] }
+    | null;
+
+  return config?.agents ?? [];
+}
+
+export interface AdminJurisprudenceLog {
+  id: string;
+  source: string;
+  query: string;
+  agentId: string | null;
+  totalFound: number;
+  totalNew: number;
+  totalSkip: number;
+  startedAt: string;
+  finishedAt: string | null;
+  status: string;
+  error: string | null;
+}
+
+export async function getAdminJurisprudenceLogs(
+  limit = 20
+): Promise<AdminJurisprudenceLog[]> {
+  const prisma = await getTenantPrisma();
+  const session = await requireSession();
+
+  if (!session.user.isSystemAdmin && session.user.role !== "ADMIN") {
+    throw new Error("Solo el super admin puede ver los logs");
+  }
+
+  const logs = await prisma.jurisprudenceIngestLog.findMany({
+    orderBy: { startedAt: "desc" },
+    take: limit,
+  });
+
+  return logs.map((l) => ({
+    id: l.id,
+    source: l.source,
+    query: l.query,
+    agentId: l.agentId,
+    totalFound: l.totalFound,
+    totalNew: l.totalNew,
+    totalSkip: l.totalSkip,
+    startedAt: l.startedAt.toISOString(),
+    finishedAt: l.finishedAt?.toISOString() ?? null,
+    status: l.status,
+    error: l.error,
+  }));
+}

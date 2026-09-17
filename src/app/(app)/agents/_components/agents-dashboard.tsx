@@ -11,13 +11,13 @@ import {
   RefreshCw,
   Zap,
   Clock,
-  CheckCircle2,
   XCircle,
   Sparkles,
   TrendingUp,
   Cpu,
   Terminal,
   Send,
+  Database,
 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -74,7 +74,9 @@ export function AgentsDashboard() {
 
   async function loadAgents() {
     try {
-      const { getAgentsStatus } = await import("@/server/settings/ai-agents-actions");
+      const { getAgentsStatus } = await import(
+        "@/server/settings/ai-agents-actions"
+      );
       const status = await getAgentsStatus();
       setAgents(status);
     } catch {
@@ -105,7 +107,9 @@ export function AgentsDashboard() {
     setAsking(true);
     setAnswer("");
     try {
-      const { askAgentAboutCase } = await import("@/server/settings/ai-agents-actions");
+      const { askAgentAboutCase } = await import(
+        "@/server/settings/ai-agents-actions"
+      );
       const result = await askAgentAboutCase({
         agentType: selectedAgent!.icon,
         matterId: matterId.trim(),
@@ -137,7 +141,12 @@ export function AgentsDashboard() {
             Monitoreo en tiempo real · Tokens · Estado · Intervención
           </p>
         </div>
-        <Button variant="outline" onClick={handleRefresh} disabled={refreshing} className="gap-1.5">
+        <Button
+          variant="outline"
+          onClick={handleRefresh}
+          disabled={refreshing}
+          className="gap-1.5"
+        >
           {refreshing ? (
             <Loader2 className="h-3.5 w-3.5 animate-spin" />
           ) : (
@@ -150,169 +159,188 @@ export function AgentsDashboard() {
       {loading ? (
         <div className="flex flex-col items-center justify-center py-32">
           <Loader2 className="h-10 w-10 animate-spin text-primary" />
-          <p className="mt-4 text-sm text-muted-foreground">Cargando agentes...</p>
+          <p className="mt-4 text-sm text-muted-foreground">
+            Cargando agentes...
+          </p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-          {agents.map((agent) => (
-            <div
-              key={agent.name}
-              className={cn(
-                "relative overflow-hidden rounded-2xl border border-border bg-card p-6",
-                "shadow-[0_4px_24px_rgba(0,0,0,0.06)] hover:shadow-[0_8px_32px_rgba(0,0,0,0.1)] transition-all duration-300"
-              )}
-            >
+        <div className="space-y-6">
+          {/* Editor + Auditor */}
+          <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+            {agents.map((agent) => (
               <div
+                key={agent.name}
                 className={cn(
-                  "pointer-events-none absolute inset-0 bg-gradient-to-br opacity-50",
-                  GRADIENTS[agent.icon]
+                  "relative overflow-hidden rounded-2xl border border-border bg-card p-6",
+                  "shadow-[0_4px_24px_rgba(0,0,0,0.06)] hover:shadow-[0_8px_32px_rgba(0,0,0,0.1)] transition-all duration-300"
                 )}
-              />
+              >
+                <div
+                  className={cn(
+                    "pointer-events-none absolute inset-0 bg-gradient-to-br opacity-50",
+                    GRADIENTS[agent.icon]
+                  )}
+                />
 
-              <div className="relative">
-                <div className="flex items-start justify-between">
-                  <div className="flex items-center gap-4">
-                    <div
-                      className={cn(
-                        "flex h-12 w-12 items-center justify-center rounded-xl",
-                        ICON_COLORS[agent.icon]
-                      )}
-                    >
-                      {agent.icon === "editor" ? (
-                        <FileText className="h-6 w-6" />
-                      ) : (
-                        <Scale className="h-6 w-6" />
-                      )}
-                    </div>
-                    <div>
-                      <h2 className="text-lg font-semibold">{agent.name}</h2>
-                      <div className="flex items-center gap-2 mt-1">
-                        <span
-                          className={cn(
-                            "inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[10px] font-medium",
-                            agent.status === "working"
-                              ? "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400"
-                              : agent.status === "error"
-                                ? "bg-red-500/15 text-red-600 dark:text-red-400"
-                                : "bg-muted text-muted-foreground"
-                          )}
-                        >
-                          {agent.status === "working" ? (
-                            <>
-                              <Activity className="h-3 w-3 animate-pulse" />
-                              Trabajando
-                            </>
-                          ) : agent.status === "error" ? (
-                            <>
-                              <XCircle className="h-3 w-3" />
-                              Error
-                            </>
-                          ) : (
-                            <>
-                              <CircleDot className="h-3 w-3" />
-                              En espera
-                            </>
-                          )}
-                        </span>
-                        {agent.enabled ? (
-                          <CircleDot className="h-3 w-3 text-emerald-500" />
-                        ) : (
-                          <CircleOff className="h-3 w-3 text-muted-foreground" />
+                <div className="relative">
+                  <div className="flex items-start justify-between">
+                    <div className="flex items-center gap-4">
+                      <div
+                        className={cn(
+                          "flex h-12 w-12 items-center justify-center rounded-xl",
+                          ICON_COLORS[agent.icon]
                         )}
+                      >
+                        {agent.icon === "editor" ? (
+                          <FileText className="h-6 w-6" />
+                        ) : (
+                          <Scale className="h-6 w-6" />
+                        )}
+                      </div>
+                      <div>
+                        <h2 className="text-lg font-semibold">{agent.name}</h2>
+                        <div className="flex items-center gap-2 mt-1">
+                          <span
+                            className={cn(
+                              "inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[10px] font-medium",
+                              agent.status === "working"
+                                ? "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400"
+                                : agent.status === "error"
+                                  ? "bg-red-500/15 text-red-600 dark:text-red-400"
+                                  : "bg-muted text-muted-foreground"
+                            )}
+                          >
+                            {agent.status === "working" ? (
+                              <>
+                                <Activity className="h-3 w-3 animate-pulse" />
+                                Trabajando
+                              </>
+                            ) : agent.status === "error" ? (
+                              <>
+                                <XCircle className="h-3 w-3" />
+                                Error
+                              </>
+                            ) : (
+                              <>
+                                <CircleDot className="h-3 w-3" />
+                                En espera
+                              </>
+                            )}
+                          </span>
+                          {agent.enabled ? (
+                            <CircleDot className="h-3 w-3 text-emerald-500" />
+                          ) : (
+                            <CircleOff className="h-3 w-3 text-muted-foreground" />
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                    {agent.status === "working" && (
+                      <Sparkles className="h-5 w-5 animate-pulse text-emerald-500" />
+                    )}
+                  </div>
+
+                  <div className="mt-6 grid grid-cols-3 gap-3">
+                    <div className="rounded-xl bg-background/50 p-3 backdrop-blur">
+                      <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground">
+                        <Cpu className="h-3 w-3" />
+                        Tokens
+                      </div>
+                      <div className="mt-1 font-mono text-base font-semibold">
+                        {agent.tokensUsed.toLocaleString()}
+                      </div>
+                      <div className="text-[9px] text-muted-foreground">
+                        de {agent.tokensLimit.toLocaleString()}
+                      </div>
+                    </div>
+                    <div className="rounded-xl bg-background/50 p-3 backdrop-blur">
+                      <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground">
+                        <TrendingUp className="h-3 w-3" />
+                        Éxito
+                      </div>
+                      <div className="mt-1 font-mono text-base font-semibold">
+                        {agent.successRate}%
+                      </div>
+                      <div className="text-[9px] text-muted-foreground">
+                        tasa de aciertos
+                      </div>
+                    </div>
+                    <div className="rounded-xl bg-background/50 p-3 backdrop-blur">
+                      <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground">
+                        <Terminal className="h-3 w-3" />
+                        Respuesta
+                      </div>
+                      <div className="mt-1 font-mono text-base font-semibold">
+                        {agent.avgResponseTime}s
+                      </div>
+                      <div className="text-[9px] text-muted-foreground">
+                        promedio
                       </div>
                     </div>
                   </div>
-                  {agent.status === "working" && (
-                    <Sparkles className="h-5 w-5 animate-pulse text-emerald-500" />
-                  )}
-                </div>
 
-                <div className="mt-6 grid grid-cols-3 gap-3">
-                  <div className="rounded-xl bg-background/50 p-3 backdrop-blur">
-                    <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground">
-                      <Cpu className="h-3 w-3" />
-                      Tokens
+                  <div className="mt-4">
+                    <div className="flex items-center justify-between text-[10px] text-muted-foreground">
+                      <span>Uso de tokens</span>
+                      <span className="font-mono">
+                        {Math.round(
+                          (agent.tokensUsed / agent.tokensLimit) * 100
+                        )}
+                        %
+                      </span>
                     </div>
-                    <div className="mt-1 font-mono text-base font-semibold">
-                      {agent.tokensUsed.toLocaleString()}
-                    </div>
-                    <div className="text-[9px] text-muted-foreground">
-                      de {agent.tokensLimit.toLocaleString()}
-                    </div>
-                  </div>
-                  <div className="rounded-xl bg-background/50 p-3 backdrop-blur">
-                    <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground">
-                      <TrendingUp className="h-3 w-3" />
-                      Éxito
-                    </div>
-                    <div className="mt-1 font-mono text-base font-semibold">
-                      {agent.successRate}%
-                    </div>
-                    <div className="text-[9px] text-muted-foreground">
-                      tasa de aciertos
-                    </div>
-                  </div>
-                  <div className="rounded-xl bg-background/50 p-3 backdrop-blur">
-                    <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground">
-                      <Terminal className="h-3 w-3" />
-                      Respuesta
-                    </div>
-                    <div className="mt-1 font-mono text-base font-semibold">
-                      {agent.avgResponseTime}s
-                    </div>
-                    <div className="text-[9px] text-muted-foreground">
-                      promedio
+                    <div className="mt-1.5 h-2 rounded-full bg-muted overflow-hidden">
+                      <div
+                        className={cn(
+                          "h-full rounded-full transition-all duration-500",
+                          agent.tokensUsed / agent.tokensLimit > 0.8
+                            ? "bg-gradient-to-r from-red-500 to-red-400"
+                            : agent.tokensUsed / agent.tokensLimit > 0.5
+                              ? "bg-gradient-to-r from-amber-500 to-amber-400"
+                              : "bg-gradient-to-r from-emerald-500 to-emerald-400"
+                        )}
+                        style={{
+                          width: `${Math.min(
+                            (agent.tokensUsed / agent.tokensLimit) * 100,
+                            100
+                          )}%`,
+                        }}
+                      />
                     </div>
                   </div>
-                </div>
 
-                <div className="mt-4">
-                  <div className="flex items-center justify-between text-[10px] text-muted-foreground">
-                    <span>Uso de tokens</span>
-                    <span className="font-mono">
-                      {Math.round((agent.tokensUsed / agent.tokensLimit) * 100)}%
-                    </span>
+                  <div className="mt-4 flex items-center gap-2 text-[11px] text-muted-foreground">
+                    <Clock className="h-3.5 w-3.5" />
+                    {agent.lastAction}
                   </div>
-                  <div className="mt-1.5 h-2 rounded-full bg-muted overflow-hidden">
-                    <div
-                      className={cn(
-                        "h-full rounded-full transition-all duration-500",
-                        agent.tokensUsed / agent.tokensLimit > 0.8
-                          ? "bg-gradient-to-r from-red-500 to-red-400"
-                          : agent.tokensUsed / agent.tokensLimit > 0.5
-                            ? "bg-gradient-to-r from-amber-500 to-amber-400"
-                            : "bg-gradient-to-r from-emerald-500 to-emerald-400"
-                      )}
-                      style={{ width: `${Math.min((agent.tokensUsed / agent.tokensLimit) * 100, 100)}%` }}
-                    />
-                  </div>
-                </div>
 
-                <div className="mt-4 flex items-center gap-2 text-[11px] text-muted-foreground">
-                  <Clock className="h-3.5 w-3.5" />
-                  {agent.lastAction}
+                  <Button
+                    onClick={() => handleIntervene(agent)}
+                    disabled={!agent.enabled || agent.status === "working"}
+                    className={cn(
+                      "mt-5 w-full gap-1.5",
+                      "bg-gradient-to-r from-primary to-violet-500 hover:from-primary/90 hover:to-violet-500/90",
+                      "text-primary-foreground shadow-lg shadow-primary/25"
+                    )}
+                  >
+                    <Zap className="h-4 w-4" />
+                    Intervenir ahora
+                  </Button>
                 </div>
-
-                <Button
-                  onClick={() => handleIntervene(agent)}
-                  disabled={!agent.enabled || agent.status === "working"}
-                  className={cn(
-                    "mt-5 w-full gap-1.5",
-                    "bg-gradient-to-r from-primary to-violet-500 hover:from-primary/90 hover:to-violet-500/90",
-                    "text-primary-foreground shadow-lg shadow-primary/25"
-                  )}
-                >
-                  <Zap className="h-4 w-4" />
-                  Intervenir ahora
-                </Button>
               </div>
-            </div>
-          ))}
+            ))}
+          </div>
+
+          {/* Jurisprudencia - full width destacada */}
+          <CardJurisprudence />
         </div>
       )}
 
       {/* Diálogo de consulta */}
-      <Dialog open={!!selectedAgent} onOpenChange={(o) => !o && setSelectedAgent(null)}>
+      <Dialog
+        open={!!selectedAgent}
+        onOpenChange={(o) => !o && setSelectedAgent(null)}
+      >
         <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
@@ -324,7 +352,8 @@ export function AgentsDashboard() {
               Consultar a {selectedAgent?.name}
             </DialogTitle>
             <DialogDescription>
-              Ingresá el código del caso y tu consulta. El agente analizará el caso completo.
+              Ingresá el código del caso y tu consulta. El agente analizará el
+              caso completo.
             </DialogDescription>
           </DialogHeader>
 
@@ -344,7 +373,7 @@ export function AgentsDashboard() {
               <Textarea
                 value={question}
                 onChange={(e) => setQuestion(e.target.value)}
-                placeholder={`Ej: ¿Qué documentos faltan en este caso? ¿Hay errores en los escritos? ¿Qué acciones recomendarías?`}
+                placeholder="Ej: ¿Qué documentos faltan en este caso? ¿Hay errores en los escritos? ¿Qué acciones recomendarías?"
                 rows={4}
                 className="mt-1"
               />
@@ -377,5 +406,126 @@ export function AgentsDashboard() {
         </DialogContent>
       </Dialog>
     </div>
+  );
+}
+
+function CardJurisprudence() {
+  const [status, setStatus] = useState<{
+    enabled: boolean;
+    totalFallos: number;
+    lastRunAt: string | null;
+    lastRunNew: number;
+  } | null>(null);
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const { getJurisprudenceCronStatus } = await import(
+          "@/server/jurisprudence/actions"
+        );
+        const s = await getJurisprudenceCronStatus();
+        setStatus({
+          enabled: s.enabled,
+          totalFallos: s.totalFallos,
+          lastRunAt: s.lastRunAt,
+          lastRunNew: s.lastRunNew,
+        });
+      } catch {
+        // silencioso
+      }
+    })();
+  }, []);
+
+  return (
+    <a
+      href="/agents/jurisprudence"
+      className={cn(
+        "group relative block overflow-hidden rounded-2xl border border-border bg-card p-6",
+        "shadow-[0_4px_24px_rgba(0,0,0,0.06)] hover:shadow-[0_8px_32px_rgba(0,0,0,0.1)] transition-all duration-300",
+        "cursor-pointer"
+      )}
+    >
+      <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-emerald-500/20 via-teal-500/10 to-transparent opacity-50" />
+
+      <div className="relative flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
+        <div className="flex items-center gap-4">
+          <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
+            <Scale className="h-7 w-7" />
+          </div>
+          <div>
+            <h3 className="text-lg font-semibold">Jurisprudencia</h3>
+            <p className="text-xs text-muted-foreground">
+              Agentes autónomos que buscan fallos en SAIJ y los cargan a tu
+              biblioteca
+            </p>
+          </div>
+        </div>
+
+        <div className="flex flex-wrap items-center gap-6 text-xs">
+          <div className="flex items-center gap-2">
+            <Database className="h-4 w-4 text-emerald-500" />
+            <div>
+              <div className="text-[10px] uppercase tracking-wide text-muted-foreground">
+                Fallos
+              </div>
+              <div className="font-medium">
+                {status
+                  ? status.totalFallos.toLocaleString("es-AR")
+                  : "..."}
+              </div>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2">
+            {status?.enabled ? (
+              <>
+                <CircleDot className="h-4 w-4 text-emerald-500" />
+                <div>
+                  <div className="text-[10px] uppercase tracking-wide text-muted-foreground">
+                    Cron
+                  </div>
+                  <div className="font-medium text-emerald-600 dark:text-emerald-400">
+                    Activo
+                  </div>
+                </div>
+              </>
+            ) : (
+              <>
+                <CircleOff className="h-4 w-4 text-muted-foreground" />
+                <div>
+                  <div className="text-[10px] uppercase tracking-wide text-muted-foreground">
+                    Cron
+                  </div>
+                  <div className="font-medium text-muted-foreground">
+                    Pausado
+                  </div>
+                </div>
+              </>
+            )}
+          </div>
+
+          {status?.lastRunAt && (
+            <div className="flex items-center gap-2">
+              <Clock className="h-4 w-4 text-muted-foreground" />
+              <div>
+                <div className="text-[10px] uppercase tracking-wide text-muted-foreground">
+                  Última
+                </div>
+                <div className="font-medium">
+                  {new Date(status.lastRunAt).toLocaleDateString("es-AR")}
+                </div>
+              </div>
+            </div>
+          )}
+
+          <span className="ml-auto flex items-center gap-1.5 rounded-lg bg-emerald-500/10 px-3 py-1.5 text-xs font-medium text-emerald-600 group-hover:bg-emerald-500/20 dark:text-emerald-400 transition-colors">
+            Abrir panel
+            <span className="transition-transform group-hover:translate-x-0.5">
+              →
+            </span>
+          </span>
+        </div>
+      </div>
+    </a>
   );
 }
