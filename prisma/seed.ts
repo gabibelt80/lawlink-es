@@ -1,16 +1,17 @@
 /**
- * LawLink 初始 seed
+ * Seed inicial de LawLink
  *
- * 包含：
- *   1. 默认 ADMIN 账号（从 SEED_ADMIN_* 环境变量读取）
- *   2. 案由库样本：民事 / 刑事 / 行政 各约 30 条最常用案由
- *      （V1 用样本即可工作；完整案由库 Stage 3 通过元典 MCP 抓取）
- *   3. 阶段模板、系统设置、文书模板和用章配置
+ * Contenido:
+ *   1. ADMIN por defecto (lee de variables SEED_ADMIN_*)
+ *   2. Catalogo de causas de muestra: civil / penal / administrativo (~30 causas)
+ *      (V1 usa muestras; el catalogo completo se importara via MCP en Stage 3)
+ *   3. Plantillas de etapas, configuracion del sistema, plantillas de documentos
+ *      y configuracion de sellos
  *
- * 运行方式：
+ * Ejecucion:
  *   npx prisma db seed
  *
- * 幂等：所有 upsert 操作，可重复运行不会报错或重复插入。
+ * Idempotente: todos los upsert se pueden repetir sin errores ni duplicados.
  */
 
 import { MatterCategory, PrismaClient, UserRole } from "@prisma/client";
@@ -49,21 +50,23 @@ async function seedAdmin() {
     },
   });
 
-  console.log(`✓ ADMIN 已就绪：${admin.email}`);
+  console.log(`OK ADMIN listo: ${admin.email}`);
   if (password === "ChangeMe!2026") {
-    console.warn("  ⚠ 当前使用默认密码 ChangeMe!2026，请尽快在 /settings 修改");
+    console.warn(
+      "  AVISO: usando password por defecto ChangeMe!2026. Cambiar en /settings."
+    );
   }
 }
 
 async function seedCauses(category: MatterCategory, causes: CauseSeed[]) {
-  // 第一遍：插入所有节点（parentId 暂空），记录 code → id 映射
+  // Primera pasada: insertar todos los nodos (parentId vacio), registrar code -> id
   const codeToId = new Map<string, string>();
   const sourceNote =
     category === MatterCategory.CIVIL_COMMERCIAL
-      ? "Reglamento de causas de asuntos civiles del Tribunal Supremo Popular, revisado en 2020 (muestra)"
+      ? "Reglamento de causas civiles (muestra)"
       : category === MatterCategory.CRIMINAL
-        ? "Tipos penales de la parte especial del Código Penal (muestra)"
-        : "Reglamento provisional de causas de asuntos administrativos del Tribunal Supremo Popular de 2021 (muestra)";
+        ? "Tipos penales de la parte especial del Codigo Penal (muestra)"
+        : "Reglamento de causas administrativas (muestra)";
 
   for (const c of causes) {
     const upserted = await prisma.causeOfAction.upsert({
@@ -88,12 +91,14 @@ async function seedCauses(category: MatterCategory, causes: CauseSeed[]) {
     codeToId.set(c.code, upserted.id);
   }
 
-  // 第二遍：连接 parent
+  // Segunda pasada: conectar parentId
   for (const c of causes) {
     if (!c.parentCode) continue;
     const parentId = codeToId.get(c.parentCode);
     if (!parentId) {
-      console.warn(`  ! ${c.code} 的 parent ${c.parentCode} 未找到，跳过`);
+      console.warn(
+        `  Aviso: ${c.code} tiene parent ${c.parentCode} no encontrado, se omite`
+      );
       continue;
     }
     await prisma.causeOfAction.update({
@@ -102,32 +107,33 @@ async function seedCauses(category: MatterCategory, causes: CauseSeed[]) {
     });
   }
 
-  console.log(`✓ 案由 [${category}]：${causes.length} 条已就绪`);
+  console.log(`OK Causas [${category}]: ${causes.length} listas`);
 }
 
 async function seedStageTemplates() {
-  // 第一版只放最常用的一审/二审/侦查/审查起诉默认模板
-  // 编辑入口在 /settings/templates
+  // Primera version: solo las plantillas mas comunes de primera/segunda
+  // instancia, investigacion y revision de acusacion.
+  // Editable en /settings/templates
   const templates = [
     {
       procedureType: "FIRST_INSTANCE" as const,
-      name: "Etapas estándar de primera instancia",
+      name: "Etapas estandar de primera instancia",
       steps: [
         {
-          name: "Presentación del caso",
+          name: "Presentacion del caso",
           order: 1,
           defaultTasks: ["Enviar la demanda", "Pagar las tasas judiciales"],
         },
         {
-          name: "Contestación",
+          name: "Contestacion",
           order: 2,
-          defaultTasks: ["Confirmar la recepción de la notificación judicial"],
+          defaultTasks: ["Confirmar la recepcion de la notificacion judicial"],
         },
         {
           name: "Intercambio de pruebas",
           order: 3,
           defaultTasks: [
-            "Enviar el índice de pruebas",
+            "Enviar el indice de pruebas",
             "Completar las pruebas dentro del plazo",
           ],
         },
@@ -142,25 +148,25 @@ async function seedStageTemplates() {
         {
           name: "Sentencia",
           order: 5,
-          defaultTasks: ["Recibir la sentencia", "Confirmar si se apelará"],
+          defaultTasks: ["Recibir la sentencia", "Confirmar si se apelara"],
         },
       ],
     },
     {
       procedureType: "SECOND_INSTANCE" as const,
-      name: "Etapas estándar de segunda instancia",
+      name: "Etapas estandar de segunda instancia",
       steps: [
         {
-          name: "Presentación del caso",
+          name: "Presentacion del caso",
           order: 1,
-          defaultTasks: ["Enviar el escrito de apelación"],
+          defaultTasks: ["Enviar el escrito de apelacion"],
         },
         {
-          name: "Contestación",
+          name: "Contestacion",
           order: 2,
           defaultTasks: [
-            "Recibir el escrito de apelación de la contraparte",
-            "Enviar el escrito de contestación",
+            "Recibir el escrito de apelacion de la contraparte",
+            "Enviar el escrito de contestacion",
           ],
         },
         {
@@ -177,7 +183,7 @@ async function seedStageTemplates() {
     },
     {
       procedureType: "INVESTIGATION" as const,
-      name: "Procedimiento estándar de la etapa de investigación",
+      name: "Procedimiento estandar de la etapa de investigacion",
       steps: [
         {
           name: "Entrevistas",
@@ -189,11 +195,11 @@ async function seedStageTemplates() {
           order: 2,
           defaultTasks: [
             "Solicitar libertad bajo fianza",
-            "Revisión de la necesidad de la prisión preventiva",
+            "Revision de la necesidad de la prision preventiva",
           ],
         },
         {
-          name: "Cierre de la investigación",
+          name: "Cierre de la investigacion",
           order: 3,
           defaultTasks: ["Presentar las observaciones de la defensa"],
         },
@@ -201,10 +207,10 @@ async function seedStageTemplates() {
     },
     {
       procedureType: "PROSECUTION_REVIEW" as const,
-      name: "Procedimiento estándar de la etapa de revisión de la acusación",
+      name: "Procedimiento estandar de revision de la acusacion",
       steps: [
         {
-          name: "Revisión del expediente",
+          name: "Revision del expediente",
           order: 1,
           defaultTasks: ["Revisar el expediente", "Copiar las pruebas"],
         },
@@ -216,7 +222,7 @@ async function seedStageTemplates() {
           ],
         },
         {
-          name: "Reconocimiento de culpabilidad y aceptación de la pena",
+          name: "Reconocimiento de culpabilidad y aceptacion de la pena",
           order: 3,
           defaultTasks: [
             "Firmar el acta de compromiso (si se reconoce la culpabilidad)",
@@ -239,7 +245,7 @@ async function seedStageTemplates() {
       },
     });
   }
-  console.log(`✓ 阶段模板：${templates.length} 个已就绪`);
+  console.log(`OK Plantillas de etapas: ${templates.length} listas`);
 }
 
 async function seedSystemSettings() {
@@ -251,11 +257,11 @@ async function seedSystemSettings() {
       value: { primaryColor: "#5B8DEF", theme: "dark" },
     },
   });
-  console.log("✓ 系统设置：默认外观已就绪");
+  console.log("OK Configuracion del sistema: apariencia por defecto lista");
 }
 
 async function main() {
-  console.log("开始 seed...\n");
+  console.log("Iniciando seed...\n");
 
   await seedAdmin();
   await seedCauses(MatterCategory.CIVIL_COMMERCIAL, civilCauses);
@@ -264,22 +270,22 @@ async function main() {
   await seedStageTemplates();
   await seedSystemSettings();
 
-  // v0.8: 文档模板 + 用章配置
+  // v0.8: plantillas de documentos y configuracion de sellos
   const { seedV08Templates, seedV08SealConfigs } =
     await import("./seeds/v08-templates-and-seals");
   await seedV08SealConfigs(prisma);
   await seedV08Templates(prisma);
 
-  // v0.49: 法定期限规则库（全部经元典核验）
+  // v0.49: reglas de plazos legales (verificadas)
   const { seedV49DeadlineRules } = await import("./seeds/v49-deadline-rules");
   await seedV49DeadlineRules(prisma);
 
-  console.log("\n✓ Seed 完成");
+  console.log("\nSeed completado");
 }
 
 main()
   .catch((e) => {
-    console.error("✗ Seed 失败：", e);
+    console.error("Seed fallido:", e);
     process.exit(1);
   })
   .finally(async () => {
