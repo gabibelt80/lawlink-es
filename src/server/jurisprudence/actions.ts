@@ -741,3 +741,18 @@ export async function getJurisprudenceFilterOptionsNew(): Promise<JurisprudenceF
     years: years.map((y) => y.year),
   };
 }
+
+export async function getJurisprudenceById(id: string) {
+  const prisma = await getTenantPrisma();
+  await requireSession();
+
+  const item = await prisma.jurisprudence.findUnique({
+    where: { id },
+  });
+
+  if (!item) {
+    throw new Error("Jurisprudencia no encontrada");
+  }
+
+  return item;
+}
