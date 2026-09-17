@@ -1928,6 +1928,9 @@ model Jurisprudence {
   descriptors   Json?
   citesUuids    String[]  @default([])
 
+  // v0.5: full-text search (columna gestionada por migracion SQL, no por Prisma)
+  searchVector Unsupported("tsvector")?
+
   // v0.4: relaciones
   linksToMatters JurisprudenceMatterLink[]
 
@@ -1940,6 +1943,7 @@ model Jurisprudence {
   @@index([fingerprint])
   @@index([numeroSumario])
   @@index([date, fuero])
+  @@index([searchVector], type: Gin, map: "Jurisprudence_search_idx")
 }
 
 model JurisprudenceMatterLink {
