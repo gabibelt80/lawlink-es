@@ -129,9 +129,12 @@ export function InfoPanel({
               Vista general de la información
             </h3>
           </span>
+          <span className="truncate font-mono text-[11px] text-muted-foreground tabular">
+            {matter.internalCode}
+          </span>
           {matter.firmCaseNo && (
             <span className="truncate font-mono text-[11px] text-muted-foreground tabular">
-              {matter.firmCaseNo}
+              · {matter.firmCaseNo}
             </span>
           )}
         </div>

@@ -5,6 +5,7 @@ import { runAuditCleanup } from "./jobs/audit-cleanup";
 import { scanDueReminders } from "./jobs/scan-due-reminders";
 import { scanSealBackfillReminders } from "./jobs/scan-seal-backfill-reminders";
 import { runDatabaseBackup, backupCronEnabled } from "./jobs/backup-database";
+import { ingestJurisprudence } from "./jobs/ingest-jurisprudence";
 import { scanSubscriptions } from "./jobs/scan-subscriptions";
 import { audit } from "@/server/audit";
 
@@ -56,6 +57,17 @@ export function registerCronJobs() {
         "Informe semanal",
         "WEEKLY_REPORT_PUSH_FAILED_CRON",
         () => runWeeklyReportPush(null)
+      ),
+    { timezone: TIMEZONE }
+  );
+  // Todos los dias 04:00 - ingesta de jurisprudencia desde SAIJ
+  cron.schedule(
+    "0 4 * * *",
+    () =>
+      runWithFailureAudit(
+        "Ingesta de jurisprudencia",
+        "JURISPRUDENCE_INGEST_FAILED_CRON",
+        () => ingestJurisprudence()
       ),
     { timezone: TIMEZONE }
   );
@@ -135,6 +147,6 @@ export function registerCronJobs() {
   );
 
   console.log(
-    `[cron] ${backupCronEnabled() ? 7 : 6} tareas programadas registradas`
+    `[cron] ${backupCronEnabled() ? 8 : 7} tareas programadas registradas`
   );
 }

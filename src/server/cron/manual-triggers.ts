@@ -9,6 +9,7 @@ import { requireSession } from "@/lib/auth/session";
 import { runWeeklyReportPush } from "@/server/reports/push-weekly";
 import { scanArchiveOverdue } from "./jobs/archive-overdue";
 import { runAuditCleanup } from "./jobs/audit-cleanup";
+import { ingestJurisprudence } from "./jobs/ingest-jurisprudence";
 
 async function requireAdmin() {
   const session = await requireSession();
@@ -38,4 +39,7 @@ export async function triggerAuditCleanupNow() {
   return runAuditCleanup();
 }
 
-
+export async function triggerJurisprudenceIngestNow() {
+  await requireAdmin();
+  return ingestJurisprudence();
+}

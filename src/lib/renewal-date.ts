@@ -11,7 +11,7 @@ export function calculateNextRenewalDate(fromDate: Date): Date {
     0
   ).getDate();
 
-  let renewalDay = Math.min(dayOfMonth, lastDayOfNextMonth);
+  const renewalDay = Math.min(dayOfMonth, lastDayOfNextMonth);
 
   const renewalDate = new Date(
     fromDate.getFullYear(),

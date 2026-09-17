@@ -53,11 +53,11 @@ export function LoginForm() {
     const isSystemAdmin = session?.user?.isSystemAdmin === true;
 
     if (callbackUrl && callbackUrl !== "/") {
-      window.location.href = callbackUrl;
+      router.push(callbackUrl);
     } else if (isSystemAdmin) {
-      window.location.href = "/admin";
+      router.push("/admin");
     } else {
-      window.location.href = "/dashboard";
+      router.push("/dashboard");
     }
   }
 
