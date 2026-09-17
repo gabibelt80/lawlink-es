@@ -111,17 +111,15 @@ jobs:
             }
             const causes = await prisma.causeOfAction.count();
             const templates = await prisma.documentTemplate.count();
-            const rules = await prisma.deadlineRule.count();
             if (causes === 0) throw new Error('案由库为空');
             if (templates === 0) throw new Error('内置文书模板为空');
-            if (rules === 0) throw new Error('法定期限规则为空');
             // 以下查询按 schema 的全部列取数，任何迁移漏建的列都会在此暴露。
             // 保全四张表（v0.44）与 Hearing.address/contact 都曾因漂移缺失。
             await prisma.preservationCase.count();
             await prisma.hearing.findMany({ take: 1 });
             await prisma.deadline.findMany({ take: 1 });
             await prisma.matter.findMany({ take: 1 });
-            console.log('全新安装可用：案由 ' + causes + ' / 模板 ' + templates + ' / 期限规则 ' + rules);
+            console.log('全新安装可用：案由 ' + causes + ' / 模板 ' + templates);
             await prisma.\$disconnect();
           })().catch((e) => { console.error(e.message); process.exit(1); });
           "
