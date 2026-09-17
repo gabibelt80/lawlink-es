@@ -488,7 +488,8 @@ export function JurisprudenceView({
                 <DialogTitle className="text-base leading-snug">
                   {selected.title}
                 </DialogTitle>
-                <DialogDescription className="flex flex-wrap items-center gap-3 pt-2 text-xs">
+                <DialogDescription asChild>
+                  <div className="flex flex-wrap items-center gap-3 pt-2 text-xs">
                   {selected.fuero && (
                     <Badge variant="outline" className="text-[10px]">
                       {selected.fuero}
@@ -517,6 +518,7 @@ export function JurisprudenceView({
                       Sumario {selected.numeroSumario}
                     </span>
                   )}
+                  </div>
                 </DialogDescription>
               </DialogHeader>
 
