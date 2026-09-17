@@ -438,7 +438,7 @@ function CardJurisprudence() {
 
   return (
     <a
-      href="/agents/jurisprudence"
+      href="/admin/jurisprudence"
       className={cn(
         "group relative block overflow-hidden rounded-2xl border border-border bg-card p-6",
         "shadow-[0_4px_24px_rgba(0,0,0,0.06)] hover:shadow-[0_8px_32px_rgba(0,0,0,0.1)] transition-all duration-300",

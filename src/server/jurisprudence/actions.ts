@@ -547,3 +547,197 @@ export async function getAdminJurisprudenceLogs(
     error: l.error,
   }));
 }
+
+// ============================================================
+// Busqueda con full-text + paginacion + filtros (Commit 8.6b)
+// ============================================================
+
+export interface SearchJurisprudenceParams {
+  query?: string;
+  fuero?: string;
+  jurisdiction?: string;
+  yearFrom?: number;
+  yearTo?: number;
+  page?: number;
+  pageSize?: number;
+}
+
+export interface SearchJurisprudenceResult {
+  items: {
+    id: string;
+    title: string;
+    summary: string | null;
+    court: string | null;
+    jurisdiction: string | null;
+    fuero: string | null;
+    date: Date | null;
+    source: string | null;
+    sourceUrl: string | null;
+    category: string | null;
+    numeroSumario: string | null;
+    rank: number;
+  }[];
+  total: number;
+  page: number;
+  pageSize: number;
+  totalPages: number;
+}
+
+export async function searchJurisprudence(
+  params: SearchJurisprudenceParams
+): Promise<SearchJurisprudenceResult> {
+  const prisma = await getTenantPrisma();
+  await requireSession();
+
+  const page = Math.max(1, params.page ?? 1);
+  const pageSize = Math.min(50, Math.max(1, params.pageSize ?? 20));
+  const offset = (page - 1) * pageSize;
+
+  const conditions: string[] = [];
+  const values: unknown[] = [];
+  let paramIndex = 1;
+
+  // Full-text search
+  if (params.query && params.query.trim().length > 0) {
+    const tsQuery = params.query
+      .trim()
+      .split(/\s+/)
+      .map((t) => t.replace(/[^\wáéíóúñÁÉÍÓÚÑ]/g, ""))
+      .filter(Boolean)
+      .join(" & ");
+
+    if (tsQuery.length > 0) {
+      conditions.push(
+        `"searchVector" @@ to_tsquery('spanish', $${paramIndex})`
+      );
+      values.push(tsQuery);
+      paramIndex++;
+    }
+  }
+
+  // Filtros
+  if (params.fuero) {
+    conditions.push(`fuero = $${paramIndex}`);
+    values.push(params.fuero);
+    paramIndex++;
+  }
+
+  if (params.jurisdiction) {
+    conditions.push(`jurisdiction = $${paramIndex}`);
+    values.push(params.jurisdiction);
+    paramIndex++;
+  }
+
+  if (params.yearFrom) {
+    conditions.push(`EXTRACT(YEAR FROM date) >= $${paramIndex}`);
+    values.push(params.yearFrom);
+    paramIndex++;
+  }
+
+  if (params.yearTo) {
+    conditions.push(`EXTRACT(YEAR FROM date) <= $${paramIndex}`);
+    values.push(params.yearTo);
+    paramIndex++;
+  }
+
+  const whereClause =
+    conditions.length > 0 ? `WHERE ${conditions.join(" AND ")}` : "";
+
+  // Query de items
+  const orderBy =
+    params.query && params.query.trim().length > 0
+      ? `ORDER BY ts_rank("searchVector", to_tsquery('spanish', $1)) DESC, date DESC`
+      : `ORDER BY date DESC`;
+
+  const itemsQuery = `
+    SELECT id, title, summary, court, jurisdiction, fuero, date,
+           source, "sourceUrl", category, "numeroSumario",
+           ts_rank("searchVector", to_tsquery('spanish', ${
+             params.query ? "$1" : "''"
+           })) AS rank
+    FROM "Jurisprudence"
+    ${whereClause}
+    ${orderBy}
+    LIMIT ${pageSize} OFFSET ${offset}
+  `;
+
+  const items = await prisma.$queryRawUnsafe<
+    Array<{
+      id: string;
+      title: string;
+      summary: string | null;
+      court: string | null;
+      jurisdiction: string | null;
+      fuero: string | null;
+      date: Date | null;
+      source: string | null;
+      sourceUrl: string | null;
+      category: string | null;
+      numeroSumario: string | null;
+      rank: number;
+    }>
+  >(itemsQuery, ...values);
+
+  // Query de total
+  const countQuery = `
+    SELECT COUNT(*)::int AS total
+    FROM "Jurisprudence"
+    ${whereClause}
+  `;
+
+  const countResult = await prisma.$queryRawUnsafe<Array<{ total: number }>>(
+    countQuery,
+    ...values
+  );
+
+  const total = countResult[0]?.total ?? 0;
+  const totalPages = Math.ceil(total / pageSize);
+
+  return {
+    items,
+    total,
+    page,
+    pageSize,
+    totalPages,
+  };
+}
+
+export interface JurisprudenceFilterOptions {
+  fueros: string[];
+  jurisdictions: string[];
+  years: number[];
+}
+
+export async function getJurisprudenceFilterOptionsNew(): Promise<JurisprudenceFilterOptions> {
+  const prisma = await getTenantPrisma();
+  await requireSession();
+
+  const [fueros, jurisdictions, years] = await Promise.all([
+    prisma.jurisprudence.findMany({
+      where: { fuero: { not: null } },
+      select: { fuero: true },
+      distinct: ["fuero"],
+      orderBy: { fuero: "asc" },
+    }),
+    prisma.jurisprudence.findMany({
+      where: { jurisdiction: { not: null } },
+      select: { jurisdiction: true },
+      distinct: ["jurisdiction"],
+      orderBy: { jurisdiction: "asc" },
+    }),
+    prisma.$queryRaw<Array<{ year: number }>>`
+      SELECT DISTINCT EXTRACT(YEAR FROM date)::int AS year
+      FROM "Jurisprudence"
+      WHERE date IS NOT NULL
+      ORDER BY year DESC
+    `,
+  ]);
+
+  return {
+    fueros: fueros.map((f) => f.fuero).filter(Boolean) as string[],
+    jurisdictions: jurisdictions
+      .map((j) => j.jurisdiction)
+      .filter(Boolean) as string[],
+    years: years.map((y) => y.year),
+  };
+}
