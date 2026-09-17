@@ -70,6 +70,24 @@ async function readConfig(): Promise<JurisprudenceAgentConfig> {
 }
 
 export async function ingestJurisprudence() {
+  // Verificar si algun firm tiene el modulo activo
+  const firmsWithModule = await prisma.firmModuleSubscription.count({
+    where: {
+      moduleKey: "JURISPRUDENCE",
+      active: true,
+    },
+  });
+
+  if (firmsWithModule === 0) {
+    console.log("[cron] Ningun estudio tiene JURISPRUDENCE activo. Saltando.");
+    return {
+      enabled: false,
+      agentsRun: 0,
+      totalNew: 0,
+      totalSkip: 0,
+      errors: [] as string[],
+    };
+  }
   const config = await readConfig();
 
   if (!config.enabled) {

@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { getTenantPrisma } from "@/lib/tenant-prisma";
 import { requireSession } from "@/lib/auth/session";
+import { requireModule } from "@/lib/auth/modules";
 
 const jurisprudenceSchema = z.object({
   title: z.string().max(300).optional(),
@@ -30,6 +31,7 @@ export async function listJurisprudence() {
 export async function createJurisprudence(input: z.infer<typeof jurisprudenceSchema>) {
   const prisma = await getTenantPrisma();
   const session = await requireSession();
+  await requireModule("JURISPRUDENCE");
   const data = jurisprudenceSchema.parse(input);
   
   const created = await prisma.jurisprudence.create({
@@ -588,6 +590,7 @@ export async function searchJurisprudence(
 ): Promise<SearchJurisprudenceResult> {
   const prisma = await getTenantPrisma();
   await requireSession();
+  await requireModule("JURISPRUDENCE");
 
   const page = Math.max(1, params.page ?? 1);
   const pageSize = Math.min(50, Math.max(1, params.pageSize ?? 20));
@@ -711,6 +714,7 @@ export interface JurisprudenceFilterOptions {
 export async function getJurisprudenceFilterOptionsNew(): Promise<JurisprudenceFilterOptions> {
   const prisma = await getTenantPrisma();
   await requireSession();
+  await requireModule("JURISPRUDENCE");
 
   const [fueros, jurisdictions, years] = await Promise.all([
     prisma.jurisprudence.findMany({
@@ -745,6 +749,7 @@ export async function getJurisprudenceFilterOptionsNew(): Promise<JurisprudenceF
 export async function getJurisprudenceById(id: string) {
   const prisma = await getTenantPrisma();
   await requireSession();
+  await requireModule("JURISPRUDENCE");
 
   const item = await prisma.jurisprudence.findUnique({
     where: { id },
