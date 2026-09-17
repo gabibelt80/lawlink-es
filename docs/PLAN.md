@@ -1,9 +1,8 @@
 ﻿# MAPA MAESTRO DE IMPLEMENTACIÓN — LAWLINK / JURIDICTAS
-Versión: 0.2.0
-Estado: PLANIFICACIÓN — NO IMPLEMENTAR AÚN
+Versión: 0.5.0
+Estado: EN IMPLEMENTACION (rama dev)
 Fecha: 2026-09-16
-Última revisión: cierre del Chat #2
-Próxima revisión: al cerrar Módulo 3 (auditoría)
+Última revisión: cierre del Chat #3
 
 ═══════════════════════════════════════════════════════════════════
 REGLA 0 — CÓMO USAR ESTE DOCUMENTO
@@ -190,6 +189,37 @@ MERCADO_PAGO_CLIENT_ID, MERCADO_PAGO_CLIENT_SECRET
 - ⚠️ NO hay server action, scraper, ni persistencia asociada.
 - Definiciones de fuentes y agentes: src/lib/ai-jurisprudence-agents.ts
 - Estado real: UI LISTA, BACKEND FALTA.
+
+1.11 MODULO JURISPRUDENCE EXISTENTE (auditoria completa Chat #3)
+
+UI:
+- src/app/(app)/jurisprudence/page.tsx + _components/jurisprudence-view.tsx
+  → Vista publica: lista, busqueda, crear, eliminar (CRUD manual)
+- src/app/(app)/admin/jurisprudence/page.tsx + _components/jurisprudence-admin-view.tsx
+  → Panel admin
+- src/app/(app)/agents/jurisprudence/page.tsx + _components/jurisprudence-agents-view.tsx
+  → Panel de agentes IA (boton "Ejecutar" SIMULADO)
+
+Server:
+- src/server/jurisprudence/actions.ts
+  → CRUD completo + filtros + import/export + options
+  → Usa getTenantPrisma() (multi-tenant)
+  → Usa requireSession() (auth)
+  → Usa zod para validacion
+  Funciones: listJurisprudence, createJurisprudence, deleteJurisprudence,
+             listJurisprudenceFiltered, updateJurisprudence,
+             importJurisprudenceBatch, exportJurisprudence,
+             getJurisprudenceFilterOptions
+
+Config:
+- src/lib/ai-jurisprudence-agents.ts
+  → 4 fuentes (SAIJ, CIJ, PJN, Fallos CSJN)
+  → 3 agentes (civil_casacion, laboral_riesgos, penal_garantias)
+
+QUE FALTA:
+- Backend real de ingesta (buscar en SAIJ) ← Commit 3
+- Conectar boton "Ejecutar" con server action real ← Commit 4
+- Refresco automatico de la lista ← Commit 5
 
 ═══════════════════════════════════════════════════════════════════
 SECCIÓN 2 — QUÉ SE QUIERE AGREGAR (alcance)
@@ -456,6 +486,47 @@ SECCIÓN 7 — DECISIONES TOMADAS (ADR log)
 | 012 | Trabajar en rama dev, nunca en main | Aislar cambios | 2026-09-16 | #2 |
 | 013 | cookies.txt fuera del repo + gitignore | Seguridad | 2026-09-16 | #2 |
 | 014 | docs/PLAN.md es el MD del proyecto | Memoria entre chats | 2026-09-16 | #2 |
+| 015 | Descartar saij-mcp por dependencias sospechosas | httpx2/httpcore2 no son oficiales | 2026-09-16 | #3 |
+| 016 | Parser SAIJ nativo en TypeScript, sin Python | Seguridad + portabilidad | 2026-09-16 | #3 |
+| 015 | Descartar saij-mcp pip por dependencias sospechosas | httpx2/httpcore2 no oficiales | 2026-09-16 | #3 |
+| 016 | SAIJ bloquea requests HTTP directas (WAF) | Confirmado, 403 persistente | 2026-09-16 | #3 |
+| 017 | Usar saij-mcp Node.js como referencia de acceso | Ya resolvio el WAF | 2026-09-16 | #3 |
+| 018 | Descartar saij-mcp Node.js por señales de alarma | node_modules commiteados, SDK viejo, autor sin verificar | 2026-09-16 | #3 |
+| 019 | SAIJ usa sintaxis Lucene en parametro r | titulo:X, texto:X, *:* | 2026-09-16 | #3 |
+| 020 | Endpoint real: /busqueda (no /buscar) | Confirmado | 2026-09-16 | #3 |
+| 021 | Filtros con pipe pero SAIJ los separa con \u001F | Bug del repo de referencia | 2026-09-16 | #3 |
+| 022 | Headers obligatorios: User-Agent + Origin + Referer | Sin ellos, 403 | 2026-09-16 | #3 |
+| 023 | Fix modules-actions.ts: usar MODULES en memoria, no DB | Modelo ModuleConfig no existe en schema | 2026-09-16 | #3 |
+| 024 | Catalogo de modulos vive en codigo (lib/modules.ts) | No necesita tabla en DB | 2026-09-16 | #3 |
+| 025 | Busqueda full-text con tsvector, NO LIKE | Escala a 500K sin degradar | 2026-09-16 | #3 |
+| 026 | Ingesta SIN IA, IA solo para analisis puntual | Control de costos | 2026-09-16 | #3 |
+| 027 | Tabla JurisprudenceMatterLink para vincular fallos a casos | Relacion N:M limpia | 2026-09-16 | #3 |
+| 028 | Cron de ingesta sin IA = $0 de costo operativo | SAIJ es publica y gratuita | 2026-09-16 | #3 |
+| 029 | Parser SAIJ convierte numeroSumario a String siempre | SAIJ devuelve Int o String segun caso | 2026-09-16 | #3 |
+| 030 | Ingesta por paginas con maxPages configurable | Control de cuota y tiempo | 2026-09-16 | #3 |
+| 031 | Dedupe por fingerprint ANTES de insertar | Evita conflictos en createMany | 2026-09-16 | #3 |
+| 032 | Cron autonomo a las 04:00 todos los dias | No compite con backups (02:30) ni con otras tareas | 2026-09-16 | #3 |
+| 033 | Config de agentes en SystemSetting | Editable sin recompilar | 2026-09-16 | #3 |
+| 034 | Deduplicacion por fingerprint antes de insertar | Evita conflictos y ahorra cuota SAIJ | 2026-09-16 | #3 |
+| 035 | Panel de agentes movido a /admin/jurisprudence | El estudio no gestiona ingesta, solo consume | 2026-09-16 | #3 |
+| 036 | Borrado /agents/jurisprudence | El estudio solo ve la biblioteca, no los agentes | 2026-09-16 | #3 |
+| 037 | PDFs de SAIJ NO se descargan, solo metadata + texto | SAIJ bloquea acceso directo (403) | 2026-09-16 | #3 |
+| 038 | Modulo IA debe mostrar disclaimer obligatorio | IA puede cometer errores, debe advertirse | 2026-09-16 | #3 |
+| 039 | Full-text search con tsvector + trigger + GIN | Escala a 500K sin LIKE | 2026-09-16 | #3 |
+| 040 | searchJurisprudence server-side con paginacion | No cargar 500K en el cliente | 2026-09-16 | #3 |
+| 041 | getJurisprudenceById para modal detalle | fullText pesado, se carga solo al abrir | 2026-09-16 | #3 |
+| 042 | Boton Eliminar solo para super admin | El estudio solo consume | 2026-09-16 | #3 |
+| 043 | Button Nueva jurisprudencia para todos | Cargar manualmente es util | 2026-09-16 | #3 |
+| 044 | Guards de modulo JURISPRUDENCE en paginas y actions | Sin modulo, no accesible | 2026-09-16 | #3 |
+| 045 | Cron de ingesta verifica si algun firm tiene modulo activo | No corre si nadie lo usa | 2026-09-16 | #3 |
+| 046 | DialogDescription con asChild cuando tiene divs adentro | Radix renderiza <p>, no permite <div> | 2026-09-16 | #3 |
+| 047 | Codigo interno del caso visible en info-panel | Referencia rapida para el usuario | 2026-09-16 | #3 |
+| 048 | Info-panel.tsx: encoding corregido (acentos chinos) | Bug de encoding UTF-8 | 2026-09-16 | #3 |
+| 049 | Seed traducido del chino al espanol | Codigo legado, no se usaba el chino | 2026-09-16 | #3 |
+| 049 | Seed traducido del chino al espanol | Codigo legado, no se usaba el chino | 2026-09-16 | #3 |
+| 050 | Reglas de plazos chinas NEUTRALIZADAS en seed | No aplican en Argentina, riesgo legal | 2026-09-16 | #3 |
+| 051 | v49-deadline-rules: pendiente reescribir con plazos argentinos | Requiere verificacion legal | 2026-09-16 | #3 |
+
 
 ═══════════════════════════════════════════════════════════════════
 SECCIÓN 8 — RIESGOS Y MITIGACIONES
@@ -488,7 +559,27 @@ RIESGO 6 — pgvector no disponible
 RIESGO 7 — Token de sesión filtrado en cookies.txt
   Probabilidad: ya ocurrió. Impacto: medio.
   Mitigación: rotar NEXTAUTH_SECRET en server (pendiente Fase 0).
+  
+RIESGO 8 — SAIJ bloquea requests directas
+  Probabilidad: ya ocurrio (403 persistente)
+  Impacto: medio (necesitamos proxy o reverse-engineering)
+  Mitigacion: usar saij-mcp Node.js que ya resolvio el WAF,
+              o replicar su logica de acceso
 
+RIESGO 9 — Repos de terceros con señales de alarma
+  Probabilidad: ya ocurrio (saij-mcp pip + saij-mcp node)
+  Impacto: alto (seguridad)
+  Mitigacion:
+    - NUNCA instalar paquetes con dependencias no oficiales
+    - NUNCA clonar repos sin verificar autor, historial, estrellas
+    - NUNCA ejecutar npm install en repos sospechosos
+    - Preferir siempre escribir codigo propio auditable
+
+RIESGO 9 — SAIJ bloquea requests sin headers de navegador
+  Probabilidad: alta (ya ocurrio)
+  Impacto: bajo (se resuelve con headers correctos)
+  Mitigacion: usar User-Agent real + Origin + Referer a saij.gob.ar
+  
 ═══════════════════════════════════════════════════════════════════
 SECCIÓN 9 — BACKLOG PRIORIZADO
 ═══════════════════════════════════════════════════════════════════
@@ -514,6 +605,43 @@ BAJA PRIORIDAD (Fase 4-6)
 14. Búsqueda semántica
 15. Ingesta de otras fuentes
 
+PENDIENTES DE LIMPIEZA:
+- Traducir seed del chino al espanol (prisma/seed.ts)
+- Modelo Jurisprudence: summary cambio de String? a String? @db.Text
+- Verificar drift de Firm.enabledModules y WritingTemplate.docxPath
+
+PENDIENTES DETECTADOS:
+- Fix: src/server/admin/modules-actions.ts usa prisma.moduleConfig
+  que no existe en el schema. Bug preexistente. 4 errores TS2339.
+  Ruta: src/server/admin/modules-actions.ts lineas 41, 52, 65, 105
+RESUELTO:
+- ✅ Bug modules-actions.ts (prisma.moduleConfig) — arreglado con MODULES en memoria
+- Pendiente fix: bug modules-actions.ts (prisma.moduleConfig) — RESUELTO
+- Pendiente: traducir seed del chino al espanol
+- Pendiente: rotar NEXTAUTH_SECRET en server
+- Pendiente: /agents/jurisprudence borrado, verificar que no queden refs
+PENDIENTES:
+- Fix bug modules-actions.ts (prisma.moduleConfig) — ✅ RESUELTO
+- Traducir seed del chino al espanol
+- Rotar NEXTAUTH_SECRET en server
+- Verificar que no queden refs a /agents/jurisprudence
+- Probar flujo completo: activar módulo, ver biblioteca, buscar, ver detalle
+PENDIENTES:
+- Buscar y corregir encoding en TODOS los archivos (hay varios con acentos chinos)
+- Traducir seed del chino al espanol
+- Rotar NEXTAUTH_SECRET en server
+RESUELTO:
+- ✅ Seed traducido del chino al espanol
+
+ALTA PRIORIDAD:
+- Reescribir prisma/seeds/v49-deadline-rules.ts con plazos argentinos reales
+  (CPCCN, CPPN, LCT, LNPA, etc.) con verificacion legal por cada uno.
+  Referencias: InfoLEG, CSJN, codigos vigentes.
+  Cada regla debe tener verifiedAt (fecha de verificacion legal).
+
+MEDIA PRIORIDAD:
+- Buscar y corregir encoding en TODOS los archivos restantes
+  (varios con acentos chinos todavia).
 ═══════════════════════════════════════════════════════════════════
 SECCIÓN 10 — PREGUNTAS ABIERTAS
 ═══════════════════════════════════════════════════════════════════
@@ -540,58 +668,76 @@ SECUNDARIAS (no bloquean)
   seed-contenido.txt, estructura.txt, check-*.ts) son legacy?
 
 ═══════════════════════════════════════════════════════════════════
-SECCIÓN 11 — ESTADO ACTUAL DEL PLAN
+SECCION 11 — ESTADO ACTUAL DEL PLAN
 ═══════════════════════════════════════════════════════════════════
 
-Última actualización: 2026-09-16 (cierre Chat #2)
-Rama activa: dev (PC Windows: C:\Users\Gbelt\juridictas\lawlink)
-Rama prod: main (server macserver-M, intacta)
-Fase actual: FASE 0 (Preparación) — iniciada parcialmente
-Módulo en curso: ninguno (Módulo 3 es el próximo)
-Próximo paso: cerrar Módulo 3 (auditoría de lo existente)
-
-Bloqueantes:
-  - No saber qué hace la UI jurisprudence existente
-  - No saber si hay datos en tabla Jurisprudence
-  - No saber qué proveedor IA se usa
-
-Pendientes de seguridad (Fase 0):
-  - Rotar NEXTAUTH_SECRET en server (por token filtrado)
-
-Archivos modificados en dev:
-  - .gitignore (agregado cookies.txt)
-  - docs/PLAN.md (creado)
-  - cookies.txt (removido del repo, no del disco)
-  
-Ultima actualizacion: 2026-09-16 (Chat #3)
+Ultima actualizacion: 2026-09-16 (cierre Chat #3)
 Rama activa: dev (PC Windows)
-Fase actual: FASE 0 (Preparacion)
-Modulo en curso: Modulo 3 (auditoria) — 60% cerrado
-Proximo paso: arrancar Commit 1 de implementacion (extender modelo Prisma)
+Rama prod: main (server macserver-M, INTACTA)
+Fase actual: FASE 1 (Modelo y datos) — avance significativo
+Modulo en curso: jurisprudence
 
-Auditoria completada:
-- ✅ UI jurisprudence: esqueleto con boton simulado
-- ✅ Fuentes configuradas: SAIJ, CIJ, PJN, Fallos CSJN
-- ✅ Agentes predefinidos: civil_casacion, laboral_riesgos, penal_garantias
-- ✅ Proveedor IA: OpenAI-compatible (Qwen por defecto)
-- ⏳ Falta: ver tabla Jurisprudence en DB, ver sidebar
+FUNCIONALIDAD ACTUAL (todo en dev):
+- Modulo Jurisprudencia con guard de modulo por estudio
+- Ingesta desde SAIJ con full-text + parser completo
+- Cron autonomo 04:00 diario (configurable desde admin)
+- Panel super admin: metricas, control, agentes, logs, import/export
+- Biblioteca del estudio: busqueda full-text, filtros, paginacion, modal detalle
+- Analisis de caso con IA (READ-ONLY, no escribe code.json)
+- Codigo interno visible en info-panel del caso
+- Seed traducido del chino; reglas de plazos chinas NEUTRALIZADAS
 
-Implementacion a arrancar:
-- Commit 1: extender modelo Prisma Jurisprudence
-- Commit 2: utilidad ingesta SAIJ
-- Commit 3: server action ejecutar agente
-- Commit 4: conectar boton Ejecutar
-- Commit 5: mostrar fallos guardados en UI
+COMMITS PUSHEADOS EN DEV (14):
+- Modelo Jurisprudence extendido + escala 500K
+- Cliente SAIJ nativo + parser + ingesta con log
+- Server actions (run, search, analyze, link, stats, logs)
+- Full-text search (tsvector + trigger + GIN)
+- Cron autonomo (ingest-jurisprudence.ts)
+- Panel super admin completo
+- UI biblioteca con filtros + paginacion + modal
+- Analisis de caso con IA (read-only)
+- Guards de modulo (paginas + actions + cron)
+- Fix codigo interno en info-panel
+- Seed traducido + reglas chinas neutralizadas
 
+PENDIENTES ALTA PRIORIDAD:
+- Reescribir v49-deadline-rules.ts con plazos argentinos reales
+  (requiere verificacion legal)
+- Buscar y corregir encoding en TODOS los archivos restantes
+- Rotar NEXTAUTH_SECRET en server (por cookies.txt filtrado)
+
+PENDIENTES MEDIA PRIORIDAD:
+- Agregar editor de agentes en /admin/jurisprudence (hoy hardcoded)
+- IA real en el analisis (hoy solo full-text + reglas)
+- Bajar fallos civil/comercial (usuario lo va a hacer)
+
+PENDIENTES BAJA PRIORIDAD:
+- pgvector para busqueda semantica
+- Deploy a produccion (requiere Fase 0 completa)
+
+ARCHIVOS MODIFICADOS EN DEV (acumulado):
+- prisma/schema.prisma + 6 migraciones
+- prisma/seed.ts + prisma/seeds/v08-*, v49-*
+- src/lib/saij/* (4 archivos)
+- src/server/jurisprudence/actions.ts
+- src/server/cron/jobs/ingest-jurisprudence.ts
+- src/server/cron/scheduler.ts + manual-triggers.ts
+- src/server/admin/modules-actions.ts
+- src/app/(app)/admin/jurisprudence/_components/jurisprudence-admin-view.tsx
+- src/app/(app)/jurisprudence/page.tsx + _components/jurisprudence-view.tsx
+- src/app/(app)/agents/_components/agents-dashboard.tsx
+- src/app/(app)/matters/[id]/_components/info-panel.tsx
+- .gitignore
+- cookies.txt (removido)
 ═══════════════════════════════════════════════════════════════════
-SECCIÓN 12 — HISTORIAL DE CHATS
+SECCION 12 — HISTORIAL DE CHATS
 ═══════════════════════════════════════════════════════════════════
 
 | # | Tema | Resultado | Archivos tocados |
 |---|------|-----------|------------------|
-| 1 | Relevamiento + creación MD v0.1 | MD v0.1 creado | ninguno (solo lectura) |
+| 1 | Relevamiento + creacion MD v0.1 | MD v0.1 creado | ninguno (solo lectura) |
 | 2 | Limpieza cookies, rama dev, PLAN.md | MD v0.2, rama dev creada | .gitignore, docs/PLAN.md, cookies.txt |
-| 3 | Auditoria UI jurisprudence + proveedor IA | MD v0.3, auditoria cerrada | ninguno |
+| 3 | Auditoria UI jurisprudence + proveedor IA + implementacion completa (5 commits + fixes) | MD v0.3+, cliente SAIJ funcional, ingesta operativa, schema escala 500K | prisma/schema.prisma, prisma/migrations/20260916214127_*, prisma/migrations/20260916225426_*, src/lib/saij/*, src/server/jurisprudence/actions.ts, src/server/admin/modules-actions.ts, src/app/(app)/agents/jurisprudence/_components/jurisprudence-agents-view.tsx |
 
 ═══════════════════════════════════════════════════════════════════
 SECCIÓN 13 — GLOSARIO
@@ -634,6 +780,10 @@ SECCIÓN 14 — REGLAS DE ORO (INVIOLABLES)
     - Rutas, URLs, IDs
     - El contenido de texto que ve el usuario SI lleva acentos (fallos, escritos)
 12. Cada hallazgo nuevo se agrega INMEDIATAMENTE al MD con "AGREGA AL MD:"
+13. Scripts temporales de admin (create-admin.mjs, etc.) NO se commitean.
+    Se crean, se ejecutan, se borran. Nunca quedan en el repo.
+14. Las passwords hardcodeadas en scripts NUNCA van a produccion.
+    Produccion tiene sus propias credenciales en el server.
 ═══════════════════════════════════════════════════════════════════
 SECCIÓN 15 — FLUJO DE TRABAJO CON IA (entre chats)
 ═══════════════════════════════════════════════════════════════════
@@ -721,6 +871,116 @@ AL CERRAR UN CHAT:
 - Devolver MD completo actualizado a nueva version.
 - Indicar seccion modificada y nueva version.
 - Recordar hacer commit + push en dev.
+
+═══════════════════════════════════════════════════════════════════
+SECCION 18 — VISION DEL MODULO JURISPRUDENCE
+═══════════════════════════════════════════════════════════════════
+
+3 CAPAS:
+
+1. AGENTES AUTONOMOS (background)
+   - Cron que ejecuta agentes periodicamente
+   - Bajan fallos de SAIJ sin intervencion humana
+   - Config en SystemSetting (jurisprudenceAgentConfig)
+   - UI: panel en /agents/jurisprudence con estado
+
+2. BIBLIOTECA DE JURISPRUDENCIA
+   - Vista /jurisprudence con lista de fallos
+   - Busqueda, filtros, tags
+   - Boton "Vincular a caso" por fallo
+   - Ya existe la base, hay que pulirla
+
+3. AGENTE POR CASO (interactivo)
+   - Input: codigo del caso (ej: JD-2006-0002)
+   - IA lee el code.json del caso
+   - Extrae contexto (materia, causa, hechos, palabras clave)
+   - Busca en biblioteca local + SAIJ
+   - Puntua relevancia
+   - Muestra informe con fallos aplicables
+   - Boton "Vincular al caso" agrega al code.json
+
+ORDEN DE CONSTRUCCION:
+- Commit 5: Biblioteca UI completa (pulir lo existente)
+- Commit 6: Agente autonomo (cron + config)
+- Commit 7: Agente por caso (el magico)
+
+
+CONTROL DE COSTOS:
+
+- SAIJ: $0 (API publica sin auth) [citation:7][citation:8]
+- Guardar en DB: $0
+- Busqueda full-text: $0 (PostgreSQL)
+
+UNICO COSTO: IA que analiza fallos
+
+ESTRATEGIA:
+1. Agente autonomo (cron) baja fallos SIN IA → $0
+2. Biblioteca almacena y busca full-text → $0
+3. Agente por caso (cuando usuario pide) usa IA con presupuesto limitado
+
+CONTROLES DE GASTO:
+- llm-hard-cap o gram-middleware: budget diario/mensual en USD [citation:2][citation:15]
+- OpenAI hard limit: bloquea al llegar al tope [citation:3]
+- Auto-downgrade a modelo mas barato si se acerca al limite [citation:2]
+
+═══════════════════════════════════════════════════════════════════
+SECCION 18 — ARQUITECTURA DE JURISPRUDENCE (para 500K+)
+═══════════════════════════════════════════════════════════════════
+
+4 CAPAS:
+
+1. ALMACENAMIENTO CRUDO
+   - PostgreSQL tabla Jurisprudence
+   - fullText completo + metadata + JSONB descriptors
+   - fingerprint unico para deduplicar
+
+2. BUSQUEDA FULL-TEXT
+   - PostgreSQL tsvector + GIN index
+   - Config 'spanish' (soporta acentos, stemming)
+   - Ranking con ts_rank
+   - $0 de costo, sin dependencias
+
+3. BUSQUEDA SEMANTICA (futura opcional)
+   - pgvector para embeddings
+   - Se llena en background
+
+4. VINCULACION CON CASOS
+   - Tabla JurisprudenceMatterLink (N:M)
+   - Score de relevancia
+   - Se agrega al code.json del caso
+
+MODELOS NUEVOS:
+- JurisprudenceMatterLink (relacion fallo-caso)
+- JurisprudenceIngestLog (historial de ingesta)
+
+CAMPOS NUEVOS en Jurisprudence:
+- searchVector (tsvector, con trigger)
+- descriptors (Json)
+- citesUuids (String[])
+- numeroSumario, fechaUmod
+
+ESTRUCTURA DE CARPETAS:
+storage/jurisprudence/YYYY/MM/   → por fecha
+storage/jurisprudence/PDFs/ab/   → por hash prefix
+
+REGLAS DE ESCALA:
+- tsvector, NO LIKE
+- Indices en TODOS los campos de filtro
+- Paginacion obligatoria (LIMIT 50)
+- JSONB para datos flexibles
+- Dedupe con fingerprint + hash
+- createMany en lotes de 100-500
+
+FLUJO SIN IA:
+Usuario abre caso → sistema lee code.json → construye query con reglas
+→ busca en full-text → ordena por ranking → muestra top 20
+→ usuario elige → se vincula al caso
+
+IA SOLO SE USA:
+- Si el usuario pide "explicame por que aplica"
+- 1 llamada por fallo, nunca por busqueda
+- Con presupuesto limitado
+
 ═══════════════════════════════════════════════════════════════════
 FIN DEL MAPA MAESTRO — v0.2
 ═══════════════════════════════════════════════════════════════════

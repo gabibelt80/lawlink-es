@@ -54,8 +54,7 @@ function sha256(text: string): string {
  */
 function buildSourceUrl(
   subdomain: string | undefined,
-  description: string | undefined,
-  uuid: string
+  description: string | undefined
 ): string | null {
   if (!subdomain || !description) return null;
   return `https://www.saij.gob.ar/${subdomain}/${description}`;
@@ -82,8 +81,7 @@ export function normalizeItem(
   const date = extractFirstDate(content.fecha);
   const sourceUrl = buildSourceUrl(
     metadata["friendly-url"]?.subdomain,
-    metadata["friendly-url"]?.description,
-    metadata.uuid
+    metadata["friendly-url"]?.description
   );
 
   const hash = sha256(`${metadata.uuid}|${title}|${fullText.slice(0, 500)}`);

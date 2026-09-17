@@ -34,12 +34,6 @@ export function AgentsPanel() {
   const [agents, setAgents] = useState<AgentStatus[]>([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    loadAgents();
-    const interval = setInterval(loadAgents, 5000);
-    return () => clearInterval(interval);
-  }, []);
-
   async function loadAgents() {
     try {
       const { getAgentsStatus } = await import("@/server/settings/ai-agents-actions");
@@ -51,6 +45,12 @@ export function AgentsPanel() {
       setLoading(false);
     }
   }
+
+  useEffect(() => {
+    loadAgents();
+    const interval = setInterval(loadAgents, 5000);
+    return () => clearInterval(interval);
+  }, []);
 
   if (!session?.user) return null;
 
