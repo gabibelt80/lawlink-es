@@ -17,12 +17,15 @@ jobs:
 
       - name: Install dependencies
         run: npm ci
+        working-directory: /opt/juridictas/lawlink
 
       - name: Generate Prisma client
         run: npx prisma generate
+        working-directory: /opt/juridictas/lawlink
 
       - name: Apply DB changes
         run: npx prisma db push --skip-generate
+        working-directory: /opt/juridictas/lawlink
 
       - name: Build and restart
         run: |
@@ -30,6 +33,7 @@ jobs:
           rm -rf .next-build
           NEXT_DIST_DIR=.next-build npx next build
           pm2 start lawlink
+        working-directory: /opt/juridictas/lawlink
 
       - name: Health check
         run: sleep 3 && curl -s http://localhost:3000/api/health
