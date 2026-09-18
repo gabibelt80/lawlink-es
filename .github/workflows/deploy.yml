@@ -8,50 +8,28 @@ on:
 
 jobs:
   deploy:
-    name: Deploy to Mac Server
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, lawlink]
     timeout-minutes: 30
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Connect to Tailscale
-        uses: tailscale/github-action@v3
-        with:
-          authkey: ${{ secrets.TAILSCALE_AUTHKEY }}
+      - name: Install dependencies
+        run: npm ci
 
-      - name: Deploy via SSH
-        uses: appleboy/ssh-action@v1.2.0
-        with:
-          host: ${{ secrets.DEPLOY_HOST }}
-          username: ${{ secrets.DEPLOY_USER }}
-          key: ${{ secrets.DEPLOY_SSH_KEY }}
-          port: ${{ secrets.DEPLOY_PORT || 22 }}
-          script: |
-            cd /opt/juridictas/lawlink
+      - name: Generate Prisma client
+        run: npx prisma generate
 
-            echo "=== Pulling latest changes ==="
-            git pull origin main
+      - name: Apply DB changes
+        run: npx prisma db push --skip-generate
 
-            echo "=== Installing dependencies ==="
-            npm ci --production=false 2>&1 | tail -5
+      - name: Build and restart
+        run: |
+          pm2 stop lawlink
+          rm -rf .next-build
+          NEXT_DIST_DIR=.next-build npx next build
+          pm2 start lawlink
 
-            echo "=== Generating Prisma client ==="
-            npx prisma generate
-
-            echo "=== Pushing schema to database ==="
-            npx prisma db push --skip-generate
-
-            echo "=== Building ==="
-            NEXT_DIST_DIR=.next-build npx next build0
-
-            echo "=== Restarting PM2 ==="
-            pm2 restart lawlink --update-env
-
-            echo "=== Health check ==="
-            sleep 3
-            curl -s http://localhost:3000/api/health
-
-            echo ""
-            echo "=== Deploy completed ==="
+      - name: Health check
+        run: sleep 3 && curl -s http://localhost:3000/api/health
