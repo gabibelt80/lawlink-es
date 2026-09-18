@@ -10,6 +10,7 @@ import { primaryNav, secondaryNav, filterNavByModules, type NavItem } from "./na
 import type { ModuleKey } from "@/lib/modules";
 import { isSystemAdmin as checkSystemAdmin } from "@/lib/auth/roles";
 
+
 /** v0.42 ítem 1: Marca de la barra lateral (configurable en Configuración → Información del estudio) */
 export type FirmBrand = {
   name: string;
@@ -44,14 +45,15 @@ export function NavContent({ firm }: { firm: FirmBrand }) {
   const filteredPrimary = filterNavByModules(primaryNav, enabledModules);
   const filteredSecondary = filterNavByModules(secondaryNav, enabledModules);
 
-  const navItems = isSystemAdmin
-    ? [
-        { label: "Panel de administración", href: "/admin", icon: LayoutDashboard },
-        { label: "Planes y precios", href: "/admin/plans", icon: Package },
-        { label: "Módulos", href: "/admin/modules", icon: Boxes },
-        { label: "Analíticas", href: "/admin/analytics", icon: Activity },
-      ]
-    : filteredPrimary;
+    const navItems = isSystemAdmin
+      ? [
+          { label: "Panel de administración", href: "/admin", icon: LayoutDashboard },
+          { label: "Planes y precios", href: "/admin/plans", icon: Package },
+          { label: "Jurisprudencia", href: "/admin/jurisprudence", icon: Scale },
+          { label: "Módulos", href: "/admin/modules", icon: Boxes },
+          { label: "Analíticas", href: "/admin/analytics", icon: Activity },
+        ]
+      : filteredPrimary;
 
   return (
     <>
