@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { getTenantPrisma } from "@/lib/tenant-prisma";
 import { requireSession } from "@/lib/auth/session";
+import { prisma } from "@/lib/prisma";
 import { requireModule } from "@/lib/auth/modules";
 
 const jurisprudenceSchema = z.object({
@@ -943,4 +944,38 @@ export async function analyzeCaseWithIA(
       error: error instanceof Error ? error.message : "Error desconocido",
     };
   }
+}
+
+export async function setJurisprudenceAgentConfig(
+  agents: {
+    id: string;
+    keywords: string[];
+    maxPages: number;
+    pageSize: number;
+    enabled: boolean;
+  }[]
+) {
+  const session = await requireSession();
+  if (!session.user.isSystemAdmin) {
+    throw new Error("Solo el super admin puede configurar agentes");
+  }
+
+  const existing = await prisma.systemSetting.findUnique({
+    where: { key: "jurisprudenceAgentConfig" },
+  });
+  const current = (existing?.value as { enabled?: boolean } | null) ?? {};
+
+  const newValue = {
+    enabled: current.enabled ?? true,
+    agents,
+  };
+
+  await prisma.systemSetting.upsert({
+    where: { key: "jurisprudenceAgentConfig" },
+    update: { value: newValue },
+    create: { key: "jurisprudenceAgentConfig", value: newValue },
+  });
+
+  revalidatePath("/admin/jurisprudence");
+  return { ok: true };
 }
