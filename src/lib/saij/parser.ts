@@ -9,6 +9,7 @@ import type {
   SaijSearchResultItem,
   JurisprudenceNormalized,
 } from "./types";
+import { mapSaijTribunalToCategoria } from "./tribunal-map";
 
 /**
  * Parsea el documentAbstract (que es un string JSON) a objeto.
@@ -75,7 +76,15 @@ export function normalizeItem(
   const title = content.titulo?.trim() || "(sin titulo)";
   const summary = content.texto?.trim() || null;
   const fullText = content.texto?.trim() || "";
-  const court = content["tipo-tribunal"]?.trim() || null;
+
+  // Defensa contra "CI CI CI" (array concatenado por bug viejo):
+  // tomar solo el primer token del string.
+  const rawTribunal = content["tipo-tribunal"];
+  const court =
+    (typeof rawTribunal === "string" ? rawTribunal : null)
+      ?.trim()
+      .split(/\s+/)[0] || null;
+
   const jurisdiction = content.jurisdiccion?.descripcion || null;
   const fuero = content.jurisdiccion?.codigo || null;
   const date = extractFirstDate(content.fecha);
@@ -87,11 +96,16 @@ export function normalizeItem(
   const hash = sha256(`${metadata.uuid}|${title}|${fullText.slice(0, 500)}`);
 
   // v0.4: campos extendidos
-    const numeroSumario = content["numero-sumario"]
+  const numeroSumario = content["numero-sumario"]
     ? String(content["numero-sumario"])
     : null;
   const descriptors = content.descriptores || null;
   const citesUuids = extractCites(descriptors);
+
+  // v0.5: mapear codigo SAIJ (LB, CS, CI, etc.) a categoria del gestor
+  const categoriaMateria = mapSaijTribunalToCategoria(court);
+  const category =
+    categoriaMateria ?? metadata["document-content-type"] ?? null;
 
   return {
     fingerprint: metadata.uuid,
@@ -106,7 +120,7 @@ export function normalizeItem(
     source: "SAIJ",
     sourceUrl,
     sourceId: metadata.uuid,
-    category: metadata["document-content-type"] || null,
+    category,
     tags: [],
     status: "downloaded",
     numeroSumario,
@@ -123,6 +137,7 @@ function extractCites(descriptors: unknown): string[] {
   if (!descriptors || typeof descriptors !== "object") return [];
   return [];
 }
+
 /**
  * Normaliza una lista completa de items. Filtra los que no se pueden parsear.
  */
