@@ -35,9 +35,10 @@ export function parseDocumentAbstract(
 /**
  * Toma la primera fecha de una cadena con formato "YYYY-MM-DD|YYYY-MM-DD|...".
  */
-function extractFirstDate(fecha: string | undefined): Date | null {
+function extractFirstDate(fecha: unknown): Date | null {
   if (!fecha) return null;
-  const first = fecha.split("|")[0]?.trim();
+  const str = typeof fecha === "string" ? fecha : String(fecha);
+  const first = str.split("|")[0]?.trim();
   if (!first) return null;
   const d = new Date(first);
   return Number.isNaN(d.getTime()) ? null : d;
