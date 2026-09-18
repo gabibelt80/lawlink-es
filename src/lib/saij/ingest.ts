@@ -8,6 +8,7 @@
  */
 import { PrismaClient } from "@prisma/client";
 import { searchJurisprudencia } from "./search";
+import { verifyJurisprudenceItem } from "./verifier";
 import type { JurisprudenceNormalized } from "./types";
 
 export interface IngestParams {
@@ -116,16 +117,31 @@ export async function ingestFromSaij(
       (i) => !existingSet.has(i.fingerprint)
     );
     totalSkip = allItems.length - toInsert.length;
-    totalNew = toInsert.length;
+
+    // Verificar calidad (agente verificador por reglas)
+    const verified: typeof toInsert = [];
+    let rejected = 0;
+    for (const item of toInsert) {
+      const v = verifyJurisprudenceItem(item);
+      if (v.ok) {
+        verified.push(item);
+      } else {
+        rejected++;
+        console.log(
+          `[verify] rechazado: ${v.reason} | ${item.title.slice(0, 60)}`
+        );
+      }
+    }
+    totalNew = verified.length;
 
     console.log(
-      `[ingest] Nuevos: ${totalNew} | Ya existentes: ${totalSkip}`
+      `[ingest] Nuevos: ${totalNew} | Existentes: ${totalSkip} | Rechazados: ${rejected}`
     );
 
     // Insertar en lotes de 100
     const BATCH_SIZE = 100;
-    for (let i = 0; i < toInsert.length; i += BATCH_SIZE) {
-      const batch = toInsert.slice(i, i + BATCH_SIZE);
+    for (let i = 0; i < verified.length; i += BATCH_SIZE) {
+      const batch = verified.slice(i, i + BATCH_SIZE);
       await prisma.jurisprudence.createMany({
         data: batch.map((item) => ({
           title: item.title,

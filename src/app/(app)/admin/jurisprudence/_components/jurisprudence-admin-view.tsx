@@ -3,6 +3,7 @@
 import { useState, useEffect, useTransition, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
+import { AgentsConfig } from "./agents-config";
 import {
   Upload,
   Download,
@@ -526,6 +527,8 @@ export function JurisprudenceAdminView() {
           </div>
         </div>
       </section>
+      {/* Config de agentes */}
+      <AgentsConfig agents={agents} onSaved={loadAll} />
     </div>
   );
 }
