@@ -26,8 +26,15 @@ export async function searchJurisprudencia(
 
   const items = normalizeItems(response.searchResults.documentResultList);
 
+  // SAIJ devuelve el total real en categoriesResultList[0].facetChildren[0].facetHits
+  // (totalSearchResults solo refleja la pagina actual, no el total)
+  const facetTotal =
+    (response.searchResults.categoriesResultList as Array<{
+      facetChildren?: Array<{ facetHits?: number }>;
+    }>)?.[0]?.facetChildren?.[0]?.facetHits;
+
   return {
-    total: response.searchResults.totalSearchResults,
+    total: typeof facetTotal === "number" ? facetTotal : response.searchResults.totalSearchResults,
     offset: response.queryObjectData.offset,
     pageSize: response.queryObjectData.pageSize,
     items,
