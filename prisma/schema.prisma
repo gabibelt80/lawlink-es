@@ -1934,6 +1934,10 @@ model Jurisprudence {
   // v0.4: relaciones
   linksToMatters JurisprudenceMatterLink[]
 
+  // v0.6: paths jerarquicos del tesauro SAIJ (para busqueda semantica)
+  descriptorRoots  String[]  @default([])
+  descriptorPaths  String[]  @default([])
+
   @@index([fuero])
   @@index([jurisdiction])
   @@index([category])
@@ -1944,6 +1948,8 @@ model Jurisprudence {
   @@index([numeroSumario])
   @@index([date, fuero])
   @@index([searchVector], type: Gin, map: "Jurisprudence_search_idx")
+  @@index([descriptorRoots], type: Gin)
+  @@index([descriptorPaths], type: Gin)
 }
 
 model JurisprudenceMatterLink {
