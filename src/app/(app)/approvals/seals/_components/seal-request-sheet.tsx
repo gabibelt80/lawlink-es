@@ -200,6 +200,25 @@ export function SealRequestSheet({
             </div>
           )}
 
+          {/* Info: a quien se notifica */}
+          <div className="md:col-span-2">
+            <div
+              className="ll-surface rounded p-2.5 text-[12px]"
+              style={{ background: "rgb(180 130 0 / 0.08)" }}
+            >
+              <p className="text-foreground">
+                <strong>Se notificará automáticamente a:</strong>
+              </p>
+              <ul className="mt-1 list-inside list-disc text-[11px] text-muted-foreground">
+                <li>Abogado a cargo del caso {matterId ? "(según el caso seleccionado)" : "(solo si elegís un caso)"}</li>
+                <li>Abogado principal del estudio</li>
+              </ul>
+              <p className="mt-1 text-[10px] text-muted-foreground">
+                Cualquiera de los dos puede aprobar o rechazar la solicitud.
+              </p>
+            </div>
+          </div>
+
           <div className="md:col-span-2">
             <Label className="text-[11px]">Tipo de sello *</Label>
             <RadioChips

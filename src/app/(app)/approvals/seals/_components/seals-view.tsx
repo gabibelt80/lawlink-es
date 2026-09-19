@@ -193,7 +193,8 @@ export function SealsView({
                   <th className="px-3 py-2 text-left font-normal">Caso vinculado</th>
                   <th className="px-3 py-2 text-left font-normal">Motivo del sello</th>
                   <th className="px-3 py-2 text-left font-normal">Estado</th>
-                  <th className="px-3 py-2 text-left font-normal">Fecha de envío</th>
+                  <th className="px-3 py-2 text-left font-normal">Asignado a</th>
+                  <th className="px-3 py-2 text-left font-normal">Fecha de envio</th>
                   <th className="px-3 py-2 text-right font-normal">Acciones</th>
                 </tr>
               </thead>
@@ -376,6 +377,11 @@ function SealRow({
         >
           {SEAL_STATUS_ES[row.status]}
         </span>
+      </td>
+      <td className="px-3 py-2 text-[11px] text-muted-foreground">
+        {row.assignedLawyer?.name ?? (
+          <span className="text-[10px] italic">Sin asignar</span>
+        )}
       </td>
       <td className="px-3 py-2 font-mono text-[10px] text-muted-foreground">
         {new Date(row.requestedAt).toLocaleDateString("es-AR")}

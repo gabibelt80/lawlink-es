@@ -11,7 +11,7 @@ BEGIN
   IF NOT EXISTS (
     SELECT 1 FROM pg_enum
     WHERE enumlabel = 'SYSTEM_ADMIN'
-    AND enumtypid = (SELECT oid FROM pg_type WHERE typname = 'UserRole')
+    AND enumtypid = (SELECT oid FROM pg_type WHERE typname = 'UserRole' LIMIT 1)
   ) THEN
     ALTER TYPE "UserRole" ADD VALUE 'SYSTEM_ADMIN';
   END IF;

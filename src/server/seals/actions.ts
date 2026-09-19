@@ -90,7 +90,7 @@ async function canApproveSealType(
 }
 
 // Listado
-// Listado
+
 export async function listSealRequests(input?: z.input<typeof sealListFilterSchema>) {
   const prisma = await getTenantPrisma();
   const session = await requireSession();
@@ -125,6 +125,8 @@ export async function listSealRequests(input?: z.input<typeof sealListFilterSche
       requestedBy: { select: { id: true, name: true } },
       approvedBy: { select: { id: true, name: true } },
       stampedByUser: { select: { id: true, name: true } },
+      assignedLawyer: { select: { id: true, name: true } },
+      principalLawyer: { select: { id: true, name: true } },
       draftDoc: { select: { id: true, name: true, size: true } },
       stampedDoc: { select: { id: true, name: true, size: true } }
     }
@@ -147,37 +149,50 @@ async function pickApprovableSealTypes(user: { id: string; role: string }): Prom
     .map((c) => c.type);
 }
 
-async function getSealApprovalRecipientIds(sealType: SealType): Promise<string[]> {
+async function getSealApprovalRecipientIds(input: {
+  sealType: SealType;
+  matterId: string | null;
+}): Promise<{ ids: string[]; assignedLawyerId: string | null; principalLawyerId: string | null }> {
   const prisma = await getTenantPrisma();
+
+  // 1. Abogado principal del estudio (todos los PRINCIPAL_LAWYER activos)
+  const principals = await prisma.user.findMany({
+    where: { active: true, role: "PRINCIPAL_LAWYER" },
+    select: { id: true },
+  });
+  const principalIds = principals.map((u) => u.id);
+  const principalLawyerId = principalIds[0] ?? null;
+
+  // 2. Abogado a cargo del caso (Matter.ownerId)
+  let assignedLawyerId: string | null = null;
+  if (input.matterId) {
+    const matter = await prisma.matter.findUnique({
+      where: { id: input.matterId },
+      select: { ownerId: true },
+    });
+    assignedLawyerId = matter?.ownerId ?? null;
+  }
+
+  // 3. Admins como fallback (siempre notificados, por si no hay principal ni owner)
   const admins = await prisma.user.findMany({
     where: { active: true, role: "ADMIN" },
-    select: { id: true }
+    select: { id: true },
   });
-  const ids = admins.map((user) => user.id);
+  const adminIds = admins.map((u) => u.id);
 
-  const cfg = await prisma.sealTypeConfig.findUnique({ where: { type: sealType } });
-  if (!cfg || !cfg.enabled) return ids;
+  // 4. Armar lista unica
+  const allIds = new Set<string>();
+  principalIds.forEach((id) => allIds.add(id));
+  adminIds.forEach((id) => allIds.add(id));
+  if (assignedLawyerId) allIds.add(assignedLawyerId);
 
-  if (cfg.requiresLegalRep) {
-    const repId = await getFirmLegalRepUserId();
-    if (repId) ids.push(repId);
-    return ids;
-  }
-
-const approverRoles = Array.isArray(cfg.approverRoles) ? (cfg.approverRoles as UserRole[]) : [];
-if (approverRoles.length > 0) {
-    const roleApprovers = await prisma.user.findMany({
-      where: {
-        active: true,
-        role: { in: approverRoles }
-      },
-      select: { id: true }
-    });
-    ids.push(...roleApprovers.map((user) => user.id));
-  }
-
-  return ids;
+  return {
+    ids: Array.from(allIds),
+    assignedLawyerId,
+    principalLawyerId,
+  };
 }
+
 
 async function notifySealApprovalRequested(input: {
   sealRequestId: string;
@@ -188,8 +203,12 @@ async function notifySealApprovalRequested(input: {
   requesterId: string;
   requesterName?: string | null;
   urgency: "NORMAL" | "URGENT";
+  matterId: string | null;
 }) {
-  const userIds = await getSealApprovalRecipientIds(input.sealType);
+  const { ids: userIds } = await getSealApprovalRecipientIds({
+    sealType: input.sealType,
+    matterId: input.matterId,
+  });
   await notifyDirectApprovers({
     userIds,
     excludeUserId: input.requesterId,
@@ -198,7 +217,7 @@ async function notifySealApprovalRequested(input: {
     href: `/approvals/seals?id=${input.sealRequestId}`,
     refType: "SealRequest",
     refId: input.sealRequestId,
-    priority: input.urgency === "URGENT" ? "URGENT" : "HIGH"
+    priority: input.urgency === "URGENT" ? "URGENT" : "HIGH",
   });
 }
 
@@ -505,7 +524,8 @@ if (!session.user.id) {
     purpose: data.purpose.trim(),
     requesterId: session.user.id,
     requesterName: session.user.name,
-    urgency: data.urgency
+    urgency: data.urgency,
+    matterId: data.matterId ?? null,
   });
 
   if (created.legalRepSealId && legalRepCode) {
@@ -517,7 +537,8 @@ if (!session.user.id) {
       purpose: `${data.purpose.trim()} (junto con ${code})`,
       requesterId: session.user.id,
       requesterName: session.user.name,
-      urgency: data.urgency
+      urgency: data.urgency,
+      matterId: data.matterId ?? null,
     });
   }
 

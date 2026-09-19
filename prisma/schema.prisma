@@ -392,6 +392,8 @@ model User {
   accounts                 Account[]
   createdAt                DateTime                      @default(now())
   updatedAt                DateTime                      @updatedAt
+  sealAssignedTo    SealRequest[] @relation("SealAssignedLawyer")
+  sealPrincipalFor  SealRequest[] @relation("SealPrincipalLawyer")
 }
 
 // ============================================================
@@ -1421,7 +1423,6 @@ model SealRequest {
   copies               Int     @default(1)
   urgency              Urgency @default(NORMAL)
 
-  // Borrador a sellar (obligatorio) + escaneo post-sellado (obligatorio al completar)
   draftDocId   String    @unique
   draftDoc     Document  @relation("SealDraft", fields: [draftDocId], references: [id])
   stampedDocId String?   @unique
@@ -1443,9 +1444,14 @@ model SealRequest {
   stampedByUser User?     @relation("SealStamper", fields: [stampedById], references: [id])
   stampedAt     DateTime?
 
+  // v0.7: asignacion de aprobadores
+  assignedLawyerId  String?
+  assignedLawyer    User?   @relation("SealAssignedLawyer", fields: [assignedLawyerId], references: [id])
+  principalLawyerId String?
+  principalLawyer   User?   @relation("SealPrincipalLawyer", fields: [principalLawyerId], references: [id])
+
   rejectedAt DateTime?
 
-  // Cadena de reenvio despues de rechazo (vieja â†’ nueva)
   parentSealRequestId String?
   parentSealRequest   SealRequest?  @relation("SealResubmission", fields: [parentSealRequestId], references: [id])
   resubmissions       SealRequest[] @relation("SealResubmission")

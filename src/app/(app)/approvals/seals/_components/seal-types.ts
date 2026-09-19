@@ -9,6 +9,8 @@ export type SealRequestRow = Prisma.SealRequestGetPayload<{
     requestedBy: { select: { id: true; name: true } };
     approvedBy: { select: { id: true; name: true } };
     stampedByUser: { select: { id: true; name: true } };
+    assignedLawyer: { select: { id: true; name: true } };
+    principalLawyer: { select: { id: true; name: true } };
     draftDoc: { select: { id: true; name: true; size: true } };
     stampedDoc: { select: { id: true; name: true; size: true } };
   };
