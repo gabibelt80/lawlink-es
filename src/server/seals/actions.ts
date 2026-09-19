@@ -755,3 +755,19 @@ export async function cancelSealRequest(input: z.infer<typeof sealCancelSchema>)
   if (seal.matterId) await revalidateMatter(seal.matterId);
   return { ok: true };
 }
+
+/**
+ * Devuelve el folderId principal de un caso (la primera carpeta por orderIndex).
+ * Si no tiene carpetas, devuelve null.
+ */
+async function getMatterPrimaryFolderId(
+  tx: { documentFolder: { findFirst: (args: unknown) => Promise<{ id: string } | null> } },
+  matterId: string
+): Promise<string | null> {
+  const folder = await tx.documentFolder.findFirst({
+    where: { matterId },
+    orderBy: { orderIndex: "asc" },
+    select: { id: true },
+  });
+  return folder?.id ?? null;
+}
