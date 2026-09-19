@@ -3,6 +3,10 @@
   "version": "0.1.0",
   "private": true,
   "license": "MIT",
+  "author": "叶森 (Sen Ye) — LawLink",
+  "contributors": [
+    "Gabriel Beltrando <egbeltrando@gmail.com>"
+  ],
   "engines": {
     "node": ">=20.9.0"
   },
