@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Loader2, Stamp, Plus } from "lucide-react";
+import { Loader2, Stamp, Plus, Download } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -142,6 +142,16 @@ export function ApprovalsPanel({
               </span>
               <span className="min-w-0 flex-1 truncate">{s.documentTitle}</span>
               <SealStatusBadge status={s.status} />
+              {s.stampedDoc && (
+                <a
+                  href={`/api/documents/${s.stampedDoc.id}/download`}
+                  download
+                  title="Descargar PDF firmado"
+                  className="text-muted-foreground hover:text-foreground"
+                >
+                  <Download className="h-3.5 w-3.5" />
+                </a>
+              )}
               <Link
                 href={`/approvals/seals?id=${s.id}`}
                 className="text-[11px] text-primary hover:text-primary/80"

@@ -24,6 +24,7 @@ import {
   SEAL_STATUS_ES,
   SEAL_TYPE_ES,
 } from "./seal-types";
+import { SignaturePlacerDialog } from "./signature-placer-dialog";
 
 type Action = "detail" | "approve" | "reject" | "stamp" | "cancel";
 
@@ -45,7 +46,20 @@ export function SealActionsDialogs({
   if (action === "detail") {
     return <SealDetailDialog row={row} onClose={onClose} />;
   }
-  if (action === "approve" || action === "reject") {
+  if (action === "approve") {
+    if (!row.draftDoc) {
+      // No hay borrador, no se puede estampar
+      return <ApprovalDialog row={row} action={action} onClose={onClose} />;
+    }
+    return (
+      <SignaturePlacerDialog
+        sealId={row.id}
+        draftDocId={row.draftDoc.id}
+        onClose={onClose}
+      />
+    );
+  }
+  if (action === "reject") {
     return <ApprovalDialog row={row} action={action} onClose={onClose} />;
   }
   if (action === "stamp") {
