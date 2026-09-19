@@ -6,7 +6,16 @@
 
 */
 -- AlterEnum
-ALTER TYPE "UserRole" ADD VALUE 'SYSTEM_ADMIN';
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_enum
+    WHERE enumlabel = 'SYSTEM_ADMIN'
+    AND enumtypid = (SELECT oid FROM pg_type WHERE typname = 'UserRole')
+  ) THEN
+    ALTER TYPE "UserRole" ADD VALUE 'SYSTEM_ADMIN';
+  END IF;
+END $$;
 
 -- AlterTable
 ALTER TABLE "Jurisprudence" ADD COLUMN     "fingerprint" TEXT,
