@@ -1,7 +1,7 @@
 #!/bin/bash
-# LawLink 数据库 + 文件存储备份脚本
-# 用法: ./scripts/backup.sh [/备份/目录]
-# 默认备份到 ./backups/
+# LawLink - Script de respaldo de base de datos + almacenamiento de archivos
+# Uso: ./scripts/backup.sh [/directorio/de/backups]
+# Por defecto respalda en ./backups/
 
 set -euo pipefail
 
@@ -9,7 +9,7 @@ BACKUP_DIR="${1:-./backups}"
 TIMESTAMP=$(date +%Y%m%d_%H%M%S)
 BACKUP_PATH="${BACKUP_DIR}/${TIMESTAMP}"
 
-# 从 .env 读取数据库配置
+# Leer configuracion de la base de datos desde .env
 if [ -f .env ]; then
   source .env
 fi
@@ -18,12 +18,12 @@ DB_URL="${DATABASE_URL:-}"
 STORAGE_DIR="${STORAGE_PATH:-./storage}"
 
 if [ -z "$DB_URL" ]; then
-  echo "Error: DATABASE_URL no está configurada"
+  echo "Error: DATABASE_URL no esta configurada"
   exit 1
 fi
 
-# 从 DATABASE_URL 解析连接参数
-# 格式: postgresql://user:password@host:port/database
+# Parsear parametros de conexion desde DATABASE_URL
+# Formato: postgresql://usuario:password@host:puerto/base
 DB_HOST=$(echo "$DB_URL" | sed -E 's/.*@([^:]+):.*/\1/')
 DB_PORT=$(echo "$DB_URL" | sed -E 's/.*:([0-9]+)\/.*/\1/')
 DB_NAME=$(echo "$DB_URL" | sed -E 's/.*\/([^?]+).*/\1/')
@@ -38,7 +38,7 @@ echo "Directorio de almacenamiento: ${STORAGE_DIR}"
 echo ""
 
 # 1. pg_dump
-echo "[1/3] Exportando la base de datos..."
+echo "[1/4] Exportando la base de datos..."
 PGPASSWORD="$DB_PASS" pg_dump \
   -h "$DB_HOST" \
   -p "$DB_PORT" \
@@ -49,8 +49,8 @@ PGPASSWORD="$DB_PASS" pg_dump \
   -f "${BACKUP_PATH}/database.dump"
 echo "  Respaldo de la base de datos completado: $(du -sh "${BACKUP_PATH}/database.dump" | cut -f1)"
 
-# 2. 文件存储
-echo "[2/3] Comprimiendo el almacenamiento de archivos..."
+# 2. Almacenamiento de archivos
+echo "[2/4] Comprimiendo el almacenamiento de archivos..."
 if [ -d "$STORAGE_DIR" ]; then
   tar czf "${BACKUP_PATH}/storage.tar.gz" -C "$(dirname "$STORAGE_DIR")" "$(basename "$STORAGE_DIR")"
   echo "  Respaldo del almacenamiento de archivos completado: $(du -sh "${BACKUP_PATH}/storage.tar.gz" | cut -f1)"
@@ -58,8 +58,8 @@ else
   echo "  Omitido: el directorio de almacenamiento no existe"
 fi
 
-# 3. 元信息
-echo "[3/3] Escribiendo metadatos..."
+# 3. Metadatos
+echo "[3/4] Escribiendo metadatos..."
 cat > "${BACKUP_PATH}/manifest.json" << EOF
 {
   "timestamp": "${TIMESTAMP}",
@@ -73,9 +73,19 @@ cat > "${BACKUP_PATH}/manifest.json" << EOF
 }
 EOF
 
+# 4. Rotacion: mantener solo los ultimos 10 backups
+echo "[4/4] Rotando backups antiguos (mantener 10)..."
+DELETED=0
+for old in $(ls -1t "$BACKUP_DIR" | tail -n +11); do
+  rm -rf "${BACKUP_DIR}/${old}"
+  echo "  Eliminado: ${old}"
+  DELETED=$((DELETED + 1))
+done
+echo "  Backups eliminados: ${DELETED}"
+
 echo ""
 echo "=== Respaldo completado ==="
 echo "Ruta: ${BACKUP_PATH}"
 echo "Tamaño total: $(du -sh "$BACKUP_PATH" | cut -f1)"
 echo ""
-echo "Sugerencia: subí ${BACKUP_PATH} a un almacenamiento externo (S3 / OSS / otro servidor)"
+echo "Sugerencia: subi ${BACKUP_PATH} a un almacenamiento externo (S3 / OSS / otro servidor)"
