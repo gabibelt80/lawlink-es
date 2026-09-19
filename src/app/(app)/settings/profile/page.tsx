@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { ChangePasswordForm } from "./_components/change-password-form";
 import { AvatarForm } from "./_components/avatar-form";
 import { CalendarSubscription } from "./_components/calendar-subscription";
+import { SignatureForm } from "./_components/signature-form";
 import { userRoleLabel } from "@/lib/enums";
 
 export default async function ProfilePage() {
@@ -10,7 +11,7 @@ export default async function ProfilePage() {
   const user = session!.user;
   const dbUser = await prisma.user.findUnique({
     where: { id: user.id },
-    select: { avatar: true },
+    select: { avatar: true, signaturePng: true },
   });
 
   return (
@@ -33,6 +34,14 @@ export default async function ProfilePage() {
               user.role}
           </Item>
         </dl>
+      </section>
+
+      <section className="rounded-xl border border-border bg-card p-6">
+        <h2 className="mb-1 text-base font-semibold">Mi firma</h2>
+        <p className="mb-4 text-[11px] text-muted-foreground">
+          Se aplicará automáticamente en los documentos que apruebes.
+        </p>
+        <SignatureForm initialSignature={dbUser?.signaturePng ?? null} />
       </section>
 
       <CalendarSubscription />

@@ -771,3 +771,156 @@ async function getMatterPrimaryFolderId(
   });
   return folder?.id ?? null;
 }
+
+// ---------------------------------------------------------------------------
+// v0.8: aprobar con firmas/sellos visuales (PNG estampados sobre el PDF)
+// ---------------------------------------------------------------------------
+
+const signaturePlacementSchema = z.object({
+  pngDataUrl: z.string(),
+  xPct: z.number().min(0).max(100),
+  yPct: z.number().min(0).max(100),
+  widthPct: z.number().min(1).max(100),
+});
+
+const approveWithSignaturesSchema = z.object({
+  sealId: z.string().min(1),
+  placements: z.array(signaturePlacementSchema).min(1).max(20),
+});
+
+export async function approveSealWithSignatures(
+  input: z.infer<typeof approveWithSignaturesSchema>
+) {
+  const prisma = await getTenantPrisma();
+  const session = await requireSession();
+  const data = approveWithSignaturesSchema.parse(input);
+
+  const seal = await prisma.sealRequest.findUnique({
+    where: { id: data.sealId },
+    select: {
+      id: true,
+      status: true,
+      sealType: true,
+      matterId: true,
+      requestedById: true,
+      documentTitle: true,
+      draftDocId: true,
+      draftDoc: { select: { id: true, name: true, path: true, encrypted: true, iv: true, authTag: true, mimeType: true } },
+    },
+  });
+  if (!seal) throw new Error("La solicitud no existe");
+  if (seal.status !== "PENDING") throw new Error("Esta solicitud ya fue procesada");
+  if (!seal.draftDoc) throw new Error("Falta el borrador a sellar");
+
+  const ok = await canApproveSealType(seal.sealType, session.user);
+  if (!ok) throw new Error("Sin permiso para aprobar este tipo de sello");
+
+  // 1. Descargar el PDF original
+  const draftStored = await storage.readFile(seal.draftDoc.path);
+  const draftPlain = seal.draftDoc.encrypted && seal.draftDoc.iv && seal.draftDoc.authTag
+    ? decryptBuffer(draftStored, seal.draftDoc.iv, seal.draftDoc.authTag)
+    : draftStored;
+
+  // 2. Estampar cada PNG con pdf-lib
+  const { PDFDocument } = await import("pdf-lib");
+  const pdfDoc = await PDFDocument.load(draftPlain);
+  const pages = pdfDoc.getPages();
+  const firstPage = pages[0];
+  const { width: pageW, height: pageH } = firstPage.getSize();
+
+  for (const placement of data.placements) {
+    // Parsear data URL
+    const match = placement.pngDataUrl.match(/^data:image\/(png|webp);base64,(.+)$/);
+    if (!match) throw new Error("Formato de imagen no valido");
+    const [, ext, b64] = match;
+    const buf = Buffer.from(b64, "base64");
+
+    // pdf-lib solo acepta PNG nativo. Si es WebP lo rechazamos con mensaje claro.
+    if (ext !== "png") {
+      throw new Error("Solo se admiten PNG con fondo transparente. Convierte el WebP a PNG primero.");
+    }
+    const png = await pdfDoc.embedPng(buf);
+
+    // Calcular tamaño y posicion en puntos PDF
+    const stampW = (placement.widthPct / 100) * pageW;
+    const stampH = (png.height / png.width) * stampW;
+    const stampX = (placement.xPct / 100) * pageW;
+    // En el frontend yPct es desde arriba; pdf-lib usa desde abajo
+    const stampY = pageH - ((placement.yPct / 100) * pageH) - stampH;
+
+    firstPage.drawImage(png, {
+      x: stampX,
+      y: stampY,
+      width: stampW,
+      height: stampH,
+    });
+  }
+
+  const stampedBytes = await pdfDoc.save();
+
+  // 3. Guardar el PDF estampado como nuevo Document
+  const stampedBuffer = Buffer.from(stampedBytes);
+  const enc = encryptBuffer(stampedBuffer);
+  const newPath = await storage.writeFile(
+    seal.matterId ? `m_${seal.matterId}` : "seals",
+    enc.ciphertext
+  );
+
+  // 4. Carpeta principal del caso
+  let folderId: string | null = null;
+  if (seal.matterId) {
+    const folder = await prisma.documentFolder.findFirst({
+      where: { matterId: seal.matterId },
+      orderBy: { orderIndex: "asc" },
+      select: { id: true },
+    });
+    folderId = folder?.id ?? null;
+  }
+
+  // 5. Transaccion: crear Document + actualizar SealRequest
+  await prisma.$transaction(async (tx) => {
+    const stampedDoc = await tx.document.create({
+      data: {
+        matterId: seal.matterId ?? undefined,
+        folderId: folderId ?? undefined,
+        name: seal.draftDoc!.name.replace(/\.pdf$/i, "") + "_firmado.pdf",
+        category: "OTHER",
+        path: newPath,
+        mimeType: "application/pdf",
+        size: stampedBuffer.length,
+        sha256: sha256(stampedBuffer),
+        encrypted: true,
+        algorithm: enc.algorithm,
+        iv: enc.iv.toString("base64"),
+        authTag: enc.authTag.toString("base64"),
+        tags: ["Solicitud de sello", "Documento firmado y sellado"],
+        uploadedById: session.user.id,
+      },
+    });
+
+    await tx.sealRequest.update({
+      where: { id: data.sealId },
+      data: {
+        status: "STAMPED",
+        approvedById: session.user.id,
+        approvedAt: new Date(),
+        stampedDocId: stampedDoc.id,
+        stampedById: session.user.id,
+        stampedAt: new Date(),
+        stampedAutomatically: true,
+      },
+    });
+  });
+
+  await audit({
+    userId: session.user.id,
+    action: "SEAL_APPROVED_AUTO_STAMPED",
+    targetType: "SealRequest",
+    targetId: data.sealId,
+    detail: { sealType: seal.sealType, signatureCount: data.placements.length },
+  });
+
+  revalidatePath("/approvals/seals");
+  if (seal.matterId) await revalidateMatter(seal.matterId);
+  return { ok: true };
+}

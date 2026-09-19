@@ -345,6 +345,7 @@ model User {
   role          UserRole  @default(LAWYER)
   phone         String?
   avatar        String?
+  signaturePng  String?
   active        Boolean   @default(true)
   lastLoginAt   DateTime?
   // v0.50: Token de suscripcion a calendario ICS (la URL es la credencial, se puede resetear)
@@ -1441,6 +1442,7 @@ model SealRequest {
   approvedAt   DateTime?
 
   stampedById   String?
+  stampedAutomatically Boolean @default(false)
   stampedByUser User?     @relation("SealStamper", fields: [stampedById], references: [id])
   stampedAt     DateTime?
 

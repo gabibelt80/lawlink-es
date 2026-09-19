@@ -331,3 +331,55 @@ export async function saveMyAvatar(input: { avatar: string | null }) {
   revalidatePath("/", "layout");
   return { ok: true };
 }
+
+/**
+ * Guarda la firma PNG del usuario actual (data URL base64).
+ * La valida: PNG only, max 500 KB.
+ */
+export async function saveMySignature(input: { signaturePng: string | null }) {
+  const session = await requireSession();
+  const prisma = await getTenantPrisma();
+
+  const { signaturePng } = input;
+
+  if (signaturePng !== null) {
+    if (
+      !/^data:image\/png;base64,/.test(signaturePng) &&
+      !/^data:image\/webp;base64,/.test(signaturePng)
+    ) {
+      throw new Error("La firma debe ser un PNG o WebP");
+    }
+    // Limite 500 KB
+    if (signaturePng.length > 700_000) {
+      throw new Error("La firma es demasiado grande. Maximo 500 KB.");
+    }
+  }
+
+  await prisma.user.update({
+    where: { id: session.user.id },
+    data: { signaturePng },
+  });
+
+  await audit({
+    userId: session.user.id,
+    action: signaturePng ? "USER_SIGNATURE_SAVE" : "USER_SIGNATURE_DELETE",
+    targetType: "User",
+    targetId: session.user.id,
+  });
+
+  revalidatePath("/settings/profile");
+  return { ok: true };
+}
+
+/**
+ * Devuelve la firma del usuario actual.
+ */
+export async function getMySignature(): Promise<string | null> {
+  const session = await requireSession();
+  const prisma = await getTenantPrisma();
+  const u = await prisma.user.findUnique({
+    where: { id: session.user.id },
+    select: { signaturePng: true },
+  });
+  return u?.signaturePng ?? null;
+}
