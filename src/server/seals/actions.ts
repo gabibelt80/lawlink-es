@@ -754,8 +754,6 @@ export async function cancelSealRequest(input: z.infer<typeof sealCancelSchema>)
   revalidatePath("/approvals/seals");
   if (seal.matterId) await revalidateMatter(seal.matterId);
   return { ok: true };
-<<<<<<< Updated upstream
-=======
 }
 
 /**
@@ -925,5 +923,4 @@ export async function approveSealWithSignatures(
   revalidatePath("/approvals/seals");
   if (seal.matterId) await revalidateMatter(seal.matterId);
   return { ok: true };
->>>>>>> Stashed changes
 }
