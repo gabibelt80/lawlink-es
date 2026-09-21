@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 
-// v0.8.1：/seals 重命名为 /approvals/seals，保留 308 重定向给旧Enlace
+// v0.8.1：/seals Renombrar a /approvals/seals，Conservar 308 Redirigir al anteriorEnlace
 export default function LegacySealsRedirect() {
   redirect("/approvals/seals");
 }

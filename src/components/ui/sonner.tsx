@@ -12,8 +12,8 @@ import { Toaster as Sonner } from "sonner"
 type ToasterProps = React.ComponentProps<typeof Sonner>
 
 /**
- * LawLink 全站 toast。样式y图标在这里定型，调用方只传位置一类的布局参数，
- * 避免再出现「另起一个裸 <Toaster/>」导致图标配置失效。
+ * LawLink Todo el sitio toast。EstiloyEl icono se define aqui，El llamador solo pasa parametros de layout como posicion，
+ * Evitar que vuelva a aparecer「Iniciar un nuevo desnudo <Toaster/>」Provoca que la configuracion del icono no funcione。
  */
 const Toaster = ({ toastOptions, ...props }: ToasterProps) => {
   return (

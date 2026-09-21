@@ -149,10 +149,10 @@ export function ClientsView({ initialData, initialFilters }: Props) {
         )}
       </div>
 
-      {/* 列表 */}
+      {/* Lista */}
       <ClientsTable items={initialData.items} onEdit={handleEdit} />
 
-      {/* 抽屉 */}
+      {/* Panel lateral */}
       <ClientSheet
         open={sheetOpen}
         onOpenChange={setSheetOpen}

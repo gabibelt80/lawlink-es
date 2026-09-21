@@ -81,7 +81,7 @@ export function SealRequestSheet({
   const [pending, startTransition] = useTransition();
   const router = useRouter();
 
-  // 卷宗联动预填
+  // Prellenado vinculado al expediente
   useEffect(() => {
     if (preset?.matterId) setMatterId(preset.matterId);
     if (preset?.documentTitle) setDocumentTitle(preset.documentTitle);
@@ -102,7 +102,7 @@ export function SealRequestSheet({
     setAlsoLegalRep(false);
   };
 
-  // 拼出实际入库的 purpose 字符串
+  // Concatenar lo que realmente se guarda purpose Cadena de texto
   const resolvedPurpose =
     purposePreset === "Otro"
       ? purposeOther.trim()
@@ -181,7 +181,7 @@ export function SealRequestSheet({
         </DialogHeader>
 
         <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-2">
-          {/* 联动提示 */}
+          {/* Aviso de vinculacion */}
           {hasExisting && (
             <div
               className="ll-surface flex items-start gap-2 rounded p-2.5 text-[12px] md:col-span-2"
@@ -260,7 +260,7 @@ export function SealRequestSheet({
             <Label className="text-[11px]">Caso relacionado (opcional)</Label>
             <div className="mt-1">
               {preset?.matterId ? (
-                // 从Caso详情页发起时，case 已锁定，不展示可切换的下拉
+                // DesdeCasoCuando se inicia desde la pagina de detalle，case Ya bloqueado，No mostrar el desplegable intercambiable
                 <div className="flex h-9 items-center gap-2 rounded-md border border-border bg-muted/40 px-2.5 text-[12px]">
                   <span className="text-[10px] text-muted-foreground">
                     Relacionado

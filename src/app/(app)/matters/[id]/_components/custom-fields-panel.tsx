@@ -146,7 +146,7 @@ function EditDialog({
                   onValueChange={(v) => set(d.key, v)}
                 >
                   <SelectTrigger>
-                    <SelectValue placeholder="请选择" />
+                    <SelectValue placeholder="Seleccione" />
                   </SelectTrigger>
                   <SelectContent>
                     {d.options.map((o) => (

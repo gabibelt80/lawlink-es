@@ -42,7 +42,7 @@ import { uploadDocument, deleteDocument } from "@/server/documents/actions";
 import { cn } from "@/lib/utils";
 import { DocumentReviewDialog } from "./document-review-dialog";
 
-// AI 审查支持的 mime（前端判断是否亮按钮）
+// AI Revision soportada mime（El frontend determina si iluminar el boton）
 const AI_REVIEW_MIMES = new Set([
   "application/pdf",
   "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
@@ -62,12 +62,12 @@ export type DocumentPayload = Document & {
 };
 
 const categoryLabel: Record<DocumentCategory, string> = {
-  EVIDENCE: "证据材料",
-  PLEADING: "诉讼文书",
-  PROCEDURE: "程序性材料",
-  JUDGMENT: "裁判文书",
-  CONTRACT: "合同",
-  OTHER: "其他",
+  EVIDENCE: "Material probatorio",
+  PLEADING: "Documento procesal",
+  PROCEDURE: "Material procesal",
+  JUDGMENT: "Documento judicial",
+  CONTRACT: "Contrato",
+  OTHER: "Otros",
 };
 
 const categoryColor: Record<DocumentCategory, string> = {
@@ -134,7 +134,7 @@ export function DocumentsPanel({
       ? documents
       : documents.filter((d) => d.category === activeCategory);
 
-  // 按 category 分组统计
+  // Segun category Estadisticas agrupadas
   const counts = CATEGORIES.reduce<Record<DocumentCategory, number>>(
     (acc, c) => {
       acc[c] = documents.filter((d) => d.category === c).length;
@@ -181,7 +181,7 @@ export function DocumentsPanel({
         </Button>
       </header>
 
-      {/* 分类筛选 */}
+      {/* Filtro de categoria */}
       <div className="flex flex-wrap gap-1.5">
         <CategoryChip
           label="Ver todos"
@@ -353,7 +353,7 @@ function CategoryChip({
   );
 }
 
-const ARCHIVE_FOLDER_NAMES = new Set(["Cerrar caso", "归档"]);
+const ARCHIVE_FOLDER_NAMES = new Set(["Cerrar caso", "Archivar"]);
 
 function UploadSheet({
   matterId,
@@ -400,7 +400,7 @@ function UploadSheet({
     const f = e.target.files?.[0] ?? null;
     setFile(f);
     if (f && !name) {
-      // 默认用文件名（去后缀）填到 name
+      // Por defecto usar el nombre del archivo（Quitar sufijo）Completar en name
       const stem = f.name.replace(/\.[^.]+$/, "");
       setName(stem);
     }
@@ -465,7 +465,7 @@ function UploadSheet({
         </SheetHeader>
 
         <div className="flex-1 space-y-4 overflow-y-auto px-6 py-5">
-          {/* 文件选择 */}
+          {/* Seleccion de archivo */}
           <div className="space-y-1.5">
             <Label className="text-xs">Archivo *</Label>
             <div

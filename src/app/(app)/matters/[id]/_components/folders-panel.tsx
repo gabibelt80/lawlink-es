@@ -72,7 +72,7 @@ export function FoldersPanel({
 
   return (
     <div>
-      {/* 顶部Acciones栏 */}
+      {/* Parte superiorAccionesColumna */}
       <div className="mb-4 flex items-center justify-between">
         <h3 className="text-lg">Expediente</h3>
         <div className="flex gap-2">
@@ -108,7 +108,7 @@ export function FoldersPanel({
       </div>
 
       <div className="grid grid-cols-12 gap-4">
-        {/* 左侧卷宗树 */}
+        {/* Arbol de expedientes a la izquierda */}
         <aside className="col-span-3 ll-surface rounded-lg p-2">
           <ul className="space-y-0.5">
             {folders.map((f) => (
@@ -144,7 +144,7 @@ export function FoldersPanel({
           </ul>
         </aside>
 
-        {/* 右侧文档列表 */}
+        {/* Lista de documentos a la derecha */}
         <section className="col-span-9">
           {activeDocs.length === 0 ? (
             <div className="ll-surface rounded-lg p-10 text-center text-sm text-muted-foreground">
@@ -320,7 +320,7 @@ function DocCard({ doc, matterId }: { doc: FolderDocument; matterId: string }) {
         <button
           type="button"
           onClick={() => {
-            // 段 5 + 段 6 联动：跳转 /seals?new=1&draftDocId=...&matterId=...
+            // Parrafo 5 + Parrafo 6 Vinculacion：Redirigir /seals?new=1&draftDocId=...&matterId=...
             const url = new URL("/approvals/seals", window.location.origin);
             url.searchParams.set("new", "1");
             url.searchParams.set("draftDocId", doc.id);

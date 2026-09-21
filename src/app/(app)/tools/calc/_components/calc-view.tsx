@@ -62,7 +62,7 @@ export function CalcView({ hideHeader }: { hideHeader?: boolean } = {}) {
         </div>
       </div>
 
-      {/* tab 切换是高频Acciones，入场动画只会让它显得迟钝，故不加动效 */}
+      {/* tab El cambio es de alta frecuenciaAcciones，La animacion de entrada solo lo hace ver lento，Por eso no se agrega animacion */}
       <div key={tab} className="max-w-3xl">
         {tab === "courtFee" && <CourtFeeCalc />}
         {tab === "lateInterest" && <LateInterestCalc />}

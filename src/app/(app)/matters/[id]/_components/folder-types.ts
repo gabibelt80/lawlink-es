@@ -1,5 +1,5 @@
 /**
- * 卷宗 / 模板相关的共享类型（v0.8）
+ * Expediente / Tipos compartidos relacionados con plantillas（v0.8）
  */
 
 export type FolderPayload = {

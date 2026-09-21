@@ -81,7 +81,7 @@ const sevStyle: Record<ReviewSeverity, { label: string; cls: string }> = {
 const TYPE_ORDER: ReviewType[] = ["MISSING", "RISK", "ISSUE", "SUGGESTION"];
 
 type View =
-  | { kind: "list" } // 历史 + 新审查入口
+  | { kind: "list" } // Historial + Nueva entrada de revision
   | { kind: "result"; result: ReviewResult; isNew: boolean }
   | {
       kind: "history-detail";
@@ -104,7 +104,7 @@ export function DocumentReviewDialog({
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
 
-  // 打开/换 doc 时Restablecer + 拉历史
+  // Abrir/Cambiar doc CuandoRestablecer + Cargar historial
   useEffect(() => {
     if (!open || !documentId) return;
     let cancelled = false;
@@ -118,7 +118,7 @@ export function DocumentReviewDialog({
         if (!cancelled) setHistory(h);
       })
       .catch(() => {
-        // 历史查询Error不阻塞新审查
+        // Consulta de historialErrorNo bloquear la nueva revision
       })
       .finally(() => {
         if (!cancelled) setLoadingHistory(false);
@@ -136,7 +136,7 @@ export function DocumentReviewDialog({
       const r = await reviewDocument({ documentId });
       setView({ kind: "result", result: r, isNew: true });
       setSaved(false);
-      // 重新拉历史（新审查已落库）
+      // Volver a cargar historial（Nueva revision guardada）
       listReviewHistory({ documentId })
         .then(setHistory)
         .catch(() => {});
@@ -191,7 +191,7 @@ export function DocumentReviewDialog({
     }
   }
 
-  // 当前要展示的 items（list view 无内容）
+  // Lo que se muestra actualmente items（list view Sin contenido）
   const currentItems: ReviewItem[] | null =
     view.kind === "result"
       ? view.result.items
