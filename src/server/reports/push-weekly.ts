@@ -1,14 +1,14 @@
 ﻿"use server";
 
 /**
- * v0.21: æŽ¨é€æœ¬å‘¨Informeç»™å…¨å‘˜
+ * v0.21: Push del informe semanal a todos los usuarios.
  *
- * ä¸¤ä¸ªå…¥å£ï¼š
- * - admin æ‰‹åŠ¨ï¼špushWeeklyReportToAllï¼ˆrequire sessionï¼‰
- * - cron è‡ªåŠ¨ï¼ˆv0.22ï¼‰ï¼šrunWeeklyReportPushï¼ˆæ—  authï¼Œtrigger=cronï¼‰
+ * Dos puntos de entrada:
+ * - admin manual: pushWeeklyReportToAll (require session)
+ * - cron automatico (v0.22): runWeeklyReportPush (sin auth, trigger=cron)
  *
- * Recibidoäººï¼šæ‰€æœ‰ active çš„ ADMIN / PRINCIPAL_LAWYER / LAWYERã€‚
- * æ¯äººæ”¶åˆ°è‡ªå·±çš„ LawyerWeeklyDigest æ‘˜è¦ï¼Œä½œä¸º Notificationï¼ˆtype=SYSTEMï¼‰ã€‚
+ * Destinatarios: todos los ADMIN / PRINCIPAL_LAWYER / LAWYER activos.
+ * Cada uno recibe su propio LawyerWeeklyDigest como Notification (type=SYSTEM).
  */
 import { prisma } from "@/lib/prisma";
 import { requireSession } from "@/lib/auth/session";
@@ -27,8 +27,8 @@ export type WeeklyPushResult = {
 };
 
 /**
- * æ ¸å¿ƒé€»è¾‘ï¼Œå¯è¢« server action æˆ– cron è°ƒç”¨ã€‚
- * triggerUserId: server action ä¼ å½“å‰ admin idï¼›cron ä¼  nullã€‚
+ * Logica central, puede ser llamada por server action o cron.
+ * triggerUserId: server action pasa el admin id; cron pasa null.
  */
 export async function runWeeklyReportPush(
   triggerUserId: string | null
@@ -55,7 +55,7 @@ export async function runWeeklyReportPush(
         userId: u.id,
         type: "SYSTEM",
         priority: "NORMAL",
-        title: `æœ¬å‘¨Informeï¼ˆ${period.label}ï¼‰`,
+        title: `Informe semanal (${period.label})`,
         content: formatWeeklyDigestContent(digest),
         href: "/reports?period=month",
         refType: "WeeklyReport",
@@ -65,7 +65,7 @@ export async function runWeeklyReportPush(
     } catch (err) {
       failed.push({
         userId: u.id,
-        error: err instanceof Error ? err.message : "Desconocidoé”™è¯¯"
+        error: err instanceof Error ? err.message : "Error desconocido"
       });
     }
   }
@@ -90,9 +90,7 @@ export async function runWeeklyReportPush(
 export async function pushWeeklyReportToAll(): Promise<WeeklyPushResult> {
   const session = await requireSession();
   if (session.user.role !== "ADMIN" && session.user.role !== "PRINCIPAL_LAWYER") {
-    throw new Error("ä»…Administrarå‘˜ / ä¸»ä»»Abogadoå¯æŽ¨é€å‘¨æŠ¥");
+    throw new Error("Solo Administrador / Abogado principal puede enviar el informe semanal");
   }
   return runWeeklyReportPush(session.user.id);
 }
-
-

@@ -80,86 +80,106 @@ export default async function NotificationsPage() {
           </div>
         ) : (
           <div className="divide-y divide-border">
-            {notifications.map((n) => {
-              const row = (
-                <div
+            {notifications.map((n) => (
+              <div
+                key={n.id}
+                className={cn(
+                  "flex min-w-0 items-start gap-3 px-4 py-3 transition-colors hover:bg-muted/60",
+                  !n.read && "bg-primary/5",
+                )}
+              >
+                <span
                   className={cn(
-                    "flex min-w-0 items-start gap-3 px-4 py-3 transition-colors hover:bg-muted/60",
-                    !n.read && "bg-primary/5",
+                    "mt-1 h-2 w-2 shrink-0 rounded-full",
+                    n.read ? "bg-muted" : "bg-primary",
                   )}
-                >
-                  <span
-                    className={cn(
-                      "mt-1 h-2 w-2 shrink-0 rounded-full",
-                      n.read ? "bg-muted" : "bg-primary",
-                    )}
-                  />
-                  <div className="min-w-0 flex-1">
-                    <div className="flex min-w-0 items-center gap-2">
-                      <span className="shrink-0 rounded-sm bg-muted px-1.5 py-0.5 text-[10px] text-muted-foreground">
-                        {typeLabels[n.type] ?? n.type}
-                      </span>
-                      <span
-                        className={cn(
-                          "min-w-0 truncate text-[13px]",
-                          !n.read && "font-medium",
-                          priorityClass[n.priority] ?? "text-foreground",
-                        )}
+                />
+                <div className="min-w-0 flex-1">
+                  {n.href ? (
+                    <Link
+                      href={n.href}
+                      className="block min-w-0 hover:underline"
+                    >
+                      <div className="flex min-w-0 items-center gap-2">
+                        <span className="shrink-0 rounded-sm bg-muted px-1.5 py-0.5 text-[10px] text-muted-foreground">
+                          {typeLabels[n.type] ?? n.type}
+                        </span>
+                        <span
+                          className={cn(
+                            "min-w-0 truncate text-[13px]",
+                            !n.read && "font-medium",
+                            priorityClass[n.priority] ?? "text-foreground",
+                          )}
+                        >
+                          {n.title}
+                        </span>
+                      </div>
+                      {n.content && (
+                        <p className="mt-1 truncate text-[12px] text-muted-foreground">
+                          {n.content}
+                        </p>
+                      )}
+                    </Link>
+                  ) : (
+                    <div className="min-w-0">
+                      <div className="flex min-w-0 items-center gap-2">
+                        <span className="shrink-0 rounded-sm bg-muted px-1.5 py-0.5 text-[10px] text-muted-foreground">
+                          {typeLabels[n.type] ?? n.type}
+                        </span>
+                        <span
+                          className={cn(
+                            "min-w-0 truncate text-[13px]",
+                            !n.read && "font-medium",
+                            priorityClass[n.priority] ?? "text-foreground",
+                          )}
+                        >
+                          {n.title}
+                        </span>
+                      </div>
+                      {n.content && (
+                        <p className="mt-1 truncate text-[12px] text-muted-foreground">
+                          {n.content}
+                        </p>
+                      )}
+                    </div>
+                  )}
+                </div>
+                <div className="flex shrink-0 flex-col items-end gap-1">
+                  <time className="font-mono text-[10px] text-muted-foreground">
+                    {formatTime(n.createdAt)}
+                  </time>
+                  <div className="flex items-center gap-0.5">
+                    <form action={toggleReadAction.bind(null, n.id)}>
+                      <button
+                        type="submit"
+                        title={
+                          n.read
+                            ? "Marcar como no leída"
+                            : "Marcar como leída"
+                        }
+                        className="rounded-md p-1 text-muted-foreground transition-colors hover:bg-popover hover:text-primary"
                       >
-                        {n.title}
-                      </span>
-                    </div>
-                    {n.content && (
-                      <p className="mt-1 truncate text-[12px] text-muted-foreground">
-                        {n.content}
-                      </p>
-                    )}
-                  </div>
-                  <div className="flex shrink-0 flex-col items-end gap-1">
-                    <time className="font-mono text-[10px] text-muted-foreground">
-                      {formatTime(n.createdAt)}
-                    </time>
-                    <div className="flex items-center gap-0.5">
-                      <form action={toggleReadAction.bind(null, n.id)}>
-                        <button
-                          type="submit"
-                          title={
-                            n.read
-                              ? "Marcar como no leída"
-                              : "Marcar como leída"
-                          }
-                          className="rounded-md p-1 text-muted-foreground transition-colors hover:bg-popover hover:text-primary"
-                        >
-                          <Check
-                            className={cn(
-                              "h-3.5 w-3.5",
-                              n.read && "text-primary",
-                            )}
-                          />
-                        </button>
-                      </form>
-                      <form action={deleteAction.bind(null, n.id)}>
-                        <button
-                          type="submit"
-                          title="Eliminar notificación"
-                          className="rounded-md p-1 text-muted-foreground transition-colors hover:bg-popover hover:text-destructive"
-                        >
-                          <Trash2 className="h-3.5 w-3.5" />
-                        </button>
-                      </form>
-                    </div>
+                        <Check
+                          className={cn(
+                            "h-3.5 w-3.5",
+                            n.read && "text-primary",
+                          )}
+                        />
+                      </button>
+                    </form>
+                    <form action={deleteAction.bind(null, n.id)}>
+                      <button
+                        type="submit"
+                        title="Eliminar notificación"
+                        className="rounded-md p-1 text-muted-foreground transition-colors hover:bg-popover hover:text-destructive"
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </button>
+                    </form>
                   </div>
                 </div>
-              );
-
-              return n.href ? (
-                <Link key={n.id} href={n.href} className="block">
-                  {row}
-                </Link>
-              ) : (
-                <div key={n.id}>{row}</div>
-              );
-            })}
+              </div>
+            ))}
           </div>
         )}
       </div>
