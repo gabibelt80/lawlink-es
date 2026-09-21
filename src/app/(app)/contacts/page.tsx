@@ -1,5 +1,5 @@
 /**
- * v0.38: 通讯录独立页（v0.37 曾并入 /service-center，现拆回）
+ * v0.38: Pagina independiente de contactos（v0.37 Anteriormente fusionado con /service-center，Ahora separado de vuelta）
  */
 import { redirect } from "next/navigation";
 import { getSession } from "@/lib/auth/session";

@@ -29,7 +29,7 @@ export type IntakeRow = {
 };
 
 /**
- * v0.17: 待Aprobación / Pendiente de corrección 收案列表 — 复用 MattersTable 的 CaseListCard 保证视觉一致
+ * v0.17: PendienteAprobación / Pendiente de corrección Lista de recepcion de casos — Reutilizar MattersTable de CaseListCard Garantizar consistencia visual
  */
 export function IntakesTable({
   items,

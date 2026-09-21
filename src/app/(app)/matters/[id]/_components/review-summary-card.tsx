@@ -12,7 +12,7 @@ export function ReviewSummaryCard({
 }) {
   const hasRecords = summary.recordCount > 0;
 
-  // v0.27: AI 复检入口暂隐 —— 没记录时整张卡片不渲染（避免出现没按钮的空提示）
+  // v0.27: AI Entrada de rechequeo temporalmente oculta —— Si no hay registros, no renderizar la tarjeta entera（Evitar avisos vacios sin boton）
   if (!hasRecords) {
     return null;
   }
@@ -22,13 +22,13 @@ export function ReviewSummaryCard({
       <header className="mb-2 flex items-center justify-between">
         <h3 className="flex items-center gap-1.5 text-xs font-medium text-violet-700">
           <Sparkles className="h-3.5 w-3.5" />
-          AI 审查Total览
+          AI RevisionTotalVista
         </h3>
         <div className="flex items-center gap-3">
           <span className="font-mono text-[10px] text-muted-foreground">
-            {summary.documentCount} 份文档 · {summary.recordCount} 次审查 · 共 {summary.totalItems} 条
+            {summary.documentCount} Documentos · {summary.recordCount} Siguiente revision · Total {summary.totalItems} Elementos
             {summary.latestReviewedAt && (
-              <span className="ml-2">最新 {summary.latestReviewedAt.toLocaleDateString("zh-CN")}</span>
+              <span className="ml-2">Mas reciente {summary.latestReviewedAt.toLocaleDateString("zh-CN")}</span>
             )}
           </span>
           <BatchReviewButton matterId={matterId} />
@@ -45,7 +45,7 @@ export function ReviewSummaryCard({
         <div className="mt-3 space-y-1.5">
           <div className="flex items-center gap-1 text-[10px] text-rose-700">
             <AlertTriangle className="h-3 w-3" />
-            最近 HIGH 风险（最多 3 条）
+            Reciente HIGH Riesgo（Maximo 3 Elementos）
           </div>
           <ul className="space-y-1">
             {summary.topHighItems.map((it, i) => (
@@ -72,9 +72,9 @@ export function ReviewSummaryCard({
 
 function SevTile({ sev, n }: { sev: "HIGH" | "MEDIUM" | "LOW"; n: number }) {
   const meta = {
-    HIGH: { label: "高风险", cls: "border-rose-300 bg-rose-50 text-rose-700" },
-    MEDIUM: { label: "中风险", cls: "border-amber-300 bg-amber-50 text-amber-700" },
-    LOW: { label: "低风险", cls: "border-slate-300 bg-slate-50 text-slate-600" }
+    HIGH: { label: "Riesgo alto", cls: "border-rose-300 bg-rose-50 text-rose-700" },
+    MEDIUM: { label: "Riesgo medio", cls: "border-amber-300 bg-amber-50 text-amber-700" },
+    LOW: { label: "Riesgo bajo", cls: "border-slate-300 bg-slate-50 text-slate-600" }
   }[sev];
   return (
     <div className={cn("rounded border px-2 py-1.5", meta.cls)}>

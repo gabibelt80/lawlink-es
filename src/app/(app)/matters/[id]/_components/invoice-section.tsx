@@ -52,14 +52,14 @@ export function InvoiceSection({ matterId }: { matterId: string }) {
       <header className="flex items-center justify-between border-b border-border px-5 py-3">
         <h3 className="flex items-center gap-2 text-sm font-semibold">
           <Receipt className="h-4 w-4 text-primary" />
-          开票申请
+          Solicitud de facturacion
           {requests && (
             <span className="text-xs text-muted-foreground">({requests.length})</span>
           )}
         </h3>
         <Button size="sm" onClick={() => setOpen(true)} className="h-7 gap-1">
           <Plus className="h-3.5 w-3.5" />
-          申请开票
+          Solicitar facturacion
         </Button>
       </header>
 
@@ -69,7 +69,7 @@ export function InvoiceSection({ matterId }: { matterId: string }) {
         </p>
       ) : !requests || requests.length === 0 ? (
         <p className="py-10 text-center text-xs text-muted-foreground">
-          还没有开票申请。Cliente需要Factura时点上方&ldquo;申请开票&rdquo;
+          Todavia no hay solicitud de facturacion。ClientenecesitaFacturaPunto de tiempo arriba&ldquo;Solicitar facturacion&rdquo;
         </p>
       ) : (
         <ul className="divide-y divide-border">
@@ -111,7 +111,7 @@ function InvoiceItem({ row }: { row: InvoiceRow }) {
           )}
         </div>
         <div className="mt-0.5 text-[11px] text-muted-foreground">
-          申请：{row.requestedBy.name} · {new Date(row.requestedAt).toLocaleString("zh-CN", {
+          Solicitar：{row.requestedBy.name} · {new Date(row.requestedAt).toLocaleString("zh-CN", {
             month: "2-digit",
             day: "2-digit",
             hour: "2-digit",
@@ -120,7 +120,7 @@ function InvoiceItem({ row }: { row: InvoiceRow }) {
           {row.processedBy && (
             <>
               {" · "}
-              {row.status === "REJECTED" ? "Rechazar" : "处理"}：{row.processedBy.name}
+              {row.status === "REJECTED" ? "Rechazar" : "Procesar"}：{row.processedBy.name}
             </>
           )}
         </div>
@@ -143,7 +143,7 @@ function InvoiceItem({ row }: { row: InvoiceRow }) {
             title={row.contractScan.name}
           >
             <FileCheck2 className="h-3 w-3" />
-            合同
+            Contrato
           </a>
         )}
         {row.invoiceFile && (
@@ -155,7 +155,7 @@ function InvoiceItem({ row }: { row: InvoiceRow }) {
             title={row.invoiceFile.name}
           >
             <Download className="h-3 w-3" />
-            电子Factura
+            ElectronicoFactura
           </a>
         )}
       </div>
@@ -186,7 +186,7 @@ function CreateInvoiceDialog({
   function handleSubmit() {
     const amt = Number(amount);
     if (!amt || amt <= 0) {
-      toast.warning("请填写有效的开票Monto");
+      toast.warning("Por favor complete una factura validaMonto");
       return;
     }
     startTransition(async () => {
@@ -197,7 +197,7 @@ function CreateInvoiceDialog({
           title,
           requestNote: note
         });
-        toast.success("开票申请已Enviar，etc.待Finanzas处理");
+        toast.success("Solicitud de facturacion yaEnviar，etc.PendienteFinanzasProcesar");
         reset();
         onOpenChange(false);
       } catch (err) {
@@ -220,16 +220,16 @@ function CreateInvoiceDialog({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Receipt className="h-4 w-4 text-primary" />
-            申请开具Factura
+            Solicitar emisionFactura
           </DialogTitle>
           <DialogDescription className="text-xs">
-            Enviar后由Finanzas处理，Finanzas会上传扫描件合同 + 电子Factura
+            EnviarDespues porFinanzasProcesar，FinanzasSubira contrato escaneado + ElectronicoFactura
           </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-3 py-2">
           <div className="space-y-1.5">
-            <Label className="text-xs">开票Monto（pesos）*</Label>
+            <Label className="text-xs">FacturacionMonto（pesos）*</Label>
             <Input
               type="number"
               step="0.01"
@@ -241,18 +241,18 @@ function CreateInvoiceDialog({
             />
           </div>
           <div className="space-y-1.5">
-            <Label className="text-xs">抬头 / Observaciones</Label>
+            <Label className="text-xs">Encabezado / Observaciones</Label>
             <Input
-              placeholder="如：某某公司 / 阶段款"
+              placeholder="Como：Empresa X / Pago por etapa"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
             />
           </div>
           <div className="space-y-1.5">
-            <Label className="text-xs">说明（可选）</Label>
+            <Label className="text-xs">Descripcion（opcional）</Label>
             <Textarea
               rows={3}
-              placeholder="如：开具增值税专用Factura，税号 ..."
+              placeholder="Como：Emitir IVA especialFactura，CUIT ..."
               value={note}
               onChange={(e) => setNote(e.target.value)}
             />
@@ -265,7 +265,7 @@ function CreateInvoiceDialog({
           </Button>
           <Button onClick={handleSubmit} disabled={isPending} className="gap-1.5">
             {isPending && <Loader2 className="h-4 w-4 animate-spin" />}
-            Enviar申请
+            EnviarSolicitar
           </Button>
         </DialogFooter>
       </DialogContent>

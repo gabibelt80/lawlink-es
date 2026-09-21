@@ -76,9 +76,9 @@ type Props = {
     tab?: string;
     search?: string;
     category?: MatterCategory;
-    status?: string; // all tab 下的Estado筛选
-    from?: string; // 收案时间起 yyyy-mm-dd
-    to?: string; // 收案时间止
+    status?: string; // all tab De la categoriaEstadoFiltrar
+    from?: string; // Desde fecha de recepcion yyyy-mm-dd
+    to?: string; // Hasta fecha de recepcion
     sortBy?: string;
     sortDir?: string;
     page?: string;
@@ -95,14 +95,14 @@ export default async function MattersPage({ searchParams }: Props) {
   const dateFrom = resolveDateStart(params.from);
   const dateTo = resolveDateEnd(params.to);
 
-  // 收案抽屉所需：Cliente下拉 + 同事列表
+  // Necesario para el panel lateral de recepcion：ClienteDesplegable + Lista de colegas
   const [clientsResponse, colleagues] = await Promise.all([
     listClients({ pageSize: 100 }),
     listActiveColleagues()
   ]);
 
   if (tab === "intake" || tab === "revision") {
-    // 待Aprobación / Pendiente de corrección：从 Intake 表筛
+    // PendienteAprobación / Pendiente de corrección：Desde Intake Filtro de tabla
     const intakeSortBy = sortBy === "claimAmount" ? "claimAmount" : "intakeDate";
     const intakes = await listIntakes({
       search: params.search,
@@ -159,15 +159,15 @@ export default async function MattersPage({ searchParams }: Props) {
     );
   }
 
-  // active / archived / all：查 Matter 表
+  // active / archived / all：Buscar Matter Tabla
   let statusGroup: { statusIn?: ("PENDING_ACCEPTANCE" | "IN_PROGRESS" | "ON_HOLD" | "CLOSED" | "ARCHIVED")[]; statusNotIn?: ("PENDING_ACCEPTANCE" | "IN_PROGRESS" | "ON_HOLD" | "CLOSED" | "ARCHIVED")[] } = {};
   if (tab === "archived") {
     statusGroup = { statusIn: ["ARCHIVED"] };
   } else if (tab === "active") {
     statusGroup = { statusNotIn: ["CLOSED", "ARCHIVED"] };
   } else if (tab === "all") {
-    // Ver todosCaso：Aprobar收案Aprobación的（排除 PENDING_ACCEPTANCE — 那是收案阶段）
-    // 可被 searchParams.status 进一步筛选
+    // Ver todosCaso：AprobarRecepcion de casoAprobaciónde（Excluir PENDING_ACCEPTANCE — Esa es la etapa de recepcion）
+    // Puede ser searchParams.status Filtrar mas
     if (params.status === "active") {
       statusGroup = { statusIn: ["IN_PROGRESS", "ON_HOLD"] };
     } else if (params.status === "closed") {

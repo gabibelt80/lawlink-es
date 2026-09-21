@@ -57,9 +57,9 @@ type Props = {
   initialFilters: {
     search: string;
     category: MatterCategory | "ALL";
-    status?: string; // all tab 下 status 筛选
-    from?: string; // 收案时间起
-    to?: string; // 收案时间止
+    status?: string; // all tab Abajo status Filtrar
+    from?: string; // Desde fecha de recepcion
+    to?: string; // Hasta fecha de recepcion
     sortBy?: SortBy;
     sortDir?: SortDir;
   };
@@ -224,7 +224,7 @@ export function MattersView({
     return `/matters${params.toString() ? `?${params.toString()}` : ""}`;
   }
 
-  // ?new=1 自动打开；Cerrar弹窗时再清 URL，避免 replace 打断打开Estado。
+  // ?new=1 Abrir automaticamente；CerrarLimpiar al abrir el dialogo URL，Evitar replace Interrumpir aperturaEstado。
   useEffect(() => {
     if (autoOpenIntake) {
       setSheetOpen(true);

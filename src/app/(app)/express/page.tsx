@@ -1,5 +1,5 @@
 /**
- * v0.38: 快递跟踪恢复独立页（v0.37 曾并入 /service-center，现拆回）
+ * v0.38: Seguimiento de envios restaurado como pagina independiente（v0.37 Anteriormente fusionado con /service-center，Ahora separado de vuelta）
  */
 import { listExpress } from "@/server/express/actions";
 import { getSession } from "@/lib/auth/session";

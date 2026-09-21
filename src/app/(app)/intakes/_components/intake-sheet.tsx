@@ -113,7 +113,7 @@ const CATEGORIES: MatterCategory[] = [
 
 const FEE_TYPES: FeeType[] = ["FIXED", "CONTINGENCY", "TIMED"];
 
-// 我方为被动方时，可上传起诉状/申请书 OCR 识别对方
+// Cuando somos la parte pasiva，Puede subir demanda/Solicitud OCR Identificar contraparte
 const RECEIVING_STANDINGS = new Set<LitigationStanding>([
   "DEFENDANT",
   "JOINT_DEFENDANT",
@@ -268,18 +268,18 @@ export function IntakeSheet({
   const coUserIds = watch<string[]>("coUserIds") ?? [];
   const receivedAt = watch("receivedAt");
   const jurisdiction = watch("jurisdiction") ?? "";
-  // 争议解决机构按管辖地匹配
+  // Institucion de resolucion de disputas segun jurisdiccion
   const agencyOpts = useMemo(
     () => agencyOptionsForProcedure(jurisdiction, firstProcedureType),
     [jurisdiction, firstProcedureType]
   );
 
-  // v0.31: Categoría del caso决定表单结构（诉讼/仲裁 vs 非诉/专项 vs 顾问）
+  // v0.31: Categoría del casoDetermina la estructura del formulario（Proceso judicial/Arbitraje vs No litigioso/Especial vs Asesor）
   const kind: CategoryKind = matterCategoryKind(category);
   const nameLabel =
     kind === "counsel" ? "Nombre del asunto de asesoría" : kind === "project" ? "Nombre del proyecto" : "Nombre del caso";
 
-  // 标题自动生成：填完当事人 + 案由后按「委托方 与 对方 案由」生成，用户手改后不再覆盖
+  // Titulo generado automaticamente：Completar partes + Causa seguida por「Parte comitente Y Contraparte Causa」Generar，Despues de la edicion manual del usuario, no sobrescribir
   const [titleTouched, setTitleTouched] = useState(false);
   const [causeName, setCauseName] = useState("");
   const watchedParties = watch("parties");
@@ -292,31 +292,31 @@ export function IntakeSheet({
     const oppNm = list.find((p) => p.role === "OPPOSING_PARTY")?.name?.trim();
     const causeNm = (causeName || watchedCauseFree || "").trim();
     if (!clientNm && !oppNm) return;
-    // Nombre del caso不含空格（产品要求）
+    // Nombre del casoSin espacios（Requisito del producto）
     const suggested = `${clientNm ?? ""}${oppNm ? `y${oppNm}` : ""}${causeNm}`.replace(/\s+/g, "");
     if (suggested && suggested !== (watchedTitle ?? "")) {
       setValue("title", suggested, { shouldDirty: true });
     }
   }, [watchedParties, causeName, watchedCauseFree, titleTouched, watchedTitle, setValue]);
 
-  // 当前类别下可选程序
+  // Procesos disponibles bajo la categoria actual
   const procedureOptions: ProcedureType[] = useMemo(
     () => proceduresByCategory[category] ?? [],
     [category]
   );
 
-  // 当前程序下可选诉讼地位
+  // Posiciones procesales disponibles bajo el proceso actual
   const ourStandingOptions: LitigationStanding[] = useMemo(
     () => procedureToStandingOptions(firstProcedureType, "ours"),
     [firstProcedureType]
   );
-  // 相对方 / 第三人 诉讼地位也随当前程序联动
+  // Contraparte / Tercero La posicion procesal tambien se actualiza con el proceso actual
   const oppositeStandingOptions: LitigationStanding[] = useMemo(
     () => procedureToStandingOptions(firstProcedureType, "opposite"),
     [firstProcedureType]
   );
 
-  // 切类别时如果当前程序不在新类别列表里，清掉
+  // Al cambiar de categoria, si el proceso actual no esta en la lista de la nueva categoria，Limpiar
   useEffect(() => {
     if (firstProcedureType && !procedureOptions.includes(firstProcedureType)) {
       setValue("firstProcedureType", undefined);
@@ -324,9 +324,9 @@ export function IntakeSheet({
     }
   }, [category, firstProcedureType, procedureOptions, setValue]);
 
-  // v0.31: 切类别时同步当事人行
-  // 顾问 / 非诉 / 专项：默认只留委托方一行（相对方按需添加）
-  // 诉讼/仲裁：确保至少有一个相对方行
+  // v0.31: Al cambiar de categoria, sincronizar filas de partes
+  // Asesor / No litigioso / Especial：Por defecto dejar solo una fila de la parte comitente（Contraparte agregada segun necesidad）
+  // Proceso judicial/Arbitraje：Asegurar al menos una fila de contraparte
   useEffect(() => {
     const cur = (watch("parties") ?? []) as { role?: string }[];
     if (kind === "counsel" || kind === "project") {
@@ -351,19 +351,19 @@ export function IntakeSheet({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [kind]);
 
-  // 设默认 owner
+  // Establecer por defecto owner
   useEffect(() => {
     if (!ownerUserId && session?.user?.id) {
       setValue("ownerUserId", session.user.id);
     }
   }, [ownerUserId, session, setValue]);
 
-  // 切程序时自动填充建议机构（仅在为空时）
+  // Al cambiar de proceso, autocompletar institucion sugerida（Solo cuando esta vacio）
   function handleProcedureChange(p: ProcedureType) {
     setValue("firstProcedureType", p, { shouldDirty: true });
     setValue("ourStanding", undefined);
-    // 机构可自由手输（专门法院、异地仲裁委不在生成列表里），
-    // 只在新程序下不合法时清空（商事仲裁下选了法院），不按"是否在列表中"清
+    // La institucion se puede ingresar libremente（Tribunal especial、Tribunal de arbitraje externo no esta en la lista generada），
+    // Limpiar solo cuando es invalido bajo el nuevo proceso（Bajo arbitraje comercial se selecciono el tribunal），No segun"Si esta en la lista"Limpiar
     let currentAgency = getValues("firstAgency");
     if (currentAgency && !isAgencyAllowedForProcedure(currentAgency, p)) {
       setValue("firstAgency", "", { shouldDirty: true });
@@ -441,8 +441,8 @@ export function IntakeSheet({
   }
 
   function onSubmit(values: IntakeCreateInput) {
-    // 委托方恒为 parties[0]（role=CLIENT_PARTY）：拆回顶层 client* 字段，其余进 parties。
-    // 名称 + 证件号必填由 zodResolver(partyInputSchema) 对每行统一校验。
+    // La parte comitente es siempre parties[0]（role=CLIENT_PARTY）：Separar al nivel superior client* Campo，El resto entra parties。
+    // Nombre + Numero de documento requerido por zodResolver(partyInputSchema) Validar uniformemente cada fila。
     const all = values.parties ?? [];
     const client = all.find((p) => p.role === "CLIENT_PARTY");
     if (!client || !client.name?.trim()) {
@@ -486,7 +486,7 @@ export function IntakeSheet({
       const res = await parsePleading(fd);
       let added = 0;
       for (const p of res.plaintiffs) {
-        // OCR 时按 idNumber 长度/legalRep 是否存在猜主体类型：18 位含字母通常是社会信用代码 → 公司
+        // OCR Cuando por idNumber Longitud/legalRep Si existe para adivinar el tipo de sujeto：18 Con letras generalmente es CUIT → Empresa
         const guessed: "NATURAL_PERSON" | "ORGANIZATION" =
           (p.legalRep && p.legalRep.trim()) || (p.idNumber && p.idNumber.length === 18 && /[A-Z]/.test(p.idNumber))
             ? "ORGANIZATION"
@@ -548,7 +548,7 @@ export function IntakeSheet({
         { description: "Por favor, verificá manualmente que los campos sean correctos" }
       );
 
-      // OCR 后联动 AI 案由推荐（仅当 OCR 抽到 cause / claimDescription 时触发）
+      // OCR Vinculacion posterior AI Recomendacion de causa（Solo cuando OCR Extraido a cause / claimDescription Se dispara cuando）
       const situationParts: string[] = [];
       if (res.cause) situationParts.push(`Causa reconocida por OCR:${res.cause}`);
       if (res.claimDescription) situationParts.push(`Pretensión：${res.claimDescription}`);
@@ -610,7 +610,7 @@ export function IntakeSheet({
   }
 
   async function handlePickYuandian(candidate: EnterpriseSearchItem) {
-    // 委托方行恒为 parties[0]
+    // La fila de la parte comitente es siempre parties[0]
     setValue("clientId", "", { shouldDirty: true });
     setValue("parties.0.partyType", "ORGANIZATION", { shouldDirty: true });
     setValue("parties.0.name", candidate.name, { shouldDirty: true });
@@ -767,7 +767,7 @@ export function IntakeSheet({
     );
   }
 
-  // 当事人/相关方录入表格（按类别复用，诉讼/仲裁含诉讼地位列）
+  // Parte/Tabla de carga de partes relacionadas（Reutilizar por categoria，Proceso judicial/Arbitraje incluye columna de posicion procesal）
   function renderParties(mode: CategoryKind) {
     const showStanding = mode === "litigation";
     const grid = showStanding ? PARTY_GRID : PARTY_GRID_NO_STANDING;
@@ -776,7 +776,7 @@ export function IntakeSheet({
     return (
       <div className="overflow-x-auto rounded-md border border-[#cbd5e2] bg-[#e9eef5] p-2 shadow-[var(--shadow-inset)]">
         <div className={cn("space-y-2", showStanding ? "min-w-[880px]" : "min-w-[760px]")}>
-          {/* 表头 */}
+          {/* Encabezado */}
           <div
             className={cn(
               grid,
@@ -801,7 +801,7 @@ export function IntakeSheet({
             const all = (watch("parties") ?? []) as { role?: string }[];
             const role = (all[idx]?.role as PartyRole) ?? "OPPOSING_PARTY";
             const isClient = role === "CLIENT_PARTY";
-            // 顾问类只显示委托方
+            // Categoria asesor solo muestra la parte comitente
             if (mode === "counsel" && !isClient) return null;
             const ourStanding = watch("ourStanding");
             return (
@@ -1019,9 +1019,9 @@ export function IntakeSheet({
                 </div>
               </div>
             )}
-            {/* ① Informacion basica（共用：类别 / 名称 / 收案 / 经办）*/}
+            {/* ① Informacion basica（Compartido：Categoria / Nombre / Recepcion de caso / Operador）*/}
             <Section title="① Información básica" required>
-              {/* Categoría del caso | Fecha de admisión（与类别等宽）| Nombre del caso（剩余）*/}
+              {/* Categoría del caso | Fecha de admisión（Mismo ancho que la categoria）| Nombre del caso（Restante）*/}
               <div className="grid grid-cols-1 gap-4 lg:grid-cols-[160px_160px_minmax(0,1fr)]">
                 <Field label="Categoría del caso" required>
                   <Select
@@ -1070,7 +1070,7 @@ export function IntakeSheet({
                 </Field>
               </div>
 
-              {/* 诉讼/仲裁：案情信息（并入基本信息）*/}
+              {/* Proceso judicial/Arbitraje：Informacion del caso（Fusionar con informacion basica）*/}
               {kind === "litigation" && (
                 <>
                 {/* Instancia actual | Causa | Jurisdiccion | Organo */}
@@ -1136,7 +1136,7 @@ export function IntakeSheet({
                   </Field>
                 </div>
 
-                {/* 标的额（1/4）| 标的描述（3/4）*/}
+                {/* Monto del objeto（1/4）| Descripcion del objeto（3/4）*/}
                 <div className="grid grid-cols-1 gap-4 lg:grid-cols-4">
                   <Field label="Monto reclamado ($)" error={errors.claimAmount?.message}>
                     <Input
@@ -1158,7 +1158,7 @@ export function IntakeSheet({
                   </Field>
                 </div>
 
-                {/* 主办 | 协办 | 是否需向律协备案 | 是否反诉（各 1/4）*/}
+                {/* Responsable | Asistente | Si requiere registro en el colegio de abogados | Si es reconvencion（Cada 1/4）*/}
                 <div className="grid grid-cols-1 gap-4 lg:grid-cols-4">
                   {leadField()}
                   {coLeadField()}
@@ -1168,7 +1168,7 @@ export function IntakeSheet({
               </>
             )}
 
-            {/* 非诉/专项：项目信息（并入基本信息）*/}
+            {/* No litigioso/Especial：Informacion del proyecto（Fusionar con informacion basica）*/}
             {kind === "project" && (
               <>
                 <div className="grid grid-cols-1 gap-4 lg:grid-cols-4">
@@ -1247,7 +1247,7 @@ export function IntakeSheet({
                     <Input placeholder="Ej.: dictamen legal / informe de debida diligencia" {...register("deliverables")} />
                   </Field>
                 </div>
-                {/* 主办 | 协办（各 1/2）*/}
+                {/* Responsable | Asistente（Cada 1/2）*/}
                 <div className="grid grid-cols-1 gap-3 lg:grid-cols-2">
                   {leadField()}
                   {coLeadField()}
@@ -1255,7 +1255,7 @@ export function IntakeSheet({
               </>
             )}
 
-            {/* 顾问：顾问信息（并入基本信息）*/}
+            {/* Asesor：Informacion del asesor（Fusionar con informacion basica）*/}
             {kind === "counsel" && (
               <>
                 <div className="grid grid-cols-1 gap-4 lg:grid-cols-4">
@@ -1320,7 +1320,7 @@ export function IntakeSheet({
                     {...register("serviceScope")}
                   />
                 </Field>
-                {/* 主办 | 协办（各 1/2）*/}
+                {/* Responsable | Asistente（Cada 1/2）*/}
                 <div className="grid grid-cols-1 gap-3 lg:grid-cols-2">
                   {leadField()}
                   {coLeadField()}
@@ -1329,7 +1329,7 @@ export function IntakeSheet({
             )}
             </Section>
 
-            {/* ③ 当事人 / 相关方（按类别）*/}
+            {/* ③ Parte / Parte relacionada（Por categoria）*/}
             {kind === "litigation" && (
             <Section
               title="② Partes del caso"
@@ -1381,21 +1381,21 @@ export function IntakeSheet({
             </Section>
             )}
 
-            {/* ③ 非诉/专项：委托方与相对方（无诉讼地位）*/}
+            {/* ③ No litigioso/Especial：Parte comitente y contraparte（Sin posicion procesal）*/}
             {kind === "project" && (
               <Section title="② Comitente y contraparte" headerAction={addPartyBtn("Agregar contraparte")}>
                 {renderParties("project")}
               </Section>
             )}
 
-            {/* ③ 顾问：顾问单位 */}
+            {/* ③ Asesor：Unidad asesora */}
             {kind === "counsel" && (
               <Section title="② Entidad asesorada" required>
                 {renderParties("counsel")}
               </Section>
             )}
 
-            {/* 3. 律师费 */}
+            {/* 3. Honorarios */}
             <Section title={kind === "counsel" ? "③ Honorarios de asesoría" : "③ Honorarios de abogado"}>
               <div className="space-y-4">
                 {/* Modalidad de cobro */}
@@ -1507,7 +1507,7 @@ export function IntakeSheet({
               </div>
             </Section>
 
-            {/* 4. 合同 */}
+            {/* 4. Contrato */}
             <Section
               title="④ Contrato de mandato / Anexos relacionados"
               headerAction={
@@ -1604,14 +1604,14 @@ export function IntakeSheet({
         contextHints={(() => {
           const lines: string[] = [];
           const cf = watch("causeFreeText");
-          if (cf) lines.push(`OCR 识别案由：${cf}`);
+          if (cf) lines.push(`OCR Identificar causa：${cf}`);
           const cd = watch("claimDescription");
-          if (cd) lines.push(`诉讼请求：${cd}`);
+          if (cd) lines.push(`Peticion procesal：${cd}`);
           const opp = parties
             .filter((p) => p.role === "OPPOSING_PARTY")
             .map((p) => p.name)
             .filter(Boolean);
-          if (opp.length) lines.push(`对方当事人：${opp.join(",")}`);
+          if (opp.length) lines.push(`Contraparte：${opp.join(",")}`);
           return lines.join("\n");
         })()}
         onSelect={handleAiRecSelect}
