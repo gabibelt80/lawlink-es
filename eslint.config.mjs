@@ -23,7 +23,8 @@ const eslintConfig = defineConfig([
     "node_modules/**",
     "dist/**",
     "coverage/**",
-    "next-env.d.ts"
+    "next-env.d.ts",
+    "public/**"
   ])
 ]);
 
