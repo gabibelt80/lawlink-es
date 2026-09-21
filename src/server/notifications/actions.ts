@@ -1,5 +1,6 @@
 ﻿"use server";
 
+import { revalidatePath } from "next/cache";
 import { getTenantPrisma } from "@/lib/tenant-prisma";
 import { requireSession } from "@/lib/auth/session";
 
@@ -34,10 +35,12 @@ export async function markNotificationRead(id: string) {
   });
   if (!notif) throw new Error("La notificacion no existe");
 
-  return prisma.notification.update({
+  const result = await prisma.notification.update({
     where: { id },
     data: { read: true, readAt: new Date() },
   });
+  revalidatePath("/notifications");
+  return result;
 }
 
 export async function markAllNotificationsRead() {
@@ -47,8 +50,10 @@ export async function markAllNotificationsRead() {
     where: { userId: session.user.id, read: false },
     data: { read: true, readAt: new Date() },
   });
+  revalidatePath("/notifications");
   return { ok: true };
 }
+
 export async function toggleNotificationRead(id: string) {
   const prisma = await getTenantPrisma();
   const session = await requireSession();
@@ -58,10 +63,12 @@ export async function toggleNotificationRead(id: string) {
   });
   if (!notif) throw new Error("La notificacion no existe");
 
-  return prisma.notification.update({
+  const result = await prisma.notification.update({
     where: { id },
     data: { read: !notif.read, readAt: notif.read ? null : new Date() },
   });
+  revalidatePath("/notifications");
+  return result;
 }
 
 export async function deleteNotification(id: string) {
@@ -74,6 +81,6 @@ export async function deleteNotification(id: string) {
   if (!notif) throw new Error("La notificacion no existe");
 
   await prisma.notification.delete({ where: { id } });
+  revalidatePath("/notifications");
   return { ok: true };
 }
-
