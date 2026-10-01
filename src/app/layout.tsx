@@ -5,6 +5,7 @@ import "react-pdf/dist/Page/AnnotationLayer.css";
 import "react-pdf/dist/Page/TextLayer.css";
 
 export const metadata: Metadata = {
+  metadataBase: new URL(process.env.NEXTAUTH_URL ?? "https://juridictas.ar"),
   title: {
     default: "JURIDICTAS — Sistema de Gestión Legal para Estudios Jurídicos",
     template: "%s · JURIDICTAS",

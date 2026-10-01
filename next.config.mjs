@@ -1,6 +1,5 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  instrumentationHook: true,
   devIndicators: false,
   reactStrictMode: false,
   distDir: process.env.NEXT_DIST_DIR ?? ".next",
