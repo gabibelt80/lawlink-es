@@ -158,9 +158,29 @@ export function IntakeActions({
         toast.success(`Convertido a caso ${res.internalCode}`);
         router.push(matterHref({ id: res.matterId, internalCode: res.internalCode }));
       } catch (err) {
-        toast.error("Error de conversión", {
-          description: err instanceof Error ? err.message : ""
-        });
+        const msg = err instanceof Error ? err.message : "";
+        const isConflictError =
+          msg.includes("Falta ejecutar la búsqueda de conflictos") ||
+          msg.includes("Las partes de la admisión cambiaron");
+
+        if (isConflictError) {
+          toast.error("Falta la búsqueda de conflictos", {
+            description:
+              "Antes de convertir hay que verificar conflictos de intereses. Bajá a la sección de Conflictos.",
+            action: {
+              label: "Ir a Conflictos",
+              onClick: () => {
+                document
+                  .getElementById("conflict-section")
+                  ?.scrollIntoView({ behavior: "smooth" });
+              }
+            }
+          });
+        } else {
+          toast.error("Error de conversión", {
+            description: msg
+          });
+        }
       }
     });
   }

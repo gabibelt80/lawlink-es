@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, Users, FileText, AlertTriangle } from "lucide-react";
 import { getIntakeById } from "@/server/intakes/actions";
+import { ScrollToConflicts } from "./_components/scroll-to-conflicts";
 import { getSession } from "@/lib/auth/session";
 import { prisma } from "@/lib/prisma";
 import { Badge } from "@/components/ui/badge";
@@ -322,10 +323,30 @@ export default async function IntakeDetailPage({ params }: PageProps) {
           </>
         )}
       </header>
+      {/* Banner: falta check de conflictos */}
+      {intake.status !== "CONVERTED" &&
+        intake.status !== "DECLINED" &&
+        intake.category !== "ADMINISTRATIVE_CLAIM" &&
+        (!latestCheckRaw || latestCheckRaw.conclusion !== "DIFFERENT") && (
+          <div className="flex items-start gap-3 rounded-xl border border-amber-500/30 bg-amber-500/10 p-4">
+            <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-amber-600" />
+            <div className="flex-1 text-sm">
+              <div className="font-medium text-amber-800 dark:text-amber-200">
+                Antes de convertir a caso formal
+              </div>
+              <div className="mt-1 text-amber-700 dark:text-amber-300">
+                Hay que ejecutar la búsqueda de conflictos y marcar el resultado
+                como &quot;Aceptable&quot; para poder convertir esta admisión.
+              </div>
+              <ScrollToConflicts />
+            </div>
+          </div>
+        )}
 
       {/* Búsqueda de conflictos */}
-      <ConflictSection
-        intakeId={intake.id}
+      <div id="conflict-section" className="scroll-mt-4">
+        <ConflictSection
+          intakeId={intake.id}
         intakeClientName={intake.client?.name}
         intakeClientIdNumber={intake.client?.idNumber ?? undefined}
         opposingParties={opposing.map((p) => ({
@@ -339,7 +360,7 @@ export default async function IntakeDetailPage({ params }: PageProps) {
         latestCheck={latestCheck}
         canEditConclusion={intake.status !== "CONVERTED" && intake.status !== "DECLINED"}
       />
-
+     </div>
       {/* Partes */}
       <section className="rounded-xl border border-border bg-card p-6">
         <h2 className="mb-4 flex items-center gap-2 text-base font-semibold">
