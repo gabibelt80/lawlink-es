@@ -33,8 +33,29 @@ export async function generateInternalCode(category: MatterCategory): Promise<st
   const code = matterCategoryCode[category];
   const { matterCodePrefix } = await getFirmProfile();
 
-  const next = await nextCounter(`code-counter-${year}-${code}`);
-  return `${matterCodePrefix}-${year}-${code}-${String(next).padStart(4, "0")}`;
+  // Reintenta hasta 100 veces para evitar colisiones
+  // (por contador desincronizado o race conditions)
+  for (let attempt = 0; attempt < 100; attempt++) {
+    const next = await nextCounter(`code-counter-${year}-${code}`);
+    const candidate = `${matterCodePrefix}-${year}-${code}-${String(next).padStart(4, "0")}`;
+
+    const existing = await prisma.matter.findUnique({
+      where: { internalCode: candidate },
+      select: { id: true }
+    });
+
+    if (!existing) {
+      return candidate;
+    }
+
+    console.warn(
+      `[code-generator] Colision detectada: ${candidate}. Reintentando...`
+    );
+  }
+
+  throw new Error(
+    "No se pudo generar un internalCode unico despues de 100 intentos"
+  );
 }
 
 /**
