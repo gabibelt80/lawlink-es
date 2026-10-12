@@ -6,7 +6,6 @@ import { getTenantPrisma } from "@/lib/tenant-prisma";
 import { encryptBuffer } from "@/lib/storage/crypto";
 import { readFileSync, existsSync } from "node:fs";
 import { join } from "node:path";
-import { getAiSettings } from "@/lib/ai/settings";
 
 type AgentsConfig = {
   editorEnabled: boolean;
@@ -85,6 +84,55 @@ export async function getAgentsConfig(): Promise<AgentsConfig> {
   return (row?.value as unknown as AgentsConfig) ?? DEFAULT_AGENTS_CONFIG;
 }
 
+/**
+ * Devuelve la configuracion de runtime (descifrada) del agente especificado.
+ * Cada agente tiene su propia API key, guardada cifrada en `aiAgents`.
+ */
+export async function getAgentRuntimeConfig(agentType: "editor" | "auditor"): Promise<{
+  apiKey: string;
+  model: string;
+  baseUrl: string;
+  enabled: boolean;
+}> {
+  const { decryptBuffer } = await import("@/lib/storage/crypto");
+  const config = await getAgentsConfig();
+
+  const cipher =
+    agentType === "editor"
+      ? config.editorApiKeyCipher
+      : config.auditorApiKeyCipher;
+
+  const model =
+    agentType === "editor" ? config.editorModel : config.auditorModel;
+
+  const enabled =
+    agentType === "editor" ? config.editorEnabled : config.auditorEnabled;
+
+  if (!cipher) {
+    throw new Error(
+      `El agente ${agentType} no tiene API key configurada. Andá a Configuración → IA para configurarla.`
+    );
+  }
+
+  const ct = Buffer.from(cipher.ct, "base64");
+  const apiKey = decryptBuffer(ct, cipher.iv, cipher.tag).toString("utf-8");
+
+  if (!apiKey) {
+    throw new Error(
+      `No se pudo descifrar la API key del agente ${agentType}. Reconfigurala.`
+    );
+  }
+
+  const baseUrl =
+    process.env.AI_BASE_URL ??
+    (model.includes("claude") || model.includes("anthropic")
+      ? "https://api.anthropic.com/v1"
+      : model.includes("deepseek")
+        ? "https://api.deepseek.com/v1"
+        : "https://api.openai.com/v1");
+
+  return { apiKey, model, baseUrl, enabled };
+}
 export async function getAgentsStatus() {
   const config = await getAgentsConfig();
 
@@ -128,15 +176,12 @@ export async function askAgentAboutCase(input: {
     throw new Error("Solo el Administrador puede consultar agentes");
   }
 
-  // Obtener configuración del agente
-  const config = await getAgentsConfig();
-  const agentConfig = input.agentType === "editor"
-    ? { model: config.editorModel, enabled: config.editorEnabled }
-    : { model: config.auditorModel, enabled: config.auditorEnabled };
+  // Obtener configuracion del agente (con API key descifrada)
+  const agentConfig = await getAgentRuntimeConfig(input.agentType);
 
   if (!agentConfig.enabled) {
     throw new Error("Agente deshabilitado");
-  }
+  }  
 
   // Leer el caso (puede ser id o internalCode)
   const matter = await prisma.matter.findFirst({
@@ -186,18 +231,15 @@ Incluí en tu respuesta:
 4. Inconsistencias
 5. Recomendaciones`;
 
-  // Usar la configuración de IA general
-  const aiSettings = await getAiSettings();
+  // Usar la API key del agente especifico
+  const apiKey = agentConfig.apiKey;
+  const baseUrl = agentConfig.baseUrl.replace(/\/$/, "");
 
-  if (!aiSettings.configured) {
-    throw new Error("IA no configurada. Configure la API key en Configuración > IA.");
-  }
-
-  const response = await fetch(`${aiSettings.baseUrl.replace(/\/$/, "")}/chat/completions`, {
+  const response = await fetch(`${baseUrl}/chat/completions`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      "Authorization": `Bearer ${aiSettings.apiKey}`,
+      "Authorization": `Bearer ${apiKey}`,
     },
     body: JSON.stringify({
       model: agentConfig.model,
