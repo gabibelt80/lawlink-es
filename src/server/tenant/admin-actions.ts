@@ -186,3 +186,79 @@ export async function hardDeleteFirmAction({ firmId }: { firmId: string }) {
   revalidatePath("/admin");
   return { ok: true };
 }
+
+export async function markFirmAsPaidAction(input: {
+  firmId: string;
+  plan: string;
+  extensionMonths: number;
+  amount: number;
+  method: string;
+  note?: string;
+  paymentDate?: string;
+}) {
+  const session = await requireSession();
+  if (!session.user.isSystemAdmin) {
+    throw new Error("Solo el administrador del sistema puede marcar pagos");
+  }
+
+  const firm = await prisma.firm.findUnique({
+    where: { id: input.firmId },
+    select: {
+      id: true,
+      plan: true,
+      planExpiresAt: true,
+      subscriptionPeriodEnd: true,
+    },
+  });
+
+  if (!firm) {
+    throw new Error("Estudio no encontrado");
+  }
+
+  // Calcular nueva fecha de vencimiento
+  const paymentDate = input.paymentDate ? new Date(input.paymentDate) : new Date();
+  const currentEnd =
+    firm.subscriptionPeriodEnd ?? firm.planExpiresAt ?? paymentDate;
+
+  // Si la fecha actual de vencimiento es anterior al pago, arrancamos desde el pago
+  const baseDate = currentEnd > paymentDate ? currentEnd : paymentDate;
+
+  const newExpiry = new Date(baseDate);
+  newExpiry.setMonth(newExpiry.getMonth() + input.extensionMonths);
+
+  // Actualizar
+  await prisma.firm.update({
+    where: { id: input.firmId },
+    data: {
+      plan: input.plan,
+      planExpiresAt: newExpiry,
+      subscriptionStatus: "active",
+      subscriptionPeriodStart: paymentDate,
+      subscriptionPeriodEnd: newExpiry,
+      lastPaymentAt: paymentDate,
+      lastPaymentAmount: input.amount,
+      paymentProvider: `manual_${input.method}`,
+    },
+  });
+
+  // Audit log
+  const { audit } = await import("@/server/audit");
+  await audit({
+    userId: session.user.id,
+    action: "FIRM_MARKED_AS_PAID",
+    targetType: "Firm",
+    targetId: input.firmId,
+    detail: {
+      plan: input.plan,
+      extensionMonths: input.extensionMonths,
+      amount: input.amount,
+      method: input.method,
+      note: input.note ?? null,
+      paymentDate: paymentDate.toISOString(),
+      newExpiry: newExpiry.toISOString(),
+    },
+  });
+
+  revalidatePath("/admin");
+  return { ok: true, newExpiry };
+}

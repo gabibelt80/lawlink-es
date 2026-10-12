@@ -54,6 +54,7 @@ import {
   scheduleFirmDeletionAction,
   cancelFirmDeletionAction,
   hardDeleteFirmAction,
+  markFirmAsPaidAction,
 } from "@/server/tenant/admin-actions";
 
 type FirmRow = {
@@ -91,6 +92,12 @@ type DialogState =
   | { type: "suspend"; firmId: string; firmName: string }
   | { type: "scheduleDelete"; firmId: string; firmName: string }
   | { type: "hardDelete"; firmId: string; firmName: string }
+  | {
+      type: "markPaid";
+      firmId: string;
+      firmName: string;
+      currentPlan: string;
+    }
   | null;
 
 export function AdminView({
@@ -228,6 +235,41 @@ export function AdminView({
     });
   }
 
+  function handleMarkPaid(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    if (dialog?.type !== "markPaid") return;
+
+    const formData = new FormData(e.currentTarget);
+    const plan = formData.get("plan") as string;
+    const extensionMonths = parseInt(formData.get("extensionMonths") as string, 10);
+    const amount = parseFloat(formData.get("amount") as string);
+    const method = formData.get("method") as string;
+    const note = (formData.get("note") as string) || undefined;
+    const paymentDate = (formData.get("paymentDate") as string) || undefined;
+
+    startTransition(async () => {
+      try {
+        const result = await markFirmAsPaidAction({
+          firmId: dialog.firmId,
+          plan,
+          extensionMonths,
+          amount,
+          method,
+          note,
+          paymentDate,
+        });
+        toast.success(
+          `Pago registrado. Nuevo vencimiento: ${result.newExpiry.toLocaleDateString("es-AR")}`
+        );
+        setDialog(null);
+        router.refresh();
+      } catch (err) {
+        toast.error("Error al marcar como pagado", {
+          description: err instanceof Error ? err.message : "",
+        });
+      }
+    });
+  }
   return (
     <div className="space-y-5">
       {/* Header */}
@@ -492,6 +534,21 @@ export function AdminView({
                                 >
                                   <PauseCircle className="h-3.5 w-3.5" />
                                 </button>
+
+                                <button
+                                  onClick={() =>
+                                    setDialog({
+                                      type: "markPaid",
+                                      firmId: f.id,
+                                      firmName: f.name,
+                                      currentPlan: f.plan,
+                                    })
+                                  }
+                                  className="rounded-md p-1.5 text-emerald-600 hover:bg-popover transition-colors"
+                                  title="Marcar pago manual"
+                                >
+                                  <DollarSign className="h-3.5 w-3.5" />
+                                </button>
                               </>
                             )}
                             {!f.active && !isSuspended && (
@@ -656,6 +713,141 @@ export function AdminView({
               Eliminar permanentemente
             </Button>
           </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Mark Paid Dialog */}
+      <Dialog
+        open={dialog?.type === "markPaid"}
+        onOpenChange={(open) => !open && setDialog(null)}
+      >
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <DollarSign className="h-4 w-4 text-emerald-600" />
+              Marcar pago manual
+            </DialogTitle>
+            <DialogDescription>
+              {dialog?.type === "markPaid" && (
+                <>
+                  Registrar un pago de <strong>{dialog.firmName}</strong> que
+                  no se procesó por Mercado Pago.
+                </>
+              )}
+            </DialogDescription>
+          </DialogHeader>
+
+          {dialog?.type === "markPaid" && (
+            <form onSubmit={handleMarkPaid} className="space-y-4">
+              <div className="space-y-1.5">
+                <Label className="text-xs">Plan</Label>
+                <select
+                  name="plan"
+                  defaultValue={dialog.currentPlan}
+                  required
+                  className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm"
+                >
+                  {(Object.keys(PLANS) as Array<keyof typeof PLANS>).map(
+                    (key) => (
+                      <option key={key} value={key}>
+                        {PLANS[key].label}
+                        {PLANS[key].price > 0
+                          ? ` · $${(PLANS[key].price / 1000).toFixed(1)}k`
+                          : ""}
+                      </option>
+                    )
+                  )}
+                </select>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1.5">
+                  <Label className="text-xs">Extensión</Label>
+                  <select
+                    name="extensionMonths"
+                    defaultValue="1"
+                    required
+                    className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm"
+                  >
+                    <option value="1">1 mes</option>
+                    <option value="3">3 meses</option>
+                    <option value="6">6 meses</option>
+                    <option value="12">12 meses</option>
+                  </select>
+                </div>
+
+                <div className="space-y-1.5">
+                  <Label className="text-xs">Monto ARS</Label>
+                  <Input
+                    name="amount"
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    required
+                    placeholder="0.00"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1.5">
+                  <Label className="text-xs">Método</Label>
+                  <select
+                    name="method"
+                    defaultValue="transferencia"
+                    required
+                    className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm"
+                  >
+                    <option value="transferencia">Transferencia</option>
+                    <option value="efectivo">Efectivo</option>
+                    <option value="cheque">Cheque</option>
+                    <option value="debito">Débito automático</option>
+                    <option value="otro">Otro</option>
+                  </select>
+                </div>
+
+                <div className="space-y-1.5">
+                  <Label className="text-xs">Fecha del pago</Label>
+                  <Input
+                    name="paymentDate"
+                    type="date"
+                    defaultValue={new Date().toISOString().slice(0, 10)}
+                    required
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-1.5">
+                <Label className="text-xs">Nota / referencia (opcional)</Label>
+                <Textarea
+                  name="note"
+                  rows={2}
+                  placeholder="Ej.: Transferencia Banco Nación, comprobante #12345"
+                />
+              </div>
+
+              <DialogFooter>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setDialog(null)}
+                  disabled={isPending}
+                >
+                  Cancelar
+                </Button>
+                <Button
+                  type="submit"
+                  disabled={isPending}
+                  className="gap-1.5 bg-emerald-600 hover:bg-emerald-700"
+                >
+                  {isPending && (
+                    <span className="h-3 w-3 animate-spin rounded-full border-2 border-current border-t-transparent" />
+                  )}
+                  Marcar como pagado
+                </Button>
+              </DialogFooter>
+            </form>
+          )}
         </DialogContent>
       </Dialog>
     </div>
